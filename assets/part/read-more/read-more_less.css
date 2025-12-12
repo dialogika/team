@@ -1,0 +1,17 @@
+.readMore{
+    display:inline-block;
+    color:blue;
+  }
+  .readLess{
+    display:none;
+    color:blue;
+  }
+  .readMore:hover, .readLess:hover{
+    color:navy;
+    cursor:pointer;
+    text-decoration:underline;
+  }
+  .moreText{
+    display:none;
+  }
+  

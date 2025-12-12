@@ -1,0 +1,162 @@
+/* Contact Section - Home Page
+------------------------------*/
+.contact-append .info-item {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0px 9px 16px -6px rgba(11, 43, 106, 1);
+  padding: 17px;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+
+.contact-append .info-item i {
+  font-size: 38px;
+  line-height: 0;
+  color: #0B2B6A;
+  float: right;
+}
+
+.contact-append .info-item h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 20px 0 10px 0;
+  color: #0B2B6A;
+}
+
+.contact-append .info-item p {
+  padding: 0;
+  line-height: 24px;
+  font-size: 14px;
+  margin-bottom: 0;
+}
+
+.contact-append iframe {
+  border-color: #0B2B6A;
+  border-radius: 10px;
+  box-shadow: 0px 9px 16px -6px rgba(11, 43, 106, 1);
+}
+
+.contact-append .php-email-form {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 30px;
+  height: 100%;
+  border-radius: 10px;
+  box-shadow: 0px 9px 16px -6px rgba(11, 43, 106, 1);
+}
+
+.contact-append .php-email-form .error-message {
+  display: none;
+  background: #df1529;
+  color: #ffffff;
+  text-align: left;
+  padding: 15px;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+.contact-append .php-email-form .sent-message {
+  display: none;
+  color: #ffffff;
+  background: #006a4e;
+  text-align: center;
+  padding: 15px;
+  margin-bottom: 24px;
+  font-weight: 700;
+  border-radius: 10px;
+}
+
+.contact-append .php-email-form .loading {
+  display: none;
+  background: var(--background-color);
+  text-align: center;
+  padding: 15px;
+  margin-bottom: 24px;
+}
+
+.contact-append .php-email-form .loading:before {
+  content: "";
+  display: inline-block;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  margin: 0 10px -6px 0;
+  border: 3px solid #f1f7fd;
+  border-top-color: var(--background-color);
+  animation: animate-loading 1s linear infinite;
+}
+
+.contact-append .php-email-form input[type=text],
+.contact-append .php-email-form input[type=email],
+.contact-append .php-email-form input[type=tel],
+.contact-append .php-email-form select,
+.contact-append .php-email-form textarea {
+  font-size: 14px;
+  padding: 10px 15px;
+  border-radius: 10;
+  color: #444444;
+  background-color: rgba(255,255,255,255, 0.5);
+  border-color: #0B2B6A;
+}
+
+.contact-append .php-email-form input[type=text]:focus,
+.contact-append .php-email-form input[type=email]:focus,
+.contact-append .php-email-form input[type=tel]:focus,
+.contact-append .php-email-form select:focus,
+.contact-append .php-email-form textarea:focus {
+  border-color: #0B2B6A;
+  box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+  -webkit-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+  -moz-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+}
+
+.contact-append .php-email-form input[type=text]::-moz-placeholder,
+.contact-append .php-email-form input[type=email]::-moz-placeholder,
+.contact-append .php-email-form input[type=tel]::-moz-placeholder,
+.contact-append .php-email-form select::-moz-placeholder,
+.contact-append .php-email-form textarea::-moz-placeholder {
+  color: #aaaaaa;
+}
+
+.contact-append .php-email-form input[type=text]::placeholder,
+.contact-append .php-email-form input[type=email]::placeholder,
+.contact-append .php-email-form textarea::placeholder {
+  color: rgba(var(--default-color-rgb), 0.3);
+}
+
+.contact-append .php-email-form button[type=submit] {
+  background-color: #0f61a8;
+  
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 8px 20px 10px 20px;
+  border-radius: 7px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #283966;
+  border: 0;
+  background: linear-gradient(to bottom, #0f61a8 5%, #0b2b6a 100%);
+  box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+  -webkit-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+  -moz-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+}
+
+.contact-append .php-email-form button[type=submit]:hover {
+  background: linear-gradient(to bottom, #0b2b6a 5%, #0f61a8 100%);
+  background-color: #0b2b6a;
+  color: #fff;
+  box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+  -webkit-box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+  -moz-box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+}
+
+
+@keyframes animate-loading {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

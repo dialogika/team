@@ -1,0 +1,293 @@
+/*--------------------------------------------------------------
+# Courses
+--------------------------------------------------------------*/
+.courses .course-item {
+  border-radius: 5px;
+  border: 1px solid #0B2B6A;
+  background-color: #0B2B6A;
+  box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+  -webkit-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+  -moz-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+}
+
+.courses .course-content {
+  padding: 15px;
+}
+
+.courses .course-content h3 {
+  font-weight: 700;
+  font-size: 30px;
+  color: #fff;
+}
+
+.courses .course-content h3 a {
+  color: #fff;
+  transition: 0.3s;
+}
+
+.courses .course-content h3 a:hover {
+  color: #0163ea;
+}
+
+.courses .course-content p {
+  font-size: 14px;
+  color: #fff;
+}
+
+.courses .course-content hr {
+  border: 1px solid #fff;
+  z-index: 0;
+}
+
+.courses .course-content h4 {
+  font-size: 14px;
+  background: #F9C72E;
+  padding: 7px 14px;
+  color: #000;
+  margin: 0;
+  border-radius: 10px;
+  box-shadow: 0px 5px 16px -6px rgba(151, 189, 67, 1);
+  -webkit-box-shadow: 0px 5px 16px -6px rgba(151, 189, 67, 1);
+  -moz-box-shadow: 0px 5px 16px -6px rgba(151, 189, 67, 1);
+}
+
+.courses .course-content i {
+  color: #F9C72E;
+}
+
+.courses .course-content .price {
+  margin: 0;
+  font-weight: 700;
+  font-size: 18px;
+  color: #37423b;
+}
+
+.courses .trainer {
+  padding-top: 15px;
+  border-top: 1px solid #eef0ef;
+}
+
+.courses .trainer .trainer-profile img {
+  max-width: 50px;
+  border-radius: 50px;
+}
+
+.courses .trainer .trainer-profile span {
+  padding-left: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #5a6c60;
+}
+
+.courses .trainer .trainer-rank {
+  font-size: 18px;
+  color: #657a6d;
+}
+
+.courses .trainer .trainer-rank a {
+  box-shadow: inset 0px 1px 0px 0px #f9c72e;
+  background: linear-gradient(to bottom, #f9c62e 5%, #ffb13b 100%);
+  background-color: #f9c62e;
+  border-radius: 22px;
+  display: inline-block;
+  cursor: pointer;
+  color: #231f20;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 6px 18px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #f9c62e;
+}
+
+.courses .trainer .trainer-rank a:hover {
+  background: linear-gradient(to bottom, #ffb13b 5%, #f9c62e 100%);
+  background-color: #ffb13b;
+  color: #231f20;
+}
+
+/*--------------------------------------------------------------
+# Cource Details
+--------------------------------------------------------------*/
+.course-details .info-item {
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0px 5px 16px -6px rgba(0, 0, 0, 0.8);
+  padding: 17px;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+
+.course-details .info-item i.bi {
+  font-size: 38px;
+  line-height: 0;
+  color: #0B2B6A;
+  float: right;
+  margin-top: 20px;
+}
+
+
+.course-details.info-item h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 20px 0 10px 0;
+  color: #0B2B6A;
+}
+
+.course-details .info-item p {
+  padding: 0;
+  line-height: 24px;
+  font-size: 14px;
+  margin-bottom: 0;
+}
+
+.course-details .video-box {
+  position: relative;
+  text-align: center;
+  color: white;
+}
+
+.course-details .video-box .play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+}
+
+.course-details .video-box .play-btn {
+  width: 94px;
+  height: 94px;
+  background: radial-gradient(#0b2b6a 50%, rgba(25, 119, 204, 0.4) 52%);
+  border-radius: 50%;
+  display: block;
+  position: absolute;
+  left: calc(50% - 47px);
+  top: calc(50% - 47px);
+  overflow: hidden;
+}
+
+.course-details .video-box .play-btn::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-40%) translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 15px solid #fff;
+  z-index: 100;
+  transition: all 400ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+
+.course-details .video-box .play-btn::before {
+  content: "";
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  animation-delay: 0s;
+  animation: pulsate-btn 2s;
+  animation-direction: forwards;
+  animation-iteration-count: infinite;
+  animation-timing-function: steps;
+  opacity: 1;
+  border-radius: 50%;
+  border: 5px solid rgba(25, 119, 204, 0.7);
+  top: -15%;
+  left: -15%;
+  background: rgba(198, 16, 0, 0);
+}
+
+.course-details .video-box .play-btn:hover::after {
+  border-left: 15px solid #0b2b6a;
+  transform: scale(20);
+}
+
+.course-details .video-box .play-btn:hover::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-40%) translateY(-50%);
+  width: 0;
+  height: 0;
+  border: none;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 15px solid #fff;
+  z-index: 200;
+  animation: none;
+  border-radius: 0;
+}
+
+.course-details h3 {
+  font-size: 24px;
+  margin: 30px 0 15px 0;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 10px;
+  color: #0B2B6A;
+}
+
+.course-details .course-info {
+  background: #f1f7fd;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 5px 16px -6px rgba(0, 0, 0, 0.8);
+}
+
+.course-details .course-info h5 {
+  font-weight: 400;
+  font-size: 16px;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  color: #0B2B6A;
+}
+
+.course-details h4 {
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 15px;
+  font-family: "Poppins", sans-serif;
+  color: #0B2B6A;
+}
+
+.course-details .course-info p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.course-details .course-info a {
+  color: #657a6d;
+}
+
+.course-details a.course-button {
+  background: linear-gradient(to bottom, #0f61a8 5%, #0b2b6a 100%);
+  box-shadow: 0px 5px 16px -6px rgba(0, 0, 0, 0.8);
+  border-radius: 10px;
+  display: inline-block;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 27px;
+  font-weight: bold;
+  padding: 26px 69px;
+  text-decoration: none;
+  text-shadow: 0px 1px 0px #2f6627;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.course-details a.course-button:hover {
+  background: linear-gradient(to bottom, #0b2b6a 5%, #0f61a8 100%);
+  background-color: #0b2b6a;
+  color: #fff;
+  box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+  -webkit-box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+  -moz-box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+}
+
+@media (max-width: 768px) {
+  .course-details a.course-button {
+    font-size: 20px;
+  }
+}

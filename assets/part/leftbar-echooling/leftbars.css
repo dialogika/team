@@ -1,0 +1,414 @@
+
+.training .course-single-tab .nav.nav-tabs {
+  padding: 0 0 1px 0;
+  margin-top: 0px;
+  background: #F2F4F9;
+  border-radius: 6px;
+  margin-bottom: 50px;
+  border: none;
+}
+.training .course-single-tab .nav.nav-tabs li a {
+  border: none;
+  color: #5B5F64;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 18px;
+  padding: 19px 25px;
+  text-align: center;
+  display: inline-block;
+  margin: 10px 8px;
+}
+.training .course-single-tab .nav.nav-tabs li a.active,
+.training .course-single-tab .nav.nav-tabs li a:hover {
+  background: #fff;
+  box-shadow: 0px 6px 10px rgba(15, 18, 22, 0.1);
+  border-radius: 6px;
+  color: #0F1216;
+}
+.training .course-single-tab #back-tab-content h3 {
+  font-size: 26px;
+  color: #0B2B6A;
+  font-weight: 600;
+  margin: 0 0 20px;
+}
+.training .course-single-tab #back-tab-content p {
+  font-size: 16px;
+  color: #4b4b57;
+}
+
+.training .course-single-tab #back-tab-content b {
+    color: #0B2B6A;
+}
+
+.training .course-single-tab #back-tab-content .back-tag a {
+  font-size: 16px;
+  font-weight: 500;
+  color: #737383;
+}
+.training .course-single-tab #back-tab-content .back-tag a:hover {
+  color: #3270fc;
+}
+.training .course-single-tab #back-tab-content .back-tag svg {
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+}
+.training .course-single-tab #back-tab-content .back-objectives {
+  background: #f7f7f8;
+  overflow: hidden;
+  padding: 40px;
+  border-radius: 2px;
+  margin-top: 50px;
+  margin-bottom: 40px;
+}
+.training .course-single-tab #back-tab-content .back-objectives h3 {
+  font-size: 20px;
+  color: #00306e;
+  font-weight: 800;
+  margin: 0 0 20px;
+}
+.training .course-single-tab #back-tab-content .back-objectives li {
+  float: left;
+  width: 50%;
+  font-size: 15px;
+  font-weight: 600;
+  color: #00306e;
+  position: relative;
+  padding-left: 42px;
+  margin: 10px 0 17px;
+  line-height: 1.3;
+}
+.training .course-single-tab #back-tab-content .back-objectives li:first-child {
+  float: none;
+  width: 100%;
+  padding: 0;
+}
+.training .course-single-tab #back-tab-content .back-objectives li i {
+  background: #3270fc;
+  padding: 6px;
+  color: #ffffff;
+  border-radius: 50%;
+  display: inline-block;
+  position: absolute;
+  left: 0;
+}
+.training .course-single-tab #back-tab-content .single-week {
+  background: #f7f7f8;
+  padding: 40px 40px 30px 40px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+.training .course-single-tab #back-tab-content .single-week .week__top {
+  display: flex;
+  border-bottom: 1px solid rgba(2, 3, 52, 0.078);
+  justify-content: space-between;
+  font-size: 20px;
+  font-weight: 800;
+  padding-bottom: 10px;
+  margin-bottom: 28px;
+  color: #00306e;
+}
+.training .course-single-tab #back-tab-content .single-week .week__top button.btn-primary {
+    color: #fff;
+    padding: 8px 20px 10px 20px;
+    border-radius: 7px;
+    white-space: nowrap;
+    transition: 0.3s;
+    font-size: 14px;
+    display: inline-block;
+    background: linear-gradient(to bottom, #0f61a8 5%, #0b2b6a 100%);
+    font-weight:700;
+}
+
+.training .course-single-tab #back-tab-content .single-week .week__top button.btn-primary:hover {
+    background: linear-gradient(to bottom, #0b2b6a 5%, #0f61a8 100%);
+    background-color: #0b2b6a;
+    color: #fff;
+}
+
+.training .course-single-tab #back-tab-content .single-week .week__top li {
+    list-style-type: none;
+    padding-left:0px;
+}
+
+.training .course-single-tab #back-tab-content .single-week .week__top li:last-child {
+  color: #828287;
+  font-weight: 700;
+}
+.training .course-single-tab #back-tab-content .single-week .course__title li {
+  border-bottom: 1px solid rgba(2, 3, 52, 0.078);
+  color: #4b4c57;
+  padding: 12px 0 12px;
+  overflow: hidden;
+}
+.training .course-single-tab #back-tab-content .single-week .course__title li svg {
+  width: 20px;
+  height: 20px;
+  margin-right: 7px;
+  position: relative;
+  top: -2px;
+}
+.training .course-single-tab #back-tab-content .single-week .course__title li em {
+  font-style: normal;
+  float: right;
+}
+.training .course-single-tab #back-tab-content .single-week .course__title li em svg {
+  width: 17px;
+  height: 17px;
+  margin-right: 3px;
+  position: relative;
+  top: -2px;
+}
+.training .course-single-tab #back-tab-content .single-week .course__title li em.questions {
+  background-color: rgba(248, 69, 45, 0.102);
+  color: #f8452d;
+  padding: 6px 10px;
+  line-height: 1;
+  border-radius: 6px;
+  margin-left: 20px;
+  font-weight: 500;
+}
+.training .course-single-tab #back-tab-content .single-week .course__title li b {
+  font-weight: 700;
+  color: #00306e;
+}
+.training .course-single-tab #back-tab-content .single-week .course__title li:last-child {
+  border: none;
+}
+.training .course-single-tab #back-tab-content .skillbar-style2 {
+  border: 1px solid rgba(0, 48, 110, 0.1);
+  border-radius: 6px;
+  padding: 40px;
+}
+.training .course-single-tab #back-tab-content .skillbar-style2 .skill_inners {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+.training .course-single-tab #back-tab-content .skillbar-style2 .skill_inners span.skillbar-title {
+  flex: 0 0 15%;
+  color: #5B5F64;
+  font-size: 14px;
+}
+.training .course-single-tab #back-tab-content .skillbar-style2 .skill_inners span {
+  color: #5B5F64;
+}
+.training .course-single-tab #back-tab-content .skillbar-style2 .skillbars {
+  position: relative;
+  display: block;
+  background: #E6E9F1;
+  height: 10px;
+  width: 100%;
+  clear: both;
+  margin: 0 20px 0 0;
+  border-radius: 0px;
+}
+.training .course-single-tab #back-tab-content .skillbar-style2 .skillbars .skillbar-bar {
+  height: 10px;
+  width: 0;
+  background: #3270fc;
+  display: block;
+  margin: 0;
+  position: relative;
+  border-radius: 0px;
+}
+.training .course-single-tab #back-tab-content .five__number {
+  border: 1px solid rgba(0, 48, 110, 0.1);
+  text-align: center;
+  padding: 75px 50px;
+  border-radius: 6px;
+}
+.training .course-single-tab #back-tab-content .five__number em {
+  font-size: 50px;
+  color: #0F1216;
+  font-style: normal;
+  line-height: 1.2;
+  margin-bottom: 12px;
+  font-weight: 700;
+  display: block;
+}
+.training .course-single-tab #back-tab-content .five__number i {
+  color: #ff9415;
+  font-size: 14px;
+}
+.training .course-single-tab #back-tab-content .five__number h6 {
+  color: #0F1216;
+}
+.training .course-single-tab #back-tab-content .post-author {
+  display: flex;
+  align-items: center;
+  padding: 25px 40px 30px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 1px solid rgba(0, 48, 110, 0.1);
+  border-radius: 6px;
+}
+.training .course-single-tab #back-tab-content .post-author .avatar {
+  margin-right: 20px;
+}
+.training .course-single-tab #back-tab-content .post-author .avatar img {
+  border-radius: 50%;
+  width: 80px;
+}
+.training .course-single-tab #back-tab-content .post-author .info .back-ratings i {
+  color: #ff9415;
+  font-size: 14px;
+}
+.training .course-single-tab #back-tab-content .post-author .info .name {
+  margin: 0;
+  color: #0F1216;
+  transition: all 0.5s ease 0s;
+  font-size: 20px;
+  font-weight: 600;
+}
+.training .course-single-tab #back-tab-content .post-author .info .name .designation {
+  font-size: 16px;
+  color: #5B5F64;
+  margin: 0;
+  font-weight: 400;
+}
+.training .course-single-tab #back-tab-content .post-author p {
+  font-size: 16px;
+  color: #4b4b57;
+  margin: 0;
+  line-height: 24px;
+}
+.training .course-single-tab #back-tab-content .post-author:hover .info .name {
+  color: #3270fc;
+}
+.training .course-single-tab #back-tab-content .blog-form p {
+  margin-top: -15px;
+}
+.training .course-single-tab #back-tab-content .blog-form form .back-ratings {
+  padding-bottom: 25px;
+  padding-top: 6px;
+  line-height: 1;
+}
+.training .course-single-tab #back-tab-content .blog-form form .back-ratings i {
+  font-size: 14px;
+  color: #b8b9bf;
+}
+.training .course-single-tab #back-tab-content .blog-form form .back-ratings i:nth-child(1),
+.training .course-single-tab #back-tab-content .blog-form form .back-ratings i:nth-child(2) {
+  color: #ff9415;
+}
+.training .course-single-tab #back-tab-content .blog-form form input {
+  width: 100%;
+  height: 57px;
+  padding: 10px 30px 10px 30px;
+  background: #F2F4F9;
+  border: none;
+  outline: none;
+  border-radius: 6px;
+  margin-bottom: 25px;
+  border: 2px solid #F2F4F9;
+}
+.training .course-single-tab #back-tab-content .blog-form form input:focus {
+  border: 2px solid #3270fc;
+  background: none;
+}
+.training .course-single-tab #back-tab-content .blog-form form textarea {
+  width: 100%;
+  height: 160px;
+  padding: 22px 30px;
+  background: #F2F4F9;
+  border: none;
+  outline: none;
+  border-radius: 6px;
+  margin-bottom: 5px;
+  position: relative;
+  border: 2px solid #F2F4F9;
+}
+.training .course-single-tab #back-tab-content .blog-form form textarea:focus {
+  border: 2px solid #3270fc;
+  background: none;
+}
+.training .course-single-tab #back-tab-content .blog-form form button {
+  background: #3270FC;
+  font-size: 16px;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 14px 30px;
+  display: inline-block;
+  font-weight: 600;
+  transition: all 0.5s ease 0s;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+  margin-top: 25px;
+}
+.training .course-single-tab #back-tab-content .blog-form form button svg {
+  width: 18px;
+}
+.training .course-single-tab #back-tab-content .blog-form form button:hover {
+  color: #ffffff;
+  background: #00306e;
+}
+.training .course-single-tab #back-tab-content .blog-form form .back-check-box {
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  color: #55575c;
+  font-size: 16px;
+}
+.training .course-single-tab #back-tab-content .blog-form form .back-check-box a {
+  color: #1a152e;
+}
+.training .course-single-tab #back-tab-content .blog-form form .back-check-box a:hover {
+  color: #74727d;
+}
+.training .course-single-tab #back-tab-content .blog-form form .back-check-box input {
+  width: auto;
+  margin: 0 8px 0 0;
+  height: 16px;
+  width: 16px;
+}
+.training .course-single-tab #back-tab-content .blog-form form ::-webkit-input-placeholder {
+  /* Chrome/Opera/Safari */
+  color: #7b7d82;
+  opacity: 1;
+  font-size: 16px;
+}
+.training .course-single-tab #back-tab-content .blog-form form ::-moz-placeholder {
+  /* Firefox 19+ */
+  color: #7b7d82;
+  opacity: 1;
+  font-size: 16px;
+}
+.training .course-single-tab #back-tab-content .blog-form form :-ms-input-placeholder {
+  /* IE 10+ */
+  color: #7b7d82;
+  opacity: 1;
+  font-size: 16px;
+}
+.training .course-single-tab #back-tab-content .blog-form form :-moz-placeholder {
+  /* Firefox 18- */
+  color: #7b7d82;
+  opacity: 1;
+  font-size: 16px;
+}
+.training .course-single-tab #back-tab-content .social-links h4 {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 26px;
+}
+.training .course-single-tab #back-tab-content .social-links li a {
+  border-radius: 6px;
+}
+.training .course-single-tab #back-tab-content .social-links li:first-child {
+  float: none;
+  width: 100%;
+  padding: 0;
+  display: block;
+}
+
+.training .course-single-tab #back-tab-content img {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.training .accordion .accordion-header  button .accordion-button.collapsed {
+    color: #fff;
+    background: #0B2B6A;
+}

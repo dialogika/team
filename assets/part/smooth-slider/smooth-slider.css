@@ -1,0 +1,91 @@
+/* Style untuk smooth swiper */
+.smooth-swiper-container-top .swiper-wrapper,
+.smooth-swiper-container-middle .swiper-wrapper,
+.smooth-swiper-container-bottom .swiper-wrapper {
+  background: #F1F7FD;
+  transition: transform 0.5s linear;
+  -webkit-transition: transform 0.5s linear;
+  -moz-transition: transform 0.5s linear;
+  -ms-transition: transform 0.5s linear;
+  -o-transition: transform 0.5s linear;
+}
+
+.smooth-swiper-container-top::before,
+.smooth-swiper-container-middle::before,
+.smooth-swiper-container-bottom::before {
+  content: "";
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 250px;
+  height: 100%;
+  z-index: 2;
+  background: linear-gradient(to left, rgba(255, 255, 255, 0), #F1F7FD);
+}
+
+.smooth-swiper-container-top::after,
+.smooth-swiper-container-middle::after,
+.smooth-swiper-container-bottom::after {
+  content: "";
+  top: 0;
+  right: 0;
+  position: absolute;
+  width: 250px;
+  height: 100%;
+  z-index: 2;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0), #F1F7FD);
+}
+
+.smooth-swiper-container .swiper-wrapper .swiper-slide {
+  background: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  width: 175px;
+  height: 70px;
+  display: block;
+  padding: 5px;
+  border-radius: 15px;
+  -webkit-border-radius: 15px;
+  -moz-border-radius: 15px;
+  -ms-border-radius: 15px;
+  -o-border-radius: 15px;
+}
+
+.smooth-swiper-container .swiper-wrapper .swiper-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  max-height: 90px;
+}
+@media (max-width: 1200px) {
+  .smooth-swiper-container .swiper-wrapper .swiper-slide {
+    width: 150px;
+    height: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Smooth swiper styles for mobile */
+  #partners .smooth-swiper-container {
+    width: 100%;
+  }
+
+  .smooth-swiper-container .swiper-wrapper .swiper-slide {
+    width: 106px;
+    height: 50px;
+  }
+
+  .smooth-swiper-container-top::before,
+  .smooth-swiper-container-middle::before,
+  .smooth-swiper-container-bottom::before {
+    width: 100px;
+    height: 100%;
+  }
+
+  .smooth-swiper-container-top::after,
+  .smooth-swiper-container-middle::after,
+  .smooth-swiper-container-bottom::after {
+    width: 100px;
+    height: 100%;
+  }
+}

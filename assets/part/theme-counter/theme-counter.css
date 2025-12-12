@@ -1,0 +1,48 @@
+/*------------------ Theme Counter -------------------*/
+.theme-counter {background: #f8faff;padding: 55px 0;}
+.theme-counter .bg {
+  background: url(../../img/home/pattern.webp) no-repeat center center;
+  text-align: center;
+  padding: 85px 0 85px 0;
+}
+.theme-counter h6 {
+  font-size: 18px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.theme-counter h2 {font-size: 42px;font-weight: 700;padding: 12px 0 35px 0;}
+.cunter-wrapper {width: 75%;margin: 0 auto; text-align: center;}
+.single-counter-box {
+  text-align: center;
+}
+.single-counter-box .number {
+  font-family: 'Nunito Sans', sans-serif;
+  font-weight: 300;
+  font-size: 40px;
+}
+.single-counter-box .number {font-size: 45px;margin-bottom: 22px;font-weight: bold;color:#0B2B6A}
+.single-counter-box p {margin-top: -15px;font-family: "Raleway", sans-serif;font-size: 17px;}
+.single-counter-box {margin-bottom: 10px;}
+.theme-counter .theme-button-one {
+  margin-top: 75px;
+  color: #fff;
+  padding: 8px 20px 10px 20px;
+  border-radius: 7px;
+  white-space: nowrap;
+  transition: 0.3s;
+  font-size: 14px;
+  display: inline-block;
+  background: linear-gradient(to bottom, #0f61a8 5%, #0b2b6a 100%);
+  box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+  -webkit-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+  -moz-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+}
+
+.theme-counter .theme-button-one:hover {
+    background: linear-gradient(to bottom, #0b2b6a 5%, #0f61a8 100%);
+    background-color: #0b2b6a;
+    color: #fff;
+    box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+    -webkit-box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+    -moz-box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+}

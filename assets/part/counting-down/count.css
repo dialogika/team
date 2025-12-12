@@ -1,0 +1,98 @@
+.counting-down-date .countdown {
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.info-sec {
+  position: relative;
+  top: -100px;
+}
+.info-sec .info-countdown {
+  background-size: cover;
+  background-position: center;
+  padding: 30px 0px;
+  border-radius: 32px;
+  position: relative;
+  margin-bottom: 40px;;
+  /*-webkit-box-shadow: 0px 40px 70px rgba(75, 3, 116, 0.15);
+          box-shadow: 0px 40px 70px rgba(75, 3, 116, 0.15);*/
+  box-shadow: 0px 40px 70px rgba(11, 43, 106, 0.5);
+}
+.info-sec .info-countdown .dots {
+  position: absolute;
+  bottom: -50px;
+  right: -40px;
+  opacity: 0.8;
+  z-index: -1;
+}
+.info-sec .info-countdown .counter-box {
+  text-align: center;
+  margin-right: 220px;
+  margin-left: 220px
+}
+
+
+.info-sec .info-countdown .counter-box li strong,
+.info-sec .info-countdown .counter-box div h3 {
+  font-size: 52px;
+  background: linear-gradient(97.14deg, #0B2B6A 7.11%, #0163ea 97.04%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+  text-align: center;
+}
+.info-sec .info-countdown .counter-box li span,
+.info-sec .info-countdown .counter-box div h4 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #212121;
+  text-align: center;
+}
+
+.info-sec .information-area {
+  padding-top: 60px;
+}
+.info-sec .information-area .mail,
+.info-sec .information-area .location,
+.info-sec .information-area .number {
+  border: 1px solid #bcbcbc;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  padding: 20px 0px;
+  border-radius: 10px;
+}
+.info-sec .information-area .mail .icon,
+.info-sec .information-area .location .icon,
+.info-sec .information-area .number .icon {
+  margin-right: 10px;
+}
+.info-sec .information-area .mail .icon i,
+.info-sec .information-area .location .icon i,
+.info-sec .information-area .number .icon i {
+  color: #0B2B6A;
+}
+.info-sec .information-area .mail a,
+.info-sec .information-area .location a,
+.info-sec .information-area .number a {
+  color: #212121;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .info-sec .info-countdown .counter-box {
+    margin-right: 20px;
+    margin-left: 20px
+  }
+  .info-sec .info-countdown .counter-box div h4 {
+    font-size: 17px;
+    font-weight: 600;
+  }
+}

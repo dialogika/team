@@ -1,0 +1,90 @@
+/*--------------------------------------------------------------
+# Category
+--------------------------------------------------------------*/
+/* category-box */
+.category-box {
+  position: relative;
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s;
+  top: 0;
+  box-shadow: 0px 9px 16px -6px rgba(114, 4, 207, 1);
+  -webkit-box-shadow: 0px 9px 16px -6px rgba(114, 4, 207, 1);
+  -moz-box-shadow: 0px 9px 16px -6px rgba(114, 4, 207, 1);
+}
+
+.category-box img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.category-box:after {
+  /*content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #fff;
+  height: 100%;
+  width: 100%;
+  opacity: 0.6;*/
+}
+
+.category-box .top-lefts span {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  font-size: 9px;
+}
+
+.category-box .icon-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 99;
+  text-align: center;
+  width: 100%;
+}
+
+.category-box .icon-content h2 {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding-bottom: 20px;
+  position: relative;
+  color: #2c4964;
+  text-shadow: 0px 0px 16px rgba(114, 4, 207, 1);
+}
+
+.category-box .dlab-tilte {
+  color: #fff;
+  font-size: 24px;
+  line-height: 28px;
+  margin-bottom: 10px;
+  text-transform: capitalize;
+}
+
+.category-box .icon-content p {
+  margin-bottom: 0;
+  font-size: 16px;
+  color: var(--color-primary);
+  line-height: 16px;
+}
+
+.category-box.radius-no {
+  border-radius: 0;
+}
+
+.category-box .icon-bx {
+  height: 50px;
+  width: 50px;
+  display: block;
+  text-align: center;
+  margin: 0 auto 15px;
+  background-color: rgba(255, 255, 255, 0.2);
+  line-height: 50px;
+  border-radius: 50px;
+  color: #fff;
+}

@@ -1,0 +1,122 @@
+/*****************************************************
+    11. Breadcrumbs Section CSS
+****************************/
+.react-breadcrumbs .breadcrumbs-wrap {
+  position: relative;
+  overflow: hidden;
+  height: 50vh;
+  z-index: 2;
+}
+.react-breadcrumbs .breadcrumbs-wrap .container {
+  position: relative;
+}
+.react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner {
+  width: 100%;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text {
+  text-align: center;
+}
+
+.react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text a.cate {
+    margin-bottom: 20px;
+}
+
+.react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text .breadcrumbs-title {
+    margin-top: 20px;
+  width: 100%;
+  font-size: 50px;
+  text-transform: capitalize;
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0 0 15px;
+}
+.react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text .back-nav ul li {
+  display: inline;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 400;
+  opacity: .8;
+}
+.react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text .back-nav ul li a {
+  color: #fff;
+}
+.react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text .back-nav ul li a:hover {
+  opacity: 0.7;
+}
+.react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text .back-nav ul li:after {
+  content: "";
+  margin: 0 6px 0 12px;
+  background: #ffffff;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text .back-nav ul li:last-child:after {
+  content: unset;
+  margin: 0;
+}
+.react-breadcrumbs.react-breadcrumbs-single .container {
+  max-width: 1200px;
+}
+.react-breadcrumbs.react-breadcrumbs-single .container .single-cate {
+  background: #ffffff;
+  color: #00306e;
+  display: inline-block;
+  padding: 4px 18px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.react-breadcrumbs.react-breadcrumbs-single .react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner {
+  top: 61%;
+}
+.react-breadcrumbs.react-breadcrumbs-single .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text {
+  text-align: left;
+}
+.react-breadcrumbs.react-breadcrumbs-blog-single .container {
+  max-width: 1200px;
+}
+.react-breadcrumbs.react-breadcrumbs-blog-single .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text {
+  text-align: left;
+}
+.react-breadcrumbs.react-breadcrumbs-blog-single .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text span {
+  font-size: 16px;
+  color: #ffffff;
+  margin-bottom: 15px;
+  display: block;
+}
+.react-breadcrumbs.react-breadcrumbs-blog-single .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text .back-nav ul li {
+  font-size: 14px;
+  color: #ffffff;
+  margin-right: 30px;
+  opacity: 1;
+}
+.react-breadcrumbs.react-breadcrumbs-blog-single .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text .back-nav ul li svg {
+  width: 17px;
+  height: 17px;
+  margin-right: 4px;
+  position: relative;
+  top: -2px;
+}
+.react-breadcrumbs.react-breadcrumbs-blog-single .breadcrumbs-wrap .breadcrumbs-inner .breadcrumbs-text .back-nav ul li:after {
+  display: none;
+}
+
+
+@media (max-width: 768px) {
+    .react-breadcrumbs .breadcrumbs-wrap {
+        height: 45vh;
+    }
+    .react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner .section-title h5 {
+        font-size: 12px;
+    }
+    .react-breadcrumbs .breadcrumbs-wrap .breadcrumbs-inner .section-title h3 {
+        font-size: 30px;
+    }
+}

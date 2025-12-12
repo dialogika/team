@@ -1,0 +1,73 @@
+/*--------------------------------------------------------------
+# features-small
+--------------------------------------------------------------*/
+.features-small-small {
+  padding-top: 20px;
+}
+
+.features-small .icon-box {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  transition: all ease-in-out 0.3s;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 0.37 px outset #dcf2fe;
+  box-shadow: 0px 9px 16px -6px rgba(32, 191, 240, 1);
+  -webkit-box-shadow: 0px 9px 16px -6px rgba(32, 191, 240, 1);
+  -moz-box-shadow: 0px 9px 16px -6px rgba(32, 191, 240, 1);
+  z-index: 1;
+}
+
+.features-small .icon-box::before {
+  content: "";
+  position: absolute;
+  background: #cbe0fb;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  top: 100%;
+  transition: all 0.3s;
+  z-index: -1;
+}
+
+.features-small .icon-box:hover {
+  background: #0b2b6a;
+  box-shadow: 0px 9px 16px -6px rgba(114, 4, 207, 1);
+  -webkit-box-shadow: 0px 9px 16px -6px rgba(114, 4, 207, 1);
+  -moz-box-shadow: 0px 9px 16px -6px rgba(114, 4, 207, 1);
+}
+
+.features-small .icon-box:hover::before {
+  background: #0b2b6a;
+  top: 0;
+  border-radius: 0px;
+}
+
+
+.features-small .icon-box i {
+  font-size: 32px;
+  padding-right: 10px;
+  line-height: 1;
+}
+
+.features-small .icon-box:hover i {
+  color: #fff;
+}
+
+.features-small .icon-box h3 {
+  font-weight: 700;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  font-size: 16px;
+}
+
+.features-small .icon-box h3 a {
+  color: #493c3e;
+  transition: ease-in-out 0.3s;
+}
+
+.features-small .icon-box:hover a {
+  color: #fff;
+}

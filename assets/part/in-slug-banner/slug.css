@@ -1,0 +1,24 @@
+.banner-slug {
+  font-size: 18px;
+  font-weight: 500;
+  padding-left: 25px;
+  display: inline-block;
+  margin-bottom: 35px;
+}
+.banner-slug:before, .banner-slug:after,
+.banner-slug span:before {
+  top: 8px;
+  left: 0;
+  width: 2px;
+  content: "";
+  height: 13px;
+  position: absolute;
+  background: -webkit-gradient(linear, left top, left bottom, from(rgb(1, 94, 234)), to(rgb(0, 192, 250)));
+  background: linear-gradient(-180deg, rgb(1, 94, 234) 0%, rgb(0, 192, 250) 100%);
+}
+.banner-slug:after {
+  left: 5px;
+}
+.banner-slug span:before {
+  left: 10px;
+}

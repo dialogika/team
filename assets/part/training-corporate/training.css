@@ -1,0 +1,104 @@
+/*--------------------------------------------------------------
+# Training-details-left
+--------------------------------------------------------------*/
+.training {
+    
+}
+
+.training #tab-training {
+    background : rgba(68, 68, 68, 0.05);
+    padding : 22px;
+    border-radius: 7px;
+}
+
+.training #tab-training li {
+    padding-right: 40px;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 700;
+}
+
+.training #tab-training .nav-link.active {
+    box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+    -webkit-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+    -moz-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+}
+
+.training #training-content {
+    margin-top: 75px;
+}
+
+.training #training-content h3 {
+    margin: 0 0 20px;
+    font-size: 26px;
+    font-weight: 700;
+    font-family: "Poppins", sans-serif;
+    color: #0f2f57;
+    line-height: 45px;
+    text-align: left;
+}
+
+.training #training-content p {
+    font-size: 16px;
+    color: #4b4b57;
+}
+
+/*Mobile*/
+@media (max-width: 768px) {
+    .training #tab-training li {
+        padding-right: 10px;
+    }
+}
+
+/*--------------------------------------------------------------
+# Training-info-right
+--------------------------------------------------------------*/
+.sidebars {
+    background: #fff;
+/*    box-shadow: 0px 20px 40px rgba(15, 18, 22, 0.08);*/
+    border-radius: 6px;
+}
+
+.sidebars .training .widget {
+    padding: 35px;
+    border-bottom: 1px solid #E8ECF0;
+}
+
+.sidebars .training .widget.training-price {
+    box-shadow: 0px 30px 50px 0px rgba(1, 11, 60, 0.1);
+    background: #ffffff;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    padding: 0px;
+}
+
+.sidebars .training .widget.training-price price {
+    display: flex;
+    align-items: center;
+    padding: 25px 40px 25px;
+    border-bottom: 1px solid #E8ECF0;
+}
+
+.sidebars .training .widget.training-price price li {
+    font-size: 30px;
+    font-weight: 700;
+    color: #3270FC;
+    line-height: 1;
+}
+
+.sidebars .training .widget.training-price price li:nth-child(2) {
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: line-through;
+  margin-left: 9px;
+  color: #9DA1A6;
+}
+
+.sidebars .training .widget.training-price price li:nth-child(3) {
+  font-size: 13px;
+  color: #D2093C;
+  background: rgba(210, 9, 60, 0.06);
+  border-radius: 4px;
+  margin-left: 10px;
+  padding: 5px 6px;
+  font-weight: 600;

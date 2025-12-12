@@ -1,0 +1,63 @@
+/*--------------------------------------------------------------
+# Banner
+--------------------------------------------------------------*/
+.breadcrumbs-banner {
+  text-align: center;
+  background: #0B2B6A;
+  padding: 100px 0;
+  color: #fff;
+}
+
+@media (max-width: 992px) {
+  .breadcrumbs-banner {
+  }
+}
+
+.breadcrumbs-banner h2 {
+  font-size: 22px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.breadcrumbs-banner .banner-block {
+  background: #fff;
+  border-radius: 8px;
+  display: inline-block;
+  padding: 10px 24px;
+  box-shadow: 0px 0px 17px -3px rgba(114, 4, 207, 1) inset;
+  -webkit-box-shadow: 0px 0px 17px -3px rgba(114, 4, 207, 1) inset;
+  -moz-box-shadow: 0px 0px 17px -3px rgba(114, 4, 207, 1) inset;
+}
+
+@media (max-width: 767px) {
+  .breadcrumbs-banner .banner-block {
+    padding: 8px 14px;
+  }
+}
+
+.breadcrumbs-banner .banner-block p {
+  font-size: 14px;
+  text-align: left;
+  color:#0B2B6A;
+}
+
+.breadcrumbs-banner .banner-block span {
+  font-size: 18px;
+  color: #0B2B6A;
+  font-weight: bold;
+  padding-right: 3px;
+  margin-right: 3px;
+  text-align: left;
+}
+@media (max-width: 767px) {
+  .breadcrumbs-banner .banner-block span {
+    font-size: 14px;
+  }
+}
+.breadcrumbs-banner .banner-block span a {
+  transition: 0.3s;
+  display: inline-block;
+}
+.breadcrumb__list span a:hover {
+  color: var(--tp-common-black);
+}
