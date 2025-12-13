@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendaftaran Member Team Dialogika</title>
+    
+    <!-- BOOTSTRAP 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        /* --- LAYOUT UTAMA --- */
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* --- CUSTOM CARD CSS --- */
+        .card-wrapper {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 420px;
+            height: 260px;
+            cursor: pointer;
+            margin: 0 auto;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .card-wrapper.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* Gaya Umum Sisi Kartu */
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            overflow: hidden;
+            color: white;
+        }
+
+        /* --- FRONT SIDE (GAMBAR ABSTRAK) --- */
+        .card-front {
+            /* GANTI URL DI BAWAH INI DENGAN LINK/FILE GAMBAR ANDA */
+            background-image: url('https://i.ibb.co.com/84j7JMY/blue-swirl-abstract.jpg'); 
+            
+            /* Fallback jika gambar error pakai warna biru */
+            background-color: #07276B; 
+            
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- BACK SIDE (TETAP GRADIENT LAMA) --- */
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #07276B 0%, #1E81D0 100%);
+        }
+
+        /* Pattern Overlay HANYA untuk Belakang */
+        .card-back::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("https://www.transparenttextures.com/patterns/cubes.png");
+            opacity: 0.15;
+            mix-blend-mode: overlay;
+        }
+
+        /* --- ELEMENT KARTU --- */
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-chip {
+            width: 50px;
+            height: 35px;
+            background: linear-gradient(135deg, #d4af37, #f2e298);
+            border-radius: 5px;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .logo-img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+            drop-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .photo-area {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            text-align: center;
+        }
+
+        .photo-preview-card {
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
+            background-color: rgba(255,255,255,0.1);
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(255,255,255,0.5); /* Border lebih terang agar terlihat di background baru */
+            margin-bottom: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .birth-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            opacity: 0.9;
+            display: block;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .birth-date-display {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .card-number-container {
+            margin-top: 35px;
+        }
+
+        .card-number {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 20px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9); /* Shadow lebih tebal */
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        .card-password-display {
+            font-family: monospace;
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: rgba(255,255,255,0.9);
+            min-height: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .card-bottom {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .detail-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            opacity: 0.9;
+            margin-bottom: 2px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .detail-value-name {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 16px;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .detail-value-pos {
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 1;
+            color: #FFD700;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+        }
+
+        /* --- Element Belakang --- */
+        .magnetic-strip {
+            position: absolute;
+            top: 25px;
+            left: 0;
+            width: 100%;
+            height: 45px;
+            background: #1a1a1a;
+        }
+
+        .signature-strip {
+            position: absolute;
+            top: 100px;
+            left: 15px;
+            right: 15px;
+            height: 35px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 10px;
+            background-image: url("https://www.transparenttextures.com/patterns/diagonal-stripes.png");
+            overflow: hidden;
+        }
+
+        .email-display-back {
+            color: #333;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0px;
+            white-space: nowrap;
+        }
+
+        .cvv-label {
+            position: absolute;
+            top: 85px;
+            left: 15px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .visa-logo-back {
+            position: absolute;
+            bottom: 20px;
+            right: 25px;
+            opacity: 1;
+        }
+
+        .back-details {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            text-align: left;
+            font-size: 10px;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        /* --- Form Style --- */
+        .form-box {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .password-wrapper { position: relative; }
+        .password-toggle {
+            position: absolute;
+            right: 15px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; color: #6c757d;
+        }
+        
+        .btn-custom {
+            background-color: #1E81D0;
+            color: white;
+            padding: 12px; font-weight: 600;
+        }
+        .btn-custom:hover {
+            background-color: #07276B; color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container main-layout">
+    
+    <!-- 1. BAGIAN KARTU (Selalu di Atas) -->
+    <div style="width: 100%;">
+        <div class="card-wrapper" id="cardWrapper" onclick="toggleFlip()">
+            <div class="card-inner">
+                
+                <!-- DEPAN (Background Baru) -->
+                <div class="card-face card-front">
+                    <div class="card-top">
+                        <div class="card-chip"></div>
+                        
+                        <div class="photo-area">
+                            <div class="photo-preview-card" id="cardPhotoPreview"></div>
+                            <span class="birth-label">Birth Date</span>
+                            <div class="birth-date-display" id="cardBirthFront">MM/YY</div>
+                        </div>
+                    </div>
+
+                    <div class="card-number-container">
+                        <div class="card-number" id="cardIDDisplay">#### #### #### ####</div>
+                        <div class="card-password-display" id="cardPassDisplay">****</div>
+                    </div>
+
+                    <div class="card-bottom">
+                        <div>
+                            <div class="detail-label">Card Holder</div>
+                            <div class="detail-value-name" id="cardName">FULL NAME</div>
+                            <div class="detail-value-pos" id="cardPosDisplay">POSITION</div>
+                        </div>
+                        <img src="https://dialogika.co/assets/img/logo.png" alt="Dialogika" class="logo-img" onerror="this.src='https://via.placeholder.com/100x40?text=DIALOGIKA'">
+                    </div>
+                </div>
+
+                <!-- BELAKANG (Tetap Gradient Lama) -->
+                <div class="card-face card-back">
+                    <div class="magnetic-strip"></div>
+                    
+                    <span class="cvv-label">EMAIL</span>
+                    <div class="signature-strip">
+                        <div class="email-display-back" id="cardEmailBack">email@example.com</div>
+                    </div>
+
+                    <div class="back-details">
+                        <div id="cardPhone">Tel: -</div>
+                        <div id="cardIG">IG: -</div>
+                        <div id="cardLinked">In: -</div>
+                    </div>
+
+                    <img src="https://dialogika.co/assets/img/logo.png" alt="Dialogika" class="logo-img visa-logo-back" onerror="this.src='https://via.placeholder.com/100x40?text=DIALOGIKA'">
+                </div>
+            </div>
+        </div>
+        <p class="text-center text-muted small mt-2">Klik kartu untuk melihat sisi belakang</p>
+    </div>
+
+    <!-- 2. BAGIAN FORM (Selalu di Bawah) -->
+    <div class="form-box">
+        <h4 class="mb-4 text-center fw-bold" style="color: #07276B;">Registrasi Team</h4>
+        <form id="regForm">
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control" id="inputName" name="name" placeholder="Nama Lengkap" required oninput="updateCard()">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Position</label>
+                    <select class="form-select" id="inputPos" required onchange="updateCard()">
+                        <option value="" disabled selected>Pilih Posisi</option>
+                        <option value="Branding">Branding</option>
+                        <option value="Closing">Closing</option>
+                        <option value="Happy">Happy</option>
+                        <option value="Re:buy">Re:buy</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" id="inputEmail" name="email" placeholder="email@address.com" required oninput="updateCard('back')">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password (Hidden on Card)</label>
+                <div class="password-wrapper">
+                    <input type="password" class="form-control" id="inputPass" name="password" required oninput="updateCard()">
+                    <i class="fas fa-eye password-toggle" onclick="togglePasswordVisibility()"></i>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Photo Upload</label>
+                <input type="file" class="form-control" id="inputPhoto" accept="image/*" required onchange="previewImage()">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Birth Date</label>
+                    <input type="date" class="form-control" id="inputBirth" name="birth" required oninput="updateCard()">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" class="form-control" id="inputPhone" placeholder="08..." required oninput="updateCard('back')">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Instagram (@username)</label>
+                    <input type="text" class="form-control" id="inputIG" placeholder="@username" oninput="updateCard('back')">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">LinkedIn (Link)</label>
+                    <input type="text" class="form-control" id="inputLinked" placeholder="https://..." oninput="updateCard('back')">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-custom w-100 mt-3" id="btnSubmit">Submit Registration</button>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    // --- JANGAN LUPA UPDATE URL APPS SCRIPT ANDA DI SINI ---
+    const SCRIPT_URL = 'GANTI_DENGAN_URL_APPS_SCRIPT_KAMU_DISINI'; 
+
+    const cardWrapper = document.getElementById('cardWrapper');
+    const randomFirstFour = Math.floor(1000 + Math.random() * 9000);
+    const hiddenMiddle = "#### ####"; 
+
+    function toggleFlip() {
+        cardWrapper.classList.toggle('flipped');
+    }
+
+    function togglePasswordVisibility() {
+        const passInput = document.getElementById('inputPass');
+        const icon = document.querySelector('.password-toggle');
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function updateCard(side) {
+        const name = document.getElementById('inputName').value;
+        const email = document.getElementById('inputEmail').value;
+        const pass = document.getElementById('inputPass').value;
+        const birthDate = document.getElementById('inputBirth').value;
+        const phone = document.getElementById('inputPhone').value;
+        const pos = document.getElementById('inputPos').value;
+        const ig = document.getElementById('inputIG').value;
+        const linked = document.getElementById('inputLinked').value;
+
+        // FRONT
+        document.getElementById('cardName').innerText = name || 'FULL NAME';
+        document.getElementById('cardPosDisplay').innerText = pos || 'POSITION';
+
+        let maskedPass = "";
+        for(let i=0; i<pass.length; i++) { maskedPass += "*"; }
+        document.getElementById('cardPassDisplay').innerText = maskedPass || "****";
+
+        let expiresText = "MM/YY";
+        let idSuffix = "####";
+
+        if (birthDate) {
+            const dateObj = new Date(birthDate);
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            const yy = String(dateObj.getFullYear()).slice(-2);
+            expiresText = `${mm}/${yy}`;
+            idSuffix = `${mm}${dd}`;
+        }
+        document.getElementById('cardBirthFront').innerText = expiresText;
+        document.getElementById('cardIDDisplay').innerText = `${randomFirstFour} ${hiddenMiddle} ${idSuffix}`;
+
+        // BACK
+        document.getElementById('cardEmailBack').innerText = email || 'email@example.com';
+        document.getElementById('cardPhone').innerText = phone ? `Tel: ${phone}` : 'Tel: -';
+        document.getElementById('cardIG').innerText = ig ? `IG: ${ig}` : 'IG: -';
+        document.getElementById('cardLinked').innerText = linked ? `In: ${linked}` : 'In: -';
+
+        if(side === 'back' && !cardWrapper.classList.contains('flipped')) {
+            cardWrapper.classList.add('flipped');
+        }
+    }
+
+    function previewImage() {
+        const file = document.getElementById('inputPhoto').files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('cardPhotoPreview').style.backgroundImage = `url(${e.target.result})`;
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    document.getElementById('regForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmit');
+        btn.innerText = "Mengirim...";
+        btn.disabled = true;
+
+        const file = document.getElementById('inputPhoto').files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const middleRandom = Math.floor(10000000 + Math.random() * 90000000); 
+            const birthDate = document.getElementById('inputBirth').value;
+            let idSuffix = "0000";
+            if(birthDate) {
+                const dateObj = new Date(birthDate);
+                const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const dd = String(dateObj.getDate()).padStart(2, '0');
+                idSuffix = `${mm}${dd}`;
+            }
+            const fullId = `${randomFirstFour}${middleRandom}${idSuffix}`;
+
+            const payload = {
+                generatedId: fullId, 
+                name: document.getElementById('inputName').value,
+                email: document.getElementById('inputEmail').value,
+                password: document.getElementById('inputPass').value,
+                phone: document.getElementById('inputPhone').value,
+                birth: birthDate,
+                position: document.getElementById('inputPos').value,
+                instagram: document.getElementById('inputIG').value,
+                linkedin: document.getElementById('inputLinked').value,
+                photoData: e.target.result,
+                photoName: file.name,
+                photoType: file.type
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.result === 'success') {
+                    alert('Registrasi Berhasil! ID Team: ' + fullId);
+                    window.location.reload();
+                } else {
+                    alert('Gagal: ' + data.error);
+                }
+            })
+            .catch(err => {
+                alert('Error jaringan/URL Salah');
+                console.error(err);
+            })
+            .finally(() => {
+                btn.innerText = "Submit Registration";
+                btn.disabled = false;
+            });
+        };
+
+        if(file) reader.readAsDataURL(file);
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
