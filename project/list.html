@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List - Making a Podcast</title>
+    
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet" />
+
+    <style>
+        /* CSS KHUSUS HALAMAN LIST (STACKED CARD EFFECT) */
+        
+        body {
+            background-color: #e5e7eb; /* Background abu */
+        }
+        /* FIX: Main Content Margin agar tidak nabrak Sidebar */
+        .main-content {
+            margin-left: 290px; /* Sesuai lebar sidebar */
+            width: calc(100% - 290px);
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        /* Responsif Mobile */
+        @media (max-width: 991px) {
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 20px;
+            }
+        }
+
+        /* --- 1. PROJECT CONTEXT CARD (KARTU BELAKANG/ATAS) --- */
+        .project-context-card {
+            max-width: 800px; /* LEBIH KECIL dari card list */
+            width: 90%;
+            background-color: #fff;
+            color: #1f2937; /* Dark Navy */
+            margin: 20px auto -20px auto; /* Margin bottom negatif agar tertiban card bawah */
+            padding: 15px 25px 35px 25px; /* Padding bawah lebih besar untuk area tiban */
+            border-radius: 16px 16px 0 0; /* Rounded atas */
+            position: relative;
+            z-index: 1; /* Layer bawah */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+        }
+
+        /* Badge Sample Project */
+        .ph-badge {
+            background: #FDE047; /* Yellow */
+            color: #854D0E;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-right: 15px;
+            letter-spacing: 0.5px;
+            position: absolute;
+            left: 30px;
+            top: 38%;
+            transform: translateY(-50%);
+        }
+        
+
+        /* Menu Trigger Icon (Kotak-kotak) */
+        .menu-trigger-btn {
+            position: absolute;
+            top: 0px; left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #9ca3af;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-right: 10px;
+        }
+        .menu-trigger-btn:hover, .menu-trigger-btn[aria-expanded="true"] {
+            background: #1f2937;
+            color: white;
+        }
+
+        /* Nama Project (Link) */
+        .project-name-link {
+            font-weight: 700;
+            color: #1f2937;
+            text-decoration: none;
+            font-size: 1rem;
+            border-bottom: 1px solid transparent;
+            transition: 0.2s;
+        }
+        .project-name-link:hover {
+            color: #0B2B6A;
+            border-bottom-color: #e5e7eb;
+        }
+
+        /* Dropdown Menu Style */
+        .tools-dropdown-menu {
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 10px;
+            min-width: 240px;
+            margin-top: 10px !important;
+        }
+        .tool-link {
+            display: flex; align-items: center; padding: 10px 12px;
+            color: #374151; text-decoration: none; border-radius: 8px;
+            font-weight: 500; font-size: 0.9rem; transition: 0.2s;
+        }
+        .tool-link:hover { background-color: #f3f4f6; color: var(--dlg-blue); }
+        .tool-link.active { background-color: #eff6ff; color: var(--dlg-blue); font-weight: 700; }
+        .tool-icon-small { width: 24px; text-align: center; margin-right: 12px; font-size: 1.1rem; }
+
+
+        /* --- 2. MAIN LIST CARD (KARTU DEPAN/BAWAH) --- */
+        .main-list-card {
+            max-width: 1000px; /* LEBIH BESAR dari card project */
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            /* Shadow tebal & soft */
+            box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.1);
+            margin: 0 auto 50px auto;
+            padding: 50px 60px;
+            position: relative;
+            z-index: 2; /* Layer atas (meniban) */
+            border: 1px solid #d1d5db;
+        }
+
+        /* Header Title di dalam Card List */
+        .list-title-area {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .list-title-h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #111;
+            margin-bottom: 5px;
+        }
+        .list-meta {
+            font-size: 1rem;
+            color: #6b7280;
+        }
+        .list-meta-dot { color: #10b981; font-size: 0.8rem; margin: 0 5px; vertical-align: middle; }
+
+        /* Tombol New List (Floating Top Right inside card) */
+        .btn-new-list {
+            position: absolute;
+            top: 40px; right: 40px;
+            background-color: var(--dlg-blue);
+            color: white;
+            border-radius: 50px;
+            padding: 6px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            box-shadow: 0 4px 10px rgba(11, 43, 106, 0.2);
+            transition: 0.2s;
+        }
+        .btn-new-list:hover { background-color: #08204e; transform: translateY(-2px); }
+
+        /* --- KONTEN LIST --- */
+        .todo-group-label {
+            font-size: 1.1rem; font-weight: 800; color: #1f2937;
+            margin-top: 40px; margin-bottom: 15px; border-bottom: 3px solid #1f2937;
+            display: inline-block; padding-bottom: 2px;
+        }
+        
+        .todo-row {
+            display: flex; align-items: flex-start; padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6; transition: 0.2s;
+            font-size: 1.05rem; /* Font agak besar agar jelas */
+        }
+        .todo-row:hover { background-color: #f9fafb; padding-left: 10px; border-radius: 5px; margin-left: -10px; }
+        
+        .todo-check {
+            width: 26px; height: 26px; margin-right: 15px; margin-top: 2px; cursor: pointer;
+            border: 2px solid #cbd5e1; border-radius: 6px;
+        }
+        .todo-text { color: #374151; }
+        .todo-row.completed .todo-text { text-decoration: line-through; color: #9ca3af; }
+
+        .btn-add-todo {
+            margin-top: 15px; margin-left: 42px; border-radius: 50px; padding: 8px 24px;
+            font-size: 0.9rem; font-weight: 600; border: 1px solid #e5e7eb;
+            background: white; color: #6b7280; transition: 0.2s;
+        }
+        .btn-add-todo:hover { border-color: var(--dlg-blue); color: var(--dlg-blue); }
+
+        /* Responsive */
+        @media (max-width: 991px) {
+            .project-context-card { width: 95%; border-radius: 12px 12px 0 0; }
+            .main-list-card { width: 100%; border-radius: 20; padding: 30px 20px; }
+            .btn-new-list { position: static; display: block; margin: 20px auto; width: 100%; }
+            .ph-badge { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOP BAR FIXED -->
+    <nav class="top-bar">
+        <!-- ... (Isi Top Bar sama seperti sebelumnya) ... -->
+        <div class="d-flex align-items-center">
+            <button class="mobile-toggle me-3" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <div class="input-group d-none d-md-flex" style="width: 250px;">
+                <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control bg-light border-start-0 rounded-end-pill" placeholder="Search...">
+            </div>
+        </div>
+        <div class="logo-center">
+            <img src="https://www.dialogika.co/assets/img/logo.webp" alt="Dialogika Logo" height="35">
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="text-end d-none d-lg-block lh-1">
+                <span class="d-block fw-bold small text-dark">Rizky A.</span>
+                <small class="text-muted" style="font-size:0.7rem">Super Admin</small>
+            </div>
+            <div class="profile-img-container">
+                <img src="https://i.pravatar.cc/300?img=11" alt="Profile" class="profile-img">
+            </div>
+        </div>
+    </nav>
+
+    <!-- WRAPPER UTAMA (PENTING) -->
+    <div class="dashboard-container">
+        
+        <!-- 2. SIDEBAR (Light, Smart Filters, Pending Widget) -->
+        <aside class="sidebar" id="sidebarNav">
+            
+            <!-- WRAPPER UNTUK AREA YANG BISA DI-SCROLL -->
+            <div class="sidebar-scroll-wrapper">
+                
+                <!-- Smart Filters (4 Kotak Besar) -->
+                <div class="smart-filters-grid">
+                    <a href="#" class="filter-card">
+                        <div class="filter-top"><div class="filter-icon bg-icon-dark"><i class="bi bi-archive-fill"></i></div><div class="filter-count">429</div></div>
+                        <div class="filter-label">All Tasks</div>
+                    </a>
+                    <a href="#" class="filter-card">
+                        <div class="filter-top"><div class="filter-icon bg-icon-blue"><i class="bi bi-calendar-event-fill"></i></div><div class="filter-count">25</div></div>
+                        <div class="filter-label">Today</div>
+                    </a>
+                    <a href="#" class="filter-card">
+                        <div class="filter-top"><div class="filter-icon bg-icon-orange"><i class="bi bi-flag-fill"></i></div><div class="filter-count">21</div></div>
+                        <div class="filter-label">Urgent</div>
+                    </a>
+                    <a href="#" class="filter-card">
+                        <div class="filter-top"><div class="filter-icon bg-icon-red"><i class="bi bi-calendar-check-fill"></i></div><div class="filter-count">30</div></div>
+                        <div class="filter-label">Assigned</div>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="nav-category">Main Navigation</div>
+                <a href="#" class="sidebar-link active"><i class="bi bi-columns-gap"></i> Dashboard</a>
+                <a href="#" class="sidebar-link"><i class="bi bi-list-columns-reverse"></i> Lineup <span class="sidebar-badge">4</span></a>
+                <a href="#" class="sidebar-link"><i class="bi bi-chat-dots"></i> Pings</a>
+                <a href="#" class="sidebar-link"><i class="bi bi-bell"></i> Hey!</a>
+                <a href="#" class="sidebar-link"><i class="bi bi-activity"></i> Activity</a>
+                <a href="#" class="sidebar-link"><i class="bi bi-person-circle"></i> My Stuff</a>
+
+                <div class="nav-category mt-4">System</div>
+                <a href="#" class="sidebar-link"><i class="bi bi-gear"></i> Settings</a>
+                <a href="#" class="sidebar-link text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
+
+            </div> <!-- End Scroll Wrapper -->
+
+            <!-- PENDING WIDGET (Pinned di Bawah, di luar scroll wrapper) -->
+            <div class="pending-widget">
+                <div class="fire-icon-wrapper"><i class="bi bi-fire fire-icon"></i></div>
+                <h6 class="fw-bold" style="color:#0B2B6A; margin-bottom: 5px;">Pending Tasks</h6>
+                <p class="small text-muted mb-3">You have 5 approvals waiting.</p>
+                <button class="btn-review">Review Now</button>
+                
+                <!-- COPYRIGHT (Muncul hanya saat scroll mentok bawah) -->
+                <div class="sidebar-copyright">
+                    &copy; 2025 PT Dialogika Persona Indonesia
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- 3. MAIN CONTENT -->
+        <main class="main-content" style="width: 100%;">
+            
+            <!-- A. KARTU BELAKANG (PROJECT CONTEXT - KECIL) -->
+            <div class="project-context-card">
+                
+                <!-- Badge Sample Project -->
+                <div class="ph-badge">Sample Project</div>
+
+                <!-- Nama Project (Link Langsung ke Project Home) -->
+                <a href="project.html" class="project-name-link">Making a Podcast</a>
+
+                <!-- Right Side Option -->
+                <div class="position-absolute end-0 me-3">
+                    <button class="btn btn-link text-white text-opacity-50"><i class="bi bi-three-dots"></i></button>
+                </div>
+                
+            </div>
+
+            <!-- B. KARTU DEPAN (LIST CONTENT - BESAR) -->
+            <div class="main-list-card">
+                
+                <!-- Tombol New List (Pojok Kanan Atas Kartu) -->
+                <button class="btn-new-list btn-dlg-blue"><i class="bi bi-plus-lg me-1"></i> New List</button>
+                
+                <!-- Menu Icon (Trigger Dropdown) -->
+                <div class="dropdown">
+                    <button class="menu-trigger-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                    </button>
+                    
+                    <!-- DROPDOWN MENU (Tools) -->
+                    <ul class="dropdown-menu tools-dropdown-menu">
+                        <li><h6 class="dropdown-header text-uppercase small fw-bold">Jump to tool</h6></li>
+                        <li><a class="tool-link" href="urgent.html"><i class="bi bi-exclamation-circle text-danger tool-icon-small"></i> Urgent</a></li>
+                        <li><a class="tool-link active" href="list.html"><i class="bi bi-check2-circle text-primary tool-icon-small"></i> List (To-dos)</a></li>
+                        <li><a class="tool-link" href="kanban.html"><i class="bi bi-kanban text-warning tool-icon-small"></i> Kanban</a></li>
+                        <li><a class="tool-link" href="files.html"><i class="bi bi-file-earmark-text text-info tool-icon-small"></i> Files</a></li>
+                        <li><a class="tool-link" href="discuss.html"><i class="bi bi-chat-text text-success tool-icon-small"></i> Discuss</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="tool-link" href="project.html"><i class="bi bi-arrow-left tool-icon-small"></i> Back to Project</a></li>
+                    </ul>
+                </div>
+
+                <!-- Judul Halaman -->
+                <div class="list-title-area">
+                    
+                    <h1 class="list-title-h1">To-dos <span class="list-meta"><i class="bi bi-circle-fill list-meta-dot"></i> 0/32</span></h1>
+                    <p class="text-muted">Want to accomplish more with less friction? Here's how!</p>
+                </div>
+
+                <!-- LIST CONTENT START -->
+                
+                <!-- Group 1 -->
+                <div class="todo-group-label">Basecamp essentials</div>
+                
+                <div class="todo-row">
+                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
+                    <div class="todo-text ms-2">Start here 🎯 <i class="bi bi-file-text ms-2 text-muted small"></i></div>
+                </div>
+                <div class="todo-row">
+                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
+                    <div class="todo-text ms-2">Check out a real-world project <i class="bi bi-file-earmark-text ms-2 text-muted small"></i></div>
+                </div>
+                <div class="todo-row">
+                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
+                    <div class="todo-text ms-2">Make your first project <i class="bi bi-card-text ms-2 text-muted small"></i></div>
+                </div>
+                <button class="btn-add-todo">Add a to-do</button>
+
+                <!-- Group 2 -->
+                <div class="todo-group-label mt-5">Learn what you can do</div>
+                
+                <div class="todo-row">
+                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
+                    <div class="todo-text ms-2">Organize your projects <i class="bi bi-list-task ms-2 text-muted small"></i></div>
+                </div>
+                <div class="todo-row">
+                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
+                    <div class="todo-text ms-2">Choose the right tools <i class="bi bi-tools ms-2 text-muted small"></i></div>
+                </div>
+                <button class="btn-add-todo">Add a to-do</button>
+
+                <!-- Group 3 -->
+                <div class="todo-group-label mt-5">Work with others</div>
+                
+                <div class="todo-row">
+                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
+                    <div class="todo-text ms-2">Invite a few people to join you <i class="bi bi-person-plus ms-2 text-muted small"></i></div>
+                </div>
+                <div class="todo-row">
+                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
+                    <div class="todo-text ms-2">Send someone a ping <i class="bi bi-chat-dots ms-2 text-muted small"></i></div>
+                </div>
+                <button class="btn-add-todo">Add a to-do</button>
+
+            </div>
+
+        </main>
+
+        <!-- FOOTER / MOBILE NAV -->
+        <div class="bottom-nav">
+            <a href="home.html" class="nav-item-mobile"><i class="bi bi-house-door"></i></a>
+            <a href="#" class="nav-item-mobile"><i class="bi bi-search"></i></a>
+            <button class="nav-btn-plus"><i class="bi bi-plus-lg"></i></button>
+            <a href="#" class="nav-item-mobile"><i class="bi bi-bell"></i></a>
+            <a href="#" class="nav-item-mobile"><i class="bi bi-person"></i></a>
+        </div>
+
+    </div> <!-- End Dashboard Container -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
+        function toggleTask(checkbox) {
+            const row = checkbox.closest('.todo-row');
+            if (checkbox.checked) row.classList.add('completed');
+            else row.classList.remove('completed');
+        }
+    </script>
+</body>
+</html>
