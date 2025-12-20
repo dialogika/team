@@ -355,8 +355,8 @@
                         <div id="form-add-${list.id}" class="task-create-panel" style="display:none">
                             <input type="text" id="task-title-${list.id}" class="task-title-large" placeholder="Task Name">
                             
+                            <!-- UPDATE: Meta Grid Container dengan Assign To & Notify To -->
                             <div class="meta-grid-container">
-                                <!-- Column 1 -->
                                 <div class="meta-row">
                                     <div class="meta-icon"><i class="bi bi-record-circle"></i></div>
                                     <div class="meta-label">Status</div>
@@ -386,13 +386,26 @@
                                                     <i class="bi bi-flag-fill" style="color: #9e9e9e"></i> Low
                                                 </div>
                                             </div>
-                                            <!-- Input tersembunyi untuk menyimpan nilai yang akan dikirim ke API -->
                                             <input type="hidden" id="task-priority-${list.id}" value="normal">
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Column 2 -->
+                                <div class="meta-row">
+                                    <div class="meta-icon"><i class="bi bi-person-plus"></i></div>
+                                    <div class="meta-label">Assign to</div>
+                                    <div class="meta-value">
+                                        <input type="text" id="task-assign-${list.id}" class="ghost-input" placeholder="User IDs...">
+                                    </div>
+                                </div>
+                                <div class="meta-row">
+                                    <div class="meta-icon"><i class="bi bi-bell"></i></div>
+                                    <div class="meta-label">Notify to</div>
+                                    <div class="meta-value">
+                                        <input type="text" id="task-notify-${list.id}" class="ghost-input" placeholder="User IDs...">
+                                    </div>
+                                </div>
+
                                 <div class="meta-row">
                                     <div class="meta-icon"><i class="bi bi-calendar4"></i></div>
                                     <div class="meta-label">Dates</div>
@@ -410,7 +423,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Column 3 -->
                                 <div class="meta-row">
                                     <div class="meta-icon"><i class="bi bi-stopwatch"></i></div>
                                     <div class="meta-label">Track time</div>
@@ -445,43 +457,32 @@
             });
         }
 
-        // --- NEW PRIORITY FUNCTIONS ---
+        // --- PRIORITY FUNCTIONS ---
         function togglePriorityMenu(lid) {
             const menu = document.getElementById(`priority-menu-${lid}`);
             const isVisible = menu.style.display === 'block';
-            
-            // Tutup semua menu priority lain yang mungkin terbuka
             document.querySelectorAll('.priority-menu').forEach(m => m.style.display = 'none');
-            
             menu.style.display = isVisible ? 'none' : 'block';
-            
-            // Stop event agar tidak langsung tertutup oleh listener 'click' di document
             event.stopPropagation();
         }
 
         function setPriorityValue(lid, value, color, label) {
-            // 1. Update UI (Ikon dan Teks)
             const iconDisplay = document.getElementById(`priority-icon-display-${lid}`);
             const textDisplay = document.getElementById(`priority-text-display-${lid}`);
             const hiddenInput = document.getElementById(`task-priority-${lid}`);
-            
             iconDisplay.style.color = color;
             textDisplay.innerText = label;
-            
-            // 2. Simpan nilai ke input hidden (agar fungsi saveTask tetap bekerja)
             hiddenInput.value = value;
-            
-            // 3. Tutup menu
             document.getElementById(`priority-menu-${lid}`).style.display = 'none';
         }
 
-        // Tutup menu saat klik di luar
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.priority-dropdown')) {
                 document.querySelectorAll('.priority-menu').forEach(m => m.style.display = 'none');
             }
         });
 
+        // --- UPDATE: saveTask mendukung Assign To & Notify To ---
         function saveTask(lid) {
             const title = document.getElementById(`task-title-${lid}`).value;
             if (!title) return alert("Task Name is required");
@@ -492,10 +493,12 @@
                 title: title,
                 startDate: document.getElementById(`task-start-${lid}`).value,
                 dueDate: document.getElementById(`task-due-${lid}`).value,
-                priority: document.getElementById(`task-priority-${lid}`).value, // Ini akan mengambil nilai dari input hidden
+                priority: document.getElementById(`task-priority-${lid}`).value,
                 description: document.getElementById(`task-desc-${lid}`).innerHTML,
                 status: document.getElementById(`task-status-${lid}`)?.value || 'OPEN',
                 points: document.getElementById(`task-points-${lid}`).value || 0,
+                assignTo: document.getElementById(`task-assign-${lid}`).value, // AMBIL DATA ASSIGN TO
+                notifyTo: document.getElementById(`task-notify-${lid}`).value, // AMBIL DATA NOTIFY TO
                 tagIds: selectedTags.map(t => t.id)
             };
 
@@ -514,7 +517,11 @@
                     hideTaskForm(lid);
                 }
             })
-            .catch(err => alert("Error: " + err));
+            .catch(err => {
+                alert("Error: " + err);
+                btn.disabled = false;
+                btn.innerText = "Add to-do";
+            });
         }
 
         function renderStatusDropdown(statuses, lid) {
@@ -580,13 +587,6 @@
             document.getElementById(`btn-add-${lid}`).style.display = 'inline-block';
             document.getElementById(`form-add-${lid}`).style.display = 'none';
         }
-
-        function toggleNewListForm() {
-            const f = document.getElementById('newListForm');
-            f.style.display = (f.style.display === 'none') ? 'block' : 'none';
-        }
-        
-        function execCmd(cmd) { document.execCommand(cmd, false, null); }
     </script>
 </body>
 </html>
