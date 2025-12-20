@@ -18,45 +18,45 @@
 
         /* Project Context Card (Breadcrumb Style) */
         .project-context-card {
-                    max-width: 800px;
-                    width: 90%;
-                    background: white; /* UBAH JADI PUTIH */
-                    color: #1f2937;    /* UBAH TEXT JADI GELAP (agar terbaca) */
-                    margin: 20px auto -20px auto;
-                    padding: 15px 25px 35px 25px;
-                    border-radius: 16px 16px 0 0;
-                    position: relative;
-                    z-index: 1;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-                }
+            max-width: 800px;
+            width: 90%;
+            background: white; /* UBAH JADI PUTIH */
+            color: #1f2937;    /* UBAH TEXT JADI GELAP (agar terbaca) */
+            margin: 20px auto -20px auto;
+            padding: 15px 25px 35px 25px;
+            border-radius: 16px 16px 0 0;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+        }
 
-                .ph-badge {
-                    background: #FDE047;
-                    color: #854D0E;
-                    font-size: 0.7rem;
-                    font-weight: 800;
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    text-transform: uppercase;
-                    position: absolute;
-                    left: 30px;
-                    top: 38%;
-                    transform: translateY(-50%);
-                }
+        .ph-badge {
+            background: #FDE047;
+            color: #854D0E;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            position: absolute;
+            left: 30px;
+            top: 38%;
+            transform: translateY(-50%);
+        }
 
-                .ph-crumb-container {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    background: #1f2937; /* UBAH JADI BIRU GELAP SOLID */
-                    padding: 8px 20px;
-                    border-radius: 50px;
-                    font-size: 0.95rem;
-                    color: white; /* Pastikan separator/panah di dalamnya berwarna putih */
-                }
+        .ph-crumb-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #1f2937; /* UBAH JADI BIRU GELAP SOLID */
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            color: white; /* Pastikan separator/panah di dalamnya berwarna putih */
+        }
         .ph-crumb-link { text-decoration: none; color: #d1d5db; font-weight: 500; transition: 0.2s; display: flex; align-items: center; }
         .ph-crumb-link:hover { color: white; }
         .ph-crumb-active { color: white; font-weight: 700; border-bottom: 2px solid #FDE047; padding-bottom: 2px; }
@@ -117,7 +117,8 @@
                 <div class="ph-crumb-container">
                     <a href="../home.html" class="ph-crumb-link" title="Dashboard"><i class="bi bi-house-fill"></i></a>
                     <i class="bi bi-chevron-right ph-sep"></i>
-                    <span class="ph-crumb-active" id="projectNameHeader">Loading Project...</span>
+                    <!-- Ubah dari SPAN ke A, dan class jadi ph-crumb-link -->
+                    <a href="#" class="ph-crumb-link" id="projectNameHeader">Loading Project...</a>
                 </div>
                 <div class="position-absolute end-0 me-3">
                     <button class="btn btn-link text-white text-opacity-50"><i class="bi bi-three-dots"></i></button>
