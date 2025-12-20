@@ -175,6 +175,54 @@
         .cursor-pointer { cursor: pointer; }
         .tag-pill { padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; color: white; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* --- USER DROPDOWN (DARK THEME) --- */
+        .user-dropdown-container { position: relative; width: 100%; }
+
+        .user-trigger {
+            display: flex; align-items: center; gap: 10px;
+            padding: 6px 12px; border-radius: 8px; cursor: pointer;
+            transition: 0.2s; background: transparent; border: 1px solid transparent;
+        }
+        .user-trigger:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+        .user-menu-dark {
+            position: absolute; top: 100%; left: 0; width: 300px;
+            background: #1e1e1e; color: white; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2000;
+            display: none; padding: 12px; margin-top: 8px;
+        }
+
+        .user-search-box {
+            background: #121212; border: 1px solid #333; border-radius: 8px;
+            display: flex; align-items: center; padding: 8px 12px; margin-bottom: 15px;
+        }
+        .user-search-box i { color: #888; margin-right: 10px; }
+        .user-search-box input {
+            background: transparent; border: none; color: white;
+            outline: none; width: 100%; font-size: 0.9rem;
+        }
+
+        .user-list-scroll { max-height: 300px; overflow-y: auto; }
+        .user-section-label { color: #888; font-size: 0.75rem; font-weight: 600; margin: 10px 0 8px 5px; }
+
+        .user-item {
+            display: flex; align-items: center; gap: 12px; padding: 8px;
+            border-radius: 8px; cursor: pointer; transition: 0.1s;
+        }
+        .user-item:hover { background: #2d2d2d; }
+
+        .user-avatar {
+            width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+            border: 2px solid #444;
+        }
+        .user-name { font-size: 0.9rem; flex-grow: 1; }
+        .verified-badge { color: #7c4dff; font-size: 0.85rem; } /* Verified icon color */
+
+        .selected-user-pill {
+            display: flex; align-items: center; gap: 6px;
+            background: #f1f5f9; padding: 2px 8px; border-radius: 20px; font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
@@ -278,10 +326,9 @@
         const tagPalette = ['#D3E5EF', '#D3DFFB', '#E7E2F9', '#F1DDF3', '#F9DEDC', '#FDECC8', '#E2F2D1', '#7204cf', '#0163ea', '#1c84e3', '#006a4e', '#0B2B6A', '#F9C72E', '#e7181a'];
 
         let globalTags = [];
+        let globalUsers = []; // Simpan data user global
         let selectedTags = [];
         let selectedFile = null;
-        let tempNewTagName = "";
-        let tempSelectedColor = tagPalette[0];
 
         document.addEventListener("DOMContentLoaded", () => {
             if (!projectId) return alert("Missing Project ID");
@@ -298,7 +345,10 @@
                         document.getElementById('projectNameHeader').innerText = data.project?.name || "Unnamed Project";
                         document.getElementById('projectNameHeader').href = `../project/project.html?id=${projectId}`;
                         document.getElementById('projectBadge').innerText = (data.project?.department || "Project");
+                        
                         globalTags = data.tags || [];
+                        globalUsers = data.users || []; // Simpan data user dari API
+
                         renderLists(data.lists || []);
                         renderComments(data.comments || []);
                     }
@@ -355,7 +405,6 @@
                         <div id="form-add-${list.id}" class="task-create-panel" style="display:none">
                             <input type="text" id="task-title-${list.id}" class="task-title-large" placeholder="Task Name">
                             
-                            <!-- UPDATE: Meta Grid Container dengan Assign To & Notify To -->
                             <div class="meta-grid-container">
                                 <div class="meta-row">
                                     <div class="meta-icon"><i class="bi bi-record-circle"></i></div>
@@ -391,18 +440,19 @@
                                     </div>
                                 </div>
 
+                                <!-- Assign To & Notify To Menggunakan Dropdown Baru -->
                                 <div class="meta-row">
                                     <div class="meta-icon"><i class="bi bi-person-plus"></i></div>
                                     <div class="meta-label">Assign to</div>
                                     <div class="meta-value">
-                                        <input type="text" id="task-assign-${list.id}" class="ghost-input" placeholder="User IDs...">
+                                        ${renderUserDropdownUI(list.id, 'assign')}
                                     </div>
                                 </div>
                                 <div class="meta-row">
                                     <div class="meta-icon"><i class="bi bi-bell"></i></div>
                                     <div class="meta-label">Notify to</div>
                                     <div class="meta-value">
-                                        <input type="text" id="task-notify-${list.id}" class="ghost-input" placeholder="User IDs...">
+                                        ${renderUserDropdownUI(list.id, 'notify')}
                                     </div>
                                 </div>
 
@@ -457,13 +507,84 @@
             });
         }
 
+        // --- USER DROPDOWN UI HELPERS ---
+        function renderUserDropdownUI(lid, type) {
+            const inputId = type === 'assign' ? `task-assign-${lid}` : `task-notify-${lid}`;
+            
+            return `
+                <div class="user-dropdown-container" id="container-${type}-${lid}">
+                    <div class="user-trigger" onclick="toggleUserMenu('${lid}', '${type}')">
+                        <div id="display-${type}-${lid}" class="d-flex align-items-center gap-2">
+                            <i class="bi bi-person-circle text-muted"></i>
+                            <span class="text-muted small">Select user...</span>
+                        </div>
+                        <i class="bi bi-chevron-down ms-auto text-muted small"></i>
+                    </div>
+                    
+                    <div class="user-menu-dark" id="menu-${type}-${lid}" style="display:none">
+                        <div class="user-search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" placeholder="Search..." onclick="event.stopPropagation()" oninput="filterUsers(this, '${lid}', '${type}')">
+                        </div>
+                        
+                        <div class="user-list-scroll">
+                            <div class="user-section-label">People</div>
+                            <div id="list-${type}-${lid}">
+                                ${renderUserListItems(globalUsers, lid, type)}
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="${inputId}" value="">
+                </div>
+            `;
+        }
+
+        function renderUserListItems(users, lid, type) {
+            if(users.length === 0) return '<div class="p-2 text-muted small">No users found</div>';
+            return users.map(u => `
+                <div class="user-item" onclick="selectUser('${lid}', '${type}', '${u.id}', '${u.name}', '${u.photo}')">
+                    <img src="${u.photo}" class="user-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}'">
+                    <span class="user-name">${u.name}</span>
+                    ${u.role === 'Admin' ? '<i class="bi bi-patch-check-fill verified-badge" style="color:#007bff; font-size:0.7rem"></i>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function toggleUserMenu(lid, type) {
+            event.stopPropagation();
+            // Tutup semua menu lain (priority & user menu lain)
+            document.querySelectorAll('.user-menu-dark, .priority-menu').forEach(m => m.style.display = 'none');
+            const menu = document.getElementById(`menu-${type}-${lid}`);
+            menu.style.display = 'block';
+        }
+
+        function filterUsers(input, lid, type) {
+            const query = input.value.toLowerCase();
+            const filtered = globalUsers.filter(u => u.name.toLowerCase().includes(query) || (u.email && u.email.toLowerCase().includes(query)));
+            document.getElementById(`list-${type}-${lid}`).innerHTML = renderUserListItems(filtered, lid, type);
+        }
+
+        function selectUser(lid, type, userId, userName, userPhoto) {
+            event.stopPropagation();
+            // Update Hidden Input (task-assign-lid atau task-notify-lid)
+            document.getElementById(`task-${type}-${lid}`).value = userId;
+            
+            // Update Display Trigger
+            document.getElementById(`display-${type}-${lid}`).innerHTML = `
+                <img src="${userPhoto}" style="width:20px; height:20px; border-radius:50%" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}'">
+                <span class="fw-medium" style="font-size:0.85rem">${userName}</span>
+            `;
+            
+            // Tutup Menu
+            document.getElementById(`menu-${type}-${lid}`).style.display = 'none';
+        }
+
         // --- PRIORITY FUNCTIONS ---
         function togglePriorityMenu(lid) {
-            const menu = document.getElementById(`priority-menu-${lid}`);
-            const isVisible = menu.style.display === 'block';
-            document.querySelectorAll('.priority-menu').forEach(m => m.style.display = 'none');
-            menu.style.display = isVisible ? 'none' : 'block';
             event.stopPropagation();
+            document.querySelectorAll('.user-menu-dark, .priority-menu').forEach(m => m.style.display = 'none');
+            const menu = document.getElementById(`priority-menu-${lid}`);
+            menu.style.display = 'block';
         }
 
         function setPriorityValue(lid, value, color, label) {
@@ -476,13 +597,12 @@
             document.getElementById(`priority-menu-${lid}`).style.display = 'none';
         }
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.priority-dropdown')) {
-                document.querySelectorAll('.priority-menu').forEach(m => m.style.display = 'none');
-            }
+        // Klik di luar untuk menutup semua menu
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.user-menu-dark, .priority-menu, .tag-dropdown').forEach(m => m.style.display = 'none');
         });
 
-        // --- UPDATE: saveTask mendukung Assign To & Notify To ---
+        // --- SAVE TASK ---
         function saveTask(lid) {
             const title = document.getElementById(`task-title-${lid}`).value;
             if (!title) return alert("Task Name is required");
@@ -497,8 +617,8 @@
                 description: document.getElementById(`task-desc-${lid}`).innerHTML,
                 status: document.getElementById(`task-status-${lid}`)?.value || 'OPEN',
                 points: document.getElementById(`task-points-${lid}`).value || 0,
-                assignTo: document.getElementById(`task-assign-${lid}`).value, // AMBIL DATA ASSIGN TO
-                notifyTo: document.getElementById(`task-notify-${lid}`).value, // AMBIL DATA NOTIFY TO
+                assignTo: document.getElementById(`task-assign-${lid}`).value,
+                notifyTo: document.getElementById(`task-notify-${lid}`).value,
                 tagIds: selectedTags.map(t => t.id)
             };
 
@@ -524,6 +644,7 @@
             });
         }
 
+        // --- LAINNYA (TAGS, STATUS UI, FORM UI) ---
         function renderStatusDropdown(statuses, lid) {
             if (!statuses || statuses.length === 0) {
                 return `<div class="task-status-selector" style="background:#007bff" id="status-wrap-${lid}"><select id="task-status-${lid}" class="status-select"><option value="OPEN" data-color="#007bff">OPEN</option></select></div>`;
@@ -538,9 +659,9 @@
         }
 
         function handleTagSearch(input, lid) {
+            event.stopPropagation();
             const query = input.value.trim();
             const dropdown = document.getElementById(`tag-dropdown-${lid}`);
-            tempNewTagName = query;
             dropdown.innerHTML = '<div class="tag-search-header text-muted small px-2 py-1 border-bottom">Search or add tags...</div>';
             dropdown.style.display = 'block';
 
@@ -559,7 +680,7 @@
                 selectedTags.push(tag);
                 renderSelectedTags(lid);
             }
-            hideDropdown(lid);
+            document.getElementById(`tag-dropdown-${lid}`).style.display = 'none';
         }
 
         function renderSelectedTags(lid) {
@@ -570,11 +691,6 @@
         function removeTag(tid, lid) {
             selectedTags = selectedTags.filter(t => t.id !== tid);
             renderSelectedTags(lid);
-        }
-
-        function hideDropdown(lid) {
-            const d = document.getElementById(`tag-dropdown-${lid}`);
-            if(d) d.style.display = 'none';
         }
 
         function showTaskForm(lid) {
