@@ -51,20 +51,9 @@
         .btn-new-list:hover { background-color: #08204e; transform: translateY(-2px); color: white; }
 
         /* --- STATUS BADGE SYSTEM (List View) --- */
-        .status-pill-container {
-            display: flex; align-items: center; gap: 8px;
-            flex-wrap: wrap; margin-top: 10px; margin-bottom: 20px;
-        }
-        .status-badge-main {
-            padding: 6px 16px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
-            text-transform: uppercase; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            cursor: default; transition: 0.2s; display: inline-block;
-        }
-        .btn-add-status {
-            width: 32px; height: 32px; border-radius: 50%; border: 1px dashed #cbd5e1;
-            background: white; color: #64748b; display: flex; align-items: center;
-            justify-content: center; cursor: pointer; transition: 0.2s;
-        }
+        .status-pill-container { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; margin-bottom: 20px; }
+        .status-badge-main { padding: 6px 16px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: default; transition: 0.2s; display: inline-block; }
+        .btn-add-status { width: 32px; height: 32px; border-radius: 50%; border: 1px dashed #cbd5e1; background: white; color: #64748b; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .btn-add-status:hover { background: #f1f5f9; border-color: #0B2B6A; color: #0B2B6A; }
 
         /* --- UI TASK FORM (ClickUp Style Panel) --- */
@@ -81,102 +70,27 @@
         .ghost-input { border: 1px solid transparent; background: transparent; padding: 6px 8px; border-radius: 6px; width: 100%; color: #334155; font-size: 0.9rem; transition: 0.2s; }
         .ghost-input:hover, .ghost-input:focus { background: #f1f5f9; border-color: #cbd5e1; outline: none; }
 
-        /* --- TASK STATUS SELECTOR (Inside Form) --- */
-        .task-status-selector {
-            background: #007bff; /* default */
-            color: white; border-radius: 4px; padding: 4px 12px;
-            display: inline-flex; align-items: center; gap: 8px;
-            font-weight: 700; font-size: 0.75rem; cursor: pointer;
-        }
-        .task-status-selector select {
-            background: transparent; border: none; color: white;
-            font-weight: 700; outline: none; text-transform: uppercase; cursor: pointer;
-        }
+        /* --- TASK STATUS SELECTOR --- */
+        .task-status-selector { background: #007bff; color: white; border-radius: 4px; padding: 4px 12px; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; }
+        .task-status-selector select { background: transparent; border: none; color: white; font-weight: 700; outline: none; text-transform: uppercase; cursor: pointer; }
         .task-status-selector select option { color: #333; background: white; }
 
-        /* --- PRIORITY DROPDOWN CUSTOM --- */
-        .priority-dropdown {
-            position: relative;
-            width: 100%;
-        }
-        .priority-trigger {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            padding: 6px 10px;
-            border-radius: 6px;
-            transition: 0.2s;
-            background: transparent;
-        }
-        .priority-trigger:hover {
-            background: #f1f5f9;
-        }
-        .priority-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: none;
-            z-index: 1050;
-            min-width: 160px;
-            padding: 6px;
-            margin-top: 4px;
-        }
-        .priority-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 8px 12px;
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            color: #334155;
-            transition: 0.2s;
-        }
-        .priority-item:hover {
-            background: #f8fafc;
-        }
-        .priority-item i {
-            font-size: 1rem;
-        }
+        /* --- PRIORITY DROPDOWN --- */
+        .priority-dropdown { position: relative; width: 100%; }
+        .priority-trigger { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: 0.2s; background: transparent; }
+        .priority-trigger:hover { background: #f1f5f9; }
+        .priority-menu { position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: none; z-index: 1050; min-width: 160px; padding: 6px; margin-top: 4px; }
+        .priority-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; cursor: pointer; border-radius: 6px; font-size: 0.9rem; color: #334155; transition: 0.2s; }
+        .priority-item:hover { background: #f8fafc; }
 
-        /* --- TAG SYSTEM ENHANCEMENT --- */
-        .tag-dropdown {
-            position: absolute; top: 100%; left: 0; width: 280px;
-            background: white; border: 1px solid #e2e8f0; border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 1000;
-            display: none; padding: 10px;
-        }
+        /* --- TAG SYSTEM --- */
+        .tag-dropdown { position: absolute; top: 100%; left: 0; width: 280px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 1000; display: none; padding: 10px; }
         .tag-search-header { border-bottom: 1px solid #f1f5f9; margin-bottom: 8px; padding-bottom: 8px; }
         .tag-option-item { padding: 8px 12px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; }
         .tag-option-item:hover { background: #f8fafc; }
-        .create-tag-btn { color: #64748b; font-size: 0.9rem; padding: 10px; cursor: pointer; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px; }
-
-        /* Color Picker Grid */
-        .color-picker-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 8px; }
-        .color-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .color-dot:hover { transform: scale(1.2); }
-        .color-dot.active { border-color: #000; transform: scale(1.1); }
-
-        /* --- EDITOR --- */
-        .rich-editor-box { border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; background: white; transition: 0.2s; }
-        .rich-editor-box:focus-within { border-color: #0B2B6A; box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1); }
-        .rich-editor-toolbar { background: #f8fafc; border-bottom: 1px solid #f1f5f9; padding: 6px 10px; display: flex; gap: 5px; flex-wrap: wrap; }
-        .editor-btn { border: 1px solid transparent; background: none; color: #64748b; font-size: 0.95rem; width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-        .editor-btn:hover { background: #e2e8f0; color: #0f172a; }
-        .rich-editor-content { min-height: 100px; padding: 15px; outline: none; font-size: 0.95rem; line-height: 1.6; }
-        .rich-editor-content:empty:before { content: attr(data-placeholder); color: #94a3b8; }
-
-        /* --- UTILITIES --- */
-        .cursor-pointer { cursor: pointer; }
         .tag-pill { padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; color: white; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* --- USER DROPDOWN (DARK THEME) --- */
+
+        /* --- USER DROPDOWN (NEW & REFINED) --- */
         .user-dropdown-container { position: relative; width: 100%; }
 
         .user-trigger {
@@ -188,7 +102,7 @@
 
         .user-menu-dark {
             position: absolute; top: 100%; left: 0; width: 300px;
-            background: #1e1e1e; color: white; border-radius: 12px;
+            background: #1e1e1e; color: #e0e0e0; border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2000;
             display: none; padding: 12px; margin-top: 8px;
         }
@@ -198,31 +112,45 @@
             display: flex; align-items: center; padding: 8px 12px; margin-bottom: 15px;
         }
         .user-search-box i { color: #888; margin-right: 10px; }
-        .user-search-box input {
-            background: transparent; border: none; color: white;
-            outline: none; width: 100%; font-size: 0.9rem;
-        }
+        .user-search-box input { background: transparent; border: none; color: white; outline: none; width: 100%; font-size: 0.9rem; }
 
         .user-list-scroll { max-height: 300px; overflow-y: auto; }
         .user-section-label { color: #888; font-size: 0.75rem; font-weight: 600; margin: 10px 0 8px 5px; }
 
+        /* User Item Style */
         .user-item {
-            display: flex; align-items: center; gap: 12px; padding: 8px;
-            border-radius: 8px; cursor: pointer; transition: 0.1s;
+            display: flex; align-items: center; gap: 12px; padding: 10px;
+            border-radius: 8px; cursor: pointer; transition: 0.2s;
         }
         .user-item:hover { background: #2d2d2d; }
 
-        .user-avatar {
-            width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
-            border: 2px solid #444;
+        /* Avatar Styles */
+        .user-avatar-circle {
+            width: 32px; height: 32px; border-radius: 50%;
+            object-fit: cover; border: 1.5px solid #444; background-color: #333;
         }
-        .user-name { font-size: 0.9rem; flex-grow: 1; }
-        .verified-badge { color: #7c4dff; font-size: 0.85rem; } /* Verified icon color */
+        .user-trigger-avatar {
+            width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
+        }
+
+        /* Text Styles */
+        .user-name-text { font-size: 0.9rem; color: #e0e0e0; flex-grow: 1; }
+        .verified-badge { color: #7c4dff; font-size: 0.85rem; }
 
         .selected-user-pill {
             display: flex; align-items: center; gap: 6px;
             background: #f1f5f9; padding: 2px 8px; border-radius: 20px; font-size: 0.85rem;
         }
+
+        /* --- EDITOR --- */
+        .rich-editor-box { border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; background: white; transition: 0.2s; }
+        .rich-editor-box:focus-within { border-color: #0B2B6A; box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1); }
+        .rich-editor-content { min-height: 100px; padding: 15px; outline: none; font-size: 0.95rem; line-height: 1.6; }
+        .rich-editor-content:empty:before { content: attr(data-placeholder); color: #94a3b8; }
+
+        /* --- UTILITIES --- */
+        .cursor-pointer { cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -326,7 +254,7 @@
         const tagPalette = ['#D3E5EF', '#D3DFFB', '#E7E2F9', '#F1DDF3', '#F9DEDC', '#FDECC8', '#E2F2D1', '#7204cf', '#0163ea', '#1c84e3', '#006a4e', '#0B2B6A', '#F9C72E', '#e7181a'];
 
         let globalTags = [];
-        let globalUsers = []; // Simpan data user global
+        let globalUsers = [];
         let selectedTags = [];
         let selectedFile = null;
 
@@ -347,7 +275,7 @@
                         document.getElementById('projectBadge').innerText = (data.project?.department || "Project");
                         
                         globalTags = data.tags || [];
-                        globalUsers = data.users || []; // Simpan data user dari API
+                        globalUsers = data.users || [];
 
                         renderLists(data.lists || []);
                         renderComments(data.comments || []);
@@ -440,20 +368,15 @@
                                     </div>
                                 </div>
 
-                                <!-- Assign To & Notify To Menggunakan Dropdown Baru -->
                                 <div class="meta-row">
                                     <div class="meta-icon"><i class="bi bi-person-plus"></i></div>
                                     <div class="meta-label">Assign to</div>
-                                    <div class="meta-value">
-                                        ${renderUserDropdownUI(list.id, 'assign')}
-                                    </div>
+                                    <div class="meta-value">${renderUserDropdownUI(list.id, 'assign')}</div>
                                 </div>
                                 <div class="meta-row">
                                     <div class="meta-icon"><i class="bi bi-bell"></i></div>
                                     <div class="meta-label">Notify to</div>
-                                    <div class="meta-value">
-                                        ${renderUserDropdownUI(list.id, 'notify')}
-                                    </div>
+                                    <div class="meta-value">${renderUserDropdownUI(list.id, 'notify')}</div>
                                 </div>
 
                                 <div class="meta-row">
@@ -510,7 +433,6 @@
         // --- USER DROPDOWN UI HELPERS ---
         function renderUserDropdownUI(lid, type) {
             const inputId = type === 'assign' ? `task-assign-${lid}` : `task-notify-${lid}`;
-            
             return `
                 <div class="user-dropdown-container" id="container-${type}-${lid}">
                     <div class="user-trigger" onclick="toggleUserMenu('${lid}', '${type}')">
@@ -520,13 +442,11 @@
                         </div>
                         <i class="bi bi-chevron-down ms-auto text-muted small"></i>
                     </div>
-                    
                     <div class="user-menu-dark" id="menu-${type}-${lid}" style="display:none">
                         <div class="user-search-box">
                             <i class="bi bi-search"></i>
                             <input type="text" placeholder="Search..." onclick="event.stopPropagation()" oninput="filterUsers(this, '${lid}', '${type}')">
                         </div>
-                        
                         <div class="user-list-scroll">
                             <div class="user-section-label">People</div>
                             <div id="list-${type}-${lid}">
@@ -535,48 +455,52 @@
                         </div>
                     </div>
                     <input type="hidden" id="${inputId}" value="">
-                </div>
-            `;
+                </div>`;
         }
 
         function renderUserListItems(users, lid, type) {
-            if(users.length === 0) return '<div class="p-2 text-muted small">No users found</div>';
+            if (users.length === 0) return '<div class="p-3 text-center text-muted small">No users found</div>';
             return users.map(u => `
                 <div class="user-item" onclick="selectUser('${lid}', '${type}', '${u.id}', '${u.name}', '${u.photo}')">
-                    <img src="${u.photo}" class="user-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}'">
-                    <span class="user-name">${u.name}</span>
-                    ${u.role === 'Admin' ? '<i class="bi bi-patch-check-fill verified-badge" style="color:#007bff; font-size:0.7rem"></i>' : ''}
-                </div>
-            `).join('');
-        }
-
-        function toggleUserMenu(lid, type) {
-            event.stopPropagation();
-            // Tutup semua menu lain (priority & user menu lain)
-            document.querySelectorAll('.user-menu-dark, .priority-menu').forEach(m => m.style.display = 'none');
-            const menu = document.getElementById(`menu-${type}-${lid}`);
-            menu.style.display = 'block';
-        }
-
-        function filterUsers(input, lid, type) {
-            const query = input.value.toLowerCase();
-            const filtered = globalUsers.filter(u => u.name.toLowerCase().includes(query) || (u.email && u.email.toLowerCase().includes(query)));
-            document.getElementById(`list-${type}-${lid}`).innerHTML = renderUserListItems(filtered, lid, type);
+                    <img src="${u.photo}" class="user-avatar-circle" alt="${u.name}" onerror="this.src='https://ui-avatars.com/api/?name=${u.name}'">
+                    <div class="d-flex flex-column">
+                        <span class="user-name-text fw-medium">${u.name}</span>
+                        <span class="text-muted" style="font-size: 0.7rem;">${u.role || 'Member'}</span>
+                    </div>
+                    ${u.role === 'Admin' ? '<i class="bi bi-patch-check-fill ms-auto verified-badge"></i>' : ''}
+                </div>`).join('');
         }
 
         function selectUser(lid, type, userId, userName, userPhoto) {
             event.stopPropagation();
-            // Update Hidden Input (task-assign-lid atau task-notify-lid)
-            document.getElementById(`task-${type}-${lid}`).value = userId;
+            const hiddenInput = document.getElementById(`task-${type}-${lid}`);
+            if(hiddenInput) hiddenInput.value = userId;
             
-            // Update Display Trigger
-            document.getElementById(`display-${type}-${lid}`).innerHTML = `
-                <img src="${userPhoto}" style="width:20px; height:20px; border-radius:50%" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}'">
-                <span class="fw-medium" style="font-size:0.85rem">${userName}</span>
-            `;
+            const displayArea = document.getElementById(`display-${type}-${lid}`);
+            displayArea.innerHTML = `
+                <div class="d-flex align-items-center gap-2">
+                    <img src="${userPhoto}" class="user-trigger-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${userName}'">
+                    <span class="fw-medium text-dark" style="font-size:0.85rem">${userName}</span>
+                </div>`;
             
-            // Tutup Menu
-            document.getElementById(`menu-${type}-${lid}`).style.display = 'none';
+            const menu = document.getElementById(`menu-${type}-${lid}`);
+            if(menu) menu.style.display = 'none';
+        }
+
+        function filterUsers(input, lid, type) {
+            const query = input.value.toLowerCase();
+            const filtered = globalUsers.filter(u =>
+                u.name.toLowerCase().includes(query) ||
+                (u.email && u.email.toLowerCase().includes(query))
+            );
+            document.getElementById(`list-${type}-${lid}`).innerHTML = renderUserListItems(filtered, lid, type);
+        }
+
+        function toggleUserMenu(lid, type) {
+            event.stopPropagation();
+            document.querySelectorAll('.user-menu-dark, .priority-menu').forEach(m => m.style.display = 'none');
+            const menu = document.getElementById(`menu-${type}-${lid}`);
+            menu.style.display = 'block';
         }
 
         // --- PRIORITY FUNCTIONS ---
@@ -597,7 +521,6 @@
             document.getElementById(`priority-menu-${lid}`).style.display = 'none';
         }
 
-        // Klik di luar untuk menutup semua menu
         document.addEventListener('click', () => {
             document.querySelectorAll('.user-menu-dark, .priority-menu, .tag-dropdown').forEach(m => m.style.display = 'none');
         });
@@ -644,7 +567,7 @@
             });
         }
 
-        // --- LAINNYA (TAGS, STATUS UI, FORM UI) ---
+        // --- LAINNYA ---
         function renderStatusDropdown(statuses, lid) {
             if (!statuses || statuses.length === 0) {
                 return `<div class="task-status-selector" style="background:#007bff" id="status-wrap-${lid}"><select id="task-status-${lid}" class="status-select"><option value="OPEN" data-color="#007bff">OPEN</option></select></div>`;
