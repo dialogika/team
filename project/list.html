@@ -32,7 +32,7 @@
             background: #1f2937; padding: 8px 20px;
             border-radius: 50px; font-size: 0.95rem; color: white;
         }
-        .ph-crumb-link { text-decoration: none; color: #d1d5db; font-weight: 500; transition: 0.2s; display: flex; align-items: center; }
+        .ph-crumb-link { text-decoration: none; color: #d1d5db; font-weight: 500; transition: 0.2s; }
         .ph-crumb-link:hover { color: white; }
         .ph-crumb-active { color: white; font-weight: 700; border-bottom: 2px solid #FDE047; padding-bottom: 2px; }
         .ph-sep { font-size: 0.8rem; color: white; }
@@ -45,45 +45,46 @@
             padding: 60px; position: relative; z-index: 2;
             border: 1px solid #d1d5db; min-height: 400px;
         }
-        .btn-new-list {
-            position: absolute; top: 40px; right: 40px; background: #0B2B6A; color: white;
-            border-radius: 50px; padding: 8px 24px; font-weight: 600; border: none; transition: 0.2s;
-        }
-        .btn-new-list:hover { background: #08204e; transform: translateY(-2px); }
-
-        /* Styles for Rich Text Editor */
-        .rich-editor-box {
-            border: 1px solid #d1d5db; border-radius: 12px; overflow: hidden; background: white;
-        }
+        
+        /* UPDATED RICH TEXT EDITOR STYLES */
+        .rich-editor-box { border: 1px solid #d1d5db; border-radius: 8px; overflow: hidden; background: white; transition: 0.2s; }
+        .rich-editor-box:focus-within { border-color: #0B2B6A; box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1); }
         .rich-editor-toolbar {
-            background: #f9fafb; border-bottom: 1px solid #f3f4f6; padding: 8px 12px;
-            display: flex; gap: 10px; align-items: center;
+            background: #f8fafc; border-bottom: 1px solid #f1f5f9; padding: 6px 10px;
+            display: flex; gap: 5px; flex-wrap: wrap;
         }
         .editor-btn {
-            border: none; background: none; color: #4b5563; font-size: 1.1rem;
-            cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: 0.2s;
+            border: 1px solid transparent; background: none; color: #64748b; font-size: 0.95rem;
+            width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
         }
-        .editor-btn:hover { background: #e5e7eb; color: #111; }
-        .rich-editor-content {
-            min-height: 100px; padding: 15px; outline: none; color: #374151; font-size: 0.95rem;
-        }
-        .rich-editor-content:empty:before { content: attr(data-placeholder); color: #9ca3af; }
-        
-        /* Attachment Preview */
-        .attachment-preview {
-            display: none; align-items: center; gap: 10px;
-            background: #eff6ff; padding: 8px 12px; border-radius: 6px;
-            margin: 10px 15px; border: 1px solid #bfdbfe; font-size: 0.9rem;
-        }
+        .editor-btn:hover { background: #e2e8f0; color: #0f172a; }
+        .rich-editor-content { min-height: 120px; padding: 15px; outline: none; font-size: 0.95rem; line-height: 1.6; }
+        .rich-editor-content blockquote { border-left: 3px solid #cbd5e1; padding-left: 10px; color: #64748b; font-style: italic; }
+        .rich-editor-content pre { background: #1e293b; color: #e2e8f0; padding: 10px; border-radius: 6px; font-size: 0.85rem; }
 
-        /* List Items */
-        .todo-row { padding: 12px 10px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: start; transition: 0.2s; }
-        .todo-row:hover { background-color: #f8fafc; border-radius: 6px; }
-        .todo-check { width: 22px; height: 22px; margin-right: 15px; cursor: pointer; }
+        /* TASK FORM STYLES */
+        .task-create-panel { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-top: 15px; display: none; background: #fff; animation: fadeIn 0.2s; }
+        .task-input-title { font-size: 1.1rem; font-weight: 600; border: none; outline: none; width: 100%; margin-bottom: 15px; }
+        .task-meta-grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .task-meta-label { color: #64748b; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
+        .form-control-sm-custom { border: 1px solid transparent; padding: 4px 8px; border-radius: 4px; font-size: 0.9rem; transition: 0.2s; width: 100%; color: #334155; }
+        .form-control-sm-custom:hover, .form-control-sm-custom:focus { background: #f1f5f9; border-color: #cbd5e1; outline: none; }
         
-        /* New List Form */
-        .new-list-form-wrapper { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 25px; margin-bottom: 40px; display: none; }
-        .input-list-title { font-size: 1.5rem; font-weight: 700; border: none; width: 100%; outline: none; margin-bottom: 15px; color: #1f2937; }
+        /* TAG SYSTEM STYLES */
+        .tag-input-container { position: relative; }
+        .tag-dropdown {
+            position: absolute; top: 100%; left: 0; width: 100%; background: white;
+            border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 10; display: none; max-height: 200px; overflow-y: auto; padding: 5px;
+        }
+        .tag-option { padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .tag-option:hover { background: #f1f5f9; }
+        .selected-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px; }
+        .tag-pill { font-size: 0.75rem; padding: 2px 10px; border-radius: 50px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+        .tag-remove { cursor: pointer; opacity: 0.6; } .tag-remove:hover { opacity: 1; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -108,350 +109,358 @@
         </aside>
 
         <main class="main-content">
-            <!-- BREADCRUMB HEADER -->
+            <!-- BREADCRUMB -->
             <div class="project-context-card">
                 <div class="ph-badge" id="projectBadge">Loading...</div>
                 <div class="ph-crumb-container">
-                    <a href="../home.html" class="ph-crumb-link" title="Dashboard"><i class="bi bi-house-fill"></i></a>
+                    <a href="../home.html" class="ph-crumb-link"><i class="bi bi-house-fill"></i></a>
                     <i class="bi bi-chevron-right ph-sep"></i>
                     <a href="#" class="ph-crumb-link" id="projectNameHeader">Loading...</a>
                     <i class="bi bi-chevron-right ph-sep"></i>
-                    <span class="ph-crumb-active">Lists</span>
+                    <span class="ph-crumb-active">To-dos</span>
                 </div>
-                <div class="position-absolute end-0 me-3">
-                    <button class="btn btn-link text-muted"><i class="bi bi-three-dots"></i></button>
-                </div>
+                <div class="position-absolute end-0 me-3"><button class="btn btn-link text-muted"><i class="bi bi-three-dots"></i></button></div>
             </div>
 
-            <!-- MAIN CONTENT CARD -->
             <div class="main-list-card">
-                <button class="btn-new-list" onclick="toggleNewListForm()"><i class="bi bi-plus-lg me-1"></i> New List</button>
+                <button class="btn-new-list btn-dlg-blue" onclick="toggleNewListForm()"><i class="bi bi-plus-lg me-1"></i> New List</button>
+                <div class="text-center mb-5"><h1 class="fw-bold display-5 mb-1" style="color:#111;">All List</h1><p class="text-muted">Manage your tasks efficiently.</p></div>
 
-                <div class="text-center mb-5">
-                    <h1 class="fw-bold display-5 mb-1" style="color:#111;">All List</h1>
-                    <p class="text-muted">Manage your tasks efficiently.</p>
-                </div>
-
-                <!-- New List Form -->
-                <div id="newListForm" class="new-list-form-wrapper">
+                <!-- LIST FORM -->
+                <div id="newListForm" class="new-list-form-wrapper" style="display:none;">
                     <input type="text" id="inputListName" class="input-list-title" placeholder="Name this list...">
-                    <div class="border rounded mb-3 p-2 bg-white" style="min-height: 100px;" contenteditable="true" id="inputListDesc"></div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-success rounded-pill px-4 btn-save-list" onclick="saveNewList()">Add this list</button>
-                        <button class="btn btn-light border rounded-pill px-4" onclick="toggleNewListForm()">Cancel</button>
-                    </div>
+                    <div class="d-flex gap-2 mt-3"><button class="btn btn-success rounded-pill px-4" onclick="saveNewList()">Add this list</button><button class="btn btn-light border rounded-pill px-4" onclick="toggleNewListForm()">Cancel</button></div>
                 </div>
 
-                <div id="loadingState" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="text-muted mt-2">Loading lists...</p>
-                </div>
-
+                <div id="loadingState" class="text-center py-5"><div class="spinner-border text-primary"></div><p class="text-muted mt-2">Loading lists...</p></div>
                 <div id="listsContainer"></div>
-                <div id="emptyState" class="text-center text-muted fst-italic py-5" style="display:none;">No lists yet.</div>
+                <div id="emptyState" class="text-center text-muted py-5" style="display:none;">No lists yet.</div>
 
                 <hr class="my-5 opacity-25">
 
-                <!-- COMMENT SECTION (RICH TEXT & FILE UPLOAD) -->
+                <!-- COMMENT SECTION -->
                 <div class="mt-5">
                     <h5 class="fw-bold mb-4 text-dark">Discussion</h5>
-                    
-                    <!-- Comments Container -->
                     <div id="commentsWrapper" class="d-flex flex-column gap-3 mb-4"></div>
-
-                    <!-- Comment Input with Rich Editor -->
+                    
                     <div class="d-flex gap-3">
                         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">RA</div>
-                        
                         <div class="w-100">
+                            <!-- RICH TEXT EDITOR -->
                             <div class="rich-editor-box">
                                 <div class="rich-editor-toolbar">
-                                    <button class="editor-btn" onclick="formatDoc('bold')" title="Bold"><i class="bi bi-type-bold"></i></button>
-                                    <button class="editor-btn" onclick="formatDoc('italic')" title="Italic"><i class="bi bi-type-italic"></i></button>
+                                    <button class="editor-btn" onclick="execCmd('bold')" title="Bold"><i class="bi bi-type-bold"></i></button>
+                                    <button class="editor-btn" onclick="execCmd('italic')" title="Italic"><i class="bi bi-type-italic"></i></button>
+                                    <button class="editor-btn" onclick="execCmd('strikeThrough')" title="Strike"><i class="bi bi-type-strikethrough"></i></button>
+                                    <div style="border-left:1px solid #e2e8f0; height:20px; margin:0 5px;"></div>
+                                    <button class="editor-btn" onclick="execCmd('formatBlock', 'H1')" title="H1">H1</button>
+                                    <button class="editor-btn" onclick="execCmd('formatBlock', 'H2')" title="H2">H2</button>
+                                    <div style="border-left:1px solid #e2e8f0; height:20px; margin:0 5px;"></div>
+                                    <button class="editor-btn" onclick="execCmd('insertUnorderedList')" title="Bullet"><i class="bi bi-list-ul"></i></button>
+                                    <button class="editor-btn" onclick="execCmd('insertOrderedList')" title="Number"><i class="bi bi-list-ol"></i></button>
+                                    <button class="editor-btn" onclick="execCmd('formatBlock', 'blockquote')" title="Quote"><i class="bi bi-quote"></i></button>
+                                    <button class="editor-btn" onclick="insertCode()" title="Code"><i class="bi bi-code-slash"></i></button>
+                                    <button class="editor-btn" onclick="execCmd('insertHorizontalRule')" title="Line"><i class="bi bi-hr"></i></button>
                                     <button class="editor-btn" onclick="addLink()" title="Link"><i class="bi bi-link-45deg"></i></button>
-                                    <div style="width:1px; height:20px; background:#d1d5db; margin:0 5px;"></div>
-                                    <button class="editor-btn" onclick="document.getElementById('fileInput').click()" title="Attach File"><i class="bi bi-paperclip"></i></button>
+                                    <button class="editor-btn" onclick="document.getElementById('fileInput').click()" title="File"><i class="bi bi-paperclip"></i></button>
                                 </div>
-                                
                                 <div id="richCommentInput" class="rich-editor-content" contenteditable="true" data-placeholder="Add a comment..."></div>
-                                
-                                <!-- File Upload Preview -->
-                                <div id="filePreview" class="attachment-preview">
-                                    <i class="bi bi-file-earmark-text text-primary"></i>
-                                    <span id="fileName" class="text-truncate" style="max-width: 200px;">filename.pdf</span>
-                                    <button class="btn-close ms-auto" style="font-size:0.7rem;" onclick="clearFile()"></button>
+                                <!-- File Preview -->
+                                <div id="filePreview" class="p-2 border-top bg-light" style="display:none; font-size:0.85rem;">
+                                    <i class="bi bi-file-earmark-text me-2"></i> <span id="fileName">file.txt</span> 
+                                    <button class="btn-close ms-2" style="font-size:0.7rem" onclick="clearFile()"></button>
                                 </div>
                             </div>
-
-                            <!-- Hidden File Input -->
-                            <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect(this)">
-
-                            <div class="mt-2 text-end">
-                                <button id="postBtn" class="btn btn-success rounded-pill px-4 btn-sm fw-bold" onclick="postComment()">Post comment</button>
-                            </div>
+                            <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
+                            <div class="mt-2 text-end"><button id="postBtn" class="btn btn-success rounded-pill px-4 fw-bold" onclick="postComment()">Post comment</button></div>
                         </div>
                     </div>
                 </div>
-
-                <!-- SUBSCRIBER SECTION -->
-                <div class="mt-5 pt-4 border-top">
-                    <h6 class="fw-bold">Subscribers</h6>
-                    <p class="small text-muted mb-3">People listed below will be notified when comments are posted on this project.</p>
-                    <div class="d-flex align-items-center gap-2 flex-wrap" id="subsContainer"></div>
-                    <div class="mt-3 p-2 bg-light rounded-pill d-inline-block border">
-                        <small class="text-dark fw-bold px-2" id="subStatusText">Loading...</small>
-                        <button class="btn btn-sm btn-link text-muted text-decoration-none p-0" style="font-size:0.8rem;" id="subToggleBtn" onclick="toggleSubscription()">Change</button>
-                    </div>
-                </div>
-
             </div>
         </main>
     </div>
 
-    <!-- Script JS -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // GANTI DENGAN URL DEPLOY TERBARU!
         const API_URL = 'https://script.google.com/macros/s/AKfycbySwjMcxFHkBC4z591KpmOQmRJkQAyfcnPSMocjLigMHO-5tqL4ncRJ2Op7yucmqDntRQ/exec';
+        
+        const projectId = new URLSearchParams(window.location.search).get('id');
+        const dialogikaColors = ['#0B2B6A', '#F9C72E', '#231f20', '#7204cf', '#006a4e', '#e7181a', '#f7b12c', '#0163ea', '#1c84e3', '#444444', '#011548'];
+        let globalTags = []; 
+        let selectedTags = [];
+        let selectedFile = null;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const projectId = urlParams.get('id');
-        let isSubscribed = false;
-        let selectedFileBase64 = null;
-        let selectedFileName = null;
-        let selectedMimeType = null;
-
-        document.addEventListener("DOMContentLoaded", function() {
-            if(!projectId) { alert("Error: Missing Project ID"); return; }
-            fetchListsData();
+        document.addEventListener("DOMContentLoaded", () => {
+            if(!projectId) return alert("Missing Project ID");
+            fetchData();
         });
 
-        // --- FETCH DATA ---
-        function fetchListsData() {
+        function fetchData() {
             document.getElementById('loadingState').style.display = 'block';
-            fetch(`${API_URL}?action=getProjectData&id=${projectId}`)
-            .then(res => res.json())
-            .then(response => {
-                if(response.status === 'success') {
-                    const data = response.data;
-                    const pName = (data.project && data.project.name) ? data.project.name : data.name;
-                    const pDept = (data.project && data.project.department) ? data.project.department : "Project";
-                    
-                    const header = document.getElementById('projectNameHeader');
-                    if(header) { header.innerText = pName; header.href = `../project/project.html?id=${projectId}`; }
-                    document.getElementById('projectBadge').innerText = pDept;
-
-                    renderLists(data.lists || []);
-                    
-                    // Filter Comment: contextId === projectId
-                    const projComments = data.comments ? data.comments.filter(c => c.contextId === projectId) : [];
-                    renderComments(projComments);
-
-                    // Filter Subs: contextId === projectId
-                    const projSubs = data.subscribers ? data.subscribers.filter(s => s.contextId === projectId) : [];
-                    renderSubscribers(projSubs);
-                }
-            })
-            .finally(() => document.getElementById('loadingState').style.display = 'none');
-        }
-
-        // --- RENDER COMMENTS (WITH HTML & ATTACHMENT) ---
-        function renderComments(comments) {
-            const wrapper = document.getElementById('commentsWrapper');
-            wrapper.innerHTML = '';
-            comments.forEach(c => {
-                const date = new Date(c.date).toLocaleDateString();
-                // Render attachment if exists
-                let attachmentHtml = '';
-                if(c.attachment) {
-                    attachmentHtml = `
-                        <div class="mt-2 pt-2 border-top">
-                            <a href="${c.attachment}" target="_blank" class="text-decoration-none small text-primary">
-                                <i class="bi bi-paperclip me-1"></i> View Attachment
-                            </a>
-                        </div>`;
-                }
-
-                const html = `
-                    <div class="d-flex gap-3">
-                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">U</div>
-                        <div class="bg-white border rounded p-3 w-100 shadow-sm">
-                            <div class="d-flex justify-content-between mb-1">
-                                <strong class="small text-dark">User Demo</strong>
-                                <small class="text-muted" style="font-size:0.7rem">${date}</small>
-                            </div>
-                            <!-- GUNAKAN INNERHTML AGAR BOLD/ITALIC MUNCUL -->
-                            <div class="text-dark small">${c.text}</div>
-                            ${attachmentHtml}
-                        </div>
-                    </div>`;
-                wrapper.insertAdjacentHTML('beforeend', html);
-            });
-        }
-
-        // --- RICH EDITOR LOGIC ---
-        function formatDoc(cmd, value=null) { document.execCommand(cmd, false, value); }
-        function addLink() { const url = prompt("Enter the URL"); if(url) formatDoc("createLink", url); }
-
-        // --- FILE UPLOAD LOGIC ---
-        function handleFileSelect(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    selectedFileBase64 = e.target.result.split(',')[1]; // Ambil data setelah koma
-                    selectedFileName = file.name;
-                    selectedMimeType = file.type;
-                    
-                    // Show Preview
-                    document.getElementById('filePreview').style.display = 'flex';
-                    document.getElementById('fileName').innerText = file.name;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-        function clearFile() {
-            document.getElementById('fileInput').value = "";
-            document.getElementById('filePreview').style.display = 'none';
-            selectedFileBase64 = null; selectedFileName = null;
-        }
-
-        // --- POST COMMENT ACTION ---
-        function postComment() {
-            const editor = document.getElementById('richCommentInput');
-            const htmlContent = editor.innerHTML;
-            
-            if(htmlContent.trim() === '' && !selectedFileBase64) {
-                alert("Please write a comment or attach a file.");
-                return;
-            }
-
-            const btn = document.getElementById('postBtn');
-            btn.innerText = "Posting...";
-            btn.disabled = true;
-
-            // Step 1: Upload File first if exists
-            if (selectedFileBase64) {
-                uploadFileAndPost(htmlContent, btn);
-            } else {
-                sendCommentData(htmlContent, null, btn);
-            }
-        }
-
-        function uploadFileAndPost(text, btn) {
-            fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'uploadFile',
-                    fileData: selectedFileBase64,
-                    fileName: selectedFileName,
-                    mimeType: selectedMimeType
-                })
-            })
-            .then(res => res.json())
-            .then(resp => {
+            fetch(`${API_URL}?action=getProjectData&id=${projectId}`).then(r=>r.json()).then(resp => {
                 if(resp.status === 'success') {
-                    sendCommentData(text, resp.fileUrl, btn);
-                } else {
-                    alert("File upload failed: " + resp.message);
-                    btn.innerText = "Post comment"; btn.disabled = false;
+                    const data = resp.data;
+                    // Header
+                    document.getElementById('projectNameHeader').innerText = (data.project?.name || data.name);
+                    document.getElementById('projectNameHeader').href = `../project/project.html?id=${projectId}`;
+                    document.getElementById('projectBadge').innerText = (data.project?.department || "Project");
+                    
+                    // Store Tags Globally
+                    globalTags = data.tags || [];
+
+                    // Render
+                    renderLists(data.lists || []);
+                    renderComments(data.comments || []);
                 }
-            });
+            }).finally(()=> document.getElementById('loadingState').style.display='none');
         }
 
-        function sendCommentData(text, fileUrl, btn) {
-            fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'createComment',
-                    contextType: 'project', // Konteks Project
-                    contextId: projectId,
-                    text: text,
-                    attachmentUrl: fileUrl
-                })
-            })
-            .then(res => res.json())
-            .then(resp => {
-                // Reset UI
-                document.getElementById('richCommentInput').innerHTML = '';
-                clearFile();
-                fetchListsData(); // Refresh comments
-            })
-            .finally(() => {
-                btn.innerText = "Post comment";
-                btn.disabled = false;
-            });
-        }
-
-        // --- SUBSCRIPTION & OTHERS ---
-        function renderSubscribers(subs) {
-            const container = document.getElementById('subsContainer');
+        // --- RENDER LISTS & TASK FORM ---
+        function renderLists(lists) {
+            const container = document.getElementById('listsContainer');
             container.innerHTML = '';
-            isSubscribed = false;
-            subs.forEach(s => {
-                if(s.userId === "USER-DEMO") isSubscribed = true;
-                container.insertAdjacentHTML('beforeend', `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:30px; height:30px; font-size:0.7rem;" title="${s.userId}">${s.userId.substring(0,2)}</div>`);
-            });
-            container.insertAdjacentHTML('beforeend', `<button class="btn btn-light border rounded-pill px-3 py-1 btn-sm text-muted small">Add/remove people...</button>`);
-            
-            const text = document.getElementById('subStatusText');
-            const btn = document.getElementById('subToggleBtn');
-            if(isSubscribed) { text.innerText="You’re subscribed"; btn.innerText="Unsubscribe me"; }
-            else { text.innerText="You’re not subscribed"; btn.innerText="Subscribe me"; }
-        }
-
-        function toggleSubscription() {
-            const btn = document.getElementById('subToggleBtn');
-            btn.disabled = true;
-            fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'toggleSubscription', contextType: 'project', contextId: projectId })
-            }).then(() => fetchListsData()).finally(() => btn.disabled = false);
-        }
-
-        // Helper functions
-        function renderLists(lists) { /* Sama seperti sebelumnya, hanya memastikan tidak hilang */
-            const container = document.getElementById('listsContainer'); container.innerHTML = '';
-            if(lists.length === 0) { document.getElementById('emptyState').style.display='block'; return; }
+            if(lists.length === 0) return document.getElementById('emptyState').style.display='block';
             document.getElementById('emptyState').style.display='none';
+
             lists.forEach(list => {
                 let tasksHtml = '';
-                if(list.tasks){ list.tasks.forEach(t => {
-                    const done=['done','true'].includes(t.status);
-                    tasksHtml+=`<div class="todo-row p-2 border-bottom d-flex align-items-start hover-bg-light rounded" onclick="window.location.href='item-details.html?taskId=${t.id}&projectId=${projectId}'"><input type="checkbox" class="todo-check me-3" ${done?'checked':''} onclick="toggleTaskStatus(this,'${t.id}');event.stopPropagation()"><div class="w-100"><div class="${done?'text-decoration-line-through text-muted':'text-dark'}" id="title-${t.id}">${t.title}</div></div></div>`;
-                });}
-                if(!tasksHtml) tasksHtml='<div class="text-muted small ps-4 mb-2">No tasks.</div>';
-                
-                const html = `<div class="mb-5 bg-white p-4 rounded-4 border shadow-sm">
+                if(list.tasks) list.tasks.forEach(t => {
+                    const done = ['done','true'].includes(t.status);
+                    tasksHtml += `<div class="todo-row p-2 border-bottom d-flex align-items-start hover-bg-light rounded" onclick="window.location.href='item-details.html?taskId=${t.id}&projectId=${projectId}'">
+                        <input type="checkbox" class="todo-check me-3" ${done?'checked':''} onclick="event.stopPropagation()">
+                        <div class="w-100"><div class="${done?'text-decoration-line-through text-muted':'text-dark'}">${t.title}</div></div>
+                    </div>`;
+                });
+
+                const html = `
+                <div class="mb-5 bg-white p-4 rounded-4 border shadow-sm">
                     <div class="d-flex justify-content-between border-bottom pb-2 mb-3"><a href="list-detail.html?listId=${list.id}&projectId=${projectId}" class="text-dark fw-bold h4 text-decoration-none hover-text-blue">${list.name}</a></div>
-                    <p class="text-muted small mb-3">${list.desc||''}</p>
                     <div class="todo-list-items">${tasksHtml}</div>
-                    <div class="mt-3 ms-2"><button id="btn-add-${list.id}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" onclick="showTaskInput('${list.id}')"><i class="bi bi-plus"></i> Add a to-do</button>
-                    <div id="form-add-${list.id}" class="mt-2" style="display:none;"><input type="text" id="input-task-${list.id}" class="form-control mb-2" placeholder="Task name..."><div class="d-flex gap-2"><button class="btn btn-success btn-sm rounded-pill px-3" onclick="saveTask('${list.id}')">Add</button><button class="btn btn-light btn-sm border rounded-pill px-3" onclick="hideTaskInput('${list.id}')">Cancel</button></div></div></div>
+                    
+                    <!-- ADD TASK BUTTON -->
+                    <div class="mt-3">
+                        <button id="btn-add-${list.id}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" onclick="showTaskForm('${list.id}')"><i class="bi bi-plus"></i> Add a to-do</button>
+                        
+                        <!-- DETAILED TASK FORM -->
+                        <div id="form-add-${list.id}" class="task-create-panel">
+                            <input type="text" id="task-title-${list.id}" class="task-input-title" placeholder="Describe this to-do...">
+                            
+                            <div class="task-meta-grid">
+                                <div class="task-meta-label"><i class="bi bi-calendar"></i> Dates</div>
+                                <div class="d-flex gap-2">
+                                    <input type="date" id="task-start-${list.id}" class="form-control-sm-custom" title="Start Date">
+                                    <span class="text-muted">→</span>
+                                    <input type="date" id="task-due-${list.id}" class="form-control-sm-custom" title="Due Date">
+                                </div>
+                            </div>
+
+                            <div class="task-meta-grid">
+                                <div class="task-meta-label"><i class="bi bi-flag"></i> Priority</div>
+                                <select id="task-priority-${list.id}" class="form-control-sm-custom">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+
+                            <div class="task-meta-grid">
+                                <div class="task-meta-label"><i class="bi bi-trophy"></i> Score Points</div>
+                                <input type="number" id="task-points-${list.id}" class="form-control-sm-custom" placeholder="0" style="width:80px;">
+                            </div>
+
+                            <div class="task-meta-grid">
+                                <div class="task-meta-label"><i class="bi bi-tags"></i> Tags</div>
+                                <div class="w-100 tag-input-container">
+                                    <div id="selected-tags-${list.id}" class="selected-tags"></div>
+                                    <input type="text" class="form-control-sm-custom" placeholder="Search or add tags..." oninput="handleTagSearch(this, '${list.id}')">
+                                    <div id="tag-dropdown-${list.id}" class="tag-dropdown"></div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                                <button class="btn btn-success rounded-pill px-4" onclick="saveTask('${list.id}')">Add to-do</button>
+                                <button class="btn btn-light border rounded-pill px-4" onclick="hideTaskForm('${list.id}')">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>`;
                 container.insertAdjacentHTML('beforeend', html);
             });
         }
-        
-        function showTaskInput(id) { document.getElementById(`form-add-${id}`).style.display='block'; document.getElementById(`btn-add-${id}`).style.display='none'; }
-        function hideTaskInput(id) { document.getElementById(`form-add-${id}`).style.display='none'; document.getElementById(`btn-add-${id}`).style.display='inline-block'; }
-        function toggleTaskStatus(chk, tid) {
-            const el = document.getElementById(`title-${tid}`);
-            if(chk.checked) { el.classList.add('text-decoration-line-through','text-muted'); el.classList.remove('text-dark'); }
-            else { el.classList.remove('text-decoration-line-through','text-muted'); el.classList.add('text-dark'); }
-            fetch(API_URL, { method:'POST', body:JSON.stringify({action:'updateTaskStatus', taskId:tid, status:chk.checked?'done':'open'})});
+
+        // --- TASK UI LOGIC ---
+        function showTaskForm(lid) { document.getElementById(`btn-add-${lid}`).style.display='none'; document.getElementById(`form-add-${lid}`).style.display='block'; selectedTags=[]; }
+        function hideTaskForm(lid) { document.getElementById(`btn-add-${lid}`).style.display='inline-block'; document.getElementById(`form-add-${lid}`).style.display='none'; }
+
+        // --- TAG SYSTEM ---
+        function handleTagSearch(input, lid) {
+            const query = input.value.toLowerCase();
+            const dropdown = document.getElementById(`tag-dropdown-${lid}`);
+            dropdown.innerHTML = '';
+            dropdown.style.display = 'block';
+
+            const filtered = globalTags.filter(t => t.name.toLowerCase().includes(query));
+            
+            // Render existing tags
+            filtered.forEach(tag => {
+                const div = document.createElement('div');
+                div.className = 'tag-option';
+                div.innerHTML = `<span class="tag-pill" style="background:${tag.color};color:${getTextColor(tag.color)}">${tag.name}</span>`;
+                div.onclick = () => addTagToSelection(tag, lid, input, dropdown);
+                dropdown.appendChild(div);
+            });
+
+            // Allow Create New
+            if(query.length > 0 && !filtered.find(t => t.name.toLowerCase() === query)) {
+                const createDiv = document.createElement('div');
+                createDiv.className = 'tag-option border-top';
+                createDiv.innerHTML = `<span>Create "<strong>${query}</strong>"</span>`;
+                createDiv.onclick = () => createNewTag(input.value, lid, input, dropdown);
+                dropdown.appendChild(createDiv);
+            }
+
+            if(dropdown.innerHTML === '') dropdown.style.display = 'none';
         }
-        function saveTask(lid) {
-            const title = document.getElementById(`input-task-${lid}`).value;
-            fetch(API_URL, { method:'POST', body:JSON.stringify({action:'createTask', listId:lid, title:title}) }).then(()=>fetchListsData());
+
+        function addTagToSelection(tag, lid, input, dropdown) {
+            if(!selectedTags.find(t => t.id === tag.id)) {
+                selectedTags.push(tag);
+                renderSelectedTags(lid);
+            }
+            input.value = '';
+            dropdown.style.display = 'none';
         }
-        function saveNewList() {
-            const name = document.getElementById('inputListName').value; const desc = document.getElementById('inputListDesc').innerText;
-            fetch(API_URL, { method:'POST', body:JSON.stringify({action:'createList', projectId:projectId, listName:name, description:desc}) }).then(()=>{
-                document.getElementById('inputListName').value=''; document.getElementById('inputListDesc').innerText=''; toggleNewListForm(); fetchListsData();
+
+        function createNewTag(name, lid, input, dropdown) {
+            const randomColor = dialogikaColors[Math.floor(Math.random() * dialogikaColors.length)];
+            
+            // Optimistic UI
+            const tempTag = { id: 'temp-'+Date.now(), name: name, color: randomColor };
+            selectedTags.push(tempTag);
+            renderSelectedTags(lid);
+            input.value = '';
+            dropdown.style.display = 'none';
+
+            // Backend Call
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'createTag', tagName: name, color: randomColor })
+            }).then(r=>r.json()).then(resp => {
+                // Update global tags and fix temp ID
+                const realTag = { id: resp.tagId, name: resp.name, color: resp.color };
+                globalTags.push(realTag);
+                const idx = selectedTags.findIndex(t => t.id === tempTag.id);
+                if(idx !== -1) selectedTags[idx] = realTag;
             });
         }
-        function toggleNewListForm() { const f=document.getElementById('newListForm'); f.style.display=(f.style.display==='none')?'block':'none'; }
+
+        function renderSelectedTags(lid) {
+            const container = document.getElementById(`selected-tags-${lid}`);
+            container.innerHTML = '';
+            selectedTags.forEach((tag, index) => {
+                container.innerHTML += `<span class="tag-pill" style="background:${tag.color};color:${getTextColor(tag.color)}">${tag.name} <i class="bi bi-x tag-remove ms-1" onclick="removeTag(${index}, '${lid}')"></i></span>`;
+            });
+        }
+
+        function removeTag(index, lid) {
+            selectedTags.splice(index, 1);
+            renderSelectedTags(lid);
+        }
+
+        function getTextColor(hex) {
+            const r = parseInt(hex.substr(1, 2), 16);
+            const g = parseInt(hex.substr(3, 2), 16);
+            const b = parseInt(hex.substr(5, 2), 16);
+            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 128) ? 'black' : 'white';
+        }
+
+        // --- SAVE TASK ---
+        function saveTask(lid) {
+            const title = document.getElementById(`task-title-${lid}`).value;
+            const start = document.getElementById(`task-start-${lid}`).value;
+            const due = document.getElementById(`task-due-${lid}`).value;
+            const priority = document.getElementById(`task-priority-${lid}`).value;
+            const points = document.getElementById(`task-points-${lid}`).value;
+
+            if(!title) return alert("Task title required");
+
+            const btn = event.target; btn.innerText="Saving..."; btn.disabled=true;
+
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'createTask',
+                    listId: lid,
+                    title: title,
+                    startDate: start,
+                    dueDate: due,
+                    priority: priority,
+                    points: points,
+                    tagIds: selectedTags.map(t => t.id)
+                })
+            }).then(() => fetchData());
+        }
+
+        // --- RICH EDITOR & COMMENTS ---
+        function execCmd(cmd, val=null) { document.execCommand(cmd, false, val); }
+        function insertCode() { const html=`<pre><code>Your code here...</code></pre>`; execCmd('insertHTML', html); }
+        function addLink() { const url=prompt("Enter URL"); if(url) execCmd("createLink", url); }
+        function handleFile(input) {
+            if(input.files[0]) {
+                const f = input.files[0];
+                const r = new FileReader();
+                r.onload = e => {
+                    selectedFile = { data: e.target.result.split(',')[1], name: f.name, type: f.type };
+                    document.getElementById('filePreview').style.display='block';
+                    document.getElementById('fileName').innerText=f.name;
+                };
+                r.readAsDataURL(f);
+            }
+        }
+        function clearFile() { selectedFile=null; document.getElementById('fileInput').value=''; document.getElementById('filePreview').style.display='none'; }
+        
+        function postComment() {
+            const text = document.getElementById('richCommentInput').innerHTML;
+            if(!text && !selectedFile) return;
+            const btn = document.getElementById('postBtn'); btn.innerText='Posting...'; btn.disabled=true;
+
+            if(selectedFile) {
+                fetch(API_URL, { method:'POST', body:JSON.stringify({ action:'uploadFile', fileData:selectedFile.data, fileName:selectedFile.name, mimeType:selectedFile.type }) })
+                .then(r=>r.json()).then(res => sendComment(text, res.fileUrl));
+            } else {
+                sendComment(text, null);
+            }
+        }
+
+        function sendComment(text, url) {
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action:'createComment', contextType:'project', contextId:projectId, text:text, attachmentUrl:url })
+            }).then(()=> {
+                document.getElementById('richCommentInput').innerHTML='';
+                clearFile();
+                fetchData();
+                document.getElementById('postBtn').innerText='Post comment';
+                document.getElementById('postBtn').disabled=false;
+            });
+        }
+
+        function renderComments(comments) {
+            const w = document.getElementById('commentsWrapper'); w.innerHTML='';
+            const projComments = comments.filter(c => c.contextId === projectId);
+            projComments.forEach(c => {
+                let fileHtml = c.attachment ? `<div class="mt-2 pt-2 border-top"><a href="${c.attachment}" target="_blank" class="small text-primary"><i class="bi bi-paperclip"></i> Attachment</a></div>` : '';
+                w.innerHTML += `<div class="d-flex gap-3"><div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">U</div><div class="bg-white border rounded p-3 w-100 shadow-sm"><div class="d-flex justify-content-between mb-1"><strong class="small text-dark">User Demo</strong><small class="text-muted" style="font-size:0.7rem">${new Date(c.date).toLocaleDateString()}</small></div><div class="text-dark small">${c.text}</div>${fileHtml}</div></div>`;
+            });
+        }
+
+        // Helpers
+        function toggleNewListForm() { const f=document.getElementById('newListForm'); f.style.display = (f.style.display==='none')?'block':'none'; }
+        function saveNewList() { const n=document.getElementById('inputListName').value; fetch(API_URL,{method:'POST',body:JSON.stringify({action:'createList',projectId:projectId,listName:n})}).then(()=>fetchData()); }
         function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
     </script>
 </body>
