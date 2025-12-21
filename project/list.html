@@ -588,14 +588,14 @@
                     <div id="commentsWrapper" class="d-flex flex-column gap-3 mb-4"></div>
                     
                     <div class="d-flex gap-3">
-                        <!-- FOTO USER LOGIN (Dinamis) -->
-                        <img id="currentUserCommentPhoto" src="" 
-                             class="rounded-circle flex-shrink-0 border" 
-                             style="width:40px; height:40px; object-fit:cover; display:none;">
-                        <!-- Initial Fallback jika foto tidak ada -->
-                        <div id="currentUserCommentInitial" 
-                             class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" 
-                             style="width:40px; height:40px; display:none;"></div>
+                        <div class="flex-shrink-0" style="width:40px; height:40px;">
+                            <img id="currentUserCommentPhoto" src="" 
+                                 class="rounded-circle border" 
+                                 style="width:40px; height:40px; object-fit:cover; display:none;">
+                            <div id="currentUserCommentInitial" 
+                                 class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" 
+                                 style="width:40px; height:40px; display:none;">US</div>
+                        </div>
                         
                         <div class="w-100">
                             <div class="rich-editor-box">
@@ -775,7 +775,7 @@
         
         // A. Inisialisasi User di Awal Script 
         const userData = JSON.parse(localStorage.getItem('userData')); 
-        let CURRENT_USER_ID = userData ? userData.id : null; 
+        let CURRENT_USER_ID = userData ? String(userData.id) : null; // Paksa jadi String untuk komparasi 
 
         document.addEventListener("DOMContentLoaded", () => { 
             if (!projectId) return alert("Missing Project ID"); 
@@ -798,40 +798,29 @@
         }
 
         function setupUserUI() { 
-             if (!userData) {
+            if (!userData) { 
                 window.location.href = "../index.html"; 
-                return;
-             }
-         
-             const imgEl = document.getElementById('currentUserCommentPhoto'); 
-             const initialEl = document.getElementById('currentUserCommentInitial'); 
-             
-             // Update Navbar
-             const nameDisplay = document.getElementById('user-name-display');
-             const photoDisplay = document.getElementById('user-photo-display');
-             const roleDisplay = document.getElementById('user-role-display');
-             
-             if(nameDisplay) nameDisplay.innerText = userData.name;
-             if(photoDisplay) photoDisplay.src = formatDriveUrl(userData.photo);
-             if(roleDisplay) roleDisplay.innerText = "Dialogika Member";
-             
-             // Update Welcome Message
-             const welcomeMsg = document.querySelector('h4.fw-bold');
-             if(welcomeMsg) welcomeMsg.innerText = `Good Morning, ${userData.name.split(' ')[0]}!`;
-         
-             // Update Comment Avatar
-             if (imgEl && initialEl) {
-                 if (userData.photo && userData.photo !== "") { 
-                     imgEl.src = formatDriveUrl(userData.photo); 
-                     imgEl.style.display = 'block'; 
-                     initialEl.style.display = 'none'; 
-                 } else { 
-                     initialEl.innerText = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'US'; 
-                     initialEl.style.display = 'flex'; 
-                     imgEl.style.display = 'none'; 
-                 } 
-             }
-         } 
+                return; 
+            } 
+
+            const imgEl = document.getElementById('currentUserCommentPhoto'); 
+            const initialEl = document.getElementById('currentUserCommentInitial'); 
+            
+            // Update Navbar (Sudah Benar) 
+            if(document.getElementById('user-name-display')) document.getElementById('user-name-display').innerText = userData.name; 
+            if(document.getElementById('user-photo-display')) document.getElementById('user-photo-display').src = formatDriveUrl(userData.photo); 
+            
+            // FIX LINGKARAN BIRU: Logika Sembunyikan/Tampilkan 
+            if (userData.photo && userData.photo !== "") { 
+                imgEl.src = formatDriveUrl(userData.photo); 
+                imgEl.style.display = 'block'; 
+                initialEl.style.display = 'none'; 
+            } else { 
+                initialEl.innerText = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'US'; 
+                initialEl.style.display = 'flex'; 
+                imgEl.style.display = 'none'; 
+            } 
+        } 
  
         // --- TAG SYSTEM LOGIC (ROBUST) ---
         function handleTagSearch(input, lid) { 
@@ -1573,9 +1562,11 @@
            // --- FUNGSI COMMENTS ---
            function renderComments(comments) {
                const wrapper = document.getElementById('commentsWrapper');
+               if(!wrapper) return;
+
                wrapper.innerHTML = comments.map(c => {
-                   // Cari data user dari list globalUsers berdasarkan userId di comment
-                   const sender = globalUsers.find(u => String(u.id) === String(c.userId)) || { name: 'Unknown User', photo: '' };
+                   // Gunakan == agar ID 1 (number) cocok dengan "1" (string)
+                   const sender = globalUsers.find(u => u.id == c.userId) || { name: 'System User', photo: '' };
                    const senderPhoto = sender.photo ? formatDriveUrl(sender.photo) : `https://ui-avatars.com/api/?name=${encodeURIComponent(sender.name)}`;
            
                    return `
@@ -1597,25 +1588,29 @@
             // 2. Fungsi Render Avatar Subscriber
             function renderSubscribers(subs) {
                 const subsContainer = document.getElementById('subsContainer');
-                subsContainer.innerHTML = '';
+                if(!subsContainer) return;
                 
+                subsContainer.innerHTML = ''; // Hapus "RA" statis dan isi lama
+                
+                if(subs.length === 0) {
+                    subsContainer.innerHTML = '<span class="text-muted small">No subscribers</span>';
+                }
+
                 subs.forEach(s => {
-                    // Cari data lengkap user berdasarkan userId untuk mendapatkan foto
-                    const userData = globalUsers.find(u => u.id === s.userId);
-                    const name = userData ? userData.name : 'Unknown User';
-                    const photo = userData ? userData.photo : `https://ui-avatars.com/api/?name=${s.userId}`;
-                    
-                    const html = `
-                        <div class="position-relative" title="${name}">
-                            <img src="${photo}" class="rounded-circle border" 
-                                 style="width:30px; height:30px; object-fit:cover;" 
-                                 onerror="this.src='https://ui-avatars.com/api/?name=U'">
-                        </div>`;
-                    subsContainer.insertAdjacentHTML('beforeend', html);
+                    const u = globalUsers.find(user => String(user.id) === String(s.userId));
+                    if(u) {
+                        const photo = u.photo ? formatDriveUrl(u.photo) : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}`;
+                        const html = `
+                            <div class="position-relative" title="${u.name}">
+                                <img src="${photo}" class="rounded-circle border" 
+                                     style="width:30px; height:30px; object-fit:cover;" 
+                                     onerror="this.src='https://ui-avatars.com/api/?name=U'">
+                            </div>`;
+                        subsContainer.insertAdjacentHTML('beforeend', html);
+                    }
                 });
                 
-                // Tambahkan tombol add/remove
-                const btnAddHtml = `<button class="btn btn-light border rounded-pill px-3 py-1 btn-sm text-muted small" onclick="alert('Manage people feature coming soon')">Add/remove people...</button>`;
+                const btnAddHtml = `<button class="btn btn-light border rounded-pill px-3 py-1 btn-sm text-muted small ms-2" onclick="alert('Feature coming soon')">Add/remove people...</button>`;
                 subsContainer.insertAdjacentHTML('beforeend', btnAddHtml);
             }
 

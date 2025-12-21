@@ -193,7 +193,12 @@ function getProjectCompleteData(targetId) {
     const subData = subSheet.getDataRange().getDisplayValues();
     for(let i=1; i<subData.length; i++) {
       if(String(subData[i][1]).trim() === targetIdStr) {
-        subscribers.push({ id: subData[i][0], userId: subData[i][2] });
+        // Tambahkan properti projectId agar bisa difilter di frontend
+        subscribers.push({ 
+          id: subData[i][0], 
+          projectId: subData[i][1], // Pastikan ini masuk
+          userId: subData[i][2] 
+        });
       }
     }
   } catch(e) {}
@@ -411,7 +416,6 @@ function updateTaskStatus(data) {
   }
   return responseJSON({status:'error', message: 'Task not found'});
 }
-
 
 /**
  * FUNGSI: TOGGLE SUBSCRIBER
