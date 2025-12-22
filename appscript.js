@@ -192,16 +192,18 @@ function getProjectCompleteData(targetId) {
     const subSheet = SpreadsheetApp.openById(SUBS_SHEET_ID).getSheets()[0];
     const subData = subSheet.getDataRange().getDisplayValues();
     for(let i=1; i<subData.length; i++) {
+      // Pastikan kolom 2 adalah projectId dan kolom 3 adalah userId
       if(String(subData[i][1]).trim() === targetIdStr) {
-        // Tambahkan properti projectId agar bisa difilter di frontend
         subscribers.push({ 
           id: subData[i][0], 
-          projectId: subData[i][1], // Pastikan ini masuk
+          projectId: subData[i][1], 
           userId: subData[i][2] 
         });
       }
     }
-  } catch(e) {}
+  } catch(e) {
+    console.error("Error subscriber: " + e);
+  }
   
   return responseJSON({ 
     status: 'success', 
