@@ -767,13 +767,16 @@
         let lastFetchedLists = []; 
         let selectedTagsByList = {}; // Menyimpan tag terpilih per List ID 
         
-        // A. Inisialisasi User di Awal Script 
+        // 1. Ambil data user di bagian paling atas script 
         const userData = JSON.parse(localStorage.getItem('userData')); 
-        let CURRENT_USER_ID = userData ? String(userData.id) : null; // Paksa jadi String untuk komparasi 
-
+        
+        // Gunakan .Id (I besar) sesuai header Spreadsheet Anda 
+        // Kita simpan di variabel global agar bisa diakses semua fungsi 
+        let CURRENT_USER_ID = userData ? String(userData.Id || userData.id) : null; 
+        
         document.addEventListener("DOMContentLoaded", () => { 
             if (!projectId) return alert("Missing Project ID"); 
-            setupUserUI();
+            setupUserUI(); // Jalankan UI User segera 
             fetchData(); 
         }); 
 
@@ -1665,55 +1668,54 @@
                 });
             }
 
-           async function postComment() { 
-               const text = document.getElementById('richCommentInput').innerHTML; 
-               const btn = document.getElementById('postBtn'); 
-               
-               if (!text || text === '<br>' || text.trim() === "") return alert("Comment cannot be empty"); 
-           
-               // Ambil ulang data user dari localStorage untuk memastikan ID terbaru 
-               const userLocal = JSON.parse(localStorage.getItem('userData')) || {}; 
-               const activeUserId = userLocal.id; 
-           
-               if (!activeUserId) { 
-                   alert("Session expired. Please login again."); 
-                   return; 
-               } 
-           
-               btn.disabled = true; 
-               btn.innerText = "Posting..."; 
-           
-               let attachmentUrl = ""; 
-               if (selectedFile) { 
-                   const fileRes = await uploadFile(); 
-                   if (fileRes.status === 'success') attachmentUrl = fileRes.fileUrl; 
-               } 
-           
-               fetch(API_URL, { 
-                   method: 'POST', 
-                   body: JSON.stringify({ 
-                       action: 'createComment', 
-                       projectId: projectId, 
-                       contextId: projectId,  // Karena diskusi di level project 
-                       contextType: 'project', // Sesuai skema kolom 2 
-                       userId: activeUserId,   // Sesuai skema kolom 4 
-                       text: text,            // Sesuai skema kolom 5 
-                       attachmentUrl: attachmentUrl 
-                   }) 
-               }) 
-               .then(r => r.json()) 
-               .then(res => { 
-                   if (res.status === 'success') { 
-                       document.getElementById('richCommentInput').innerHTML = ''; 
-                       clearFile(); 
-                       fetchData(); // Refresh list diskusi 
-                   } 
-               }) 
-               .finally(() => { 
-                   btn.disabled = false; 
-                   btn.innerText = "Post comment"; 
-               }); 
-           }
+        // 2. Perbaiki fungsi postComment agar tidak menganggap session habis 
+        async function postComment() { 
+            const text = document.getElementById('richCommentInput').innerHTML; 
+            const btn = document.getElementById('postBtn'); 
+            
+            if (!text || text === '<br>' || text.trim() === "") return alert("Comment cannot be empty"); 
+        
+            // Gunakan CURRENT_USER_ID yang sudah kita ambil di awal 
+            if (!CURRENT_USER_ID || CURRENT_USER_ID === "null") { 
+                alert("Session anda tidak valid. Harap login kembali."); 
+                window.location.href = "../index.html"; 
+                return; 
+            } 
+        
+            btn.disabled = true; 
+            btn.innerText = "Posting..."; 
+        
+            let attachmentUrl = ""; 
+            if (selectedFile) { 
+                const fileRes = await uploadFile(); 
+                if (fileRes.status === 'success') attachmentUrl = fileRes.fileUrl; 
+            } 
+        
+            fetch(API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ 
+                    action: 'createComment', 
+                    projectId: projectId, 
+                    contextId: projectId,  
+                    contextType: 'project', 
+                    userId: CURRENT_USER_ID, // ID sudah pasti terdeteksi sekarang 
+                    text: text,            
+                    attachmentUrl: attachmentUrl 
+                }) 
+            }) 
+            .then(r => r.json()) 
+            .then(res => { 
+                if (res.status === 'success') { 
+                    document.getElementById('richCommentInput').innerHTML = ''; 
+                    clearFile(); 
+                    fetchData(); 
+                } 
+            }) 
+            .finally(() => { 
+                btn.disabled = false; 
+                btn.innerText = "Post comment"; 
+            }); 
+        }
 
            // --- FUNGSI TEXT EDITOR & FILE ---
            function execCmd(command) {

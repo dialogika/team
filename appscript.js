@@ -75,12 +75,18 @@ function createTag(data) {
 function getProjectCompleteData(targetId) { 
   const targetIdStr = String(targetId).trim(); 
   
-  // 1. Fetch Master Users (Tanpa Password) 
+  // 1. Fetch Master Users 
   const uSheet = SpreadsheetApp.openById(USER_SHEET_ID).getSheets()[0]; 
   const uData = uSheet.getDataRange().getDisplayValues(); 
   let users = []; 
   for(let i=1; i<uData.length; i++) { 
-    users.push({ id: uData[i][0], name: uData[i][1], email: uData[i][2], photo: formatDriveUrl(uData[i][4]), role: uData[i][5] }); 
+    users.push({ 
+      id: String(uData[i][0]).trim(), // Ambil kolom 'Id' 
+      name: uData[i][1], 
+      email: uData[i][2], 
+      photo: formatDriveUrl(uData[i][4]), 
+      role: uData[i][5] 
+    }); 
   } 
 
   // 2. Fetch Master Tags 
