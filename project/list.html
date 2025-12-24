@@ -1296,124 +1296,86 @@ function renderLists(lists) {
                     <i class="bi bi-plus"></i> Add a to-do 
                 </button> 
                 <!-- Task form (form-add-lid) tetap di sini --> 
-                <div id="form-add-${list.id}" class="task-create-panel" style="display:none"> 
-                        <input type="text" id="task-title-${list.id}" class="task-title-large" placeholder="What needs to be done?">
-                        
-                        <div class="meta-grid-container">
-                            <!-- Priority -->
-                            <div class="meta-row">
-                                <div class="meta-icon"><i class="bi bi-flag"></i></div>
-                                <div class="meta-label">Priority</div>
-                                <div class="meta-value">
-                                    <div class="priority-dropdown" id="priority-wrapper-${list.id}">
-                                        <div class="priority-trigger" onclick="togglePriorityMenu('${list.id}')" id="priority-trigger-${list.id}">
-                                            <i class="bi bi-flag text-muted"></i> <span class="text-muted">Normal</span>
-                                        </div>
-                                        <div class="priority-menu" id="priority-menu-${list.id}">
-                                            <div class="priority-item" onclick="selectPriority('${list.id}', 'urgent')"><i class="bi bi-flag-fill text-danger"></i> Urgent</div>
-                                            <div class="priority-item" onclick="selectPriority('${list.id}', 'high')"><i class="bi bi-flag-fill text-warning"></i> High</div>
-                                            <div class="priority-item" onclick="selectPriority('${list.id}', 'normal')"><i class="bi bi-flag-fill text-primary"></i> Normal</div>
-                                            <div class="priority-item" onclick="selectPriority('${list.id}', 'low')"><i class="bi bi-flag-fill text-secondary"></i> Low</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-      
-                            <!-- Due Date -->
-                            <div class="meta-row">
-                                <div class="meta-icon"><i class="bi bi-calendar"></i></div>
-                                <div class="meta-label">Due Date</div>
-                                <div class="meta-value">
-                                    <input type="date" id="task-due-${list.id}" class="ghost-input" style="width:auto">
-                                </div>
-                            </div>
-      
-                            <!-- Assignee -->
-                            <div class="meta-row">
-                                <div class="meta-icon"><i class="bi bi-person"></i></div>
-                                <div class="meta-label">Assignee</div>
-                                <div class="meta-value">
-                                    <div class="user-dropdown-container">
-                                        <div class="user-trigger" onclick="toggleUserMenu('${list.id}')" id="user-trigger-${list.id}">
-                                            <i class="bi bi-person-circle text-muted"></i> <span class="text-muted">Unassigned</span>
-                                        </div>
-                                        <div class="user-menu-dark" id="user-menu-${list.id}">
-                                            <div class="user-search-box">
-                                                <i class="bi bi-search"></i>
-                                                <input type="text" placeholder="Search people..." oninput="filterUsers(this.value, '${list.id}')">
-                                            </div>
-                                            <div class="user-list-scroll" id="user-list-${list.id}"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-      
-                            <!-- TAGS (NEW) -->
-                            <div class="meta-row"> 
-                                <div class="meta-icon"><i class="bi bi-tags"></i></div> 
-                                <div class="meta-label">Tags</div> 
-                                <div class="meta-value position-relative"> 
-                                    <!-- Container untuk tag yang sudah dipilih --> 
-                                    <div id="selected-tags-${list.id}" class="d-flex flex-wrap gap-1 mb-2"></div> 
-                                    
-                                    <div class="input-group input-group-sm"> 
-                                        <input type="text" class="form-control border-0 bg-light rounded-pill px-3" 
-                                               id="tag-input-${list.id}" 
-                                               placeholder="Search or add tags..." 
-                                               onfocus="handleTagSearch(this, '${list.id}')" 
-                                               oninput="handleTagSearch(this, '${list.id}')"> 
+                <div id="form-add-${list.id}" class="task-create-panel" style="display:none; border-top: 2px solid #eee; padding-top: 20px;"> 
+                    <input type="text" id="task-title-${list.id}" class="task-title-large" placeholder="Task Name" style="font-size: 2rem; color: #b0b8c1;"> 
+                    
+                    <div class="meta-grid-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px 40px; margin-top: 20px;"> 
+                        <div class="meta-row"> 
+                            <div class="meta-icon"><i class="bi bi-record-circle"></i></div> 
+                            <div class="meta-label">Status</div> 
+                            <div class="meta-value">${renderStatusDropdown(list.statuses, list.id)}</div> 
+                        </div> 
+                        <div class="meta-row"> 
+                            <div class="meta-icon"><i class="bi bi-flag"></i></div> 
+                            <div class="meta-label">Priority</div> 
+                            <div class="meta-value"> 
+                                <div class="priority-dropdown" id="priority-container-${list.id}"> 
+                                    <div class="priority-trigger d-flex align-items-center gap-2 cursor-pointer" onclick="togglePriorityMenu('${list.id}')"> 
+                                        <i class="bi bi-flag-fill" id="priority-icon-display-${list.id}" style="color: #2196f3"></i> 
+                                        <span id="priority-text-display-${list.id}" class="fw-medium">Normal</span> 
+                                        <i class="bi bi-chevron-expand ms-auto text-muted small"></i> 
                                     </div> 
-                                    
-                                    <!-- TAG DROPDOWN --> 
-                                    <div id="tag-dropdown-${list.id}" class="tag-dropdown shadow-lg" onclick="event.stopPropagation()"> 
-                                        <!-- Search View --> 
-                                        <div id="tag-search-view-${list.id}"> 
-                                            <div class="tag-list-scroll" id="tag-list-results-${list.id}"></div> 
-                                            
-                                            <!-- Area Suggestion / Tombol Plus --> 
-                                            <div id="tag-create-suggestion-${list.id}" class="p-2 border-top bg-light" style="display:none"> 
-                                                <button class="btn btn-sm btn-outline-primary w-100 rounded-pill d-flex align-items-center justify-content-center gap-2" 
-                                                        onclick="createNewTagAct('${list.id}')"> 
-                                                    <i class="bi bi-plus-circle-fill"></i> Create Tag "<span class="new-tag-name-preview"></span>" 
-                                                </button> 
-                                            </div> 
-                                        </div> 
-                                        
-                                        <!-- Edit View (Tetap sama) --> 
-                                        <div id="tag-edit-view-${list.id}" class="tag-edit-container"> 
-                                            <div class="d-flex align-items-center gap-2 mb-3"> 
-                                                <i class="bi bi-chevron-left cursor-pointer" onclick="backToTagSearch('${list.id}')"></i> 
-                                                <input type="text" id="edit-tag-name-${list.id}" class="form-control form-control-sm fw-bold"> 
-                                            </div> 
-                                            <div class="color-mini-grid" id="edit-tag-colors-${list.id}"></div> 
-                                            <hr class="my-2 opacity-50"> 
-                                            <button class="btn-delete-tag" id="btn-delete-tag-act-${list.id}"> 
-                                                <i class="bi bi-trash"></i> Delete Globally 
-                                            </button> 
-                                        </div> 
+                                    <div class="priority-menu" id="priority-menu-${list.id}" style="display:none; position:absolute; z-index:1000; background:white; border:1px solid #ddd; border-radius:8px; padding:5px; width:150px;"> 
+                                        <div class="priority-item p-2 cursor-pointer" onclick="setPriorityValue('${list.id}', 'urgent', '#d32f2f', 'Urgent')"><i class="bi bi-flag-fill text-danger"></i> Urgent</div> 
+                                        <div class="priority-item p-2 cursor-pointer" onclick="setPriorityValue('${list.id}', 'high', '#ffa000', 'High')"><i class="bi bi-flag-fill text-warning"></i> High</div> 
+                                        <div class="priority-item p-2 cursor-pointer" onclick="setPriorityValue('${list.id}', 'normal', '#2196f3', 'Normal')"><i class="bi bi-flag-fill text-primary"></i> Normal</div> 
+                                        <div class="priority-item p-2 cursor-pointer" onclick="setPriorityValue('${list.id}', 'low', '#9e9e9e', 'Low')"><i class="bi bi-flag-fill text-secondary"></i> Low</div> 
                                     </div> 
+                                    <input type="hidden" id="task-priority-${list.id}" value="normal"> 
                                 </div> 
-                            </div>
-                        </div>
-      
-                        <!-- NOTES (NEW) -->
-                        <div class="mt-4"> 
-                            <div class="notes-label">Notes</div> 
-                            <div class="rich-editor-box"> 
-                                <div class="rich-editor-toolbar border-bottom bg-light d-flex gap-1 p-1"> 
-                                    <button class="editor-btn btn-sm" onclick="execEdit('bold')"><i class="bi bi-type-bold"></i></button> 
-                                    <button class="editor-btn btn-sm" onclick="execEdit('italic')"><i class="bi bi-type-italic"></i></button> 
-                                    <button class="editor-btn btn-sm" onclick="execEdit('insertUnorderedList')"><i class="bi bi-list-ul"></i></button> 
-                                    <button class="editor-btn btn-sm" onclick="addCustomLink()"><i class="bi bi-link-45deg"></i></button> 
-                                </div> 
-                                <div id="task-desc-${list.id}" class="rich-editor-content p-3" contenteditable="true" data-placeholder="Add notes here..."></div> 
                             </div> 
-                        </div>
-      
-                        <div class="d-flex gap-2 mt-4 justify-content-end">
-                            <button class="btn btn-light border px-4 rounded-pill" onclick="showTaskForm('${list.id}')">Cancel</button>
-                            <button class="btn btn-dlg-blue px-4 rounded-pill fw-bold" onclick="saveNewTask('${list.id}')">Create Task</button>
-                        </div>
+                        </div> 
+                        <div class="meta-row"> 
+                            <div class="meta-icon"><i class="bi bi-person-plus"></i></div> 
+                            <div class="meta-label">Assign to</div> 
+                            <div class="meta-value">${renderUserDropdownUI(list.id, 'assign')}</div> 
+                        </div> 
+                        <div class="meta-row"> 
+                            <div class="meta-icon"><i class="bi bi-bell"></i></div> 
+                            <div class="meta-label">Notify to</div> 
+                            <div class="meta-value">${renderUserDropdownUI(list.id, 'notify')}</div> 
+                        </div> 
+                        <div class="meta-row"> 
+                            <div class="meta-icon"><i class="bi bi-calendar4"></i></div> 
+                            <div class="meta-label">Dates</div> 
+                            <div class="meta-value d-flex align-items-center gap-2"> 
+                                <input type="date" id="task-start-${list.id}" class="ghost-input" style="width:125px"> 
+                                <span class="text-muted">-</span> 
+                                <input type="date" id="task-due-${list.id}" class="ghost-input" style="width:125px"> 
+                            </div> 
+                        </div> 
+                        <div class="meta-row"> 
+                            <div class="meta-icon"><i class="bi bi-star"></i></div> 
+                            <div class="meta-label">Task point</div> 
+                            <div class="meta-value"> 
+                                <input type="number" id="task-points-${list.id}" class="ghost-input" placeholder="Empty"> 
+                            </div> 
+                        </div> 
+                        <div class="meta-row"> 
+                            <div class="meta-icon"><i class="bi bi-stopwatch"></i></div> 
+                            <div class="meta-label">Track time</div> 
+                            <div class="meta-value d-flex align-items-center gap-2"> 
+                                <span class="text-muted small">Empty</span> 
+                                <button class="btn btn-sm btn-light border py-0 px-2" style="font-size:0.75rem"><i class="bi bi-play-fill"></i> Start</button> 
+                            </div> 
+                        </div> 
+                        <div class="meta-row"> 
+                            <div class="meta-icon"><i class="bi bi-tags"></i></div> 
+                            <div class="meta-label">Tags</div> 
+                            <div class="meta-value position-relative"> 
+                                <div id="selected-tags-${list.id}" class="d-flex flex-wrap gap-1 mb-1"></div> 
+                                <input type="text" id="tag-input-${list.id}" class="ghost-input w-100" placeholder="Search or add tags..." oninput="handleTagSearch(this, '${list.id}')"> 
+                                <div id="tag-dropdown-${list.id}" class="tag-dropdown"></div> 
+                            </div> 
+                        </div> 
+                    </div> 
+                    <div class="mt-4"> 
+                        <div id="task-desc-${list.id}" class="rich-editor-content border rounded-3 p-3" contenteditable="true" data-placeholder="Task description or notes..." style="min-height: 120px;"></div> 
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top"> 
+                        <button class="btn btn-dlg-blue rounded-pill px-4" onclick="saveTask('${list.id}')">Add to-do</button> 
+                        <button class="btn btn-light border rounded-pill px-4" onclick="hideTaskForm('${list.id}')">Cancel</button> 
+                    </div> 
                 </div> 
             </div> 
         </div>`; 
@@ -1561,7 +1523,7 @@ function renderLists(lists) {
                    <div class="status-item-row border-primary shadow-sm mt-2"> 
                        <div class="status-dot-btn" id="new-status-dot-${cat}" style="background-color: #64748b" onclick="openColorPicker(event, 'new-${cat}')"></div> 
                        <input type="text" id="new-input-${cat}" class="status-input-inline" placeholder="Status name..." autofocus> 
-                       <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="saveNewStatusLocally('${cat}')">Save</button> 
+                       <button class="btn btn-sm btn-dlg-blue rounded-pill px-3" onclick="saveNewStatusLocally('${cat}')">Save</button> 
                    </div> 
                `; 
            } 
@@ -1864,7 +1826,7 @@ function renderLists(lists) {
                          <div class="text-muted" style="font-size: 0.7rem;">${u.role || 'Member'}</div> 
                      </div> 
                  </div> 
-                 <button class="btn btn-sm ${isSubbed ? 'btn-outline-danger' : 'btn-primary'}" 
+                 <button class="btn btn-sm ${isSubbed ? 'btn-outline-danger' : 'btn-dlg-blue'}" 
                          style="border-radius: 20px; font-size: 0.75rem; min-width: 70px; font-weight: 600;" 
                          onclick="toggleOtherUserSub('${u.id}', this)"> 
                      ${isSubbed ? 'Remove' : 'Add'} 
@@ -2136,20 +2098,22 @@ function renderLists(lists) {
             const btn = event.target; 
             btn.disabled = true; 
             btn.innerText = "Saving..."; 
-
-            const user = JSON.parse(localStorage.getItem('userData')) || {};
+ 
+            const activeUserId = userData.Id || userData.id; 
         
             const payload = { 
                 action: 'createTask', 
                 listId: lid, 
-                userId: user.id || '',
+                userId: activeUserId, 
                 title: title, 
                 description: document.getElementById(`task-desc-${lid}`).innerHTML, 
                 status: document.getElementById(`task-status-${lid}`).value, 
                 priority: document.getElementById(`task-priority-${lid}`).value, 
+                startDate: document.getElementById(`task-start-${lid}`).value, 
                 dueDate: document.getElementById(`task-due-${lid}`).value, 
+                points: document.getElementById(`task-points-${lid}`).value, 
                 assignTo: document.getElementById(`task-assign-${lid}`).value, 
-                // AMBIL ARRAY ID TAG YANG DIPILIH 
+                notifyTo: document.getElementById(`task-notify-${lid}`).value, 
                 tagIds: (selectedTagsByList[lid] || []).map(t => t.id) 
             }; 
         
@@ -2163,6 +2127,8 @@ function renderLists(lists) {
                     selectedTagsByList[lid] = []; // Reset pilihan tag 
                     fetchData(); // Refresh list 
                     hideTaskForm(lid); 
+                } else { 
+                    alert("Error: " + res.message); 
                 } 
             }) 
             .finally(() => { 
@@ -2298,7 +2264,7 @@ function renderLists(lists) {
                     <button type="button" class="btn btn-outline-danger border-0" onclick="deleteListAct()">
                         <i class="bi bi-trash me-2"></i>Delete List
                     </button>
-                    <button type="button" class="btn btn-primary px-4 rounded-pill" onclick="saveListChanges()">Save Changes</button>
+                    <button type="button" class="btn btn-dlg-blue px-4 rounded-pill" onclick="saveListChanges()">Save Changes</button>
                 </div>
             </div>
         </div>

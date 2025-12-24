@@ -310,41 +310,41 @@ function createTask(data) {
   const tid = Utilities.getUuid(); 
   const now = new Date(); 
 
-  // Mapping kolom sesuai permintaan: 
-  // 1:task_id, 2:list_id, 3:parent, 4:title, 5:desc, 6:status, 7:priority, 8:start, 9:due... 
-  // 13:created_by_user_id 
   const row = [ 
-    tid,                          // 1: task_id 
-    data.listId,                  // 2: list_id 
-    "",                           // 3: parent_task_id 
-    data.title,                   // 4: task_title 
-    data.description || "",       // 5: task_description 
-    data.status || "OPEN",        // 6: status 
-    data.priority || "normal",    // 7: priority 
-    data.startDate || "",         // 8: start_date 
-    data.dueDate || "",           // 9: due_date 
-    "", "", "",                   // 10,11,12: occurrence, recurring, duplicated 
-    data.userId,                  // 13: created_by_user_id (ID DARI FRONTEND) 
-    now,                          // 14: created_at 
-    now,                          // 15: updated_at 
-    "",                           // 16: completed_at 
-    data.points || 0,             // 17: point_available 
-    "pts",                        // 18: point_type 
-    data.assignTo || "",          // 19: assigned_to_user_ids 
-    data.notifyTo || "",          // 20: notify_user_ids 
-    0                             // 21: position 
+    tid, 
+    data.listId, 
+    "", 
+    data.title, 
+    data.description || "", 
+    data.status || "OPEN", 
+    data.priority || "normal", 
+    data.startDate || "", 
+    data.dueDate || "", 
+    "", "", "", 
+    data.userId, 
+    now, 
+    now, 
+    "", 
+    data.points || 0, 
+    "pts", 
+    data.assignTo || "", 
+    data.notifyTo || "", 
+    0 
   ]; 
-  ss.appendRow(row); 
-
-  // SIMPAN KE SHEET JUNCTION TASK_TAG (task_id, tag_id) 
-  if (data.tagIds && data.tagIds.length > 0) { 
-    const junctionSheet = SpreadsheetApp.openById(TASK_TAG_SHEET_ID).getSheets()[0]; 
-    data.tagIds.forEach(tagId => { 
-      junctionSheet.appendRow([tid, tagId]); 
-    }); 
+   
+  try { 
+    ss.appendRow(row); 
+ 
+    if (data.tagIds && data.tagIds.length > 0) { 
+      const junctionSheet = SpreadsheetApp.openById(TASK_TAG_SHEET_ID).getSheets()[0]; 
+      data.tagIds.forEach(tagId => { 
+        junctionSheet.appendRow([tid, tagId]); 
+      }); 
+    } 
+    return responseJSON({ status: 'success', taskId: tid }); 
+  } catch (e) { 
+    return responseJSON({ status: 'error', message: e.toString() }); 
   } 
-
-  return responseJSON({ status: 'success', taskId: tid }); 
 } 
 
 /** 
