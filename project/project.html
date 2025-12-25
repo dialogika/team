@@ -435,264 +435,174 @@
 
     <!-- Script JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // --- KONFIGURASI API ---
-        // PASTE URL WEB APP BARU SETELAH DEPLOY DI SINI!
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzsRHbU5WcucXdIhQeOFBaWQFvqO1kwGk72dHIfYWKtNcQF7ds5tTOyZNAmEWCQX_M/exec';
+    <!-- Firebase SDK Modular -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        document.addEventListener("DOMContentLoaded", function() {
-            // 1. Ambil ID dari URL (contoh: project.html?id=123)
-            const urlParams = new URLSearchParams(window.location.search);
-            const projectId = urlParams.get('id');
+        // 1. Konfigurasi Firebase (Wajib sama dengan index/register)
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com", 
+            projectId: "pre-dialogika", 
+            storageBucket: "pre-dialogika.firebasestorage.app", 
+            messagingSenderId: "343771410480", 
+            appId: "1:343771410480:web:32881c9868522090237df5", 
+            measurementId: "G-SXN811P3N0" 
+        };
 
-            console.log("Project ID detected:", projectId); // Cek di Console Browser
+        // Initialize
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-            const headerContainer = document.getElementById('projectHeader');
+        // Ambil ID Project dari URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get('id');
 
-            if(projectId) {
-                fetchProjectDetail(projectId);
+        // --- 2. PROTEKSI & UNTUK TAMPILAN USER ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const localData = JSON.parse(localStorage.getItem('userData'));
+                document.getElementById('user-name-display').innerText = localData?.name || user.email;
+                document.getElementById('user-photo-display').src = localData?.photo || "https://i.pravatar.cc/300";
+                document.getElementById('user-role-display').innerText = localData?.position || "Member";
+
+                if (projectId) {
+                    loadProjectDetail(projectId);
+                } else {
+                    alert("Project ID tidak ditemukan!");
+                    window.location.href = "../home.html";
+                }
             } else {
-                headerContainer.innerHTML = `
-                    <div class="alert alert-danger">
-                        <strong>Error:</strong> Tidak ada ID Project di URL.<br>
-                        <small>Pastikan Anda membuka halaman ini dengan mengklik project dari Home.</small>
-                        <br><a href="../home.html" class="btn btn-sm btn-outline-danger mt-2">Kembali ke Home</a>
-                    </div>`;
+                window.location.href = "index.html";
             }
         });
 
-        function fetchProjectDetail(id) {
-            const headerContainer = document.getElementById('projectHeader');
-            
-            // Tampilkan Loading yang jelas
-            headerContainer.innerHTML = `
-                <div class="spinner-border text-primary" role="status"></div>
-                <p class="text-muted mt-2">Sedang mengambil data dari Google Sheet...</p>
-            `;
+        // --- 3. AMBIL DETAIL PROJECT (REAL-TIME) ---
+        function loadProjectDetail(id) {
+            const docRef = doc(db, "projects", id);
 
-            // Panggil API
-            fetch(`${API_URL}?id=${id}`)
-            .then(response => response.json())
-            .then(response => {
-                console.log("Data diterima:", response); // Cek data di Console
-
-                if(response.status === 'success') {
-                    renderProjectData(response.data);
+            // onSnapshot memantau perubahan data secara langsung
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const projectData = docSnap.data();
+                    renderProjectUI({ id: docSnap.id, ...projectData });
                 } else {
-                    headerContainer.innerHTML = `
-                        <div class="alert alert-warning">
-                            <strong>Gagal:</strong> ${response.message}
-                        </div>`;
+                    document.getElementById('projectHeader').innerHTML = `<div class="alert alert-danger">Project tidak ditemukan atau telah dihapus.</div>`;
                 }
-            })
-            .catch(error => {
-                console.error('Fetch Error:', error);
-                headerContainer.innerHTML = `
-                    <div class="alert alert-danger">
-                        <strong>Koneksi Error:</strong> Gagal menghubungi server.<br>
-                        <small>Cek URL Script atau koneksi internet Anda.</small>
-                    </div>`;
+            }, (error) => {
+                console.error("Error fetching project:", error);
             });
         }
 
-        function renderProjectData(data) {
-                // --- DATA SUDAH FLAT (TIDAK PERLU response.project) ---
-                // Karena script backend baru sudah merapikan datanya langsung di root object.
-                const project = data;
-                
-                console.log("Render Project Data:", project);
-
-                // 1. RENDER HEADER & DESKRIPSI
-                const headerContainer = document.getElementById('projectHeader');
-                
-                let fullDesc = project.desc || "No description provided.";
-                let words = fullDesc.split(" ");
-                let shortDesc = words.slice(0, 8).join(" ");
-                let descHtml = '';
-
-                if (words.length > 8) {
-                    descHtml = `
-                        <span id="descShort">${shortDesc}...</span>
-                        <span id="descFull" style="display:none;">${fullDesc}</span>
-                        <a href="javascript:void(0)" class="desc-more-btn" onclick="toggleDesc()" id="readMoreBtn">Read more</a>
-                    `;
-                } else {
-                    descHtml = fullDesc;
-                }
-
-                headerContainer.innerHTML = `
-                    <h1 class="fw-bold display-5 mb-3" style="color: var(--dlg-blue);">${project.name}</h1>
-                    <p class="text-muted mx-auto fs-6 desc-text" style="max-width: 650px;">
-                        ${descHtml}
-                    </p>
-                `;
-
-                // 2. UPDATE BADGE DEPARTMENT (PENTING)
-                const badgeEl = document.getElementById('projectBadge');
-                if(badgeEl) {
-                     // Cek department, default 'Project' jika kosong
-                     badgeEl.innerText = (project.department && project.department !== "") ? project.department : "Project";
-                }
-
-                // 3. RENDER GAUGE METER
-                let progress = project.progress || 0;
-                animateGauge(progress);
-
-                // 4. UPDATE LINK KE LIST.HTML
-                const linkToList = document.getElementById('linkToList');
-                if (linkToList) {
-                    linkToList.href = `list.html?id=${project.id}`;
-                }
-
-                // 5. RENDER MEMBERS
-                renderMembers(project.assignedTo);
-
-                // 6. RENDER PENDING TASKS
-                const taskContainer = document.getElementById('pendingTaskList');
-                const pendingTasks = project.pendingTasks || [];
-
-                if (pendingTasks.length > 0) {
-                    let taskHtml = '';
-                    pendingTasks.forEach(taskName => {
-                        taskHtml += `
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <input class="form-check-input" type="checkbox" onclick="event.stopPropagation()"> 
-                                <span class="text-dark small text-truncate">${taskName}</span>
-                            </div>
-                        `;
-                    });
-                    taskContainer.innerHTML = taskHtml;
-                } else {
-                    taskContainer.innerHTML = '<div class="text-muted small fst-italic">No pending tasks.</div>';
-                }
+        // --- 4. RENDER DATA KE UI ---
+        function renderProjectUI(project) {
+            // A. Header & Deskripsi
+            const header = document.getElementById('projectHeader');
+            const badge = document.getElementById('projectBadge');
+            
+            badge.innerText = project.department || "General";
+            
+            let descHtml = project.description || "No description.";
+            if (descHtml.length > 100) {
+                descHtml = `<span id="descShort">${descHtml.substring(0, 100)}...</span>
+                            <span id="descFull" style="display:none;">${project.description}</span>
+                            <a href="javascript:void(0)" class="desc-more-btn" onclick="window.toggleDesc()" id="readMoreBtn">Read more</a>`;
             }
 
-        // Fungsi Render Members (Helper)
-        function renderMembers(memberIds) {
-            const membersContainer = document.getElementById('projectMembersContainer');
-            if(!membersContainer) return;
+            header.innerHTML = `
+                <h1 class="fw-bold display-5 mb-3" style="color: var(--dlg-blue);">${project.name}</h1>
+                <p class="text-muted mx-auto fs-6 desc-text" style="max-width: 650px;">${descHtml}</p>
+            `;
+
+            // B. Gauge Progress (Gunakan logic project management nanti untuk hitung otomatis)
+            const progress = project.progress || 0;
+            animateGauge(progress);
+
+            // C. Members (Menampilkan lingkaran avatar dari array members)
+            renderMembers(project.members || []);
+
+            // D. Link Tool Card (Sesuaikan ID agar tool lain tahu project mana yang dibuka)
+            document.getElementById('linkToList').href = `list.html?id=${project.id}`;
             
-            membersContainer.innerHTML = '';
+            // E. Ambil "Pending Tasks" dari koleksi tasks (Optional/Contoh)
+            loadRecentTasks(project.id);
+        }
 
-            if (memberIds && memberIds.length > 0 && memberIds[0] !== "") {
-                let membersHtml = '<div class="avatar-pile">';
-                const maxShow = 8;
-                const showCount = Math.min(memberIds.length, maxShow);
+        // --- 5. FUNGSI RENDER AVATAR MEMBER ---
+        function renderMembers(memberUids) {
+            const container = document.getElementById('projectMembersContainer');
+            container.innerHTML = '<div class="avatar-pile"></div>';
+            const pile = container.querySelector('.avatar-pile');
 
-                for (let i = 0; i < showCount; i++) {
-                    let userId = memberIds[i];
-                    let imgUrl = `https://i.pravatar.cc/150?u=${userId}`;
-                    membersHtml += `<img src="${imgUrl}" title="${userId}" data-bs-toggle="tooltip">`;
-                }
+            memberUids.slice(0, 5).forEach(uid => {
+                const img = document.createElement('img');
+                // Untuk sementara pakai placeholder, nanti bisa fetch profil user berdasarkan UID
+                img.src = `https://i.pravatar.cc/150?u=${uid}`; 
+                img.title = "Team Member";
+                pile.appendChild(img);
+            });
 
-                if (memberIds.length > maxShow) {
-                    let remaining = memberIds.length - maxShow;
-                    membersHtml += `<div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center small fw-bold shadow-sm" style="width:35px; height:35px; border:2px solid white; margin-left:-12px; font-size:0.7rem; position:relative; z-index:0;">+${remaining}</div>`;
-                }
-
-                membersHtml += '</div>';
-                membersHtml += `<button class="btn-add-people ms-3"><i class="bi bi-plus-lg me-1"></i> Add people</button>`;
-                membersContainer.innerHTML = membersHtml;
-                
-                // Re-init tooltip
-                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                tooltipTriggerList.map(function (tooltipTriggerEl) { return new bootstrap.Tooltip(tooltipTriggerEl); });
-
-            } else {
-                membersContainer.innerHTML = `<button class="btn-add-people"><i class="bi bi-plus-lg me-1"></i> Add people</button>`;
+            if (memberUids.length > 5) {
+                const more = document.createElement('div');
+                more.className = "bg-dark text-white rounded-circle d-flex align-items-center justify-content-center small fw-bold";
+                more.style = "width:38px; height:38px; border:3px solid white; margin-left:-15px; font-size:0.7rem; position:relative; z-index:1;";
+                more.innerText = `+${memberUids.length - 5}`;
+                pile.appendChild(more);
             }
+
+            container.insertAdjacentHTML('beforeend', `<button class="btn-add-people ms-3"><i class="bi bi-plus-lg me-1"></i> Add</button>`);
         }
 
-        // Fungsi Expand/Collapse Deskripsi
-        window.toggleDesc = function() {
-            const shortSpan = document.getElementById('descShort');
-            const fullSpan = document.getElementById('descFull');
-            const btn = document.getElementById('readMoreBtn');
-
-            if (shortSpan.style.display === 'none') {
-                shortSpan.style.display = 'inline';
-                fullSpan.style.display = 'none';
-                btn.innerText = 'Read more';
-            } else {
-                shortSpan.style.display = 'none';
-                fullSpan.style.display = 'inline';
-                btn.innerText = 'Show less';
-            }
-        }
-
-        // Fungsi Animasi Gauge
-        function animateGauge(percent) {
-            const gaugeFill = document.getElementById('gaugeFill');
-            const gaugeValueText = document.getElementById('gaugeValue');
+        // --- 6. LOAD PENDING TASKS DARI KOLEKSI TASKS ---
+        async function loadRecentTasks(pId) {
+            const taskList = document.getElementById('pendingTaskList');
+            const q = query(collection(db, "tasks"), where("project_id", "==", pId), where("status.name", "!=", "Done"));
             
-            if(!gaugeFill || !gaugeValueText) return; // Safety check
-
-            const totalLength = 251.2;
-            const offset = totalLength - ((percent / 100) * totalLength);
-            
-            // Animasi Garis
-            setTimeout(() => { gaugeFill.style.strokeDashoffset = offset; }, 300);
-
-            // Animasi Angka
-            let currentVal = 0;
-            const timer = setInterval(() => {
-                if (currentVal >= percent) {
-                    currentVal = percent;
-                    gaugeValueText.innerText = currentVal + "%";
-                    clearInterval(timer);
-                } else {
-                    currentVal++;
-                    gaugeValueText.innerText = currentVal + "%";
-                }
-            }, 20);
-        }
-
-        function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
-    </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // 1. Ambil data dari localStorage
-            const data = localStorage.getItem('userData');
-            
-            if (!data) {
-                // Jika tidak ada data login, tendang balik ke login page
-                window.location.href = "index.html";
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.empty) {
+                taskList.innerHTML = '<div class="text-muted small">No pending tasks.</div>';
                 return;
             }
 
-            const user = JSON.parse(data);
-
-            // 2. Fungsi untuk konversi link Google Drive ke Direct Image Link
-            function getDirectLink(url) {
-                if (!url) return "https://i.pravatar.cc/300";
-                if (url.includes('drive.google.com')) {
-                    let id = "";
-                    if (url.includes('id=')) {
-                        id = url.split('id=')[1].split('&')[0];
-                    } else {
-                        id = url.split('/d/')[1].split('/')[0];
-                    }
-                    return `https://lh3.googleusercontent.com/u/0/d/${id}`;
-                }
-                return url;
-            }
-
-            // 3. Update Tampilan Navbar
-            document.getElementById('user-name-display').innerText = user.name;
-            document.getElementById('user-photo-display').src = getDirectLink(user.photo);
-            // Posisi bisa disesuaikan jika ada di spreadsheet
-            document.getElementById('user-role-display').innerText = "Dialogika Member";
-            
-            // Update juga pesan selamat datang jika perlu
-            const welcomeMsg = document.querySelector('h4.fw-bold');
-            if(welcomeMsg) welcomeMsg.innerText = `Good Morning, ${user.name.split(' ')[0]}!`;
-        });
-
-        // Fungsi Logout
-        function logout() {
-            localStorage.removeItem('userData');
-            window.location.href = "index.html";
+            let html = '';
+            querySnapshot.forEach((taskDoc) => {
+                const task = taskDoc.data();
+                html += `
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <input class="form-check-input" type="checkbox"> 
+                        <span class="text-dark small text-truncate">${task.title}</span>
+                    </div>`;
+            });
+            taskList.innerHTML = html;
         }
+
+        // --- UI HELPERS (Global Access) ---
+        window.toggleDesc = () => {
+            const short = document.getElementById('descShort');
+            const full = document.getElementById('descFull');
+            const btn = document.getElementById('readMoreBtn');
+            if (short.style.display === 'none') {
+                short.style.display = 'inline'; full.style.display = 'none'; btn.innerText = 'Read more';
+            } else {
+                short.style.display = 'none'; full.style.display = 'inline'; btn.innerText = 'Show less';
+            }
+        };
+
+        window.toggleSidebar = () => document.getElementById('sidebarNav').classList.toggle('show');
+
+        function animateGauge(percent) {
+            const gaugeFill = document.getElementById('gaugeFill');
+            const gaugeValueText = document.getElementById('gaugeValue');
+            if(!gaugeFill || !gaugeValueText) return;
+            const totalLength = 251.2;
+            const offset = totalLength - ((percent / 100) * totalLength);
+            setTimeout(() => { gaugeFill.style.strokeDashoffset = offset; }, 300);
+            gaugeValueText.innerText = percent + "%";
+        }
+
     </script>
 </body>
 </html>
