@@ -523,12 +523,14 @@
             </div>
 
             <div class="main-list-card">
-                <div class="d-flex flex-column align-items-center mb-5">
-                    <h1 class="fw-bold mb-2 text-center">All Lists</h1>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge text-bg-success" id="allListDoneBadge" style="display:none">All Task Done</span>
-                        <button class="btn btn-dlg-blue rounded-pill px-4" onclick="toggleNewListForm()">+ New List</button>
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <div class="flex-grow-1 d-flex justify-content-center">
+                        <div class="text-center">
+                            <h1 class="fw-bold mb-1">All Lists</h1>
+                            <span class="badge text-bg-success" id="allListDoneBadge" style="display:none">All Task Done</span>
+                        </div>
                     </div>
+                    <button class="btn btn-dlg-blue rounded-pill px-4 ms-3" onclick="toggleNewListForm()">+ New List</button>
                 </div>
 
                 <div id="newListForm" class="border rounded-4 p-4 mb-4 shadow-sm" style="display:none">
@@ -546,7 +548,7 @@
                         <input type="file" id="list-desc-file-input" multiple style="display:none" onchange="handleDescFiles('list','inputListDesc',this)">
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-success rounded-pill px-4" onclick="saveNewList()">Create List</button>
+                        <button class="btn btn-dlg-green rounded-pill px-4" onclick="saveNewList()">Create List</button>
                         <button class="btn btn-light rounded-pill" onclick="toggleNewListForm()">Cancel</button>
                     </div>
                 </div>
