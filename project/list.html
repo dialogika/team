@@ -79,6 +79,29 @@
             grid-template-columns: 1fr 1fr;
             gap: 10px 30px;
         }
+        .meta-field-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .meta-label-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .meta-label-text {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+        .meta-value {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 6px;
+            flex: 1;
+        }
         .ghost-input {
             border: 1px solid transparent;
             background: transparent;
@@ -146,6 +169,288 @@
         .priority-flag-high { background: #f59e0b; }
         .priority-flag-normal { background: #3b82f6; }
         .priority-flag-low { background: #6b7280; }
+
+        .tag-selector {
+            position: relative;
+            width: 100%;
+        }
+        .tag-selector-control {
+            display: flex;
+            align-items: center;
+            min-height: 34px;
+            border-radius: 4px;
+            padding: 4px 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            cursor: text;
+            width: 100%;
+        }
+        .tag-selector-control:hover {
+            background: #f1f5f9;
+        }
+        .tag-selected-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            flex: 1;
+        }
+        .tag-placeholder {
+            color: #9ca3af;
+            font-size: 0.85rem;
+        }
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            background: #e5e7eb;
+            color: #111827;
+        }
+        .tag-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 4px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.15);
+            padding: 6px 0 4px 0;
+            z-index: 40;
+            display: none;
+        }
+        .tag-search-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            padding: 6px 12px 8px 12px;
+            font-size: 0.85rem;
+        }
+        .tag-options {
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 0 4px 4px 4px;
+        }
+        .tag-option {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            cursor: pointer;
+            gap: 6px;
+        }
+        .tag-option:hover {
+            background: #f3f4f6;
+        }
+        .tag-option-selected .tag-pill {
+            background: #4338ca;
+            color: #eef2ff;
+        }
+        .tag-create {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px 8px 12px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 0.8rem;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        .tag-create:hover {
+            background: #f3f4f6;
+        }
+        .tag-create-label {
+            margin-left: 4px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+        .tag-remove {
+            margin-left: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            color: #6b7280;
+        }
+        .tag-remove:hover {
+            color: #111827;
+        }
+
+        .user-select {
+            position: relative;
+            width: 100%;
+        }
+        .user-select-control {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            min-height: 34px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            padding: 6px 10px;
+            background: #f9fafb;
+            cursor: pointer;
+            gap: 8px;
+        }
+        .user-select-control:hover {
+            background: #f3f4ff;
+        }
+        .user-select-avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e5e7eb;
+            flex-shrink: 0;
+        }
+        .user-select-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-select-placeholder {
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+        .user-select-name {
+            font-size: 0.85rem;
+            color: #111827;
+        }
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 6px;
+            background: #0f172a;
+            color: white;
+            border-radius: 18px;
+            padding: 10px 10px 8px 10px;
+            box-shadow: 0 18px 45px rgba(15,23,42,0.45);
+            width: 280px;
+            z-index: 60;
+            display: none;
+        }
+        .user-search-wrapper {
+            display: flex;
+            align-items: center;
+            background: #020617;
+            border-radius: 999px;
+            padding: 4px 10px;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .user-search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #e5e7eb;
+            font-size: 0.85rem;
+        }
+        .user-search-input::placeholder {
+            color: #6b7280;
+        }
+        .user-list-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #9ca3af;
+            margin: 4px 2px 4px 2px;
+        }
+        .user-list {
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .user-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 4px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .user-option:hover {
+            background: #111827;
+        }
+        .user-option-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #1f2937;
+        }
+        .user-option-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .user-option-name {
+            font-size: 0.85rem;
+        }
+
+        .tag-edit-btn {
+            border: none;
+            background: transparent;
+            padding: 0;
+            margin-left: auto;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .tag-edit-btn:hover {
+            color: #4b5563;
+        }
+        .tag-editor-popover {
+            position: absolute;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+            padding: 10px 12px 8px 12px;
+            z-index: 1000;
+            width: 260px;
+            display: none;
+        }
+        .tag-editor-input {
+            width: 100%;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        .tag-color-grid {
+            display: grid;
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        .tag-color-swatch {
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .tag-color-swatch-selected {
+            border-color: #111827;
+        }
+        .tag-editor-delete {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #ef4444;
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding-top: 4px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 4px;
+        }
 
         .comment-bubble {
             background: #f8fafc;
@@ -271,7 +576,15 @@
         let currentUser = null;
         let projectLists = [];
         let allTasks = [];
+        let projectMembers = [];
+        let tagEditorState = { tagName: "", color: "", anchorRect: null };
         const storedUser = JSON.parse(localStorage.getItem('userData') || 'null');
+
+        const TAG_COLORS = [
+            "#bfdbfe", "#e0f2fe", "#a5f3fc", "#bbf7d0", "#dcfce7", "#fef9c3", "#fee2e2", "#fecaca",
+            "#ddd6fe", "#e9d5ff", "#f5d0fe", "#fce7f3", "#fee2e2", "#ffedd5", "#d1fae5", "#bae6fd",
+            "#e5e7eb", "#d1d5db", "#f9a8d4", "#fda4af", "#fdba74", "#bef264", "#a7f3d0", "#67e8f9"
+        ];
 
         onAuthStateChanged(auth, (user) => {
             if (user && projectId) {
@@ -304,6 +617,67 @@
                 const badgeEl = document.getElementById('projectBadge');
                 if (nameEl) nameEl.innerText = data.name || "Untitled Project";
                 if (badgeEl) badgeEl.innerText = data.department || "General";
+                await loadProjectMembers(data.members || []);
+                renderUI();
+            }
+        }
+
+        function getDirectPhotoUrl(url, uid) {
+            if (!url) return `https://i.pravatar.cc/150?u=${uid || "user"}`;
+            if (url.includes('drive.google.com')) {
+                let id = "";
+                if (url.includes('id=')) {
+                    id = url.split('id=')[1].split('&')[0];
+                } else if (url.includes('/d/')) {
+                    id = url.split('/d/')[1].split('/')[0];
+                }
+                if (id) return `https://lh3.googleusercontent.com/u/0/d/${id}`;
+            }
+            return url;
+        }
+
+        async function loadProjectMembers(memberUids) {
+            projectMembers = [];
+            try {
+                if (Array.isArray(memberUids) && memberUids.length > 0) {
+                    const promises = memberUids.map(async (uid) => {
+                        try {
+                            const snap = await getDoc(doc(db, "users", uid));
+                            if (snap.exists()) {
+                                const u = snap.data();
+                                return {
+                                    uid,
+                                    name: u.name || u.email || uid,
+                                    photo: getDirectPhotoUrl(u.photo || "", uid)
+                                };
+                            }
+                        } catch (e) {
+                            console.error("Failed to fetch user profile", uid, e);
+                        }
+                        return {
+                            uid,
+                            name: uid,
+                            photo: `https://i.pravatar.cc/150?u=${uid}`
+                        };
+                    });
+                    const results = await Promise.all(promises);
+                    projectMembers = results.filter(Boolean);
+                } else {
+                    const snap = await getDocs(collection(db, "users"));
+                    const members = [];
+                    snap.forEach(d => {
+                        const u = d.data();
+                        members.push({
+                            uid: d.id,
+                            name: u.name || u.email || d.id,
+                            photo: getDirectPhotoUrl(u.photo || "", d.id)
+                        });
+                    });
+                    projectMembers = members;
+                }
+            } catch (e) {
+                console.error("Failed to load project members", e);
+                projectMembers = [];
             }
         }
 
@@ -356,6 +730,16 @@
             }
             if (emptyState) emptyState.style.display = 'none';
 
+            const tagSet = new Set();
+            allTasks.forEach(t => {
+                if (Array.isArray(t.tags)) {
+                    t.tags.forEach(tag => {
+                        if (tag && typeof tag === "string") tagSet.add(tag);
+                    });
+                }
+            });
+            const allProjectTags = Array.from(tagSet).sort((a, b) => a.localeCompare(b));
+
             projectLists.forEach(list => {
                 const listTasks = allTasks.filter(t => t.list_id === list.id && !t.parent_task_id);
 
@@ -402,112 +786,193 @@
                             <input type="text" id="title-${list.id}" class="task-title-large" placeholder="Task Name">
 
                             <div class="meta-grid-container mb-3">
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="text-muted small">Status</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
+                                <div class="meta-field-row">
+                                    <div class="meta-label-group">
                                         <i class="bi bi-record-circle text-muted"></i>
+                                        <span class="meta-label-text">Status</span>
+                                    </div>
+                                    <div class="meta-value">
                                         <select id="status-${list.id}" class="ghost-input">
                                             ${(list.statuses || [{ name: 'Initiate' }]).map(s => `<option value="${s.name}">${s.name}</option>`).join('')}
                                         </select>
                                     </div>
                                 </div>
 
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="text-muted small">Priority</span>
+                                <div class="meta-field-row">
+                                    <div class="meta-label-group">
+                                        <i class="bi bi-flag text-muted"></i>
+                                        <span class="meta-label-text">Priority</span>
                                     </div>
-                                    <div class="priority-dropdown" id="priority-wrap-${list.id}">
-                                        <button type="button" class="priority-trigger" onclick="togglePriorityMenu('${list.id}')">
-                                            <span class="priority-flag priority-flag-normal">
-                                                <i class="bi bi-flag-fill"></i>
-                                            </span>
-                                            <span id="priority-label-${list.id}">Normal</span>
-                                            <i class="bi bi-chevron-down ms-auto text-muted small"></i>
-                                        </button>
-                                        <div class="priority-menu" id="priority-menu-${list.id}">
-                                            <div class="priority-item" data-value="urgent" onclick="selectPriority('${list.id}','urgent')">
-                                                <span class="priority-flag priority-flag-urgent"><i class="bi bi-flag-fill"></i></span>
-                                                <span>Urgent</span>
+                                    <div class="meta-value">
+                                        <div class="priority-dropdown w-100" id="priority-wrap-${list.id}">
+                                            <button type="button" class="priority-trigger" onclick="togglePriorityMenu('${list.id}')">
+                                                <span class="priority-flag priority-flag-normal">
+                                                    <i class="bi bi-flag-fill"></i>
+                                                </span>
+                                                <span id="priority-label-${list.id}">Normal</span>
+                                                <i class="bi bi-chevron-down ms-auto text-muted small"></i>
+                                            </button>
+                                            <div class="priority-menu" id="priority-menu-${list.id}">
+                                                <div class="priority-item" data-value="urgent" onclick="selectPriority('${list.id}','urgent')">
+                                                    <span class="priority-flag priority-flag-urgent"><i class="bi bi-flag-fill"></i></span>
+                                                    <span>Urgent</span>
+                                                </div>
+                                                <div class="priority-item" data-value="high" onclick="selectPriority('${list.id}','high')">
+                                                    <span class="priority-flag priority-flag-high"><i class="bi bi-flag-fill"></i></span>
+                                                    <span>High</span>
+                                                </div>
+                                                <div class="priority-item" data-value="normal" onclick="selectPriority('${list.id}','normal')">
+                                                    <span class="priority-flag priority-flag-normal"><i class="bi bi-flag-fill"></i></span>
+                                                    <span>Normal</span>
+                                                </div>
+                                                <div class="priority-item" data-value="low" onclick="selectPriority('${list.id}','low')">
+                                                    <span class="priority-flag priority-flag-low"><i class="bi bi-flag-fill"></i></span>
+                                                    <span>Low</span>
+                                                </div>
                                             </div>
-                                            <div class="priority-item" data-value="high" onclick="selectPriority('${list.id}','high')">
-                                                <span class="priority-flag priority-flag-high"><i class="bi bi-flag-fill"></i></span>
-                                                <span>High</span>
-                                            </div>
-                                            <div class="priority-item" data-value="normal" onclick="selectPriority('${list.id}','normal')">
-                                                <span class="priority-flag priority-flag-normal"><i class="bi bi-flag-fill"></i></span>
-                                                <span>Normal</span>
-                                            </div>
-                                            <div class="priority-item" data-value="low" onclick="selectPriority('${list.id}','low')">
-                                                <span class="priority-flag priority-flag-low"><i class="bi bi-flag-fill"></i></span>
-                                                <span>Low</span>
-                                            </div>
+                                            <input type="hidden" id="priority-${list.id}" value="normal">
                                         </div>
-                                        <input type="hidden" id="priority-${list.id}" value="normal">
                                     </div>
                                 </div>
 
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="text-muted small">Assign to</span>
+                                <div class="meta-field-row">
+                                    <div class="meta-label-group">
+                                        <i class="bi bi-person-plus text-muted"></i>
+                                        <span class="meta-label-text">Assign to</span>
                                     </div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="bi bi-person text-muted"></i>
-                                        <input type="text" id="assign-${list.id}" class="ghost-input" placeholder="User ID or email">
+                                    <div class="meta-value">
+                                        <div class="user-select" id="assign-select-${list.id}">
+                                            <div class="user-select-control" onclick="toggleUserDropdown('${list.id}', 'assign')">
+                                                <div class="user-select-avatar" id="assign-avatar-${list.id}">
+                                                    <i class="bi bi-person text-muted"></i>
+                                                </div>
+                                                <span id="assign-label-${list.id}" class="user-select-placeholder">Select user...</span>
+                                                <i class="bi bi-chevron-down ms-auto text-muted small"></i>
+                                            </div>
+                                            <div class="user-dropdown" id="assign-dropdown-${list.id}">
+                                                <div class="user-search-wrapper">
+                                                    <i class="bi bi-search text-muted"></i>
+                                                    <input type="text" id="assign-search-${list.id}" class="user-search-input" placeholder="Search..." oninput="filterUserOptions('${list.id}', 'assign')">
+                                                </div>
+                                                <div class="user-list-label">People</div>
+                                                <div class="user-list" id="assign-options-${list.id}">
+                                                    ${(projectMembers || []).map(m => `
+                                                        <div class="user-option" data-user-uid="${m.uid}" onclick="selectUser('${list.id}', 'assign', '${m.uid}')">
+                                                            <div class="user-option-avatar">
+                                                                <img src="${m.photo}" alt="${m.name}">
+                                                            </div>
+                                                            <div class="user-option-name">${m.name}</div>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                            <input type="hidden" id="assign-${list.id}" value="">
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="text-muted small">Notify to</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
+                                <div class="meta-field-row">
+                                    <div class="meta-label-group">
                                         <i class="bi bi-bell text-muted"></i>
-                                        <input type="text" id="notify-${list.id}" class="ghost-input" placeholder="User ID or email">
+                                        <span class="meta-label-text">Notify to</span>
+                                    </div>
+                                    <div class="meta-value">
+                                        <div class="user-select" id="notify-select-${list.id}">
+                                            <div class="user-select-control" onclick="toggleUserDropdown('${list.id}', 'notify')">
+                                                <div class="user-select-avatar" id="notify-avatar-${list.id}">
+                                                    <i class="bi bi-person text-muted"></i>
+                                                </div>
+                                                <span id="notify-label-${list.id}" class="user-select-placeholder">Select user...</span>
+                                                <i class="bi bi-chevron-down ms-auto text-muted small"></i>
+                                            </div>
+                                            <div class="user-dropdown" id="notify-dropdown-${list.id}">
+                                                <div class="user-search-wrapper">
+                                                    <i class="bi bi-search text-muted"></i>
+                                                    <input type="text" id="notify-search-${list.id}" class="user-search-input" placeholder="Search..." oninput="filterUserOptions('${list.id}', 'notify')">
+                                                </div>
+                                                <div class="user-list-label">People</div>
+                                                <div class="user-list" id="notify-options-${list.id}">
+                                                    ${(projectMembers || []).map(m => `
+                                                        <div class="user-option" data-user-uid="${m.uid}" onclick="selectUser('${list.id}', 'notify', '${m.uid}')">
+                                                            <div class="user-option-avatar">
+                                                                <img src="${m.photo}" alt="${m.name}">
+                                                            </div>
+                                                            <div class="user-option-name">${m.name}</div>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                            <input type="hidden" id="notify-${list.id}" value="">
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="text-muted small">Dates</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
+                                <div class="meta-field-row">
+                                    <div class="meta-label-group">
                                         <i class="bi bi-calendar text-muted"></i>
+                                        <span class="meta-label-text">Dates</span>
+                                    </div>
+                                    <div class="meta-value">
                                         <input type="date" id="start-${list.id}" class="ghost-input">
-                                        <span class="text-muted small">to</span>
+                                        <span class="text-muted small">-</span>
                                         <input type="date" id="due-${list.id}" class="ghost-input">
                                     </div>
                                 </div>
 
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="text-muted small">Task point</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
+                                <div class="meta-field-row">
+                                    <div class="meta-label-group">
                                         <i class="bi bi-star text-muted"></i>
-                                        <input type="number" id="points-${list.id}" class="ghost-input" min="0" placeholder="Empty">
+                                        <span class="meta-label-text">Task point</span>
+                                    </div>
+                                    <div class="meta-value">
+                                        <span class="text-muted small me-1">Empty</span>
+                                        <input type="number" id="points-${list.id}" class="ghost-input" min="0" placeholder="">
                                     </div>
                                 </div>
 
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="text-muted small">Track time</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
+                                <div class="meta-field-row">
+                                    <div class="meta-label-group">
                                         <i class="bi bi-stopwatch text-muted"></i>
+                                        <span class="meta-label-text">Track time</span>
+                                    </div>
+                                    <div class="meta-value">
                                         <span class="text-muted small" id="track-label-${list.id}">Empty</span>
                                         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" disabled>Start</button>
                                     </div>
                                 </div>
 
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="text-muted small">Tags</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
+                                <div class="meta-field-row">
+                                    <div class="meta-label-group">
                                         <i class="bi bi-tag text-muted"></i>
-                                        <input type="text" id="tags-${list.id}" class="ghost-input" placeholder="tag-a, tag-b">
+                                        <span class="meta-label-text">Tags</span>
+                                    </div>
+                                    <div class="meta-value">
+                                        <div class="tag-selector w-100" id="tag-selector-${list.id}">
+                                            <div class="tag-selector-control" onclick="toggleTagDropdown('${list.id}')">
+                                                <div class="tag-selected-list" id="tag-selected-${list.id}">
+                                                    <span class="tag-placeholder">Search or add tags...</span>
+                                                </div>
+                                                <i class="bi bi-chevron-down ms-auto text-muted small"></i>
+                                            </div>
+                                            <div class="tag-dropdown" id="tag-dropdown-${list.id}">
+                                                <input type="text" id="tag-input-${list.id}" class="tag-search-input" placeholder="Search or add tags..." oninput="filterTagOptions('${list.id}')">
+                                                <div class="tag-options" id="tag-options-${list.id}">
+                                                    ${allProjectTags.map(tag => `
+                                                        <div class="tag-option" data-tag="${tag}" onclick="toggleTagFromOption('${list.id}', this.dataset.tag)">
+                                                            <span class="tag-pill" data-tag-pill="${tag}">${tag}</span>
+                                                            <button type="button" class="tag-edit-btn" onclick="openTagEditor(event, '${tag}')">
+                                                                <i class="bi bi-three-dots-vertical"></i>
+                                                            </button>
+                                                        </div>
+                                                    `).join('')}
+                                                </div>
+                                                <div class="tag-create" id="tag-create-${list.id}" style="display:none;" onclick="createTagFromInput('${list.id}')">
+                                                    <span>Create</span>
+                                                    <span class="tag-create-label" id="tag-create-label-${list.id}"></span>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" id="tags-${list.id}" value="">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -666,6 +1131,417 @@
             const menu = document.getElementById(`priority-menu-${lid}`);
             if (menu) menu.style.display = "none";
         };
+
+        window.toggleTagDropdown = (lid) => {
+            const dropdown = document.getElementById(`tag-dropdown-${lid}`);
+            if (!dropdown) return;
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+            const input = document.getElementById(`tag-input-${lid}`);
+            if (dropdown.style.display === "block" && input) {
+                input.focus();
+                input.select();
+                filterTagOptions(lid);
+            }
+        };
+
+        window.filterTagOptions = (lid) => {
+            const input = document.getElementById(`tag-input-${lid}`);
+            const optionsContainer = document.getElementById(`tag-options-${lid}`);
+            const createRow = document.getElementById(`tag-create-${lid}`);
+            const createLabel = document.getElementById(`tag-create-label-${lid}`);
+            if (!input || !optionsContainer || !createRow || !createLabel) return;
+
+            const query = input.value.trim().toLowerCase();
+            let hasVisible = false;
+            let hasExact = false;
+
+            Array.from(optionsContainer.children).forEach(opt => {
+                const tag = (opt.dataset.tag || "").toLowerCase();
+                const visible = !query || tag.indexOf(query) !== -1;
+                opt.style.display = visible ? "flex" : "none";
+                if (visible) {
+                    hasVisible = true;
+                    if (tag === query) hasExact = true;
+                }
+            });
+
+            if (query && (!hasVisible || !hasExact)) {
+                createRow.style.display = "flex";
+                createLabel.innerText = query;
+            } else {
+                createRow.style.display = "none";
+                createLabel.innerText = "";
+            }
+        };
+
+        function getDefaultTagColor(name) {
+            if (!name) return "#e5e7eb";
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = ((hash << 5) - hash) + name.charCodeAt(i);
+                hash |= 0;
+            }
+            const index = Math.abs(hash) % TAG_COLORS.length;
+            return TAG_COLORS[index];
+        }
+
+        function getTagColorOverrides() {
+            const key = `tagColors:${projectId}`;
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) return {};
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === "object") return parsed;
+                return {};
+            } catch {
+                return {};
+            }
+        }
+
+        function saveTagColorOverrides(overrides) {
+            const key = `tagColors:${projectId}`;
+            try {
+                localStorage.setItem(key, JSON.stringify(overrides));
+            } catch {
+            }
+        }
+
+        function getTagColor(name) {
+            const overrides = getTagColorOverrides();
+            if (overrides && overrides[name]) return overrides[name];
+            return getDefaultTagColor(name);
+        }
+
+        function setTagsValue(lid, tags) {
+            const hidden = document.getElementById(`tags-${lid}`);
+            if (!hidden) return;
+            const clean = Array.from(new Set(tags.map(t => t.trim()).filter(Boolean)));
+            hidden.value = clean.join(",");
+            updateSelectedTagUI(lid);
+            const optionsContainer = document.getElementById(`tag-options-${lid}`);
+            if (!optionsContainer) return;
+            Array.from(optionsContainer.children).forEach(opt => {
+                const tag = opt.dataset.tag;
+                if (!tag) return;
+                if (clean.includes(tag)) {
+                    opt.classList.add("tag-option-selected");
+                } else {
+                    opt.classList.remove("tag-option-selected");
+                }
+            });
+        }
+
+        function getTagsValue(lid) {
+            const hidden = document.getElementById(`tags-${lid}`);
+            if (!hidden) return [];
+            if (!hidden.value) return [];
+            return hidden.value.split(",").map(t => t.trim()).filter(Boolean);
+        }
+
+        function updateSelectedTagUI(lid) {
+            const selectedContainer = document.getElementById(`tag-selected-${lid}`);
+            if (!selectedContainer) return;
+            const tags = getTagsValue(lid);
+            selectedContainer.innerHTML = "";
+            if (tags.length === 0) {
+                const span = document.createElement("span");
+                span.className = "tag-placeholder";
+                span.innerText = "Search or add tags...";
+                selectedContainer.appendChild(span);
+                return;
+            }
+            tags.forEach(tag => {
+                const pill = document.createElement("span");
+                pill.className = "tag-pill";
+                pill.innerText = tag;
+                pill.style.background = getTagColor(tag);
+                const remove = document.createElement("span");
+                remove.className = "tag-remove";
+                remove.innerText = "×";
+                remove.onclick = function (event) {
+                    event.stopPropagation();
+                    removeTagFromSelection(lid, tag);
+                };
+                pill.appendChild(remove);
+                selectedContainer.appendChild(pill);
+            });
+        }
+
+        window.openTagEditor = (event, tagName) => {
+            event.stopPropagation();
+            const existing = document.getElementById("tag-editor-popover");
+            let editor = existing;
+            if (!editor) {
+                editor = document.createElement("div");
+                editor.id = "tag-editor-popover";
+                editor.className = "tag-editor-popover";
+                editor.innerHTML = `
+                    <input type="text" id="tag-editor-name" class="tag-editor-input">
+                    <div class="tag-color-grid" id="tag-color-grid"></div>
+                    <div class="tag-editor-delete" id="tag-editor-delete">
+                        <i class="bi bi-trash"></i>
+                        <span>Delete</span>
+                    </div>
+                `;
+                document.body.appendChild(editor);
+                const grid = editor.querySelector("#tag-color-grid");
+                TAG_COLORS.forEach(color => {
+                    const swatch = document.createElement("div");
+                    swatch.className = "tag-color-swatch";
+                    swatch.style.background = color;
+                    swatch.dataset.color = color;
+                    swatch.onclick = function (e) {
+                        e.stopPropagation();
+                        chooseTagColor(color);
+                    };
+                    grid.appendChild(swatch);
+                });
+                const del = editor.querySelector("#tag-editor-delete");
+                del.onclick = function (e) {
+                    e.stopPropagation();
+                    deleteTagDefinition();
+                };
+                document.addEventListener("click", function (e) {
+                    const panel = document.getElementById("tag-editor-popover");
+                    if (!panel) return;
+                    if (panel.style.display !== "block") return;
+                    if (panel.contains(e.target)) return;
+                    panel.style.display = "none";
+                });
+            }
+
+            tagEditorState.tagName = tagName;
+            tagEditorState.color = getTagColor(tagName);
+
+            const input = document.getElementById("tag-editor-name");
+            input.value = tagName;
+            input.oninput = function () {
+                applyTagNameChange(this.value);
+            };
+
+            const swatches = editor.querySelectorAll(".tag-color-swatch");
+            swatches.forEach(s => {
+                if (s.dataset.color === tagEditorState.color) {
+                    s.classList.add("tag-color-swatch-selected");
+                } else {
+                    s.classList.remove("tag-color-swatch-selected");
+                }
+            });
+
+            const rect = event.currentTarget.getBoundingClientRect();
+            editor.style.top = `${window.scrollY + rect.bottom + 4}px`;
+            editor.style.left = `${window.scrollX + rect.left}px`;
+            editor.style.display = "block";
+        };
+
+        function applyTagNameChange(newNameRaw) {
+            const newName = newNameRaw.trim();
+            if (!newName || newName === tagEditorState.tagName) return;
+            const overrides = getTagColorOverrides();
+            const color = overrides[tagEditorState.tagName] || tagEditorState.color || getDefaultTagColor(tagEditorState.tagName);
+            delete overrides[tagEditorState.tagName];
+            overrides[newName] = color;
+            saveTagColorOverrides(overrides);
+            const options = document.querySelectorAll(`.tag-option[data-tag="${tagEditorState.tagName}"]`);
+            options.forEach(opt => {
+                opt.dataset.tag = newName;
+                const pill = opt.querySelector(".tag-pill");
+                if (pill) {
+                    pill.innerText = newName;
+                    pill.dataset.tagPill = newName;
+                    pill.style.background = color;
+                }
+                const btn = opt.querySelector(".tag-edit-btn");
+                if (btn) {
+                    btn.setAttribute("onclick", `openTagEditor(event, '${newName}')`);
+                }
+            });
+            const pills = document.querySelectorAll(`.tag-selected-list .tag-pill`);
+            pills.forEach(pill => {
+                if (pill.innerText === tagEditorState.tagName) {
+                    pill.innerText = newName;
+                    pill.style.background = color;
+                }
+            });
+            const inputs = document.querySelectorAll(`input[id^="tags-"]`);
+            inputs.forEach(input => {
+                if (!input.value) return;
+                const parts = input.value.split(",").map(t => t.trim()).filter(Boolean);
+                let changed = false;
+                const updated = parts.map(t => {
+                    if (t === tagEditorState.tagName) {
+                        changed = true;
+                        return newName;
+                    }
+                    return t;
+                });
+                if (changed) {
+                    input.value = updated.join(",");
+                }
+            });
+            tagEditorState.tagName = newName;
+        }
+
+        function chooseTagColor(color) {
+            tagEditorState.color = color;
+            const overrides = getTagColorOverrides();
+            overrides[tagEditorState.tagName] = color;
+            saveTagColorOverrides(overrides);
+            const swatches = document.querySelectorAll(".tag-color-swatch");
+            swatches.forEach(s => {
+                if (s.dataset.color === color) {
+                    s.classList.add("tag-color-swatch-selected");
+                } else {
+                    s.classList.remove("tag-color-swatch-selected");
+                }
+            });
+            const pills = document.querySelectorAll(`[data-tag-pill="${tagEditorState.tagName}"]`);
+            pills.forEach(pill => {
+                pill.style.background = color;
+            });
+            const selectedPills = document.querySelectorAll(".tag-selected-list .tag-pill");
+            selectedPills.forEach(pill => {
+                if (pill.innerText === tagEditorState.tagName) {
+                    pill.style.background = color;
+                }
+            });
+        }
+
+        function deleteTagDefinition() {
+            const name = tagEditorState.tagName;
+            if (!name) return;
+            const confirmed = confirm(`Delete tag "${name}" from suggestions?`);
+            if (!confirmed) return;
+            const overrides = getTagColorOverrides();
+            delete overrides[name];
+            saveTagColorOverrides(overrides);
+            const options = document.querySelectorAll(`.tag-option[data-tag="${name}"]`);
+            options.forEach(opt => opt.remove());
+            const inputs = document.querySelectorAll(`input[id^="tags-"]`);
+            inputs.forEach(input => {
+                if (!input.value) return;
+                const parts = input.value.split(",").map(t => t.trim()).filter(Boolean);
+                const updated = parts.filter(t => t !== name);
+                if (updated.length !== parts.length) {
+                    input.value = updated.join(",");
+                }
+            });
+            const lists = document.querySelectorAll(".tag-selected-list");
+            lists.forEach(list => {
+                const pills = Array.from(list.querySelectorAll(".tag-pill"));
+                let removed = false;
+                pills.forEach(p => {
+                    if (p.innerText === name) {
+                        p.remove();
+                        removed = true;
+                    }
+                });
+                if (removed && list.children.length === 0) {
+                    const span = document.createElement("span");
+                    span.className = "tag-placeholder";
+                    span.innerText = "Search or add tags...";
+                    list.appendChild(span);
+                }
+            });
+            const editor = document.getElementById("tag-editor-popover");
+            if (editor) editor.style.display = "none";
+        }
+
+        window.toggleUserDropdown = (lid, field) => {
+            const dropdown = document.getElementById(`${field}-dropdown-${lid}`);
+            if (!dropdown) return;
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+            const search = document.getElementById(`${field}-search-${lid}`);
+            if (dropdown.style.display === "block" && search) {
+                search.focus();
+                search.select();
+                filterUserOptions(lid, field);
+            }
+        };
+
+        window.filterUserOptions = (lid, field) => {
+            const search = document.getElementById(`${field}-search-${lid}`);
+            const list = document.getElementById(`${field}-options-${lid}`);
+            if (!search || !list) return;
+            const q = search.value.trim().toLowerCase();
+            Array.from(list.children).forEach(opt => {
+                const nameEl = opt.querySelector(".user-option-name");
+                const text = nameEl ? nameEl.innerText.toLowerCase() : "";
+                const visible = !q || text.indexOf(q) !== -1;
+                opt.style.display = visible ? "flex" : "none";
+            });
+        };
+
+        window.selectUser = (lid, field, uid) => {
+            const hidden = document.getElementById(`${field}-${lid}`);
+            const label = document.getElementById(`${field}-label-${lid}`);
+            const avatarWrap = document.getElementById(`${field}-avatar-${lid}`);
+            if (!hidden || !label || !avatarWrap) return;
+
+            const user = projectMembers.find(m => m.uid === uid);
+            if (!user) return;
+
+            hidden.value = uid;
+            label.className = "user-select-name";
+            label.innerText = user.name || "User";
+
+            avatarWrap.innerHTML = "";
+            const img = document.createElement("img");
+            img.src = user.photo;
+            img.alt = user.name || "User";
+            avatarWrap.appendChild(img);
+
+            const dropdown = document.getElementById(`${field}-dropdown-${lid}`);
+            if (dropdown) dropdown.style.display = "none";
+        };
+
+        window.toggleTagFromOption = (lid, tag) => {
+            const current = getTagsValue(lid);
+            const index = current.indexOf(tag);
+            if (index >= 0) {
+                current.splice(index, 1);
+            } else {
+                current.push(tag);
+            }
+            setTagsValue(lid, current);
+        };
+
+        window.createTagFromInput = (lid) => {
+            const input = document.getElementById(`tag-input-${lid}`);
+            if (!input) return;
+            const value = input.value.trim();
+            if (!value) return;
+            const current = getTagsValue(lid);
+            if (!current.includes(value)) {
+                current.push(value);
+            }
+            const optionsContainer = document.getElementById(`tag-options-${lid}`);
+            if (optionsContainer && !Array.from(optionsContainer.children).some(opt => opt.dataset.tag === value)) {
+                const opt = document.createElement("div");
+                opt.className = "tag-option";
+                opt.dataset.tag = value;
+                opt.onclick = function () {
+                    window.toggleTagFromOption(lid, value);
+                };
+                const pill = document.createElement("span");
+                pill.className = "tag-pill";
+                pill.innerText = value;
+                opt.appendChild(pill);
+                optionsContainer.insertBefore(opt, optionsContainer.firstChild || null);
+            }
+            setTagsValue(lid, current);
+            input.value = "";
+            filterTagOptions(lid);
+        };
+
+        function removeTagFromSelection(lid, tag) {
+            const current = getTagsValue(lid);
+            const index = current.indexOf(tag);
+            if (index >= 0) {
+                current.splice(index, 1);
+                setTagsValue(lid, current);
+            }
+        }
 
         window.toggleDone = async (id, isChecked) => {
             await updateDoc(doc(db, "tasks", id), {
