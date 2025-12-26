@@ -71,37 +71,37 @@
         }
         .subtask-indent { margin-left: 40px; border-left: 2px solid #e2e8f0; }
 
-        .search-bar input,
+        .search-bar-list input,
         .search-btn,
         .search-btn:before,
         .search-btn:after {
             transition: all 0.25s ease-out;
         }
-        .search-bar {
+        .search-bar-list {
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0.25rem 0;
             max-width: 100%;
         }
-        .search-bar input,
+        .search-bar-list input,
         .search-btn {
             width: 3em;
             height: 3em;
         }
-        .search-bar input:invalid:not(:focus),
+        .search-bar-list input:invalid:not(:focus),
         .search-btn {
             cursor: pointer;
         }
-        .search-bar input:focus,
-        .search-bar input:valid {
+        .search-bar-list input:focus,
+        .search-bar-list input:valid {
             width: 100%;
         }
-        .search-bar input:focus,
-        .search-bar input:not(:focus) + .search-btn:focus {
+        .search-bar-list input:focus,
+        .search-bar-list input:not(:focus) + .search-btn:focus {
             outline: transparent;
         }
-        .search-bar input {
+        .search-bar-list input {
             background: transparent;
             border-radius: 1.5em;
             box-shadow: 0 0 0 0.4em #171717 inset;
@@ -113,8 +113,8 @@
             appearance: none;
             border: none;
         }
-        .search-bar input:focus,
-        .search-bar input:valid {
+        .search-bar-list input:focus,
+        .search-bar-list input:valid {
             background: #ffffff;
             border-radius: 0.375em 0 0 0.375em;
             box-shadow: 0 0 0 0.1em #d9d9d9 inset;
@@ -160,25 +160,25 @@
             width: 1px;
             height: 1px;
         }
-        .search-bar input:focus + .search-btn,
-        .search-bar input:valid + .search-btn {
+        .search-bar-list input:focus + .search-btn,
+        .search-bar-list input:valid + .search-btn {
             background: #2762f3;
             border-radius: 0 0.375em 0.375em 0;
             transform: scale(1);
         }
-        .search-bar input:focus + .search-btn:before,
-        .search-bar input:focus + .search-btn:after,
-        .search-bar input:valid + .search-btn:before,
-        .search-bar input:valid + .search-btn:after {
+        .search-bar-list input:focus + .search-btn:before,
+        .search-bar-list input:focus + .search-btn:after,
+        .search-bar-list input:valid + .search-btn:before,
+        .search-bar-list input:valid + .search-btn:after {
             opacity: 1;
         }
-        .search-bar input:focus + .search-btn:hover,
-        .search-bar input:valid + .search-btn:hover,
-        .search-bar input:valid:not(:focus) + .search-btn:focus {
+        .search-bar-list input:focus + .search-btn:hover,
+        .search-bar-list input:valid + .search-btn:hover,
+        .search-bar-list input:valid:not(:focus) + .search-btn:focus {
             background: #0c48db;
         }
-        .search-bar input:focus + .search-btn:active,
-        .search-bar input:valid + .search-btn:active {
+        .search-bar-list input:focus + .search-btn:active,
+        .search-bar-list input:valid + .search-btn:active {
             transform: translateY(1px);
         }
 
@@ -632,6 +632,55 @@
             padding: 12px;
             border: 1px solid #e2e8f0;
         }
+        @media (max-width: 768px) {
+            .main-list-card {
+                padding: 24px 16px;
+                margin: 0 12px 32px 12px;
+                border-radius: 14px;
+            }
+            .project-context-card {
+                width: 95%;
+                margin: 16px auto -10px auto;
+                padding: 12px 16px 28px 16px;
+                border-radius: 14px 14px 0 0;
+            }
+            .ph-badge {
+                left: 16px;
+                top: 42%;
+            }
+            .ph-crumb-container {
+                max-width: 100%;
+                padding: 6px 14px;
+                font-size: 0.8rem;
+            }
+            .main-list-card > .d-flex.justify-content-between.align-items-center {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 16px;
+            }
+            .main-list-card .search-bar-list {
+                max-width: 100%;
+            }
+            .main-list-card .search-bar-list input:focus,
+            .main-list-card .search-bar-list input:valid {
+                width: 100%;
+            }
+            .main-list-card .text-center.flex-grow-1 {
+                order: -1;
+                margin-bottom: 4px;
+            }
+            .main-list-card h1.fw-bold {
+                font-size: 1.4rem;
+            }
+            .main-list-card p.text-muted {
+                font-size: 0.85rem;
+            }
+            .main-list-card > .d-flex.justify-content-between.align-items-center > button {
+                align-self: center;
+                width: 100%;
+                max-width: 200px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -669,8 +718,8 @@
             <div class="main-list-card">
                 <div class="d-flex justify-content-between align-items-center mb-5">
                     <div class="d-flex align-items-center flex-grow-1 gap-4">
-                        <div style="max-width:260px; width:100%;">
-                            <form action="" class="search-bar" onsubmit="event.preventDefault();">
+                        <div style="">
+                            <form action="" class="search-bar-list" onsubmit="event.preventDefault();">
                                 <input
                                     type="search"
                                     name="search"
@@ -841,6 +890,11 @@
 
         window.onGlobalTaskSearchChange = (value) => {
             renderUI();
+            const input = document.getElementById('globalTaskSearch');
+            if (!input) return;
+            if (String(value || "").trim().length === 0) {
+                input.blur();
+            }
         };
 
         onAuthStateChanged(auth, (user) => {
