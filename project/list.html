@@ -95,10 +95,14 @@
 
         .main-list-card {
             max-width: 1000px;
-            margin: 0 auto;
+            width: 100%;
+            margin: 0 auto 50px auto;
             background: white;
             border-radius: 16px;
-            padding: 40px;
+            box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.1);
+            padding: 50px 60px;
+            position: relative;
+            z-index: 2;
             border: 1px solid #d1d5db;
         }
         .task-create-panel {
@@ -534,6 +538,7 @@
     </nav>
 
     <div class="dashboard-container">
+        <main class="main-content w-100" style="margin-left:0; padding-top:100px">
             <div class="project-context-card">
                 <div class="ph-badge" id="projectBadge">Loading...</div>
                 <div class="ph-crumb-container">
@@ -549,8 +554,7 @@
                     </button>
                 </div>
             </div>
-        <main class="main-content w-100" style="margin-left:0; padding-top:100px">
-            
+
             <div class="main-list-card">
                 <div class="d-flex justify-content-between align-items-center mb-5">
                     <div class="flex-grow-1 d-flex justify-content-center">
