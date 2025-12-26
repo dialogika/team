@@ -85,6 +85,65 @@
         }
         .meta-value:hover { border-bottom-color: var(--dlg-blue); color: var(--dlg-blue); }
 
+        .priority-dropdown {
+            position: relative;
+            width: 100%;
+        }
+        .priority-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            padding: 6px 10px;
+            background: #f9fafb;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .priority-trigger:hover {
+            background: #eef2ff;
+        }
+        .priority-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(15,23,42,0.15);
+            padding: 6px 0;
+            min-width: 180px;
+            z-index: 1050;
+            display: none;
+        }
+        .priority-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .priority-item:hover {
+            background: #f1f5f9;
+        }
+        .priority-flag {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: white;
+            font-size: 0.75rem;
+        }
+        .priority-flag-urgent { background: #ef4444; }
+        .priority-flag-high { background: #f59e0b; }
+        .priority-flag-normal { background: #3b82f6; }
+        .priority-flag-low { background: #6b7280; }
+
         /* Comment Box */
         .comment-input-box {
             border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;
@@ -93,6 +152,145 @@
             min-height: 80px; padding: 15px; outline: none; background: #f9fafb; color: #374151;
         }
         .comment-input-area:focus { background: white; }
+
+        .tag-selector {
+            position: relative;
+            width: 100%;
+        }
+        .tag-selector-control {
+            display: flex;
+            align-items: center;
+            min-height: 34px;
+            border-radius: 4px;
+            padding: 4px 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            cursor: text;
+            width: 100%;
+        }
+        .tag-selector-control:hover {
+            background: #f1f5f9;
+        }
+        .tag-selected-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            flex: 1;
+        }
+        .tag-placeholder {
+            color: #9ca3af;
+            font-size: 0.85rem;
+        }
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            background: #e5e7eb;
+            color: #111827;
+        }
+        .tag-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 4px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.15);
+            padding: 6px 0 4px 0;
+            z-index: 40;
+            display: none;
+        }
+        .tag-search-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            padding: 6px 12px 8px 12px;
+            font-size: 0.85rem;
+        }
+        .tag-options {
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 0 4px 4px 4px;
+        }
+        .tag-option {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            cursor: pointer;
+            gap: 6px;
+        }
+        .tag-option:hover {
+            background: #f3f4f6;
+        }
+        .tag-option-selected .tag-pill {
+            background: #4338ca;
+            color: #eef2ff;
+        }
+        .tag-create {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px 8px 12px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 0.8rem;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        .tag-create:hover {
+            background: #f3f4f6;
+        }
+        .tag-create-label {
+            margin-left: 4px;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+        .tag-remove {
+            margin-left: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            color: #6b7280;
+        }
+        .tag-remove:hover {
+            color: #111827;
+        }
+
+        .notes-editor-wrapper {
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            box-shadow: 0 8px 24px rgba(15,23,42,0.06);
+        }
+        .notes-editor-toolbar {
+            padding: 8px 16px 4px 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .notes-toolbar-btn {
+            color: #6b7280;
+            border-radius: 999px;
+        }
+        .notes-toolbar-btn:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+        .notes-editor-area {
+            min-height: 150px;
+            padding: 12px 16px 16px 16px;
+            background: transparent;
+            outline: none;
+            font-size: 0.9rem;
+            color: #374151;
+        }
+        .notes-editor-area:focus {
+            background: #ffffff;
+        }
+        .notes-editor-area.empty-placeholder {
+            color: #9ca3af;
+        }
 
         @media (max-width: 768px) {
             .ph-badge { display: none; }
@@ -187,26 +385,119 @@
                     </div>
                     <div>
                         <h1 class="fw-bold mb-1 display-6" id="taskTitleDisplay" style="color:#111;">Loading Task...</h1>
-                        <p class="text-muted small">Added by <span class="fw-bold text-dark">User Demo</span></p>
+                        <p class="text-muted small d-flex align-items-center gap-2">
+                            <span>Added by</span>
+                            <span id="metaCreatedByValue" class="d-inline-flex align-items-center gap-2">
+                                Unknown user
+                            </span>
+                        </p>
                     </div>
                 </div>
 
                 <!-- METADATA FORM (Grid System) -->
                 <div class="row mb-3 align-items-center">
+                    <div class="col-md-3 meta-label">Task Priority</div>
+                    <div class="col-md-9">
+                        <div class="meta-value" id="metaPriority">
+                            <div class="priority-dropdown w-100" id="task-priority-wrap" >
+                                <button type="button" class="priority-trigger" onclick="toggleTaskPriorityMenuDetail()">
+                                    <span class="priority-flag priority-flag-normal" id="task-priority-flag">
+                                        <i class="bi bi-flag-fill"></i>
+                                    </span>
+                                    <span id="task-priority-label">Set priority...</span>
+                                    <i class="bi bi-chevron-down ms-auto text-muted small"></i>
+                                </button>
+                                <div class="priority-menu" id="task-priority-menu">
+                                    <div class="priority-item" data-value="urgent" onclick="selectTaskPriorityDetail('urgent')">
+                                        <span class="priority-flag priority-flag-urgent"><i class="bi bi-flag-fill"></i></span>
+                                        <span>Urgent</span>
+                                    </div>
+                                    <div class="priority-item" data-value="high" onclick="selectTaskPriorityDetail('high')">
+                                        <span class="priority-flag priority-flag-high"><i class="bi bi-flag-fill"></i></span>
+                                        <span>High</span>
+                                    </div>
+                                    <div class="priority-item" data-value="normal" onclick="selectTaskPriorityDetail('normal')">
+                                        <span class="priority-flag priority-flag-normal"><i class="bi bi-flag-fill"></i></span>
+                                        <span>Normal</span>
+                                    </div>
+                                    <div class="priority-item" data-value="low" onclick="selectTaskPriorityDetail('low')">
+                                        <span class="priority-flag priority-flag-low"><i class="bi bi-flag-fill"></i></span>
+                                        <span>Low</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3 align-items-center">
+                    <div class="col-md-3 meta-label">Status task</div>
+                    <div class="col-md-9">
+                        <div class="meta-value" id="metaStatus" role="button">
+                            <div class="priority-dropdown w-100"  id="task-status-wrap">
+                                <button type="button" class="priority-trigger" onclick="openStatusDropdownDetail()">
+                                    <span id="task-status-label">No status yet</span>
+                                    <i class="bi bi-chevron-down ms-auto text-muted small"></i>
+                                </button>
+                                <div class="priority-menu" id="task-status-menu">
+                                    <!-- status options injected via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3 align-items-center">
                     <div class="col-md-3 meta-label">Assigned to</div>
-                    <div class="col-md-9"><div class="meta-value">Type names to assign...</div></div>
+                    <div class="col-md-9">
+                        <div class="meta-value" id="metaAssignedTo" role="button">Type names to assign...</div>
+                    </div>
                 </div>
                 <div class="row mb-3 align-items-center">
                     <div class="col-md-3 meta-label">Due on</div>
-                    <div class="col-md-9"><div class="meta-value">Select a date...</div></div>
+                    <div class="col-md-9">
+                        <div class="meta-value" id="metaDueOn" role="button">Select a date...</div>
+                    </div>
                 </div>
                 <div class="row mb-3 align-items-center">
                     <div class="col-md-3 meta-label">When done, notify</div>
-                    <div class="col-md-9"><div class="meta-value">Type names to notify...</div></div>
+                    <div class="col-md-9">
+                        <div class="meta-value" id="metaNotify" role="button">Type names to notify...</div>
+                    </div>
+                </div>
+                <div class="row mb-3 align-items-center">
+                    <div class="col-md-3 meta-label">This task has point</div>
+                    <div class="col-md-9">
+                        <div class="meta-value" id="metaPoints" role="button">No points</div>
+                    </div>
+                </div>
+                <div class="row mb-5 align-items-center">
+                    <div class="col-md-3 meta-label">Tag</div>
+                    <div class="col-md-9">
+                        <div class="meta-value" id="metaTags">
+                            <div class="tag-selector w-100" id="tag-selector-detail">
+                                <div class="tag-selector-control" onclick="toggleTagDropdownDetail()">
+                                    <div class="tag-selected-list" id="tag-selected-detail">
+                                        <span class="tag-placeholder">Search or add tags...</span>
+                                    </div>
+                                    <i class="bi bi-chevron-down ms-auto text-muted small"></i>
+                                </div>
+                                <div class="tag-dropdown" id="tag-dropdown-detail">
+                                    <input type="text" id="tag-input-detail" class="tag-search-input" placeholder="Search or add tags..." oninput="filterTagOptionsDetail()">
+                                    <div class="tag-options" id="tag-options-detail"></div>
+                                    <div class="tag-create" id="tag-create-detail" style="display:none;" onclick="createTagFromInputDetail()">
+                                        <span>Create</span>
+                                        <span class="tag-create-label" id="tag-create-label-detail"></span>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="tags-detail" value="">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="row mb-5 align-items-start">
                     <div class="col-md-3 meta-label pt-1">Notes</div>
-                    <div class="col-md-9"><div class="meta-value">Add extra details or attach a file...</div></div>
+                    <div class="col-md-9">
+                        <div class="meta-value" id="metaNotes" contenteditable="true">Add extra details or attach a file...</div>
+                    </div>
                 </div>
 
                 <hr class="opacity-10 my-5">
@@ -247,18 +538,143 @@
         </main>
     </div>
 
+    <div class="modal fade" id="peopleSelectModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5 id="peopleSelectTitle" class="modal-title">Select people</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control form-control-sm mb-3" id="peopleSelectSearch" placeholder="Search name or email">
+                    <div class="d-flex flex-column gap-2" id="peopleSelectList" style="max-height:260px; overflow:auto;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dlg-blue rounded-pill w-100" id="peopleSelectSaveBtn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="dueDateModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title">Set dates</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small">Start date</label>
+                        <input type="date" class="form-control" id="startDateInput">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Due date</label>
+                        <input type="date" class="form-control" id="dueDateInput">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dlg-blue rounded-pill w-100" onclick="handleDueDateSave()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="pointsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title">This task has point</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="number" class="form-control" id="pointsInput" min="0" step="1" placeholder="0">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dlg-blue rounded-pill w-100" onclick="handlePointsSave()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="notesModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit notes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="notes-editor-wrapper">
+                        <div class="d-flex align-items-center justify-content-between notes-editor-toolbar">
+                            <div class="d-flex align-items-center gap-1">
+                                <button type="button" class="btn btn-link btn-sm px-2 notes-toolbar-btn" id="notesBoldBtn"><strong>B</strong></button>
+                                <button type="button" class="btn btn-link btn-sm px-2 notes-toolbar-btn" id="notesItalicBtn"><em>I</em></button>
+                                <button type="button" class="btn btn-link btn-sm px-2 notes-toolbar-btn" id="notesUnderlineBtn"><span style="text-decoration:underline;">U</span></button>
+                                <button type="button" class="btn btn-link btn-sm px-2 notes-toolbar-btn" id="notesBulletedBtn"><i class="bi bi-list-ul"></i></button>
+                                <button type="button" class="btn btn-link btn-sm px-2 notes-toolbar-btn" id="notesNumberedBtn"><i class="bi bi-list-ol"></i></button>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-link btn-sm px-2 notes-toolbar-btn" id="notesAttachBtn">
+                                    <i class="bi bi-paperclip"></i>
+                                </button>
+                                <input type="file" id="notesFileInput" multiple class="d-none">
+                            </div>
+                        </div>
+                        <div id="notesEditor" class="notes-editor-area" contenteditable="true">
+                            Task description or notes...
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dlg-blue rounded-pill px-4" onclick="handleNotesSave()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // --- 1. CONFIG ---
-        // GANTI DENGAN URL APPS SCRIPT TERBARU ANDA
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzsRHbU5WcucXdIhQeOFBaWQFvqO1kwGk72dHIfYWKtNcQF7ds5tTOyZNAmEWCQX_M/exec';
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            collection,
+            getDoc,
+            addDoc,
+            updateDoc,
+            onSnapshot,
+            query,
+            orderBy,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import {
+            getStorage,
+            ref as storageRef,
+            uploadBytes,
+            getDownloadURL
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com",
+            projectId: "pre-dialogika",
+            storageBucket: "pre-dialogika.firebasestorage.app",
+            messagingSenderId: "343771410480",
+            appId: "1:343771410480:web:32881c9868522090237df5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
 
         const urlParams = new URLSearchParams(window.location.search);
-        const taskId = urlParams.get('taskId');
-        const projectId = urlParams.get('projectId');
+        const taskId = urlParams.get('taskId') || urlParams.get('id');
+        let projectId = urlParams.get('projectId') || urlParams.get('pid') || "";
         
-        // --- 2. ELEMENTS ---
         const taskTitleEl = document.getElementById('taskTitleDisplay');
         const badgeEl = document.getElementById('projectBadge');
         const breadProject = document.getElementById('breadProjectLink');
@@ -266,146 +682,1207 @@
         const breadTask = document.getElementById('breadTaskTitle');
         const checkbox = document.getElementById('bigCheckbox');
         const checkIcon = document.getElementById('checkIcon');
+        const metaCreatedByValue = document.getElementById('metaCreatedByValue');
+        const metaPriority = document.getElementById('metaPriority');
+        const metaStatus = document.getElementById('metaStatus');
+        const metaAssignedTo = document.getElementById('metaAssignedTo');
+        const metaDueOn = document.getElementById('metaDueOn');
+        const metaNotify = document.getElementById('metaNotify');
+        const metaPoints = document.getElementById('metaPoints');
+        const metaTags = document.getElementById('metaTags');
+        const metaNotes = document.getElementById('metaNotes');
+        const commentsContainer = document.getElementById('commentsWrapper');
 
-        document.addEventListener("DOMContentLoaded", function() {
-            if(!taskId || !projectId) {
+        let currentUser = null;
+        let currentTask = null;
+        let currentComments = [];
+        let currentProjectHeader = null;
+        let currentListHeader = null;
+        let projectMembers = [];
+        let peopleSelectMode = null;
+        let peopleSelectSelected = [];
+        let detailTagOptions = [];
+        const userCache = {};
+
+        function normalizeTimestamp(value) {
+            if (!value) return null;
+            if (value.toDate) return value.toDate();
+            if (value instanceof Date) return value;
+            const d = new Date(value);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function getDirectPhotoUrl(url, uid) {
+            if (!url) return `https://i.pravatar.cc/150?u=${uid || "user"}`;
+            if (url.includes('drive.google.com')) {
+                let id = "";
+                if (url.includes('id=')) {
+                    id = url.split('id=')[1].split('&')[0];
+                } else if (url.includes('/d/')) {
+                    id = url.split('/d/')[1].split('/')[0];
+                }
+                if (id) return `https://lh3.googleusercontent.com/u/0/d/${id}`;
+            }
+            return url;
+        }
+
+        async function loadUserBasic(uid) {
+            if (!uid) return null;
+            if (userCache[uid]) return userCache[uid];
+            try {
+                const snap = await getDoc(doc(db, "users", uid));
+                if (!snap.exists()) return null;
+                const d = snap.data();
+                const user = {
+                    uid,
+                    name: d.name || d.email || uid,
+                    email: d.email || "",
+                    photo: getDirectPhotoUrl(d.photo || "", uid)
+                };
+                userCache[uid] = user;
+                return user;
+            } catch (e) {
+                console.error("Failed to load user", uid, e);
+                return null;
+            }
+        }
+
+        async function loadProjectMembersForDetail(memberUids) {
+            projectMembers = [];
+            try {
+                const ids = Array.isArray(memberUids) ? memberUids : [];
+                if (!ids.length) {
+                    projectMembers = [];
+                    return;
+                }
+                const promises = ids.map(uid => loadUserBasic(uid));
+                const users = await Promise.all(promises);
+                projectMembers = users.filter(Boolean);
+            } catch (e) {
+                console.error("Failed to load project members for detail", e);
+                projectMembers = [];
+            }
+        }
+
+        function renderUserInline(user) {
+            if (!user) return '';
+            const baseName = user.name || user.email || user.uid || 'User';
+            const initialsSource = baseName;
+            const initials = initialsSource
+                ? initialsSource.trim().split(' ').map(part => part[0]).join('').substring(0, 2).toUpperCase()
+                : 'U';
+            const hasPhoto = !!user.photo;
+            const avatarHtml = hasPhoto
+                ? `<span class="rounded-circle overflow-hidden d-inline-flex align-items-center justify-content-center me-2" style="width:24px; height:24px;">
+                        <img src="${user.photo}" alt="${baseName}" style="width:100%; height:100%; object-fit:cover;">
+                   </span>`
+                : `<span class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2" style="width:24px; height:24px; font-size:0.7rem;">
+                        ${initials}
+                   </span>`;
+            return `<span class="d-inline-flex align-items-center gap-2">${avatarHtml}<span>${baseName}</span></span>`;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!taskId) {
                 alert("Error: Parameter URL tidak lengkap.");
                 return;
             }
 
-            // UI Placeholder logic
             const input = document.getElementById('taskCommentInput');
-            input.addEventListener('focus', () => { if(input.innerText === 'Add a comment here...') input.innerText = ''; });
-            input.addEventListener('blur', () => { if(input.innerText.trim() === '') input.innerText = 'Add a comment here...'; });
+            if (input) {
+                input.addEventListener('focus', () => { if (input.innerText === 'Add a comment here...') input.innerText = ''; });
+                input.addEventListener('blur', () => { if (input.innerText.trim() === '') input.innerText = 'Add a comment here...'; });
+            }
 
-            fetchTaskData();
+            const metaStatusEl = document.getElementById('metaStatus');
+            const metaAssignedToEl = document.getElementById('metaAssignedTo');
+            const metaDueOnEl = document.getElementById('metaDueOn');
+            const metaNotifyEl = document.getElementById('metaNotify');
+            const metaPointsEl = document.getElementById('metaPoints');
+            const metaTagsEl = document.getElementById('metaTags');
+            const metaNotesEl = document.getElementById('metaNotes');
+            const peopleSearchInput = document.getElementById('peopleSelectSearch');
+            const peopleListEl = document.getElementById('peopleSelectList');
+            const peopleSaveBtn = document.getElementById('peopleSelectSaveBtn');
+            const notesEditor = document.getElementById('notesEditor');
+            const notesBoldBtn = document.getElementById('notesBoldBtn');
+            const notesItalicBtn = document.getElementById('notesItalicBtn');
+            const notesUnderlineBtn = document.getElementById('notesUnderlineBtn');
+            const notesBulletedBtn = document.getElementById('notesBulletedBtn');
+            const notesNumberedBtn = document.getElementById('notesNumberedBtn');
+            const notesAttachBtn = document.getElementById('notesAttachBtn');
+            const notesFileInput = document.getElementById('notesFileInput');
+
+            if (metaStatusEl) {
+                metaStatusEl.addEventListener('click', () => {
+                    openStatusDropdownDetail();
+                });
+            }
+            if (metaAssignedToEl) {
+                metaAssignedToEl.addEventListener('click', () => {
+                    openPeopleSelectModal('assign_to');
+                });
+            }
+            if (metaDueOnEl) {
+                metaDueOnEl.addEventListener('click', () => {
+                    openDueDateModal();
+                });
+            }
+            if (metaNotifyEl) {
+                metaNotifyEl.addEventListener('click', () => {
+                    openPeopleSelectModal('notify_to');
+                });
+            }
+            if (metaPointsEl) {
+                metaPointsEl.addEventListener('click', () => {
+                    openPointsModal();
+                });
+            }
+            if (metaTagsEl) {
+                metaTagsEl.addEventListener('click', (e) => {
+                    const dropdown = document.getElementById('tag-dropdown-detail');
+                    if (!dropdown) return;
+                    const target = e.target;
+                    if (dropdown.contains(target)) return;
+                    toggleTagDropdownDetail();
+                });
+            }
+            if (metaNotesEl) {
+                metaNotesEl.addEventListener('click', () => {
+                    openNotesModal();
+                });
+            }
+
+            if (peopleSearchInput) {
+                peopleSearchInput.addEventListener('input', () => {
+                    renderPeopleSelectList(peopleSearchInput.value);
+                });
+            }
+            if (peopleListEl) {
+                peopleListEl.addEventListener('change', (e) => {
+                    const target = e.target;
+                    if (!target || target.type !== 'checkbox') return;
+                    const uid = target.getAttribute('data-user-uid');
+                    if (!uid) return;
+                    if (target.checked) {
+                        if (!peopleSelectSelected.includes(uid)) peopleSelectSelected.push(uid);
+                    } else {
+                        peopleSelectSelected = peopleSelectSelected.filter(x => x !== uid);
+                    }
+                });
+            }
+            if (peopleSaveBtn) {
+                peopleSaveBtn.addEventListener('click', handlePeopleSelectSave);
+            }
+
+            if (notesEditor) {
+                notesEditor.addEventListener('focus', () => {
+                    if (notesEditor.classList.contains('empty-placeholder')) {
+                        notesEditor.innerText = '';
+                        notesEditor.classList.remove('empty-placeholder');
+                    }
+                });
+                notesEditor.addEventListener('blur', () => {
+                    const text = notesEditor.innerText.replace(/\u200B/g, '').trim();
+                    if (!text && !notesEditor.querySelector('a')) {
+                        notesEditor.innerText = 'Task description or notes...';
+                        notesEditor.classList.add('empty-placeholder');
+                    }
+                });
+            }
+            if (notesBoldBtn) {
+                notesBoldBtn.addEventListener('click', () => {
+                    applyNotesCommand('bold');
+                });
+            }
+            if (notesItalicBtn) {
+                notesItalicBtn.addEventListener('click', () => {
+                    applyNotesCommand('italic');
+                });
+            }
+            if (notesUnderlineBtn) {
+                notesUnderlineBtn.addEventListener('click', () => {
+                    applyNotesCommand('underline');
+                });
+            }
+            if (notesBulletedBtn) {
+                notesBulletedBtn.addEventListener('click', () => {
+                    applyNotesCommand('insertUnorderedList');
+                });
+            }
+            if (notesNumberedBtn) {
+                notesNumberedBtn.addEventListener('click', () => {
+                    applyNotesCommand('insertOrderedList');
+                });
+            }
+            if (notesAttachBtn && notesFileInput) {
+                notesAttachBtn.addEventListener('click', () => {
+                    notesFileInput.click();
+                });
+            }
+            if (notesFileInput) {
+                notesFileInput.addEventListener('change', async () => {
+                    if (!notesFileInput.files || !notesFileInput.files.length) return;
+                    await handleNotesFilesUpload(notesFileInput.files);
+                    notesFileInput.value = '';
+                });
+            }
+
+            const cached = getTaskFromLocalStorage();
+            if (cached && cached.task) {
+                if (!projectId && cached.projectId) {
+                    projectId = cached.projectId;
+                }
+                renderTaskFromPayload(cached.task, cached.list || null, cached.project || null);
+            }
+
+            loadTaskFromFirestore();
+            listenComments();
         });
 
-        function fetchTaskData() {
-            fetch(`${API_URL}?action=getProjectData&id=${projectId}`)
-            .then(res => res.json())
-            .then(response => {
-                if(response.status === 'success') {
-                    const data = response.data;
-                    
-                    // 1. Info Project
-                    if(data.project) {
-                        badgeEl.innerText = data.project.department || 'Project';
-                        breadProject.innerText = data.project.name;
-                        breadProject.href = `../project/project.html?id=${projectId}`;
-                    }
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user || null;
+        });
 
-                    // 2. Cari Task dan List Induknya
-                    let foundTask = null;
-                    let parentList = null;
+        function getTaskFromLocalStorage() {
+            try {
+                const raw = localStorage.getItem('currentTaskDetail');
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                if (!parsed || !parsed.task) return null;
+                if (parsed.taskId && parsed.taskId !== taskId) return null;
+                if (projectId && parsed.projectId && parsed.projectId !== projectId) return null;
+                return parsed;
+            } catch (e) {
+                console.error("Failed to parse currentTaskDetail", e);
+                return null;
+            }
+        }
 
-                    data.lists.forEach(list => {
-                        const t = list.tasks.find(x => x.id === taskId);
-                        if(t) {
-                            foundTask = t;
-                            parentList = list;
-                        }
-                    });
-
-                    if(foundTask && parentList) {
-                        // Render Info Task
-                        taskTitleEl.innerText = foundTask.title;
-                        breadTask.innerText = foundTask.title;
-                        
-                        // Render Info List (Breadcrumb)
-                        breadList.innerText = parentList.name;
-                        breadList.href = `list-detail.html?listId=${parentList.id}&projectId=${projectId}`;
-
-                        // Checkbox Status
-                        const isDone = ['done', 'true', 'completed'].includes(String(foundTask.status).toLowerCase());
-                        if(isDone) {
-                            checkbox.classList.add('checked');
-                            checkIcon.classList.remove('d-none');
-                        } else {
-                            checkbox.classList.remove('checked');
-                            checkIcon.classList.add('d-none');
-                        }
-
-                        // Render Comments (Filter by Task ID)
-                        // Data comments harus sudah tersedia dari Apps Script (sesuai update terakhir)
-                        const tComments = data.comments ? data.comments.filter(c => c.taskId === taskId) : [];
-                        renderComments(tComments);
-
-                    } else {
-                        taskTitleEl.innerText = "Task Not Found";
+        async function loadTaskFromFirestore() {
+            try {
+                const taskRef = doc(db, "tasks", taskId);
+                const snap = await getDoc(taskRef);
+                if (!snap.exists()) {
+                    if (taskTitleEl) taskTitleEl.innerText = "Task Not Found";
+                    if (breadTask) breadTask.innerText = "Task Not Found";
+                    return;
+                }
+                const data = { id: snap.id, ...snap.data() };
+                currentTask = data;
+                if (!projectId) {
+                    projectId = data.project_id || data.projectId || "";
+                }
+                const listId = data.list_id || data.listId || "";
+                let project = null;
+                let list = null;
+                if (projectId) {
+                    project = await loadProjectHeader(projectId);
+                    currentProjectHeader = project;
+                    if (listId) {
+                        list = await loadListHeader(projectId, listId);
                     }
                 }
-            })
-            .catch(err => console.error(err));
+                currentListHeader = list;
+                renderTaskFromPayload(data, list, project);
+            } catch (e) {
+                console.error("Failed to load task from Firestore", e);
+            }
+        }
+
+        async function editTaskFieldWithPrompt(field, label) {
+            if (!currentTask || !taskId) return;
+            let currentValue = currentTask[field];
+            if (field === 'tags') {
+                if (Array.isArray(currentValue)) {
+                    currentValue = currentValue.join(', ');
+                }
+            }
+            if (field === 'points') {
+                if (typeof currentValue === 'number') {
+                    currentValue = String(currentValue);
+                }
+            }
+            if (currentValue === undefined || currentValue === null) {
+                currentValue = '';
+            }
+            const next = prompt('Ubah ' + label, String(currentValue));
+            if (next === null) return;
+            const trimmed = next.trim();
+            const update = {};
+            if (field === 'points') {
+                update[field] = trimmed ? Number(trimmed) || 0 : 0;
+            } else if (field === 'tags') {
+                update[field] = trimmed
+                    ? trimmed.split(',').map(t => t.trim()).filter(Boolean)
+                    : [];
+            } else {
+                update[field] = trimmed;
+            }
+            try {
+                await updateDoc(doc(db, 'tasks', taskId), update);
+                Object.assign(currentTask, update);
+                renderTaskFromPayload(currentTask, currentListHeader, currentProjectHeader);
+            } catch (e) {
+                console.error('Failed to update task field', field, e);
+                alert('Gagal mengupdate ' + label + ': ' + e.message);
+            }
+        }
+
+        function applyNotesCommand(command) {
+            const editor = document.getElementById('notesEditor');
+            if (!editor) return;
+            if (editor.classList.contains('empty-placeholder')) {
+                editor.innerText = '';
+                editor.classList.remove('empty-placeholder');
+            }
+            editor.focus();
+            try {
+                document.execCommand(command, false, null);
+            } catch (e) {
+                console.error('Failed to execute command', command, e);
+            }
+        }
+
+        async function handleNotesFilesUpload(files) {
+            if (!taskId || !storage || !files || !files.length) return;
+            const editor = document.getElementById('notesEditor');
+            if (!editor) return;
+            if (editor.classList.contains('empty-placeholder')) {
+                editor.innerText = '';
+                editor.classList.remove('empty-placeholder');
+            }
+            const list = Array.from(files);
+            for (const file of list) {
+                try {
+                    const path = `notes/${taskId}/${Date.now()}_${file.name}`;
+                    const ref = storageRef(storage, path);
+                    await uploadBytes(ref, file);
+                    const url = await getDownloadURL(ref);
+                    const p = document.createElement('p');
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.innerText = file.name;
+                    p.appendChild(a);
+                    editor.appendChild(p);
+                } catch (e) {
+                    console.error('Failed to upload note file', e);
+                    alert('Gagal mengupload file: ' + e.message);
+                }
+            }
+        }
+
+        window.openPointsModal = function () {
+            if (!currentTask) currentTask = {};
+            const input = document.getElementById('pointsInput');
+            if (input) {
+                const pts = typeof currentTask.points === 'number' ? currentTask.points : '';
+                input.value = pts === 0 ? '' : String(pts);
+            }
+            const modalEl = document.getElementById('pointsModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        };
+
+        window.handlePointsSave = async function () {
+            if (!taskId) return;
+            const input = document.getElementById('pointsInput');
+            if (!input) return;
+            const raw = input.value.trim();
+            const value = raw ? Number(raw) || 0 : 0;
+            const update = { points: value };
+            try {
+                await updateDoc(doc(db, 'tasks', taskId), update);
+                if (!currentTask) currentTask = {};
+                Object.assign(currentTask, update);
+                renderTaskFromPayload(currentTask, currentListHeader, currentProjectHeader);
+                const modalEl = document.getElementById('pointsModal');
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                }
+            } catch (e) {
+                console.error('Failed to update points', e);
+                alert('Gagal mengupdate points: ' + e.message);
+            }
+        };
+
+        window.openNotesModal = function () {
+            if (!currentTask) currentTask = {};
+            const editor = document.getElementById('notesEditor');
+            if (editor) {
+                const rawHtml = currentTask.description || '';
+                if (rawHtml) {
+                    editor.innerHTML = rawHtml;
+                    editor.classList.remove('empty-placeholder');
+                } else {
+                    editor.innerText = 'Task description or notes...';
+                    editor.classList.add('empty-placeholder');
+                }
+            }
+            const modalEl = document.getElementById('notesModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        };
+
+        window.handleNotesSave = async function () {
+            if (!taskId) return;
+            const editor = document.getElementById('notesEditor');
+            if (!editor) return;
+            let html = editor.innerHTML || '';
+            if (editor.classList.contains('empty-placeholder')) {
+                html = '';
+            }
+            const update = {
+                description: html
+            };
+            try {
+                await updateDoc(doc(db, 'tasks', taskId), update);
+                if (!currentTask) currentTask = {};
+                Object.assign(currentTask, update);
+                renderTaskFromPayload(currentTask, currentListHeader, currentProjectHeader);
+                const modalEl = document.getElementById('notesModal');
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                }
+            } catch (e) {
+                console.error('Failed to save notes', e);
+                alert('Gagal menyimpan catatan: ' + e.message);
+            }
+        };
+
+        window.toggleTagDropdownDetail = function () {
+            const dropdown = document.getElementById('tag-dropdown-detail');
+            const input = document.getElementById('tag-input-detail');
+            if (!dropdown) return;
+            const isOpen = dropdown.style.display === "block";
+            dropdown.style.display = isOpen ? "none" : "block";
+            if (!isOpen && input) {
+                input.focus();
+                input.select();
+                filterTagOptionsDetail();
+            }
+        };
+
+        window.filterTagOptionsDetail = function () {
+            const input = document.getElementById('tag-input-detail');
+            const optionsContainer = document.getElementById('tag-options-detail');
+            const createRow = document.getElementById('tag-create-detail');
+            const createLabel = document.getElementById('tag-create-label-detail');
+            if (!input || !optionsContainer || !createRow || !createLabel) return;
+
+            const query = input.value.trim().toLowerCase();
+            let hasVisible = false;
+            let hasExact = false;
+
+            Array.from(optionsContainer.children).forEach(opt => {
+                const tag = (opt.dataset.tag || "").toLowerCase();
+                const visible = !query || tag.indexOf(query) !== -1;
+                opt.style.display = visible ? "flex" : "none";
+                if (visible) {
+                    hasVisible = true;
+                    if (tag === query) hasExact = true;
+                }
+            });
+
+            if (query && (!hasVisible || !hasExact)) {
+                createRow.style.display = "flex";
+                createLabel.innerText = query;
+            } else {
+                createRow.style.display = "none";
+                createLabel.innerText = "";
+            }
+        };
+
+        async function saveTagsDetail() {
+            if (!taskId) return;
+            const tags = getTagsValueDetail();
+            const update = { tags };
+            try {
+                await updateDoc(doc(db, 'tasks', taskId), update);
+                if (!currentTask) currentTask = {};
+                Object.assign(currentTask, update);
+                renderTaskFromPayload(currentTask, currentListHeader, currentProjectHeader);
+            } catch (e) {
+                console.error('Failed to update tags', e);
+                alert('Gagal mengupdate tags: ' + e.message);
+            }
+        }
+
+        window.toggleTagFromOptionDetail = function (tag) {
+            const current = getTagsValueDetail();
+            const index = current.indexOf(tag);
+            if (index >= 0) {
+                current.splice(index, 1);
+            } else {
+                current.push(tag);
+            }
+            setTagsValueDetail(current);
+            saveTagsDetail();
+        };
+
+        window.createTagFromInputDetail = function () {
+            const input = document.getElementById('tag-input-detail');
+            if (!input) return;
+            const value = input.value.trim();
+            if (!value) return;
+            const current = getTagsValueDetail();
+            if (!current.includes(value)) {
+                current.push(value);
+            }
+            if (!detailTagOptions.includes(value)) {
+                detailTagOptions.push(value);
+                detailTagOptions.sort((a, b) => a.localeCompare(b));
+            }
+            renderTagOptionsDetail();
+            setTagsValueDetail(current);
+            saveTagsDetail();
+            input.value = "";
+            filterTagOptionsDetail();
+        };
+
+        function removeTagFromSelectionDetail(tag) {
+            const current = getTagsValueDetail();
+            const index = current.indexOf(tag);
+            if (index >= 0) {
+                current.splice(index, 1);
+                setTagsValueDetail(current);
+                saveTagsDetail();
+            }
+        }
+
+        window.openDueDateModal = function () {
+            if (!currentTask) currentTask = {};
+            const startInput = document.getElementById('startDateInput');
+            const dueInput = document.getElementById('dueDateInput');
+            const rawStart = currentTask.start_date || currentTask.startDate || "";
+            const rawDue = currentTask.due_date || currentTask.dueDate || "";
+            if (startInput) {
+                startInput.value = rawStart ? String(rawStart).substring(0, 10) : "";
+            }
+            if (dueInput) {
+                dueInput.value = rawDue ? String(rawDue).substring(0, 10) : "";
+            }
+            const modalEl = document.getElementById('dueDateModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        };
+
+        window.handleDueDateSave = async function () {
+            if (!taskId) return;
+            const startInput = document.getElementById('startDateInput');
+            const dueInput = document.getElementById('dueDateInput');
+            if (!startInput || !dueInput) return;
+            const startVal = startInput.value || "";
+            const dueVal = dueInput.value || "";
+            const update = {
+                start_date: startVal,
+                due_date: dueVal
+            };
+            try {
+                await updateDoc(doc(db, 'tasks', taskId), update);
+                if (!currentTask) currentTask = {};
+                Object.assign(currentTask, update);
+                renderTaskFromPayload(currentTask, currentListHeader, currentProjectHeader);
+                const modalEl = document.getElementById('dueDateModal');
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                }
+            } catch (e) {
+                console.error('Failed to update dates', e);
+                alert('Gagal mengupdate tanggal: ' + e.message);
+            }
+        };
+
+        window.toggleTaskPriorityMenuDetail = function () {
+            const menu = document.getElementById('task-priority-menu');
+            if (!menu) return;
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        };
+
+        window.selectTaskPriorityDetail = async function (value) {
+            if (!taskId) return;
+            const update = { priority: value };
+            try {
+                await updateDoc(doc(db, 'tasks', taskId), update);
+                if (!currentTask) currentTask = {};
+                Object.assign(currentTask, update);
+                renderTaskFromPayload(currentTask, currentListHeader, currentProjectHeader);
+            } catch (e) {
+                console.error('Failed to update priority', e);
+                alert('Gagal mengupdate priority: ' + e.message);
+            } finally {
+                const menu = document.getElementById('task-priority-menu');
+                if (menu) menu.style.display = 'none';
+            }
+        };
+
+        function openPeopleSelectModal(field) {
+            if (!currentTask) currentTask = {};
+            peopleSelectMode = field;
+            const searchInput = document.getElementById('peopleSelectSearch');
+            const titleEl = document.getElementById('peopleSelectTitle');
+            const currentRaw = currentTask[field];
+            let ids = [];
+            if (Array.isArray(currentRaw)) {
+                ids = currentRaw.filter(Boolean);
+            } else if (typeof currentRaw === 'string' && currentRaw) {
+                ids = [currentRaw];
+            }
+            peopleSelectSelected = ids.slice();
+            if (titleEl) {
+                titleEl.innerText = field === 'assign_to' ? 'Assign to' : 'When done, notify';
+            }
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            renderPeopleSelectList('');
+            const modalEl = document.getElementById('peopleSelectModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        }
+
+        function renderPeopleSelectList(query) {
+            const listEl = document.getElementById('peopleSelectList');
+            if (!listEl) return;
+            const q = String(query || '').toLowerCase();
+            let members = Array.isArray(projectMembers) ? projectMembers.slice() : [];
+            if (q) {
+                members = members.filter(m => {
+                    const name = String(m.name || '').toLowerCase();
+                    const email = String(m.email || '').toLowerCase();
+                    return name.includes(q) || email.includes(q);
+                });
+            }
+            if (!members.length) {
+                listEl.innerHTML = '<div class="text-muted small">No people found.</div>';
+                return;
+            }
+            listEl.innerHTML = members.map(m => {
+                const checked = peopleSelectSelected.includes(m.uid) ? 'checked' : '';
+                const emailLine = m.email ? `<div class="text-muted" style="font-size:0.7rem;">${m.email}</div>` : '';
+                return `
+                    <label class="d-flex align-items-center gap-2">
+                        <input type="checkbox" class="form-check-input flex-shrink-0" data-user-uid="${m.uid}" ${checked}>
+                        <span class="rounded-circle overflow-hidden d-inline-flex align-items-center justify-content-center" style="width:28px;height:28px;">
+                            <img src="${m.photo}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;">
+                        </span>
+                        <span class="flex-grow-1">
+                            <div class="fw-semibold small">${m.name}</div>
+                            ${emailLine}
+                        </span>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        async function handlePeopleSelectSave() {
+            if (!taskId || !peopleSelectMode) return;
+            const field = peopleSelectMode;
+            const ids = peopleSelectSelected.slice();
+            const update = {};
+            update[field] = ids;
+            try {
+                await updateDoc(doc(db, 'tasks', taskId), update);
+                if (!currentTask) currentTask = {};
+                Object.assign(currentTask, update);
+                renderTaskFromPayload(currentTask, currentListHeader, currentProjectHeader);
+                const modalEl = document.getElementById('peopleSelectModal');
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                }
+            } catch (e) {
+                console.error('Failed to update people', field, e);
+                alert('Gagal mengupdate orang: ' + e.message);
+            }
+        }
+
+        window.openStatusDropdownDetail = function () {
+            const menu = document.getElementById('task-status-menu');
+            if (!menu) return;
+            const statuses = getAvailableStatusesForCurrentList();
+            menu.innerHTML = statuses.map(s => {
+                const name = s.name || "";
+                const color = s.color || "";
+                const dot = color ? `<span class="rounded-circle me-2" style="width:10px; height:10px; display:inline-block; background:${color};"></span>` : '';
+                return `<div class="priority-item" onclick="selectTaskStatusDetail('${name}')">${dot}<span>${name}</span></div>`;
+            }).join('');
+            menu.style.display = 'block';
+        };
+
+        window.selectTaskStatusDetail = async function (value) {
+            if (!taskId) return;
+            const update = { status: value };
+            try {
+                await updateDoc(doc(db, 'tasks', taskId), update);
+                if (!currentTask) currentTask = {};
+                Object.assign(currentTask, update);
+                renderTaskFromPayload(currentTask, currentListHeader, currentProjectHeader);
+            } catch (e) {
+                console.error('Failed to update status', e);
+                alert('Gagal mengupdate status: ' + e.message);
+            } finally {
+                const menu = document.getElementById('task-status-menu');
+                if (menu) menu.style.display = 'none';
+            }
+        };
+
+        async function loadProjectHeader(pid) {
+            try {
+                const ref = doc(db, "projects", pid);
+                const snap = await getDoc(ref);
+                if (!snap.exists()) return null;
+                const d = snap.data();
+                const project = {
+                    id: snap.id,
+                    name: d.name || "",
+                    department: d.department || ""
+                };
+                if (badgeEl && project.department) {
+                    badgeEl.innerText = project.department;
+                }
+                if (breadProject) {
+                    breadProject.innerText = project.name || "...";
+                    breadProject.href = `../project/project.html?id=${project.id}`;
+                }
+                if (Array.isArray(d.members) && d.members.length) {
+                    await loadProjectMembersForDetail(d.members);
+                } else {
+                    projectMembers = [];
+                }
+                return project;
+            } catch (e) {
+                console.error("Failed to load project header", e);
+                return null;
+            }
+        }
+
+        async function loadListHeader(pid, listId) {
+            if (!pid || !listId) return null;
+            try {
+                const ref = doc(db, "projects", pid, "lists", listId);
+                const snap = await getDoc(ref);
+                if (!snap.exists()) return null;
+                const d = snap.data();
+                const list = {
+                    id: snap.id,
+                    name: d.name || "",
+                    statuses: Array.isArray(d.statuses) ? d.statuses : []
+                };
+                if (breadList) {
+                    breadList.innerText = list.name || "...";
+                    breadList.href = `list-detail.html?listId=${list.id}&projectId=${pid}`;
+                }
+                return list;
+            } catch (e) {
+                console.error("Failed to load list header", e);
+                return null;
+            }
+        }
+
+        function updatePriorityUI(value) {
+            const labelEl = document.getElementById('task-priority-label');
+            const flagEl = document.getElementById('task-priority-flag');
+            if (!labelEl || !flagEl) return;
+
+            let text = "Set priority...";
+            let className = "priority-flag-normal";
+            const v = String(value || "").toLowerCase();
+
+            if (v === "urgent") {
+                text = "Urgent";
+                className = "priority-flag-urgent";
+            } else if (v === "high") {
+                text = "High";
+                className = "priority-flag-high";
+            } else if (v === "normal" || v === "") {
+                text = v ? "Normal" : "Set priority...";
+                className = "priority-flag-normal";
+            } else if (v === "low") {
+                text = "Low";
+                className = "priority-flag-low";
+            } else if (v) {
+                text = value;
+            }
+
+            labelEl.innerText = text;
+
+            flagEl.classList.remove(
+                "priority-flag-urgent",
+                "priority-flag-high",
+                "priority-flag-normal",
+                "priority-flag-low"
+            );
+            flagEl.classList.add("priority-flag", className);
+        }
+
+        function getAvailableStatusesForCurrentList() {
+            const defaults = [
+                { name: "Initiate" },
+                { name: "Complete" }
+            ];
+            if (!currentListHeader || !Array.isArray(currentListHeader.statuses) || !currentListHeader.statuses.length) {
+                return defaults;
+            }
+            const arr = currentListHeader.statuses.slice().filter(s => s && s.name);
+            if (!arr.length) return defaults;
+            arr.sort((a, b) => {
+                const pa = typeof a.position === "number" ? a.position : 0;
+                const pb = typeof b.position === "number" ? b.position : 0;
+                return pa - pb;
+            });
+            return arr;
+        }
+
+        function updateStatusUI(value) {
+            const labelEl = document.getElementById('task-status-label');
+            if (!labelEl) return;
+            const v = String(value || "").trim();
+            labelEl.innerText = v || "No status yet";
+        }
+
+        function renderUserIdsInto(container, ids, emptyText) {
+            if (!container) return;
+            const cleanIds = Array.isArray(ids) ? ids.filter(Boolean) : [];
+            if (!cleanIds.length) {
+                container.innerText = emptyText;
+                return;
+            }
+            container.innerText = "Loading...";
+            Promise.all(cleanIds.map(uid => loadUserBasic(uid))).then(users => {
+                if (!container) return;
+                const valid = users.filter(Boolean);
+                if (!valid.length) {
+                    container.innerText = emptyText;
+                    return;
+                }
+                container.innerHTML = valid.map(renderUserInline).join("");
+            }).catch(() => {
+                if (container) container.innerText = emptyText;
+            });
+        }
+
+        function getTagsValueDetail() {
+            const hidden = document.getElementById('tags-detail');
+            if (!hidden || !hidden.value) return [];
+            return hidden.value.split(",").map(t => t.trim()).filter(Boolean);
+        }
+
+        function setTagsValueDetail(tags) {
+            const hidden = document.getElementById('tags-detail');
+            if (!hidden) return;
+            const clean = Array.from(new Set(tags.map(t => t.trim()).filter(Boolean)));
+            hidden.value = clean.join(",");
+            updateSelectedTagUIDetail();
+            const optionsContainer = document.getElementById('tag-options-detail');
+            if (!optionsContainer) return;
+            Array.from(optionsContainer.children).forEach(opt => {
+                const tag = opt.dataset.tag;
+                if (!tag) return;
+                if (clean.includes(tag)) {
+                    opt.classList.add("tag-option-selected");
+                } else {
+                    opt.classList.remove("tag-option-selected");
+                }
+            });
+        }
+
+        function updateSelectedTagUIDetail() {
+            const selectedContainer = document.getElementById('tag-selected-detail');
+            if (!selectedContainer) return;
+            const tags = getTagsValueDetail();
+            selectedContainer.innerHTML = "";
+            if (tags.length === 0) {
+                const span = document.createElement("span");
+                span.className = "tag-placeholder";
+                span.innerText = "Search or add tags...";
+                selectedContainer.appendChild(span);
+                return;
+            }
+            tags.forEach(tag => {
+                const pill = document.createElement("span");
+                pill.className = "tag-pill";
+                pill.innerText = tag;
+                const remove = document.createElement("span");
+                remove.className = "tag-remove";
+                remove.innerText = "×";
+                remove.onclick = function (event) {
+                    event.stopPropagation();
+                    removeTagFromSelectionDetail(tag);
+                };
+                pill.appendChild(remove);
+                selectedContainer.appendChild(pill);
+            });
+        }
+
+        function renderTagOptionsDetail() {
+            const optionsContainer = document.getElementById('tag-options-detail');
+            if (!optionsContainer) return;
+            optionsContainer.innerHTML = "";
+            const tags = Array.isArray(detailTagOptions) ? detailTagOptions : [];
+            tags.forEach(tag => {
+                if (!tag) return;
+                const opt = document.createElement("div");
+                opt.className = "tag-option";
+                opt.dataset.tag = tag;
+                opt.onclick = function () {
+                    window.toggleTagFromOptionDetail(tag);
+                };
+                const pill = document.createElement("span");
+                pill.className = "tag-pill";
+                pill.innerText = tag;
+                opt.appendChild(pill);
+                optionsContainer.appendChild(opt);
+            });
+        }
+
+        function renderTaskFromPayload(task, list, project) {
+            if (!task) task = {};
+
+            if (taskTitleEl) {
+                taskTitleEl.innerText = task.title || "Untitled Task";
+            }
+            if (breadTask) {
+                breadTask.innerText = task.title || "Task";
+            }
+
+            if (project) {
+                if (badgeEl && project.department) {
+                    badgeEl.innerText = project.department;
+                }
+                if (breadProject) {
+                    breadProject.innerText = project.name || "...";
+                    if (project.id) breadProject.href = `../project/project.html?id=${project.id}`;
+                }
+            }
+
+            if (list && breadList) {
+                breadList.innerText = list.name || "...";
+                if (list.id && projectId) {
+                    breadList.href = `list-detail.html?listId=${list.id}&projectId=${projectId}`;
+                }
+            }
+
+            const isDone = ['done', 'true', 'completed', 'complete'].includes(String(task.status || '').toLowerCase());
+            if (isDone) {
+                checkbox.classList.add('checked');
+                checkIcon.classList.remove('d-none');
+            } else {
+                checkbox.classList.remove('checked');
+                checkIcon.classList.add('d-none');
+            }
+
+            if (metaCreatedByValue) {
+                const creatorUid = task.created_by || task.createdBy || "";
+                if (!creatorUid) {
+                    metaCreatedByValue.innerText = 'Unknown user';
+                } else {
+                    metaCreatedByValue.innerText = 'Loading...';
+                    loadUserBasic(creatorUid).then(user => {
+                        if (!metaCreatedByValue) return;
+                        if (user) {
+                            metaCreatedByValue.innerHTML = renderUserInline(user);
+                        } else {
+                            metaCreatedByValue.innerText = creatorUid;
+                        }
+                    });
+                }
+            }
+
+            if (metaPriority) {
+                const rawPriority = task.priority || "";
+                updatePriorityUI(rawPriority);
+            }
+            if (metaStatus) {
+                let statusText = task.status || "";
+                if (!statusText) {
+                    statusText = isDone ? 'Complete' : 'Initiate';
+                }
+                updateStatusUI(statusText);
+            }
+            if (metaAssignedTo) {
+                const rawAssign = task.assign_to || task.assignTo || [];
+                let ids = [];
+                if (Array.isArray(rawAssign)) {
+                    ids = rawAssign;
+                } else if (typeof rawAssign === "string" && rawAssign) {
+                    ids = [rawAssign];
+                }
+                renderUserIdsInto(metaAssignedTo, ids, 'Not assigned');
+            }
+            if (metaDueOn) {
+                const due = task.due_date || "";
+                if (due) {
+                    const parsed = new Date(due);
+                    metaDueOn.innerText = isNaN(parsed.getTime()) ? due : parsed.toLocaleDateString();
+                } else {
+                    metaDueOn.innerText = 'No due date';
+                }
+            }
+            if (metaNotify) {
+                const rawNotify = task.notify_to || task.notifyTo || [];
+                let idsN = [];
+                if (Array.isArray(rawNotify)) {
+                    idsN = rawNotify;
+                } else if (typeof rawNotify === "string" && rawNotify) {
+                    idsN = [rawNotify];
+                }
+                renderUserIdsInto(metaNotify, idsN, 'No one selected');
+            }
+            if (metaPoints) {
+                const pts = task.points;
+                if (typeof pts === 'number') {
+                    metaPoints.innerText = String(pts);
+                } else {
+                    metaPoints.innerText = 'No points';
+                }
+            }
+            if (metaTags) {
+                const tags = Array.isArray(task.tags) ? task.tags.filter(Boolean) : [];
+                const set = new Set(tags);
+                detailTagOptions = Array.from(set).sort((a, b) => a.localeCompare(b));
+                renderTagOptionsDetail();
+                setTagsValueDetail(tags);
+            }
+            if (metaNotes) {
+                const descHtml = task.description || "";
+                if (descHtml) {
+                    metaNotes.innerHTML = descHtml;
+                } else {
+                    metaNotes.innerText = 'No notes yet.';
+                }
+            }
         }
 
         function renderComments(comments) {
-            const container = document.getElementById('commentsWrapper');
-            container.innerHTML = '';
-            
-            if(comments.length === 0) return;
+            if (!commentsContainer) return;
+            commentsContainer.innerHTML = '';
+            if (!comments || comments.length === 0) return;
 
             comments.forEach(c => {
-                const date = c.date ? new Date(c.date).toLocaleDateString() : 'Just now';
+                const createdAt = normalizeTimestamp(c.created_at || c.createdAt);
+                const dateStr = createdAt ? createdAt.toLocaleString() : 'Just now';
+                const userName = c.user_name || c.userName || 'User';
+                const photo = c.user_photo || "";
+                const avatar = photo
+                    ? `<div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 overflow-hidden" style="width:40px; height:40px;">
+                           <img src="${photo}" alt="${userName}" style="width:100%; height:100%; object-fit:cover;">
+                       </div>`
+                    : `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">
+                           ${userName ? userName.trim().charAt(0).toUpperCase() : 'U'}
+                       </div>`;
+                const text = c.text || c.text_plain || '';
                 const html = `
                     <div class="d-flex gap-3">
-                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">U</div>
+                        ${avatar}
                         <div class="bg-white border rounded p-3 w-100 shadow-sm">
                             <div class="d-flex justify-content-between mb-1">
-                                <strong class="small text-dark">User Demo</strong>
-                                <small class="text-muted" style="font-size:0.7rem">${date}</small>
+                                <strong class="small text-dark">${userName}</strong>
+                                <small class="text-muted" style="font-size:0.7rem">${dateStr}</small>
                             </div>
-                            <div class="text-dark small">${c.text}</div>
+                            <div class="text-dark small">${text}</div>
                         </div>
                     </div>
                 `;
-                container.insertAdjacentHTML('beforeend', html);
+                commentsContainer.insertAdjacentHTML('beforeend', html);
             });
         }
 
-        function postTaskComment() {
+        function listenComments() {
+            if (!taskId) return;
+            try {
+                const ref = collection(db, "tasks", taskId, "comments");
+                const q = query(ref, orderBy("created_at", "asc"));
+                onSnapshot(q, (snapshot) => {
+                    const comments = [];
+                    snapshot.forEach(docSnap => comments.push({ id: docSnap.id, ...docSnap.data() }));
+                    currentComments = comments;
+                    renderComments(comments);
+                }, (error) => {
+                    console.error("Failed to listen task comments", error);
+                });
+            } catch (e) {
+                console.error("Failed to start comments listener", e);
+            }
+        }
+
+        window.postTaskComment = async function () {
             const input = document.getElementById('taskCommentInput');
+            if (!input) return;
             const text = input.innerText.trim();
-            if(!text || text === 'Add a comment here...') return;
+            if (!text || text === 'Add a comment here...') return;
 
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = 'Posting...';
-            btn.disabled = true;
+            const btn = event && event.target ? event.target : null;
+            let originalText = '';
+            if (btn) {
+                originalText = btn.innerText;
+                btn.innerText = 'Posting...';
+                btn.disabled = true;
+            }
 
-            // Kita perlu mengambil List ID lagi untuk data lengkap (opsional tapi baik)
-            // Namun fetchTaskData sudah berjalan, kita bisa ambil dari breadcrumb href kalau mau cepat,
-            // atau biarkan listId kosong di backend tidak masalah jika backend handle optional.
-            // Di sini saya kirim projectId & taskId.
+            try {
+                const localData = JSON.parse(localStorage.getItem('userData') || 'null');
+                const userName = localData && localData.name ? localData.name : (currentUser ? currentUser.email : 'User');
+                const uid = currentUser ? currentUser.uid : (localData && (localData.uid || localData.id) ? (localData.uid || localData.id) : '');
+                const rawPhoto = localData && localData.photo ? localData.photo : (currentUser && currentUser.photoURL ? currentUser.photoURL : "");
+                const photoUrl = getDirectPhotoUrl(rawPhoto || "", uid || "");
 
-            fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'createComment',
-                    projectId: projectId,
-                    taskId: taskId,
-                    text: text
-                })
-            })
-            .then(res => res.json())
-            .then(resp => {
+                await addDoc(collection(db, "tasks", taskId, "comments"), {
+                    text: text,
+                    text_plain: text,
+                    user_id: uid,
+                    user_name: userName,
+                    user_photo: photoUrl,
+                    created_at: serverTimestamp()
+                });
+
                 input.innerText = 'Add a comment here...';
-                fetchTaskData(); // Refresh comments
-            })
-            .finally(() => {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            });
-        }
+            } catch (e) {
+                console.error("Failed to post task comment", e);
+                alert("Gagal mengirim komentar: " + e.message);
+            } finally {
+                if (btn) {
+                    btn.innerText = originalText || 'Comment';
+                    btn.disabled = false;
+                }
+            }
+        };
 
-        function toggleTaskStatus() {
-            // Visual toggle only. Backend update belum diimplementasikan di Apps Script 'createTask' section (perlu updateTaskStatus)
-            // Tapi UI sudah siap.
-            checkbox.classList.toggle('checked');
-            checkIcon.classList.toggle('d-none');
-        }
+        window.toggleTaskStatus = async function () {
+            const nowChecked = !checkbox.classList.contains('checked');
+            if (nowChecked) {
+                checkbox.classList.add('checked');
+                checkIcon.classList.remove('d-none');
+            } else {
+                checkbox.classList.remove('checked');
+                checkIcon.classList.add('d-none');
+            }
+            if (!taskId) return;
+            const newStatus = nowChecked ? 'Complete' : 'Initiate';
+            try {
+                await updateDoc(doc(db, "tasks", taskId), { status: newStatus });
+            } catch (e) {
+                console.error("Failed to update task status", e);
+            }
+        };
 
-        function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
+        window.toggleSidebar = function () {
+            const sidebar = document.getElementById('sidebarNav');
+            if (sidebar) sidebar.classList.toggle('show');
+        };
     </script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {

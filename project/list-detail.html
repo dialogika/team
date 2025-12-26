@@ -34,7 +34,7 @@
         .project-context-card {
             max-width: 800px;
             width: 90%;
-            background-color: #1f2937; /* Dark Navy sesuai list.html */
+            background-color: #fff; /* Dark Navy sesuai list.html */
             color: white;
             margin: 20px auto -20px auto;
             padding: 20px 25px 40px 25px;
@@ -67,7 +67,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(255, 255, 255, 0.1);
+            background: #1f2937;
             padding: 8px 20px;
             border-radius: 50px;
             font-size: 0.95rem;
@@ -96,12 +96,12 @@
             width: 100%;
             background: white;
             border-radius: 16px;
-            box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.3);
             margin: 0 auto 50px auto;
             padding: 50px 60px;
             position: relative;
             z-index: 2;
-            border: 1px solid #d1d5db;
+            border: 0px;
         }
 
         .task-create-panel {
@@ -592,6 +592,18 @@
             background: #e5e7eb;
             color: #111827;
         }
+        .btn.btn-sm.btn-outline-primary.px-2.py-0.small:hover {
+            color: #fff; border: none; transition: 0.3s;
+            background: linear-gradient(to bottom, #0f61a8 5%, #0b2b6a 100%);
+            box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+            -webkit-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+        }
+        .btn.btn-sm.btn-outline-danger.px-2.py-0.small:hover {
+            color: #fff; border: none; transition: 0.3s;
+            background: linear-gradient(to bottom, #e7181b 5%, #a31818 100%);
+            box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+            -webkit-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+        }
 
         @media (max-width: 768px) {
             .ph-badge { display: none; }
@@ -635,14 +647,59 @@
 
     <div class="dashboard-container">
         
-        <!-- 2. SIDEBAR -->
         <aside class="sidebar" id="sidebarNav">
+            
+            <!-- WRAPPER UNTUK AREA YANG BISA DI-SCROLL -->
             <div class="sidebar-scroll-wrapper">
+                
+                <!-- Smart Filters (4 Kotak Besar) -->
+                <div class="smart-filters-grid">
+                    <a href="#" class="filter-card">
+                        <div class="filter-top"><div class="filter-icon bg-icon-dark"><i class="bi bi-archive-fill"></i></div><div class="filter-count">429</div></div>
+                        <div class="filter-label">All Tasks</div>
+                    </a>
+                    <a href="#" class="filter-card">
+                        <div class="filter-top"><div class="filter-icon bg-icon-blue"><i class="bi bi-calendar-event-fill"></i></div><div class="filter-count">25</div></div>
+                        <div class="filter-label">Today</div>
+                    </a>
+                    <a href="#" class="filter-card">
+                        <div class="filter-top"><div class="filter-icon bg-icon-orange"><i class="bi bi-flag-fill"></i></div><div class="filter-count">21</div></div>
+                        <div class="filter-label">Urgent</div>
+                    </a>
+                    <a href="#" class="filter-card">
+                        <div class="filter-top"><div class="filter-icon bg-icon-red"><i class="bi bi-calendar-check-fill"></i></div><div class="filter-count">30</div></div>
+                        <div class="filter-label">Assigned</div>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
                 <div class="nav-category">Main Navigation</div>
-                <a href="../home.html" class="sidebar-link active"><i class="bi bi-columns-gap"></i> Dashboard</a>
-                <a href="#" class="sidebar-link"><i class="bi bi-list-columns-reverse"></i> Lineup</a>
-                <div class="sidebar-copyright">&copy; 2025 PT Dialogika Persona Indonesia</div>
+                <a href="#" class="sidebar-link active"><i class="bi bi-columns-gap"></i> Dashboard</a>
+                <a href="#" class="sidebar-link"><i class="bi bi-list-columns-reverse"></i> Lineup <span class="sidebar-badge">4</span></a>
+                <a href="#" class="sidebar-link"><i class="bi bi-chat-dots"></i> Pings</a>
+                <a href="#" class="sidebar-link"><i class="bi bi-bell"></i> Hey!</a>
+                <a href="#" class="sidebar-link"><i class="bi bi-activity"></i> Activity</a>
+                <a href="#" class="sidebar-link"><i class="bi bi-person-circle"></i> My Stuff</a>
+
+                <div class="nav-category mt-4">System</div>
+                <a href="#" class="sidebar-link"><i class="bi bi-gear"></i> Settings</a>
+                <a href="#" class="sidebar-link text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
+
+            </div> <!-- End Scroll Wrapper -->
+
+            <!-- PENDING WIDGET (Pinned di Bawah, di luar scroll wrapper) -->
+            <div class="pending-widget">
+                <div class="fire-icon-wrapper"><i class="bi bi-fire fire-icon"></i></div>
+                <h6 class="fw-bold" style="color:#0B2B6A; margin-bottom: 5px;">Pending Tasks</h6>
+                <p class="small text-muted mb-3">You have 5 approvals waiting.</p>
+                <button class="btn-review">Review Now</button>
+                
+                <!-- COPYRIGHT (Muncul hanya saat scroll mentok bawah) -->
+                <div class="sidebar-copyright">
+                    &copy; 2025 PT Dialogika Persona Indonesia
+                </div>
             </div>
+
         </aside>
 
         <!-- 3. MAIN CONTENT -->
@@ -677,22 +734,41 @@
                 </div>
             </div>
 
-            <!-- B. KARTU DEPAN (DETAIL LIST) -->
-            <div class="main-list-card">
+                <!-- B. KARTU DEPAN (DETAIL LIST) -->
+                <div class="main-list-card">
                 
-                <!-- Header Area -->
-                <div class="mb-5 text-center">
-                    <span class="badge text-bg-success mb-2" id="listAllDoneBadge" style="display:none">All Done!</span>
-                    <!-- H1 untuk Judul List -->
-                    <h1 class="fw-bold display-5 mb-3" id="listTitleDisplay" style="color:#111;">Loading List...</h1>
-                    
-                    <!-- P untuk Deskripsi (Max 8 Words) -->
-                    <div class="text-muted mx-auto" style="max-width: 700px; line-height: 1.6;">
-                        <span id="descShort"></span>
-                        <span id="descFull" style="display:none;"></span>
-                        <a href="javascript:void(0)" class="desc-more-link" id="readMoreBtn" style="display:none;" onclick="toggleDesc()">Read more...</a>
+                    <!-- Header Area -->
+                    <div class="mb-5 text-center">
+                        <span class="badge text-bg-success mb-2" id="listAllDoneBadge" style="display:none">All Done!</span>
+                        <!-- H1 untuk Judul List -->
+                        <h1 class="fw-bold display-5 mb-3" id="listTitleDisplay" style="color:#111; cursor:text;">Loading List...</h1>
+                        
+                        <!-- P untuk Deskripsi (Max 8 Words) -->
+                        <div id="listDescWrapper" class="text-muted mx-auto" style="max-width: 700px; line-height: 1.6; cursor:text;">
+                            <span id="descShort"></span>
+                            <span id="descFull" style="display:none;"></span>
+                            <a href="javascript:void(0)" class="desc-more-link" id="readMoreBtn" style="display:none;" onclick="toggleDesc()">Read more...</a>
+                        </div>
+                        <div id="listDescEditorWrapper" class="mt-3 mx-auto" style="max-width:700px; display:none; text-align:left;">
+                            <div class="rich-editor">
+                                <div class="rich-toolbar">
+                                    <button type="button" class="rich-btn" onclick="applyFormat('listDescEditor','bold')"><i class="bi bi-type-bold"></i></button>
+                                    <button type="button" class="rich-btn" onclick="applyFormat('listDescEditor','italic')"><i class="bi bi-type-italic"></i></button>
+                                    <button type="button" class="rich-btn" onclick="applyFormat('listDescEditor','underline')"><i class="bi bi-type-underline"></i></button>
+                                    <button type="button" class="rich-btn" onclick="applyFormat('listDescEditor','insertUnorderedList')"><i class="bi bi-list-ul"></i></button>
+                                    <button type="button" class="rich-btn" onclick="applyFormat('listDescEditor','insertOrderedList')"><i class="bi bi-list-ol"></i></button>
+                                    <button type="button" class="rich-btn" onclick="applyBlockquote('listDescEditor')"><i class="bi bi-chat-right-quote"></i></button>
+                                    <button type="button" class="rich-btn ms-auto" onclick="triggerDescFileInput('list-detail')"><i class="bi bi-paperclip"></i></button>
+                                </div>
+                                <div id="listDescEditor" class="rich-editor-body" contenteditable="true" data-placeholder="Edit list description..."></div>
+                                <input type="file" id="list-desc-file-input-detail" multiple style="display:none" onchange="handleDescFiles('list-detail','listDescEditor',this)">
+                            </div>
+                            <div class="mt-2 text-end">
+                                <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" onclick="cancelEditListDescription()">Cancel</button>
+                                <button type="button" class="btn btn-dlg-blue rounded-pill px-3 btn-sm" onclick="saveListDescription()">Save</button>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
                 <div class="todo-list-wrapper">
                     <div class="text-center py-4"><div class="spinner-border text-primary"></div></div>
@@ -897,7 +973,21 @@
                             <img id="commentAvatar" src="https://i.pravatar.cc/150" alt="Avatar" style="width:100%; height:100%; object-fit:cover;">
                         </div>
                         <div class="w-100">
-                            <div id="commentInput" class="form-control bg-light text-muted p-3 mb-2" contenteditable="true" style="min-height: 80px; border-radius: 12px;">Add a comment here...</div>
+                            <div id="replyContext" class="small text-muted mb-1" style="display:none;"></div>
+                            <div class="rich-editor mb-2" style="position:relative;">
+                                <div class="rich-toolbar">
+                                    <button type="button" class="rich-btn" onclick="applyFormat('commentInput','bold')"><i class="bi bi-type-bold"></i></button>
+                                    <button type="button" class="rich-btn" onclick="applyFormat('commentInput','italic')"><i class="bi bi-type-italic"></i></button>
+                                    <button type="button" class="rich-btn" onclick="applyFormat('commentInput','insertUnorderedList')"><i class="bi bi-list-ul"></i></button>
+                                    <button type="button" class="rich-btn" onclick="applyFormat('commentInput','insertOrderedList')"><i class="bi bi-list-ol"></i></button>
+                                    <button type="button" class="rich-btn" onclick="applyBlockquote('commentInput')"><i class="bi bi-chat-right-quote"></i></button>
+                                    <button type="button" class="rich-btn ms-auto" onclick="triggerCommentFileInput()"><i class="bi bi-paperclip"></i></button>
+                                </div>
+                                <div id="commentInput" class="rich-editor-body" contenteditable="true" data-placeholder="Add a comment here..."></div>
+                                <div id="mentionDropdown" class="bg-white border rounded shadow-sm small" style="position:absolute; z-index:1050; display:none; max-height:200px; overflow-y:auto; min-width:180px;"></div>
+                            </div>
+                            <div id="commentAttachmentPreview" class="small text-muted mb-2"></div>
+                            <input type="file" id="comment-file-input" multiple style="display:none">
                             <button class="btn btn-dlg-yellow rounded-pill px-4 btn-sm fw-bold" style="margin-top: 7px;" onclick="postComment('list')">Post comment</button>
                         </div>
                     </div>
@@ -1008,6 +1098,12 @@
             onSnapshot,
             serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import {
+            getStorage,
+            ref as storageRef,
+            uploadBytes,
+            getDownloadURL
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
@@ -1021,6 +1117,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         const DEFAULT_LIST_STATUSES = [
             { name: "Initiate", color: "#0B2B6A", type: "not_started", position: 0 },
@@ -1042,6 +1139,9 @@
         const subscriptionToggleButton = document.getElementById('subscriptionToggleButton');
         const commentAvatar = document.getElementById('commentAvatar');
         const manageSubsScroll = document.getElementById('subscriberListScroll');
+        const listDescWrapper = document.getElementById('listDescWrapper');
+        const listDescEditorWrapper = document.getElementById('listDescEditorWrapper');
+        const listDescEditor = document.getElementById('listDescEditor');
 
         let currentUser = null;
         let listTasks = [];
@@ -1050,6 +1150,14 @@
         let projectMembers = [];
         let manageSubscriberSearchQuery = "";
         let currentComments = [];
+        let pendingCommentFiles = [];
+        let isEditingTitle = false;
+        let isEditingDescription = false;
+        let replyTargetCommentId = null;
+        let mentionRange = null;
+        let mentionActive = false;
+        let mentionQuery = "";
+        let mentionDropdownElement = null;
 
         function getDirectPhotoUrl(url, uid) {
             if (!url) return `https://i.pravatar.cc/150?u=${uid || "user"}`;
@@ -1082,13 +1190,40 @@
             });
 
             const commentInput = document.getElementById('commentInput');
-            if (commentInput) {
-                commentInput.addEventListener('focus', function () {
-                    if (this.innerText === 'Add a comment here...') this.innerText = '';
+            const commentFileInput = document.getElementById('comment-file-input');
+            const attachmentPreview = document.getElementById('commentAttachmentPreview');
+            const mentionDropdown = document.getElementById('mentionDropdown');
+            if (commentFileInput && attachmentPreview) {
+                commentFileInput.addEventListener('change', () => {
+                    const files = Array.from(commentFileInput.files || []);
+                    pendingCommentFiles = files;
+                    if (!files.length) {
+                        attachmentPreview.innerText = "";
+                        return;
+                    }
+                    const names = files.map(f => f.name).join(', ');
+                    attachmentPreview.innerText = `Attached: ${names}`;
                 });
-                commentInput.addEventListener('blur', function () {
-                    if (this.innerText.trim() === '') this.innerText = 'Add a comment here...';
+            }
+            if (commentInput && mentionDropdown) {
+                mentionDropdownElement = mentionDropdown;
+                commentInput.addEventListener('keydown', handleCommentKeyDown);
+                commentInput.addEventListener('keyup', handleCommentKeyUp);
+                commentInput.addEventListener('blur', () => {
+                    setTimeout(() => {
+                        if (!mentionActive && mentionDropdownElement) {
+                            mentionDropdownElement.style.display = "none";
+                            mentionDropdownElement.innerHTML = "";
+                        }
+                    }, 150);
                 });
+            }
+
+            if (titleEl) {
+                titleEl.addEventListener('click', startEditListTitle);
+            }
+            if (listDescWrapper) {
+                listDescWrapper.addEventListener('click', startEditListDescription);
             }
 
             try {
@@ -1305,7 +1440,9 @@
         }
 
         function renderListHeader(list) {
-            titleEl.innerText = list.name;
+            if (titleEl && !isEditingTitle) {
+                titleEl.innerText = list.name || "Untitled List";
+            }
             const fullDesc = list.description || list.desc || "No description provided.";
             const words = fullDesc.split(' ');
             
@@ -1361,7 +1498,9 @@
                 }
                 const tagsHtml = tags.map(tag => {
                     const color = getTagColor(tag);
-                    return `<span class="tag-pill me-1" style="background:${color}">${tag}</span>`;
+                    return `<span class="badge border small me-1" style="background:${color}; color:#111827;">
+                                <i class="bi bi-tag text-muted me-1"></i>${tag}
+                            </span>`;
                 }).join('');
                 
                 const itemHtml = `
@@ -1380,7 +1519,9 @@
                             </div>
                             <small class="text-muted" style="font-size:0.75rem">Click to see details</small>
                             <div class="mt-1" style="font-size:0.7rem">
-                                ${statusText ? `<span class="badge border small me-2" style="background:${statusColor}; color:#ffffff;">${statusText}</span>` : ''}
+                                ${statusText ? `<span class="badge border small me-2" style="background:${statusColor}; color:#ffffff;">
+                                                    <i class="bi bi-record-circle text-white me-1"></i>${statusText}
+                                                </span>` : ''}
                                 ${tagsHtml}
                             </div>
                         </div>
@@ -1415,6 +1556,152 @@
             return uid === owner;
         }
 
+        function getPlainCommentText(c) {
+            if (!c) return "";
+            if (typeof c.text_plain === 'string') return c.text_plain;
+            if (typeof c.text === 'string') return c.text.replace(/<[^>]*>/g, ' ');
+            return "";
+        }
+
+        function placeCaretAtEnd(el) {
+            if (!el) return;
+            const range = document.createRange();
+            range.selectNodeContents(el);
+            range.collapse(false);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+
+        function startEditListTitle() {
+            if (!titleEl || isEditingTitle) return;
+            isEditingTitle = true;
+            titleEl.setAttribute('contenteditable', 'true');
+            titleEl.dataset.editing = '1';
+            placeCaretAtEnd(titleEl);
+            const handleKeyDown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    finishEditListTitle(true);
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    finishEditListTitle(false);
+                }
+            };
+            const handleBlur = () => {
+                finishEditListTitle(true);
+            };
+            titleEl.addEventListener('keydown', handleKeyDown);
+            titleEl.addEventListener('blur', handleBlur, { once: true });
+            titleEl.dataset.keyHandler = '1';
+        }
+
+        async function finishEditListTitle(save) {
+            if (!titleEl) {
+                isEditingTitle = false;
+                return;
+            }
+            const newTitle = (titleEl.innerText || '').trim();
+            const original = currentListData && currentListData.name ? currentListData.name : "";
+            let finalTitle = original || "Untitled List";
+            if (save && newTitle && newTitle !== original && currentListData) {
+                try {
+                    const listRef = doc(db, "projects", projectId, "lists", listId);
+                    await updateDoc(listRef, { name: newTitle });
+                    currentListData.name = newTitle;
+                    finalTitle = newTitle;
+                } catch (e) {
+                    console.error("Failed to update list title", e);
+                }
+            }
+            titleEl.innerText = finalTitle;
+            titleEl.removeAttribute('contenteditable');
+            delete titleEl.dataset.editing;
+            isEditingTitle = false;
+        }
+
+        function startEditListDescription() {
+            if (!listDescWrapper || !listDescEditorWrapper || !listDescEditor || isEditingDescription) return;
+            isEditingDescription = true;
+            const fullDesc = currentListData && (currentListData.description || currentListData.desc)
+                ? currentListData.description || currentListData.desc
+                : (document.getElementById('descFull').innerText || document.getElementById('descShort').innerText || "");
+            listDescWrapper.style.display = 'none';
+            listDescEditorWrapper.style.display = 'block';
+            listDescEditor.innerText = fullDesc;
+            placeCaretAtEnd(listDescEditor);
+        }
+
+        function cancelEditListDescription() {
+            if (!isEditingDescription) return;
+            isEditingDescription = false;
+            if (listDescEditorWrapper) listDescEditorWrapper.style.display = 'none';
+            if (listDescWrapper) listDescWrapper.style.display = 'block';
+        }
+
+        async function saveListDescription() {
+            if (!listDescEditor || !currentListData) {
+                cancelEditListDescription();
+                return;
+            }
+            const plain = listDescEditor.innerText.replace(/\u200B/g, '').trim();
+            const html = listDescEditor.innerHTML.trim();
+            try {
+                const listRef = doc(db, "projects", projectId, "lists", listId);
+                await updateDoc(listRef, {
+                    description: plain,
+                    description_html: html
+                });
+                currentListData.description = plain;
+                currentListData.description_html = html;
+                renderListHeader(currentListData);
+            } catch (e) {
+                console.error("Failed to update list description", e);
+            } finally {
+                isEditingDescription = false;
+                if (listDescEditorWrapper) listDescEditorWrapper.style.display = 'none';
+                if (listDescWrapper) listDescWrapper.style.display = 'block';
+            }
+        }
+
+        function updateReplyContextUI() {
+            const ctx = document.getElementById('replyContext');
+            if (!ctx) return;
+            if (!replyTargetCommentId) {
+                ctx.style.display = "none";
+                ctx.innerHTML = "";
+                return;
+            }
+            const comment = currentComments.find(c => c.id === replyTargetCommentId);
+            if (!comment) {
+                replyTargetCommentId = null;
+                ctx.style.display = "none";
+                ctx.innerHTML = "";
+                return;
+            }
+            const userId = comment.user_id || comment.userId || "";
+            const userName = comment.user_name || comment.userName || userId || "User";
+            const text = getPlainCommentText(comment);
+            const truncated = text.length > 80 ? text.substring(0, 77) + "..." : text;
+            ctx.style.display = "block";
+            ctx.innerHTML = `Replying to <strong>${userName}</strong>: "${truncated}" <button type="button" class="btn btn-link btn-sm p-0 ms-2" onclick="clearReplyTarget()">Cancel reply</button>`;
+        }
+
+        window.replyToComment = function (commentId) {
+            replyTargetCommentId = commentId;
+            updateReplyContextUI();
+            const input = document.getElementById('commentInput');
+            if (input) {
+                input.focus();
+                placeCaretAtEnd(input);
+            }
+        };
+
+        window.clearReplyTarget = function () {
+            replyTargetCommentId = null;
+            updateReplyContextUI();
+        };
+
         function renderComments(comments) {
             commentsContainer.innerHTML = '';
             if (!comments || comments.length === 0) {
@@ -1432,6 +1719,10 @@
                     ? initialsSource.trim().split(' ').map(part => part[0]).join('').substring(0, 2).toUpperCase()
                     : '??';
                 const photo = c.user_photo || "";
+                const attachments = Array.isArray(c.attachments) ? c.attachments : [];
+                const attachmentsHtml = attachments.length
+                    ? `<div class="mt-2 small">${attachments.map(a => `<a href="${a.url}" target="_blank" rel="noopener" class="me-2"><i class="bi bi-paperclip me-1"></i>${a.name}</a>`).join('')}</div>`
+                    : '';
                 const avatar = photo
                     ? `<div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 overflow-hidden" style="width:40px; height:40px;">
                            <img src="${photo}" alt="${userName}" style="width:100%; height:100%; object-fit:cover;">
@@ -1440,29 +1731,107 @@
                            ${initials}
                        </div>`;
                 const canEdit = canEditComment(c);
-                const actionsHtml = canEdit
-                    ? `
-                        <div class="mt-1 d-flex gap-2">
-                            <button class="btn btn-link btn-sm p-0 small" onclick="editComment('${c.id}')">Edit</button>
-                            <span class="text-muted">·</span>
-                            <button class="btn btn-link btn-sm p-0 small text-danger" onclick="deleteComment('${c.id}')">Delete</button>
-                        </div>
-                      `
+            });
+
+            const commentById = {};
+            comments.forEach(c => {
+                commentById[c.id] = c;
+            });
+
+            const childrenMap = {};
+            comments.forEach(c => {
+                const parentId = c.parent_comment_id || c.parentCommentId || null;
+                if (parentId) {
+                    if (!childrenMap[parentId]) childrenMap[parentId] = [];
+                    childrenMap[parentId].push(c);
+                }
+            });
+
+            const roots = comments.filter(c => {
+                const parentId = c.parent_comment_id || c.parentCommentId || null;
+                if (!parentId) return true;
+                return !commentById[parentId];
+            });
+
+            function renderCommentTree(c, depth) {
+                const createdAt = normalizeTimestamp(c.created_at || c.createdAt);
+                const dateStr = createdAt ? createdAt.toLocaleString() : 'Just now';
+                const userId = c.user_id || c.userId || '';
+                const userName = c.user_name || c.userName || userId || 'User';
+                const initialsSource = c.user_initials || userName || userId || '';
+                const initials = initialsSource
+                    ? initialsSource.trim().split(' ').map(part => part[0]).join('').substring(0, 2).toUpperCase()
+                    : '??';
+                const photo = c.user_photo || "";
+                const attachments = Array.isArray(c.attachments) ? c.attachments : [];
+                const attachmentsHtml = attachments.length
+                    ? `<div class="mt-2 small">${attachments.map(a => `<a href="${a.url}" target="_blank" rel="noopener" class="me-2"><i class="bi bi-paperclip me-1"></i>${a.name}</a>`).join('')}</div>`
                     : '';
+                const avatar = photo
+                    ? `<div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 overflow-hidden" style="width:40px; height:40px;">
+                           <img src="${photo}" alt="${userName}" style="width:100%; height:100%; object-fit:cover;">
+                       </div>`
+                    : `<div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">
+                           ${initials}
+                       </div>`;
+                const canEdit = canEditComment(c);
+                const actions = [];
+                actions.push(`
+                    <button class="btn btn-sm btn-outline-primary px-2 py-0 small"
+                            style="border-color:#0B2B6A; color:#0B2B6A;"
+                            onclick="replyToComment('${c.id}')">
+                        Reply
+                    </button>
+                `);
+                if (canEdit) {
+                    actions.push(`
+                        <button class="btn btn-sm btn-outline-primary px-2 py-0 small"
+                                style="border-color:#0B2B6A; color:#0B2B6A;"
+                                onclick="editComment('${c.id}')">
+                            Edit
+                        </button>
+                    `);
+                    actions.push(`
+                        <button class="btn btn-sm btn-outline-danger px-2 py-0 small"
+                                style="border-color:#e7181a; color:#e7181a;"
+                                onclick="deleteComment('${c.id}')">
+                            Delete
+                        </button>
+                    `);
+                }
+                const actionsHtml = actions.length
+                    ? `<div class="mt-1 d-flex gap-2">${actions.join('')}</div>`
+                    : '';
+                const parentId = c.parent_comment_id || c.parentCommentId || null;
+                const parent = parentId ? commentById[parentId] : null;
+                const parentName = parent ? (parent.user_name || parent.userName || '') : '';
+                const replyingHtml = parentName
+                    ? `<div class="small text-muted mb-1">Replying to <strong>${parentName}</strong></div>`
+                    : '';
+                const indentClass = depth > 0 ? ' ms-5' : '';
+                const marginClass = depth > 0 ? 'mb-2' : 'mb-3';
                 const html = `
-                    <div class="d-flex gap-3 mb-3">
+                    <div class="d-flex gap-3 ${marginClass}${indentClass}">
                         ${avatar}
                         <div class="bg-white border rounded p-3 w-100 shadow-sm">
                             <div class="d-flex justify-content-between mb-1">
                                 <strong class="small text-dark">${userName}</strong>
                                 <small class="text-muted" style="font-size:0.7rem">${dateStr}</small>
                             </div>
-                            <div class="text-dark small" id="comment-text-${c.id}">${c.text}</div>
+                            ${replyingHtml}
+                            <div class="text-dark small" id="comment-text-${c.id}">${c.text || ''}</div>
+                            ${attachmentsHtml}
                             ${actionsHtml}
                         </div>
                     </div>
                 `;
                 commentsContainer.insertAdjacentHTML('beforeend', html);
+                const children = childrenMap[c.id] || [];
+                children.forEach(child => renderCommentTree(child, depth + 1));
+            }
+
+            roots.forEach(root => {
+                renderCommentTree(root, 0);
             });
         }
 
@@ -1548,8 +1917,9 @@
         window.postComment = async function () {
             const input = document.getElementById('commentInput');
             if (!input) return;
-            const text = input.innerText.trim();
-            if (text === 'Add a comment here...' || text === '') return;
+            const plainText = input.innerText.replace(/\u200B/g, '').trim();
+            const htmlText = input.innerHTML.trim();
+            if (!plainText) return;
             
             const btn = event && event.target ? event.target : null;
             let originalBtnText = '';
@@ -1569,17 +1939,44 @@
                 const initials = initialsSource
                     ? initialsSource.trim().split(' ').map(part => part[0]).join('').substring(0, 2).toUpperCase()
                     : 'US';
-
+                const attachments = [];
+                if (pendingCommentFiles && pendingCommentFiles.length > 0) {
+                    for (const file of pendingCommentFiles) {
+                        try {
+                            const path = `comments/${projectId}/${listId}/${Date.now()}_${file.name}`;
+                            const ref = storageRef(storage, path);
+                            await uploadBytes(ref, file);
+                            const url = await getDownloadURL(ref);
+                            attachments.push({ name: file.name, url });
+                        } catch (e) {
+                            console.error("Failed to upload attachment", e);
+                        }
+                    }
+                }
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlText;
+                const mentionNodes = tempDiv.querySelectorAll('[data-mention-uid]');
+                const mentionedIds = Array.from(mentionNodes).map(node => node.getAttribute('data-mention-uid')).filter(Boolean);
+                const mentionedUnique = Array.from(new Set(mentionedIds));
                 await addDoc(collection(db, "projects", projectId, "lists", listId, "comments"), {
-                    text: text,
+                    text: htmlText,
+                    text_plain: plainText,
+                    attachments: attachments,
                     user_id: uid,
                     user_name: userName,
                     user_initials: initials,
                     user_photo: photoUrl,
-                    created_at: serverTimestamp()
+                    created_at: serverTimestamp(),
+                    parent_comment_id: replyTargetCommentId || null,
+                    mentioned_user_ids: mentionedUnique
                 });
 
-                input.innerText = 'Add a comment here...';
+                input.innerHTML = '';
+                pendingCommentFiles = [];
+                const attachmentPreview = document.getElementById('commentAttachmentPreview');
+                if (attachmentPreview) attachmentPreview.innerText = "";
+                replyTargetCommentId = null;
+                updateReplyContextUI();
             } catch (e) {
                 console.error("Failed to post comment", e);
                 alert("Gagal mengirim komentar: " + e.message);
@@ -1611,7 +2008,7 @@
             const idInput = document.getElementById('commentEditId');
             const modalEl = document.getElementById('commentEditModal');
             if (!input || !idInput || !modalEl) return;
-            input.value = comment.text || "";
+            input.value = getPlainCommentText(comment);
             idInput.value = commentId;
             const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
@@ -1635,8 +2032,10 @@
                 return;
             }
             try {
+                const html = trimmed.replace(/\n/g, '<br>');
                 await updateDoc(doc(db, "projects", projectId, "lists", listId, "comments", commentId), {
-                    text: trimmed,
+                    text: html,
+                    text_plain: trimmed,
                     updated_at: serverTimestamp()
                 });
                 const modal = bootstrap.Modal.getInstance(modalEl);
@@ -1658,7 +2057,7 @@
             const idInput = document.getElementById('commentDeleteId');
             const modalEl = document.getElementById('commentDeleteModal');
             if (!previewEl || !idInput || !modalEl) return;
-            previewEl.innerText = comment.text || "";
+            previewEl.innerText = getPlainCommentText(comment);
             idInput.value = commentId;
             const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
@@ -1682,6 +2081,156 @@
                 console.error("Failed to delete comment", e);
                 showCommentInfo("Gagal menghapus komentar: " + e.message);
             }
+        };
+
+        function stopMention() {
+            mentionActive = false;
+            mentionQuery = "";
+            mentionRange = null;
+            if (mentionDropdownElement) {
+                mentionDropdownElement.style.display = "none";
+                mentionDropdownElement.innerHTML = "";
+            }
+        }
+
+        function handleCommentKeyDown(e) {
+            if (mentionActive && e.key === "Escape") {
+                e.preventDefault();
+                stopMention();
+            }
+        }
+
+        function handleCommentKeyUp(e) {
+            const editor = e.currentTarget;
+            const key = e.key;
+            if (key === "@") {
+                const sel = window.getSelection();
+                if (!sel || !sel.rangeCount) return;
+                const range = sel.getRangeAt(0);
+                if (!editor.contains(range.startContainer)) return;
+                const r = range.cloneRange();
+                const startOffset = Math.max(0, r.startOffset - 1);
+                r.setStart(r.startContainer, startOffset);
+                mentionRange = r;
+                mentionActive = true;
+                mentionQuery = "";
+                updateMentionDropdown(editor);
+                return;
+            }
+
+            if (!mentionActive) return;
+
+            if (key === "Escape" || key === " " || key === "Enter" || key === "Tab") {
+                stopMention();
+                return;
+            }
+
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) {
+                stopMention();
+                return;
+            }
+            const range = sel.getRangeAt(0);
+            if (!editor.contains(range.startContainer) || !mentionRange) {
+                stopMention();
+                return;
+            }
+            if (mentionRange.startContainer !== range.startContainer) {
+                stopMention();
+                return;
+            }
+            mentionRange.setEnd(range.startContainer, range.startOffset);
+            const node = mentionRange.startContainer;
+            const text = node.textContent || "";
+            const start = mentionRange.startOffset;
+            const end = mentionRange.endOffset;
+            if (end <= start || start < 0 || end > text.length) {
+                stopMention();
+                return;
+            }
+            if (text[start] !== "@") {
+                stopMention();
+                return;
+            }
+            mentionQuery = text.substring(start + 1, end);
+            updateMentionDropdown(editor);
+        }
+
+        function updateMentionDropdown(editor) {
+            if (!mentionDropdownElement) return;
+            if (!mentionActive) {
+                mentionDropdownElement.style.display = "none";
+                mentionDropdownElement.innerHTML = "";
+                return;
+            }
+            const query = (mentionQuery || "").toLowerCase();
+            let candidates = Array.isArray(projectMembers) ? projectMembers.slice() : [];
+            if (query) {
+                candidates = candidates.filter(m => {
+                    const name = (m.name || "").toLowerCase();
+                    const email = (m.email || "").toLowerCase();
+                    return name.includes(query) || email.includes(query);
+                });
+            }
+            if (!candidates.length) {
+                mentionDropdownElement.style.display = "none";
+                mentionDropdownElement.innerHTML = "";
+                return;
+            }
+            const itemsHtml = candidates.map(m => {
+                const name = m.name || m.email || m.uid;
+                const email = m.email ? ` <span class="text-muted small">(${m.email})</span>` : "";
+                return `<div class="px-2 py-1 mention-item" style="cursor:pointer;" onclick="selectMention('${m.uid}')">${name}${email}</div>`;
+            }).join("");
+            mentionDropdownElement.innerHTML = itemsHtml;
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) {
+                mentionDropdownElement.style.display = "none";
+                return;
+            }
+            const range = sel.getRangeAt(0).cloneRange();
+            const rect = range.getBoundingClientRect();
+            const container = editor.closest('.rich-editor') || editor.parentElement || editor;
+            const containerRect = container.getBoundingClientRect();
+            const left = rect.left - containerRect.left;
+            const top = rect.bottom - containerRect.top + 4;
+            mentionDropdownElement.style.left = `${left}px`;
+            mentionDropdownElement.style.top = `${top}px`;
+            mentionDropdownElement.style.display = "block";
+        }
+
+        window.selectMention = function (uid) {
+            const editor = document.getElementById('commentInput');
+            if (!editor || !mentionRange) {
+                stopMention();
+                return;
+            }
+            const member = (projectMembers || []).find(m => m.uid === uid);
+            if (!member) {
+                stopMention();
+                return;
+            }
+            const name = member.name || member.email || uid;
+            const span = document.createElement('span');
+            span.className = 'comment-mention';
+            span.setAttribute('data-mention-uid', uid);
+            span.setAttribute('data-mention-name', name);
+            span.textContent = '@' + name;
+            const space = document.createTextNode('\u00A0');
+            const fragment = document.createDocumentFragment();
+            fragment.appendChild(span);
+            fragment.appendChild(space);
+            mentionRange.deleteContents();
+            mentionRange.insertNode(fragment);
+            const sel = window.getSelection();
+            if (sel) {
+                sel.removeAllRanges();
+                const afterRange = document.createRange();
+                afterRange.setStartAfter(space);
+                afterRange.setEndAfter(space);
+                sel.addRange(afterRange);
+            }
+            stopMention();
         };
 
         window.togglePriorityMenu = (lid) => {
@@ -2113,12 +2662,51 @@
             const task = (listTasks || []).find(t => t.id === taskId);
             if (task) {
                 task.status = newStatus;
+                let statusColor = '#0B2B6A';
+                if (currentListData) {
+                    const rawStatuses = Array.isArray(currentListData.statuses) && currentListData.statuses.length > 0
+                        ? currentListData.statuses
+                        : DEFAULT_LIST_STATUSES;
+                    const currentStatusName = String(newStatus || '').toLowerCase();
+                    const found = rawStatuses.find(s => String(s.name || '').toLowerCase() === currentStatusName);
+                    if (found && found.color) statusColor = found.color;
+                }
+                if (rowElement) {
+                    const badge = rowElement.querySelector('.badge.border.small');
+                    if (badge) {
+                        badge.style.background = statusColor;
+                        badge.style.color = '#ffffff';
+                        badge.innerHTML = `<i class="bi bi-record-circle text-white me-1"></i>${newStatus}`;
+                    }
+                }
             }
             updateAllDoneBadge();
         };
 
         window.goToTaskDetail = function (taskId) {
             if (!taskId) return;
+            try {
+                const task = (listTasks || []).find(t => t.id === taskId) || null;
+                const projectInfo = {
+                    id: projectId,
+                    name: breadProjectLink ? breadProjectLink.innerText : "",
+                    department: badgeEl ? badgeEl.innerText : ""
+                };
+                const listInfo = currentListData
+                    ? { id: currentListData.id, name: currentListData.name || "" }
+                    : null;
+                const payload = {
+                    source: "list-detail",
+                    projectId: projectId,
+                    taskId: taskId,
+                    task: task,
+                    list: listInfo,
+                    project: projectInfo
+                };
+                localStorage.setItem('currentTaskDetail', JSON.stringify(payload));
+            } catch (e) {
+                console.error("Failed to store currentTaskDetail", e);
+            }
             window.location.href = `item-details.html?taskId=${taskId}&projectId=${projectId}`;
         };
 
@@ -2212,6 +2800,52 @@
                 if (input) input.click();
                 return;
             }
+            if (scope === 'list-detail') {
+                const input = document.getElementById('list-desc-file-input-detail');
+                if (input) input.click();
+                return;
+            }
+        };
+
+        async function uploadDescriptionFiles(context, editorId, files) {
+            if (!files || files.length === 0) return;
+            const editor = document.getElementById(editorId);
+            if (!editor) return;
+            for (const file of files) {
+                try {
+                    const path = `projects/${projectId || 'no-project'}/${context}/${Date.now()}_${file.name}`;
+                    const ref = storageRef(storage, path);
+                    await uploadBytes(ref, file);
+                    const url = await getDownloadURL(ref);
+                    const isImage = file.type && file.type.startsWith("image/");
+                    const html = isImage
+                        ? `<div><img src="${url}" alt="${file.name}" style="max-width:100%; border-radius:8px;"></div>`
+                        : `<div><a href="${url}" target="_blank" rel="noopener">${file.name}</a></div>`;
+                    editor.focus();
+                    document.execCommand('insertHTML', false, html);
+                } catch (e) {
+                    console.error("Failed to upload description file", e);
+                }
+            }
+        }
+
+        window.handleDescFiles = async (context, editorId, inputEl) => {
+            if (!inputEl) return;
+            const files = inputEl.files;
+            await uploadDescriptionFiles(context, editorId, files);
+            inputEl.value = "";
+        };
+
+        window.applyBlockquote = (editorId) => {
+            const editor = document.getElementById(editorId);
+            if (!editor) return;
+            editor.focus();
+            document.execCommand('formatBlock', false, 'blockquote');
+        };
+
+        window.triggerCommentFileInput = () => {
+            const input = document.getElementById('comment-file-input');
+            if (input) input.click();
         };
     </script>
      <script>

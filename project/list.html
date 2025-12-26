@@ -1736,13 +1736,45 @@
             }
         }
 
+        function storeCurrentTaskDetailFromList(taskId) {
+            try {
+                const task = (allTasks || []).find(t => t.id === taskId) || null;
+                let listInfo = null;
+                if (task && task.list_id) {
+                    const list = (projectLists || []).find(l => l.id === task.list_id);
+                    if (list) listInfo = { id: list.id, name: list.name || "" };
+                }
+                const projectInfo = {
+                    id: projectId,
+                    name: document.getElementById('projectNameDisplay')
+                        ? document.getElementById('projectNameDisplay').innerText
+                        : "",
+                    department: document.getElementById('projectBadge')
+                        ? document.getElementById('projectBadge').innerText
+                        : ""
+                };
+                const payload = {
+                    source: "list",
+                    projectId: projectId,
+                    taskId: taskId,
+                    task: task,
+                    list: listInfo,
+                    project: projectInfo
+                };
+                localStorage.setItem('currentTaskDetail', JSON.stringify(payload));
+            } catch (e) {
+                console.error("Failed to store currentTaskDetail from list", e);
+            }
+        }
+
         window.openTaskInNewTab = (event, taskId) => {
             if (event) {
                 event.stopPropagation();
                 event.preventDefault();
             }
             if (!taskId) return;
-            window.open(`item-details.html?id=${taskId}`, '_blank');
+            storeCurrentTaskDetailFromList(taskId);
+            window.open(`item-details.html?taskId=${taskId}&projectId=${projectId}`, '_blank');
         };
 
         window.handleTaskRowClick = (event, taskId) => {
@@ -1750,7 +1782,9 @@
             if (target.closest('input') || target.closest('.drag-handle-task')) {
                 return;
             }
-            window.open(`item-details.html?id=${taskId}`, '_blank');
+            if (!taskId) return;
+            storeCurrentTaskDetailFromList(taskId);
+            window.open(`item-details.html?taskId=${taskId}&projectId=${projectId}`, '_blank');
         };
 
         window.saveTask = async (listId) => {
