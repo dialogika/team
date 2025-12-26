@@ -211,7 +211,7 @@
                     <i class="bi bi-chevron-right ph-sep"></i>
 
                     <!-- 3. All Lists (To-dos) -->
-                    <a href="#" id="breadAllListLink" class="ph-crumb-link">To-dos</a>
+                    <a href="#" id="breadAllListLink" class="ph-crumb-link">Lists</a>
                 </div>
 
                 <!-- Right Option -->
@@ -273,22 +273,15 @@
                     </div>
                 </div>
 
-                <!-- --- SUBSCRIBER SECTION (NEW) --- -->
                 <div class="mt-5 pt-4 border-top">
                     <h6 class="fw-bold text-dark">Subscribers</h6>
                     <p class="small text-muted mb-3">People listed below will be notified when comments are posted.</p>
                     
-                    <div class="d-flex align-items-center gap-2 flex-wrap" id="subsContainer">
-                        <!-- Subscriber Avatars -->
-                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:30px; height:30px; font-size:0.7rem;">RA</div>
-                        
-                        <button class="btn btn-light border rounded-pill px-3 py-1 btn-sm text-muted small" onclick="alert('Fitur Manage Subscriber belum aktif')">Add/remove people...</button>
-                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap" id="subsContainer"></div>
                     
-                    <!-- Status -->
                     <div class="mt-3 p-2 bg-light rounded-pill d-inline-block border">
-                        <small class="text-dark fw-bold px-2">You’re subscribed</small>
-                        <button class="btn btn-sm btn-link text-muted text-decoration-none p-0" style="font-size:0.8rem;">Unsubscribe me</button>
+                        <small id="subscriptionStatusText" class="text-dark fw-bold px-2">You’re subscribed</small>
+                        <button id="subscriptionToggleButton" class="btn btn-sm btn-link text-muted text-decoration-none p-0" style="font-size:0.8rem;" onclick="toggleSubscription()">Unsubscribe me</button>
                     </div>
                 </div>
                 
@@ -296,286 +289,477 @@
         </main>
     </div>
 
-    <!-- Script JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-     <script>
-         // --- 1. KONFIGURASI API ---
-         const API_URL = 'https://script.google.com/macros/s/AKfycbzsRHbU5WcucXdIhQeOFBaWQFvqO1kwGk72dHIfYWKtNcQF7ds5tTOyZNAmEWCQX_M/exec';
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import {
+            getFirestore,
+            doc,
+            collection,
+            getDoc,
+            getDocs,
+            query,
+            where,
+            orderBy,
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            onSnapshot,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-         // Ambil ID dari URL
-         const urlParams = new URLSearchParams(window.location.search);
-         const listId = urlParams.get('listId');
-         const projectId = urlParams.get('projectId');
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com",
+            projectId: "pre-dialogika",
+            storageBucket: "pre-dialogika.firebasestorage.app",
+            messagingSenderId: "343771410480",
+            appId: "1:343771410480:web:32881c9868522090237df5"
+        };
 
-         // Elements
-         const tasksWrapper = document.querySelector('.todo-list-wrapper');
-         const titleEl = document.getElementById('listTitleDisplay');
-         const badgeEl = document.getElementById('projectBadge');
-         const commentsContainer = document.getElementById('commentsContainer');
-         const subsContainer = document.getElementById('subsContainer');
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-         // Breadcrumb Elements
-         const breadProjectLink = document.getElementById('breadProjectLink');
-         const breadAllListLink = document.getElementById('breadAllListLink');
+        const urlParams = new URLSearchParams(window.location.search);
+        const listId = urlParams.get('listId');
+        const projectId = urlParams.get('projectId');
 
-         document.addEventListener("DOMContentLoaded", function() {
-             if(!listId || !projectId) {
-                 alert("Error: Parameter URL tidak lengkap.");
-                 return;
-             }
+        const tasksWrapper = document.querySelector('.todo-list-wrapper');
+        const titleEl = document.getElementById('listTitleDisplay');
+        const badgeEl = document.getElementById('projectBadge');
+        const commentsContainer = document.getElementById('commentsContainer');
+        const subsContainer = document.getElementById('subsContainer');
+        const breadProjectLink = document.getElementById('breadProjectLink');
+        const breadAllListLink = document.getElementById('breadAllListLink');
+        const subscriptionStatusText = document.getElementById('subscriptionStatusText');
+        const subscriptionToggleButton = document.getElementById('subscriptionToggleButton');
 
-             // Setup Breadcrumb Links Awal
-             breadProjectLink.href = `../project/project.html?id=${projectId}`;
-             breadAllListLink.href = `list.html?id=${projectId}`;
+        let currentUser = null;
+        let listTasks = [];
+        let currentSubscribers = [];
 
-             // Setup Comment Placeholder Logic
-             const commentInput = document.getElementById('commentInput');
-             commentInput.addEventListener('focus', function() {
-                 if(this.innerText === 'Add a comment here...') this.innerText = '';
-             });
-             commentInput.addEventListener('blur', function() {
-                 if(this.innerText.trim() === '') this.innerText = 'Add a comment here...';
-             });
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!listId || !projectId) {
+                alert("Error: Parameter URL tidak lengkap.");
+                return;
+            }
 
-             fetchDetailData();
-         });
+            breadProjectLink.href = `../project/project.html?id=${projectId}`;
+            breadAllListLink.href = `list.html?id=${projectId}`;
 
-         function fetchDetailData() {
-             tasksWrapper.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+            const commentInput = document.getElementById('commentInput');
+            if (commentInput) {
+                commentInput.addEventListener('focus', function () {
+                    if (this.innerText === 'Add a comment here...') this.innerText = '';
+                });
+                commentInput.addEventListener('blur', function () {
+                    if (this.innerText.trim() === '') this.innerText = 'Add a comment here...';
+                });
+            }
 
-             fetch(`${API_URL}?action=getProjectData&id=${projectId}`)
-             .then(res => res.json())
-             .then(response => {
-                 if(response.status === 'success') {
-                     const data = response.data;
-                     
-                     // 1. Update Project Info
-                     if(data.project) {
-                         breadProjectLink.innerText = data.project.name;
-                         badgeEl.innerText = data.project.department || 'Project';
-                     }
+            loadProjectHeader();
+            loadListDetail();
+            listenComments();
+            listenSubscribers();
 
-                     // 2. Cari List Spesifik
-                     const currentList = data.lists.find(l => l.id === listId);
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user || null;
+                updateSubscriptionUI();
+            });
+        });
 
-                     if (currentList) {
-                         renderListHeader(currentList);
-                         renderTasks(currentList.tasks);
-                         
-                         // 3. Render Comments (Filter hanya untuk list ini)
-                         const listComments = data.comments.filter(c => c.contextId === listId);
-                         renderComments(listComments);
+        async function loadProjectHeader() {
+            try {
+                const snap = await getDoc(doc(db, "projects", projectId));
+                if (!snap.exists()) return;
+                const data = snap.data();
+                if (breadProjectLink) breadProjectLink.innerText = data.name || "Untitled Project";
+                if (badgeEl) badgeEl.innerText = data.department || "Project";
+            } catch (e) {
+                console.error("Failed to load project header", e);
+            }
+        }
 
-                         // 4. Render Subscribers (Filter untuk project ini atau list ini)
-                         const listSubs = data.subscribers.filter(s => s.contextId === listId || s.contextId === projectId);
-                         renderSubscribers(listSubs);
-                     } else {
-                         titleEl.innerText = "List Not Found";
-                         tasksWrapper.innerHTML = '<div class="alert alert-warning text-center">List ID tidak ditemukan.</div>';
-                     }
-                 } else {
-                     alert("API Error: " + response.message);
-                 }
-             })
-             .catch(err => {
-                 console.error(err);
-                 tasksWrapper.innerHTML = '<div class="alert alert-danger text-center">Gagal terhubung ke server.</div>';
-             });
-         }
+        async function loadListDetail() {
+            if (!tasksWrapper || !titleEl) return;
+            tasksWrapper.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+            try {
+                const listRef = doc(db, "projects", projectId, "lists", listId);
+                const snap = await getDoc(listRef);
+                if (!snap.exists()) {
+                    titleEl.innerText = "List Not Found";
+                    tasksWrapper.innerHTML = '<div class="alert alert-warning text-center">List ID tidak ditemukan.</div>';
+                    return;
+                }
+                const listData = { id: snap.id, ...snap.data() };
+                renderListHeader(listData);
+                await loadTasks();
+            } catch (e) {
+                console.error("Failed to load list detail", e);
+                tasksWrapper.innerHTML = '<div class="alert alert-danger text-center">Gagal mengambil data list.</div>';
+            }
+        }
 
-         function renderListHeader(list) {
-             titleEl.innerText = list.name;
-             const fullDesc = list.desc || "No description provided.";
-             const words = fullDesc.split(' ');
-             
-             const shortSpan = document.getElementById('descShort');
-             const fullSpan = document.getElementById('descFull');
-             const btn = document.getElementById('readMoreBtn');
+        async function loadTasks() {
+            try {
+                const q = query(
+                    collection(db, "tasks"),
+                    where("project_id", "==", projectId)
+                );
+                const snap = await getDocs(q);
+                const tasks = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.list_id === listId) {
+                        tasks.push({ id: docSnap.id, ...data });
+                    }
+                });
+                tasks.sort((a, b) => {
+                    const pa = typeof a.position === "number" ? a.position : 0;
+                    const pb = typeof b.position === "number" ? b.position : 0;
+                    return pa - pb;
+                });
+                listTasks = tasks;
+                renderTasks(listTasks);
+            } catch (e) {
+                console.error("Failed to load tasks", e);
+                if (tasksWrapper) {
+                    tasksWrapper.innerHTML = '<div class="alert alert-danger text-center">Gagal mengambil data tasks.</div>';
+                }
+            }
+        }
 
-             if (words.length > 8) {
-                 shortSpan.innerText = words.slice(0, 8).join(' ') + '...';
-                 shortSpan.style.display = 'inline';
-                 fullSpan.innerText = fullDesc;
-                 fullSpan.style.display = 'none';
-                 btn.style.display = 'inline';
-             } else {
-                 shortSpan.innerText = fullDesc;
-                 fullSpan.style.display = 'none';
-                 btn.style.display = 'none';
-             }
-         }
+        function renderListHeader(list) {
+            titleEl.innerText = list.name;
+            const fullDesc = list.description || list.desc || "No description provided.";
+            const words = fullDesc.split(' ');
+            
+            const shortSpan = document.getElementById('descShort');
+            const fullSpan = document.getElementById('descFull');
+            const btn = document.getElementById('readMoreBtn');
 
-         window.toggleDesc = function() {
-             const shortSpan = document.getElementById('descShort');
-             const fullSpan = document.getElementById('descFull');
-             const btn = document.getElementById('readMoreBtn');
-             const isShort = shortSpan.style.display !== 'none';
-             
-             shortSpan.style.display = isShort ? 'none' : 'inline';
-             fullSpan.style.display = isShort ? 'inline' : 'none';
-             btn.innerText = isShort ? 'Show less' : 'Read more';
-         }
+            if (words.length > 8) {
+                shortSpan.innerText = words.slice(0, 8).join(' ') + '...';
+                shortSpan.style.display = 'inline';
+                fullSpan.innerText = fullDesc;
+                fullSpan.style.display = 'none';
+                btn.style.display = 'inline';
+            } else {
+                shortSpan.innerText = fullDesc;
+                fullSpan.style.display = 'none';
+                btn.style.display = 'none';
+            }
+        }
 
-         function renderTasks(tasks) {
-             tasksWrapper.innerHTML = '';
-             if (!tasks || tasks.length === 0) {
-                 tasksWrapper.innerHTML = '<div class="text-muted fst-italic text-center py-3">No tasks yet.</div>';
-                 return;
-             }
+        window.toggleDesc = function () {
+            const shortSpan = document.getElementById('descShort');
+            const fullSpan = document.getElementById('descFull');
+            const btn = document.getElementById('readMoreBtn');
+            const isShort = shortSpan.style.display !== 'none';
+            
+            shortSpan.style.display = isShort ? 'none' : 'inline';
+            fullSpan.style.display = isShort ? 'inline' : 'none';
+            btn.innerText = isShort ? 'Show less' : 'Read more';
+        };
 
-             tasks.forEach(task => {
-                 const isDone = ['done', 'completed', 'true'].includes(String(task.status).toLowerCase());
-                 
-                 const itemHtml = `
-                     <div class="todo-row ${isDone ? 'completed' : ''} d-flex align-items-start" 
-                          onclick="goToTaskDetail('${task.id}')">
-                         
-                         <input type="checkbox" class="todo-check" ${isDone ? 'checked' : ''} 
-                                onclick="event.stopPropagation()" 
-                                onchange="handleStatusChange('${task.id}', this)">
-                         
-                         <div class="w-100">
-                             <div class="todo-text">${task.title}</div>
-                             <small class="text-muted" style="font-size:0.75rem">Click to see details</small>
-                         </div>
-                     </div>
-                 `;
-                 tasksWrapper.insertAdjacentHTML('beforeend', itemHtml);
-             });
-         }
+        function renderTasks(tasks) {
+            tasksWrapper.innerHTML = '';
+            if (!tasks || tasks.length === 0) {
+                tasksWrapper.innerHTML = '<div class="text-muted fst-italic text-center py-3">No tasks yet.</div>';
+                return;
+            }
 
-         function renderComments(comments) {
-             commentsContainer.innerHTML = '';
-             if(comments.length === 0) {
-                 commentsContainer.innerHTML = '<p class="text-muted small">No comments yet.</p>';
-                 return;
-             }
-             
-             comments.forEach(c => {
-                 const dateStr = c.createdAt ? new Date(c.createdAt).toLocaleString() : 'Just now';
-                 const html = `
-                     <div class="d-flex gap-3 mb-3">
-                         <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">
-                             ${c.userId ? c.userId.substring(0,2).toUpperCase() : '??'}
-                         </div>
-                         <div class="bg-white border rounded p-3 w-100 shadow-sm">
-                             <div class="d-flex justify-content-between mb-1">
-                                 <strong class="small text-dark">${c.userId || 'User'}</strong>
-                                 <small class="text-muted" style="font-size:0.7rem">${dateStr}</small>
-                             </div>
-                             <div class="text-dark small">${c.text}</div>
-                         </div>
-                     </div>
-                 `;
-                 commentsContainer.insertAdjacentHTML('beforeend', html);
-             });
-         }
+            tasks.forEach(task => {
+                const isDone = ['done', 'completed', 'complete', 'true'].includes(String(task.status).toLowerCase());
+                
+                const itemHtml = `
+                    <div class="todo-row ${isDone ? 'completed' : ''} d-flex align-items-start" 
+                         onclick="goToTaskDetail('${task.id}')">
+                        
+                        <input type="checkbox" class="todo-check" ${isDone ? 'checked' : ''} 
+                               onclick="event.stopPropagation()" 
+                               onchange="handleStatusChange('${task.id}', this)">
+                        
+                        <div class="w-100">
+                            <div class="todo-text">${task.title}</div>
+                            <small class="text-muted" style="font-size:0.75rem">Click to see details</small>
+                        </div>
+                    </div>
+                `;
+                tasksWrapper.insertAdjacentHTML('beforeend', itemHtml);
+            });
+        }
 
-         function renderSubscribers(subs) {
-             // Sisakan tombol add/remove saja saat clear
-             const btnAddHtml = `<button class="btn btn-light border rounded-pill px-3 py-1 btn-sm text-muted small">Add/remove people...</button>`;
-             subsContainer.innerHTML = '';
-             
-             subs.forEach(s => {
-                 const initial = s.userId ? s.userId.substring(0,2).toUpperCase() : 'U';
-                 const html = `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" 
-                               style="width:30px; height:30px; font-size:0.7rem;" title="${s.userId}">${initial}</div>`;
-                 subsContainer.insertAdjacentHTML('beforeend', html);
-             });
-             
-             subsContainer.insertAdjacentHTML('beforeend', btnAddHtml);
-         }
+        function normalizeTimestamp(value) {
+            if (!value) return null;
+            if (value.toDate) return value.toDate();
+            if (value instanceof Date) return value;
+            const d = new Date(value);
+            return isNaN(d.getTime()) ? null : d;
+        }
 
-         function postComment(type) {
-             const input = document.getElementById('commentInput');
-             const text = input.innerText.trim();
-             if(text === 'Add a comment here...' || text === '') return;
-             
-             const originalBtnText = event.target.innerText;
-             event.target.innerText = 'Posting...';
-             event.target.disabled = true;
-             
-             fetch(API_URL, {
-                 method: 'POST',
-                 body: JSON.stringify({
-                     action: 'createComment',
-                     contextType: 'list', // Penting untuk App Script
-                     contextId: listId,   // ID List saat ini
-                     projectId: projectId,
-                     text: text,
-                     userId: 'RA' // Bisa diganti sesuai user login
-                 })
-             })
-             .then(res => res.json())
-             .then(resp => {
-                 input.innerText = 'Add a comment here...';
-                 fetchDetailData(); // Refresh data
-             })
-             .finally(() => {
-                 event.target.innerText = originalBtnText;
-                 event.target.disabled = false;
-             });
-         }
+        function renderComments(comments) {
+            commentsContainer.innerHTML = '';
+            if (!comments || comments.length === 0) {
+                commentsContainer.innerHTML = '<p class="text-muted small">No comments yet.</p>';
+                return;
+            }
+            
+            comments.forEach(c => {
+                const createdAt = normalizeTimestamp(c.created_at || c.createdAt);
+                const dateStr = createdAt ? createdAt.toLocaleString() : 'Just now';
+                const userId = c.user_id || c.userId || '';
+                const userName = c.user_name || c.userName || userId || 'User';
+                const initialsSource = c.user_initials || userName || userId || '';
+                const initials = initialsSource
+                    ? initialsSource.trim().split(' ').map(part => part[0]).join('').substring(0, 2).toUpperCase()
+                    : '??';
 
-         // Function Form Tasks
-         function showDetailForm() { document.getElementById('form-add-detail').style.display='block'; document.getElementById('btn-add-detail').style.display='none'; }
-         function hideDetailForm() { document.getElementById('form-add-detail').style.display='none'; document.getElementById('btn-add-detail').style.display='inline-block'; }
+                const html = `
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">
+                            ${initials}
+                        </div>
+                        <div class="bg-white border rounded p-3 w-100 shadow-sm">
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong class="small text-dark">${userName}</strong>
+                                <small class="text-muted" style="font-size:0.7rem">${dateStr}</small>
+                            </div>
+                            <div class="text-dark small">${c.text}</div>
+                        </div>
+                    </div>
+                `;
+                commentsContainer.insertAdjacentHTML('beforeend', html);
+            });
+        }
 
-         function saveTaskDetail() {
-             const title = document.getElementById('input-task-detail').value.trim();
-             if(!title) return;
-             
-             fetch(API_URL, {
-                 method: 'POST',
-                 body: JSON.stringify({ action: 'createTask', listId: listId, title: title })
-             })
-             .then(() => {
-                 document.getElementById('input-task-detail').value = '';
-                 fetchDetailData();
-                 hideDetailForm();
-             });
-         }
-         
-         // Fungsi untuk Update Status ke Spreadsheet
-         function handleStatusChange(taskId, checkbox) {
-             const isChecked = checkbox.checked;
-             const newStatus = isChecked ? 'done' : 'open';
-             const rowElement = checkbox.closest('.todo-row');
+        function renderSubscribers(subs) {
+            subsContainer.innerHTML = '';
+            if (!subs || subs.length === 0) {
+                const btnAddHtml = `<button class="btn btn-light border rounded-pill px-3 py-1 btn-sm text-muted small" type="button">Add/remove people...</button>`;
+                subsContainer.insertAdjacentHTML('beforeend', btnAddHtml);
+                return;
+            }
+            
+            subs.forEach(s => {
+                const userId = s.user_id || s.userId || '';
+                const userName = s.user_name || s.userName || userId || 'User';
+                const initialsSource = s.user_initials || userName || userId || '';
+                const initials = initialsSource
+                    ? initialsSource.trim().split(' ').map(part => part[0]).join('').substring(0, 2).toUpperCase()
+                    : 'U';
+                const html = `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" 
+                              style="width:30px; height:30px; font-size:0.7rem;" title="${userName}">${initials}</div>`;
+                subsContainer.insertAdjacentHTML('beforeend', html);
+            });
+            
+            const btnAddHtml = `<button class="btn btn-light border rounded-pill px-3 py-1 btn-sm text-muted small" type="button">Add/remove people...</button>`;
+            subsContainer.insertAdjacentHTML('beforeend', btnAddHtml);
+        }
 
-             // Beri efek visual instan (Optimistic UI)
-             if (isChecked) rowElement.classList.add('completed');
-             else rowElement.classList.remove('completed');
+        function listenComments() {
+            try {
+                const ref = collection(db, "projects", projectId, "lists", listId, "comments");
+                const q = query(ref, orderBy("created_at", "asc"));
+                onSnapshot(q, (snapshot) => {
+                    const comments = [];
+                    snapshot.forEach(docSnap => comments.push({ id: docSnap.id, ...docSnap.data() }));
+                    renderComments(comments);
+                }, (error) => {
+                    console.error("Failed to listen comments", error);
+                });
+            } catch (e) {
+                console.error("Failed to start comments listener", e);
+            }
+        }
 
-             fetch(API_URL, {
-                 method: 'POST',
-                 body: JSON.stringify({
-                     action: 'updateTaskStatus',
-                     taskId: taskId,
-                     status: newStatus
-                 })
-             })
-             .then(res => res.json())
-             .then(resp => {
-                 if (resp.status !== 'success') {
-                     alert("Gagal memperbarui status: " + resp.message);
-                     // Kembalikan ke posisi semula jika gagal
-                     checkbox.checked = !isChecked;
-                     rowElement.classList.toggle('completed');
-                 }
-             })
-             .catch(err => {
-                 console.error("Update Error:", err);
-                 alert("Koneksi bermasalah.");
-             });
-         }
+        function listenSubscribers() {
+            try {
+                const ref = collection(db, "projects", projectId, "lists", listId, "subscribers");
+                onSnapshot(ref, (snapshot) => {
+                    const subs = [];
+                    snapshot.forEach(docSnap => subs.push({ id: docSnap.id, ...docSnap.data() }));
+                    currentSubscribers = subs;
+                    renderSubscribers(subs);
+                    updateSubscriptionUI();
+                }, (error) => {
+                    console.error("Failed to listen subscribers", error);
+                });
+            } catch (e) {
+                console.error("Failed to start subscribers listener", e);
+            }
+        }
 
-         // Fungsi untuk Pindah ke Halaman Detail Task
-         function goToTaskDetail(taskId) {
-             // Membawa taskId dan projectId agar halaman detail tahu harus mengambil data apa
-             window.location.href = `item-details.html?taskId=${taskId}&projectId=${projectId}`;
-         }
+        function updateSubscriptionUI() {
+            if (!subscriptionStatusText || !subscriptionToggleButton) return;
+            if (!currentUser) {
+                subscriptionStatusText.innerText = "You’re not subscribed";
+                subscriptionToggleButton.innerText = "Subscribe me";
+                subscriptionToggleButton.disabled = true;
+                return;
+            }
+            const uid = currentUser.uid;
+            const isSubscribed = currentSubscribers.some(s => (s.user_id || s.userId) === uid);
+            subscriptionStatusText.innerText = isSubscribed ? "You’re subscribed" : "You’re not subscribed";
+            subscriptionToggleButton.innerText = isSubscribed ? "Unsubscribe me" : "Subscribe me";
+            subscriptionToggleButton.disabled = false;
+        }
 
-         function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
+        window.postComment = async function () {
+            const input = document.getElementById('commentInput');
+            if (!input) return;
+            const text = input.innerText.trim();
+            if (text === 'Add a comment here...' || text === '') return;
+            
+            const btn = event && event.target ? event.target : null;
+            let originalBtnText = '';
+            if (btn) {
+                originalBtnText = btn.innerText;
+                btn.innerText = 'Posting...';
+                btn.disabled = true;
+            }
+
+            try {
+                const localData = JSON.parse(localStorage.getItem('userData') || 'null');
+                const userName = localData && localData.name ? localData.name : (currentUser ? currentUser.email : 'User');
+                const uid = currentUser ? currentUser.uid : (localData && localData.uid ? localData.uid : '');
+                const initialsSource = userName || uid || '';
+                const initials = initialsSource
+                    ? initialsSource.trim().split(' ').map(part => part[0]).join('').substring(0, 2).toUpperCase()
+                    : 'US';
+
+                await addDoc(collection(db, "projects", projectId, "lists", listId, "comments"), {
+                    text: text,
+                    user_id: uid,
+                    user_name: userName,
+                    user_initials: initials,
+                    created_at: serverTimestamp()
+                });
+
+                input.innerText = 'Add a comment here...';
+            } catch (e) {
+                console.error("Failed to post comment", e);
+                alert("Gagal mengirim komentar: " + e.message);
+            } finally {
+                if (btn) {
+                    btn.innerText = originalBtnText || 'Post comment';
+                    btn.disabled = false;
+                }
+            }
+        };
+
+        window.showDetailForm = function () {
+            const form = document.getElementById('form-add-detail');
+            const btn = document.getElementById('btn-add-detail');
+            if (form) form.style.display = 'block';
+            if (btn) btn.style.display = 'none';
+        };
+
+        window.hideDetailForm = function () {
+            const form = document.getElementById('form-add-detail');
+            const btn = document.getElementById('btn-add-detail');
+            if (form) form.style.display = 'none';
+            if (btn) btn.style.display = 'inline-block';
+        };
+
+        window.saveTaskDetail = async function () {
+            const input = document.getElementById('input-task-detail');
+            if (!input) return;
+            const title = input.value.trim();
+            if (!title) return;
+
+            try {
+                const existingForList = listTasks || [];
+                const payload = {
+                    project_id: projectId,
+                    list_id: listId,
+                    title: title,
+                    description: "",
+                    status: "Initiate",
+                    priority: "normal",
+                    start_date: "",
+                    due_date: "",
+                    points: 0,
+                    assign_to: "",
+                    notify_to: "",
+                    tags: [],
+                    position: existingForList.length,
+                    created_at: serverTimestamp(),
+                    created_by: currentUser ? currentUser.uid : ""
+                };
+                await addDoc(collection(db, "tasks"), payload);
+                input.value = '';
+                await loadTasks();
+                window.hideDetailForm();
+            } catch (e) {
+                console.error("Failed to save task", e);
+                alert("Gagal menyimpan task: " + e.message);
+            }
+        };
+
+        window.handleStatusChange = async function (taskId, checkbox) {
+            if (!taskId || !checkbox) return;
+            const isChecked = checkbox.checked;
+            const newStatus = isChecked ? 'Complete' : 'Initiate';
+            const rowElement = checkbox.closest('.todo-row');
+
+            if (rowElement) {
+                if (isChecked) rowElement.classList.add('completed');
+                else rowElement.classList.remove('completed');
+            }
+
+            try {
+                await updateDoc(doc(db, "tasks", taskId), { status: newStatus });
+            } catch (e) {
+                console.error("Failed to update task status", e);
+                alert("Gagal memperbarui status: " + e.message);
+                checkbox.checked = !isChecked;
+                if (rowElement) rowElement.classList.toggle('completed');
+            }
+        };
+
+        window.goToTaskDetail = function (taskId) {
+            if (!taskId) return;
+            window.location.href = `item-details.html?taskId=${taskId}&projectId=${projectId}`;
+        };
+
+        window.toggleSubscription = async function () {
+            if (!currentUser) {
+                alert("Harus login terlebih dahulu.");
+                return;
+            }
+            const uid = currentUser.uid;
+            const existing = currentSubscribers.find(s => (s.user_id || s.userId) === uid);
+
+            try {
+                if (existing && existing.id) {
+                    await deleteDoc(doc(db, "projects", projectId, "lists", listId, "subscribers", existing.id));
+                } else {
+                    const localData = JSON.parse(localStorage.getItem('userData') || 'null');
+                    const userName = localData && localData.name ? localData.name : (currentUser.email || 'User');
+                    const initialsSource = userName || uid || '';
+                    const initials = initialsSource
+                        ? initialsSource.trim().split(' ').map(part => part[0]).join('').substring(0, 2).toUpperCase()
+                        : 'US';
+                    await addDoc(collection(db, "projects", projectId, "lists", listId, "subscribers"), {
+                        user_id: uid,
+                        user_name: userName,
+                        user_initials: initials,
+                        created_at: serverTimestamp()
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to toggle subscription", e);
+                alert("Gagal mengubah status subscribe: " + e.message);
+            }
+        };
+
+        window.toggleSidebar = function () {
+            const sidebar = document.getElementById('sidebarNav');
+            if (sidebar) sidebar.classList.toggle('show');
+        };
     </script>
      <script>
          document.addEventListener("DOMContentLoaded", function() {
