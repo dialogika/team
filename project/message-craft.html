@@ -947,6 +947,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const projectId = urlParams.get('projectId') || urlParams.get('id');
         const listId = urlParams.get('listId');
+        const messageId = urlParams.get('messageId');
 
         const tasksWrapper = document.querySelector('.todo-list-wrapper');
         const titleEl = document.getElementById('listTitleDisplay');
@@ -979,6 +980,7 @@
         let mentionQuery = "";
         let mentionDropdownElement = null;
         let currentMessageCategory = "";
+        let currentEditingMessage = null;
 
         function getDirectPhotoUrl(url, uid) {
             if (!url) return `https://i.pravatar.cc/150?u=${uid || "user"}`;
@@ -1008,6 +1010,16 @@
             return `messages/${projectId}/${Date.now()}_${fileName}`;
         }
 
+        function formatCategoryLabel(category) {
+            if (!category) return "Pick a category (optional)";
+            const key = String(category).toLowerCase();
+            if (key === "announcement") return "Announcement";
+            if (key === "updates") return "Updates";
+            if (key === "urgent") return "Urgent";
+            if (key === "question") return "Question";
+            return key.charAt(0).toUpperCase() + key.slice(1);
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             if (!projectId) {
                 alert("Error: Project ID tidak ditemukan.");
@@ -1020,7 +1032,7 @@
                 if (document.referrer) {
                     window.history.back();
                 } else {
-                    window.location.href = `list.html?id=${projectId}`;
+                    window.location.href = `message.html?id=${projectId}`;
                 }
             });
 
@@ -1082,6 +1094,9 @@
             });
 
             initMessageComposeControls();
+            if (messageId) {
+                loadEditingMessage();
+            }
         });
 
         function initMessageComposeControls() {
@@ -1097,6 +1112,38 @@
                     if (labelSpan) labelSpan.innerText = text;
                 });
             });
+            if (labelSpan) {
+                labelSpan.innerText = formatCategoryLabel(currentMessageCategory);
+            }
+        }
+
+        async function loadEditingMessage() {
+            if (!projectId || !messageId) return;
+            try {
+                const ref = doc(db, "projects", projectId, "messages", messageId);
+                const snap = await getDoc(ref);
+                if (!snap.exists()) return;
+                const data = snap.data();
+                currentEditingMessage = { id: snap.id, ...data };
+                const titleInput = document.getElementById("messageTitleInput");
+                const input = document.getElementById("commentInput");
+                if (titleInput) {
+                    titleInput.value = data.title || "";
+                }
+                if (input) {
+                    input.innerHTML = data.text || "";
+                }
+                currentMessageCategory = data.category || "";
+                const dropdown = document.getElementById("messageCategoryDropdown");
+                if (dropdown) {
+                    const labelSpan = dropdown.querySelector("span.small");
+                    if (labelSpan) {
+                        labelSpan.innerText = formatCategoryLabel(currentMessageCategory);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load message for editing", e);
+            }
         }
 
         async function loadProjectHeader() {
