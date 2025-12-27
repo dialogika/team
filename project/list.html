@@ -1157,45 +1157,58 @@
         async function loadProjectMembers(memberUids) {
             projectMembers = [];
             try {
-                if (Array.isArray(memberUids) && memberUids.length > 0) {
-                    const promises = memberUids.map(async (uid) => {
-                        try {
-                            const snap = await getDoc(doc(db, "users", uid));
-                            if (snap.exists()) {
-                                const u = snap.data();
-                                return {
-                                    uid,
-                                    name: u.name || u.email || uid,
-                                    photo: getDirectPhotoUrl(u.photo || "", uid)
-                                };
-                            }
-                        } catch (e) {
-                            console.error("Failed to fetch user profile", uid, e);
-                        }
-                        return {
-                            uid,
-                            name: uid,
-                            photo: `https://i.pravatar.cc/150?u=${uid}`
-                        };
+                const snap = await getDocs(collection(db, "users"));
+                const allUsers = [];
+                snap.forEach(docSnap => {
+                    const u = docSnap.data() || {};
+                    allUsers.push({
+                        uid: docSnap.id,
+                        name: u.name || u.email || "Unknown",
+                        photo: getDirectPhotoUrl(u.photo || "", docSnap.id)
                     });
-                    const results = await Promise.all(promises);
-                    projectMembers = results.filter(Boolean);
-                } else {
-                    const snap = await getDocs(collection(db, "users"));
-                    const members = [];
-                    snap.forEach(d => {
-                        const u = d.data();
-                        members.push({
-                            uid: d.id,
-                            name: u.name || u.email || d.id,
-                            photo: getDirectPhotoUrl(u.photo || "", d.id)
-                        });
-                    });
-                    projectMembers = members;
-                }
+                });
+                let currentUid = "";
+                try {
+                    const localData = JSON.parse(localStorage.getItem('userData') || 'null');
+                    if (localData && (localData.uid || localData.id)) {
+                        currentUid = localData.uid || localData.id;
+                    }
+                } catch (e2) {}
+                allUsers.sort((a, b) => {
+                    if (a.uid === currentUid) return -1;
+                    if (b.uid === currentUid) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+                projectMembers = allUsers;
             } catch (e) {
                 console.error("Failed to load project members", e);
-                projectMembers = [];
+                if (Array.isArray(memberUids) && memberUids.length > 0) {
+                    try {
+                        const promises = memberUids.map(async (uid) => {
+                            try {
+                                const snap = await getDoc(doc(db, "users", uid));
+                                if (snap.exists()) {
+                                    const u = snap.data();
+                                    return {
+                                        uid,
+                                        name: u.name || u.email || uid,
+                                        photo: getDirectPhotoUrl(u.photo || "", uid)
+                                    };
+                                }
+                            } catch (err) {
+                                console.error("Failed to fetch user profile", uid, err);
+                            }
+                            return null;
+                        });
+                        const results = await Promise.all(promises);
+                        projectMembers = results.filter(Boolean);
+                    } catch (err2) {
+                        console.error("Fallback members load failed", err2);
+                        projectMembers = [];
+                    }
+                } else {
+                    projectMembers = [];
+                }
             }
         }
 

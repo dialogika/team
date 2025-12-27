@@ -560,16 +560,51 @@
             membersLoaded = false;
             renderManageSubscriberList(manageSubscriberSearchQuery);
             try {
-                let loadedMembers = [];
+                // FORCE FETCH ALL USERS
+                // User reported "only me" showing up, implying the project.members array is too restrictive.
+                // We will ignore memberUids for fetching and just get everyone in the system.
+                console.log("Fetching ALL users from 'users' collection (ignoring project restriction)...");
                 
-                // 1. Try fetching from provided UIDs
+                const snap = await getDocs(collection(db, "users"));
+                console.log("Fetched users collection snapshot size:", snap.size);
+                
+                if (snap.empty) {
+                     console.warn("Users collection is EMPTY!");
+                }
+
+                const allUsers = [];
+                snap.forEach(docSnap => {
+                    const u = docSnap.data() || {};
+                    allUsers.push({
+                        uid: docSnap.id,
+                        name: u.name || u.email || "Unknown",
+                        email: u.email || "",
+                        photo: getDirectPhotoUrl(u.photo || "", docSnap.id),
+                        role: (u.employment && u.employment.position) || "Member"
+                    });
+                });
+
+                // Sort users: Current user first, then alphabetically
+                const currentUid = getCurrentUserUid();
+                allUsers.sort((a, b) => {
+                    if (a.uid === currentUid) return -1;
+                    if (b.uid === currentUid) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+
+                projectMembers = allUsers;
+                console.log("Final projectMembers count:", projectMembers.length);
+
+            } catch (e) {
+                console.error("Error loading project members:", e);
+                // Emergency fallback (e.g. if listing users fails due to rules, at least try to load the passed UIDs)
                 if (Array.isArray(memberUids) && memberUids.length > 0) {
-                    console.log("Attempting to load specific members...");
-                    const promises = memberUids.map(async (uid) => {
-                        try {
-                            const snap = await getDoc(doc(db, "users", uid));
-                            if (snap.exists()) {
-                                const u = snap.data();
+                     try {
+                        console.log("Fallback: Fetching individual members from project list...");
+                        const promises = memberUids.map(async (uid) => {
+                            const s = await getDoc(doc(db, "users", uid));
+                            if (s.exists()) {
+                                const u = s.data();
                                 return {
                                     uid: uid,
                                     name: u.name || u.email || "Unknown",
@@ -578,62 +613,13 @@
                                     role: (u.employment && u.employment.position) || "Member"
                                 };
                             }
-                        } catch (err) {
-                            console.warn("Error fetching user " + uid, err);
-                        }
-                        return null;
-                    });
-                    const results = await Promise.all(promises);
-                    loadedMembers = results.filter(Boolean);
-                }
-                
-                // 2. Fallback: If no members loaded (either no UIDs provided or UIDs invalid), fetch ALL users
-                if (loadedMembers.length === 0) {
-                    console.log("No specific members found. Fetching ALL users from 'users' collection...");
-                    const snap = await getDocs(collection(db, "users"));
-                    console.log("Fetched users collection snapshot size:", snap.size);
-                    
-                    if (snap.empty) {
-                         console.warn("Users collection is EMPTY!");
-                    }
-
-                    snap.forEach(docSnap => {
-                        const u = docSnap.data() || {};
-                        // Log first few users to ensure mapping is correct
-                        if (loadedMembers.length < 3) console.log("Sample user data:", u); 
-                        
-                        loadedMembers.push({
-                            uid: docSnap.id,
-                            name: u.name || u.email || "Unknown",
-                            email: u.email || "",
-                            photo: getDirectPhotoUrl(u.photo || "", docSnap.id),
-                            role: (u.employment && u.employment.position) || "Member"
+                            return null;
                         });
-                    });
-                }
-                
-                projectMembers = loadedMembers;
-                console.log("Final projectMembers count:", projectMembers.length);
-
-            } catch (e) {
-                console.error("Error loading project members:", e);
-                // Attempt one last simple fetch if complex logic failed
-                try {
-                     const snap = await getDocs(collection(db, "users"));
-                     projectMembers = [];
-                     snap.forEach(d => {
-                         const u = d.data();
-                         projectMembers.push({
-                            uid: d.id,
-                            name: u.name || "Unknown",
-                            email: u.email || "",
-                            photo: getDirectPhotoUrl(u.photo || "", d.id),
-                            role: "Member"
-                         });
-                     });
-                     console.log("Emergency fallback fetched users:", projectMembers.length);
-                } catch(err2) {
-                    console.error("Emergency fallback failed:", err2);
+                        const results = await Promise.all(promises);
+                        projectMembers = results.filter(Boolean);
+                     } catch (err2) {
+                         console.error("Fallback failed:", err2);
+                     }
                 }
             } finally {
                 membersLoaded = true;
