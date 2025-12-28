@@ -725,7 +725,7 @@
                     <i class="bi bi-chevron-right ph-sep"></i>
 
                     <!-- 3. All Lists -->
-                    <a href="#" id="breadAllListLink" class="ph-crumb-link">Lists</a>
+                    <a href="#" id="breadAllListLink" class="ph-crumb-link">Messages</a>
                 </div>
 
                 <!-- Right Option -->
@@ -744,7 +744,7 @@
                                     id="messageCategoryDropdown"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false">
-                                <span class="small text-muted">Pick a category (optional)</span>
+                                <span class="small text-muted">Pick a category</span>
                                 <span class="d-inline-flex flex-column" style="line-height:0;">
                                     <i class="bi bi-caret-up-fill" style="font-size:0.55rem;"></i>
                                     <i class="bi bi-caret-down-fill" style="font-size:0.55rem; margin-top:-2px;"></i>
@@ -1048,6 +1048,9 @@
             const attachmentPreview = document.getElementById('commentAttachmentPreview');
             const mentionDropdown = document.getElementById('mentionDropdown');
             const saveDraftButton = document.getElementById('saveDraftButton');
+            const notifyAllRadio = document.getElementById('notifyAll');
+            const notifySelectedRadio = document.getElementById('notifySelected');
+            const notifyNoneRadio = document.getElementById('notifyNone');
             if (commentFileInput && attachmentPreview) {
                 commentFileInput.addEventListener('change', () => {
                     const files = Array.from(commentFileInput.files || []);
@@ -1072,6 +1075,21 @@
                         }
                     }, 150);
                 });
+            }
+
+            if (notifySelectedRadio) {
+                notifySelectedRadio.addEventListener('change', () => {
+                    if (notifySelectedRadio.checked) {
+                        openManageSubscribersModal();
+                    }
+                    updateNotifyPreview();
+                });
+            }
+            if (notifyAllRadio) {
+                notifyAllRadio.addEventListener('change', updateNotifyPreview);
+            }
+            if (notifyNoneRadio) {
+                notifyNoneRadio.addEventListener('change', updateNotifyPreview);
             }
 
             if (saveDraftButton) {
@@ -1206,30 +1224,47 @@
         async function loadProjectMembers(memberUids) {
             projectMembers = [];
             try {
+                const snap = await getDocs(collection(db, "users"));
+                const allUsers = [];
+                snap.forEach(docSnap => {
+                    const u = docSnap.data() || {};
+                    allUsers.push({
+                        uid: docSnap.id,
+                        name: u.name || u.email || "Unknown",
+                        email: u.email || "",
+                        photo: getDirectPhotoUrl(u.photo || "", docSnap.id)
+                    });
+                });
+                const currentUid = getCurrentUserUid();
+                allUsers.sort((a, b) => {
+                    if (a.uid === currentUid) return -1;
+                    if (b.uid === currentUid) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+                projectMembers = allUsers;
+            } catch (e) {
+                console.error("Failed to load project members", e);
                 if (Array.isArray(memberUids) && memberUids.length > 0) {
-                    const promises = memberUids.map(async (uid) => {
-                        try {
+                    try {
+                        const promises = memberUids.map(async (uid) => {
                             const snap = await getDoc(doc(db, "users", uid));
                             if (snap.exists()) {
                                 const u = snap.data();
                                 return {
                                     uid,
-                                    name: u.name || u.email || uid,
+                                    name: u.name || u.email || "Unknown",
                                     email: u.email || "",
                                     photo: getDirectPhotoUrl(u.photo || "", uid)
                                 };
                             }
-                        } catch (e) {
-                            console.error("Failed to load member", uid, e);
-                        }
-                        return null;
-                    });
-                    const results = await Promise.all(promises);
-                    projectMembers = results.filter(Boolean);
+                            return null;
+                        });
+                        const results = await Promise.all(promises);
+                        projectMembers = results.filter(Boolean);
+                    } catch (err2) {
+                        console.error("Fallback failed when loading project members", err2);
+                    }
                 }
-            } catch (e) {
-                console.error("Failed to load project members", e);
-                projectMembers = [];
             }
             populateDetailUserOptions();
         }
@@ -1809,6 +1844,23 @@
             subsContainer.insertAdjacentHTML('beforeend', btnAddHtml);
         }
 
+        function updateNotifyPreview() {
+            if (!subsContainer) return;
+            const notifyNoneRadio = document.getElementById('notifyNone');
+            if (notifyNoneRadio && notifyNoneRadio.checked) {
+                subsContainer.innerHTML = '<span class="small text-muted">No one will be notified.</span>';
+                return;
+            }
+            renderSubscribers(currentSubscribers);
+        }
+
+        function openManageSubscribersModal() {
+            const modalEl = document.getElementById('manageSubscribersModal');
+            if (!modalEl) return;
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+
         function listenComments() {
             try {
                 const ref = getMessagesCollectionRef();
@@ -1835,7 +1887,7 @@
                     const subs = [];
                     snapshot.forEach(docSnap => subs.push({ id: docSnap.id, ...docSnap.data() }));
                     currentSubscribers = subs;
-                    renderSubscribers(subs);
+                    updateNotifyPreview();
                     updateSubscriptionUI();
                 }, (error) => {
                     console.error("Failed to listen subscribers", error);
