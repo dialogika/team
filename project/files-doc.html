@@ -264,7 +264,11 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <button type="button" class="btn btn-outline-secondary rounded-pill btn-sm" onclick="history.back()">
                         <i class="bi bi-arrow-left"></i>
-                        Back to files
+                        Back to Files
+                    </button>
+                    <button type="button" class="btn btn-dlg-yellow rounded-pill btn-sm fw-bold" style="box-shadow: 0px 0px 0px 0px;" id="editFileButton">
+                        <i class="bi bi-pencil"></i>
+                        Edit
                     </button>
                 </div>
                 <div class="text-center mb-4">
@@ -451,6 +455,7 @@
         const badgeEl = document.getElementById("projectBadge");
         const breadProjectLink = document.getElementById("breadProjectLink");
         const breadAllListLink = document.getElementById("breadAllListLink");
+        const editFileButton = document.getElementById("editFileButton");
         const avatarEl = document.getElementById("messageAvatar");
         const titleEl = document.getElementById("messageTitle");
         const metaEl = document.getElementById("messageMeta");
@@ -488,6 +493,7 @@
         let mentionActive = false;
         let mentionQuery = "";
         let mentionDropdownElement = null;
+        let currentFileData = null;
         function getSubscribersCollectionRef() {
             if (!projectId || !fileId) return null;
             return collection(db, "projects", projectId, "files", fileId, "subscribers");
@@ -634,6 +640,14 @@
                 renderManageSubscriberList(manageSubscriberSearchQuery);
             }
         }
+        function getEditTargetUrl() {
+            if (!projectId || !fileId) return null;
+            const type = currentFileData && currentFileData.file_type ? String(currentFileData.file_type) : "";
+            if (type === "link") {
+                return `files-link.html?projectId=${encodeURIComponent(projectId)}&fileId=${encodeURIComponent(fileId)}`;
+            }
+            return `files-craft.html?projectId=${encodeURIComponent(projectId)}&fileId=${encodeURIComponent(fileId)}`;
+        }
         async function loadFile() {
             if (!projectId || !fileId) {
                 if (errorEl) errorEl.innerText = "Parameter URL tidak lengkap.";
@@ -647,6 +661,7 @@
                     return;
                 }
                 const data = snap.data();
+                currentFileData = data;
                 const userName = data.user_name || data.userName || "User";
                 const category = data.category || "";
                 const title = (data.title || "").trim();
@@ -1628,6 +1643,13 @@
                 listenComments();
                 listenSubscribers();
                 listenBoosts();
+                if (editFileButton) {
+                    editFileButton.addEventListener("click", () => {
+                        const targetUrl = getEditTargetUrl();
+                        if (!targetUrl) return;
+                        window.location.href = targetUrl;
+                    });
+                }
                 onAuthStateChanged(auth, (user) => {
                     currentUser = user || null;
                     updateSubscriptionUI();
@@ -1692,4 +1714,3 @@
     </script>
 </body>
 </html>
-

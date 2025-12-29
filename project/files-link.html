@@ -68,7 +68,7 @@
             color: white;
         }
         .main-list-card {
-            max-width: 800px;
+            
             width: 100%;
             margin: 0 auto 50px auto;
             background: white;
@@ -188,9 +188,10 @@
                                 <span class="small text-uppercase text-muted fw-semibold" style="letter-spacing:0.08em;">Category</span>
                             </div>
                             <div class="d-flex flex-wrap gap-2 mb-2">
-                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('urgent')">Urgent</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('outcome')">Outcome</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('important')">Important</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('low')">Low</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('reference')">Reference</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('upcoming')">Upcoming</button>
                             </div>
                             <input type="text"
                                    id="categoryInput"
@@ -219,6 +220,7 @@
             collection,
             getDoc,
             addDoc,
+            updateDoc,
             serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -246,6 +248,7 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         let projectId = urlParams.get("projectId") || urlParams.get("id");
+        const fileId = urlParams.get("fileId") || "";
         if (!projectId) {
             try {
                 const cached = localStorage.getItem("currentProjectId");
@@ -275,6 +278,7 @@
         const cancelButton = document.getElementById("cancelButton");
 
         let currentUser = null;
+        let existingFileData = null;
 
         onAuthStateChanged(auth, (user) => {
             currentUser = user || null;
@@ -335,6 +339,28 @@
             }
         }
 
+        async function loadExistingLink() {
+            if (!projectId || !fileId) return;
+            try {
+                const ref = doc(db, "projects", projectId, "files", fileId);
+                const snap = await getDoc(ref);
+                if (!snap.exists()) return;
+                const data = snap.data() || {};
+                existingFileData = data;
+                if (titleInput) {
+                    titleInput.value = data.title || "";
+                }
+                if (urlInput) {
+                    urlInput.value = data.text_plain || "";
+                }
+                if (categoryInput) {
+                    categoryInput.value = data.category || "";
+                }
+            } catch (e) {
+                console.error("Failed to load link for edit", e);
+            }
+        }
+
         async function saveLink() {
             if (!projectId) {
                 alert("Project ID tidak ditemukan.");
@@ -383,21 +409,33 @@
             try {
                 const htmlText = `<p><a href="${url}" target="_blank" rel="noopener">${url}</a></p>`;
                 const plainText = url;
-                await addDoc(filesRef, {
-                    title: finalTitle,
-                    text: htmlText,
-                    text_plain: plainText,
-                    attachments: [],
-                    user_id: uid,
-                    user_name: userName,
-                    user_initials: initials,
-                    user_photo: photoUrl,
-                    category: category || null,
-                    parent_id: null,
-                    created_at: serverTimestamp(),
-                    parent_comment_id: null,
-                    mentioned_user_ids: []
-                });
+                if (fileId) {
+                    const ref = doc(db, "projects", projectId, "files", fileId);
+                    await updateDoc(ref, {
+                        title: finalTitle,
+                        text: htmlText,
+                        text_plain: plainText,
+                        category: category || null,
+                        updated_at: serverTimestamp()
+                    });
+                } else {
+                    await addDoc(filesRef, {
+                        title: finalTitle,
+                        text: htmlText,
+                        text_plain: plainText,
+                        attachments: [],
+                        user_id: uid,
+                        user_name: userName,
+                        user_initials: initials,
+                        user_photo: photoUrl,
+                        category: category || null,
+                        parent_id: null,
+                        created_at: serverTimestamp(),
+                        parent_comment_id: null,
+                        mentioned_user_ids: [],
+                        file_type: "link"
+                    });
+                }
                 window.location.href = `files.html?id=${encodeURIComponent(projectId)}`;
             } catch (e) {
                 console.error("Failed to save link", e);
@@ -443,8 +481,10 @@
                 });
             }
             loadProjectHeader();
+            if (fileId) {
+                loadExistingLink();
+            }
         });
     </script>
 </body>
 </html>
-

@@ -855,27 +855,73 @@
                         </ul>
                     </div>
                     <div class="d-flex align-items-center gap-3">
-                        <button class="btn btn-light border rounded-pill px-3 py-2">
-                            <i class="bi bi-grid-3x3-gap-fill me-1"></i>
-                        </button>
                         <div class="dropdown">
                             <button class="btn btn-light border rounded-pill px-3 py-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i id="filesViewModeIcon" class="bi bi-grid-3x3-gap-fill me-1"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="window.setFilesViewMode('grid')">
+                                        Thumbnail view
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="window.setFilesViewMode('list')">
+                                        List view
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="dropdown">
+                            <button id="filesSortDropdownLabel" class="btn btn-light border rounded-pill px-3 py-2 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Unsorted
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#">Unsorted</a></li>
-                                <li><a class="dropdown-item" href="#">Newest first</a></li>
-                                <li><a class="dropdown-item" href="#">Oldest first</a></li>
-                                <li><a class="dropdown-item" href="#">A → Z</a></li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="window.setFilesSortMode('unsorted')">
+                                        Unsorted
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="window.setFilesSortMode('newest')">
+                                        Newest first
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="window.setFilesSortMode('oldest')">
+                                        Oldest first
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0)" onclick="window.setFilesSortMode('az')">
+                                        A → Z
+                                    </a>
+                                </li>
                             </ul>
                         </div>
-                        <button class="btn btn-light border rounded-pill px-3 py-2" style="border-radius: 100%;">
-                            <i class="bi bi-three-dots"></i>
-                        </button>
+                        <div class="dropdown">
+                            <button class="btn btn-light border rounded-pill px-3 py-2" style="border-radius: 100%;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item text-danger d-flex align-items-center gap-2" href="javascript:void(0)" onclick="window.enterFilesDeleteMode()">
+                                        <i class="bi bi-trash3"></i>
+                                        <span>Delete</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
-                <h3 class="fw-bold text-center mb-3">Files</h3>
+                <div class="d-flex align-items-center justify-content-center mb-3 gap-2">
+                    <a id="filesBackHomeLink" href="#" class="text-decoration-none">
+                        <i class="bi bi-house-door-fill" style="font-size:1.6rem; color:#0B2B6A;"></i>
+                    </a>
+                    <span style="font-size:1.1rem; color:#6b7280;">/</span>
+                    <h3 class="fw-bold mb-0" style="font-size:1.6rem;">Files</h3>
+                </div>
 
                 <div class="row mb-4">
                     <div class="col-md-6 mx-auto">
@@ -892,6 +938,19 @@
                 <div class="row g-4" id="filesGrid"></div>
             </div>
         </main>
+    </div>
+
+    <div id="filesBulkDeleteBar" class="position-fixed bottom-0 start-0 end-0 bg-white border-top shadow-sm py-2" style="display:none; z-index:1050;">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <span class="small text-muted" id="filesSelectedCountLabel">0 selected</span>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-light border rounded-pill px-3" onclick="window.cancelFilesBulkDelete()">Cancel</button>
+                <button type="button" class="btn btn-danger rounded-pill px-3 d-flex align-items-center gap-1" id="filesBulkDeleteButton" onclick="window.confirmFilesBulkDelete()" disabled>
+                    <i class="bi bi-trash3"></i>
+                    <span>Delete</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <input type="file" id="uploadFilesInput" multiple style="display:none">
@@ -912,7 +971,8 @@
             orderBy,
             onSnapshot,
             addDoc,
-            serverTimestamp
+            serverTimestamp,
+            deleteDoc
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import {
             getStorage,
@@ -968,6 +1028,10 @@
         let currentSearch = "";
         let isCreatingFolderInline = false;
         let currentUser = null;
+        let currentViewMode = "grid";
+        let currentSortMode = "unsorted";
+        let isBulkDeleteMode = false;
+        let selectedFileIds = [];
         
         onAuthStateChanged(auth, (user) => {
             currentUser = user || null;
@@ -1153,37 +1217,99 @@
                 const preview = truncateText(plain, 120);
                 const createdAt = d.created_at && d.created_at.toDate ? d.created_at.toDate() : null;
                 const dateStr = createdAt ? createdAt.toLocaleDateString() : "";
+                const fileType = d.file_type || "";
+                const isLinkFile = fileType === "link";
+                const iconHtml = isLinkFile
+                    ? '<i class="bi bi-link-45deg fs-5 text-dark"></i>'
+                    : '<i class="bi bi-file-earmark-text"></i>';
                 const category = d.category || "";
                 const categoryHtml = category
                     ? `<span class="badge rounded-pill bg-light text-dark border mb-1">${category}</span>`
                     : "";
-                const html = `
-                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                        <a href="${detailUrl}" class="text-decoration-none text-reset">
-                            <div class="border shadow-purple rounded-3 bg-white p-3 d-flex flex-column justify-content-between file-card" data-file-id="${fileId}" style="min-height:200px;border:0px;">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span class="small text-muted"><i class="bi bi-file-earmark-text"></i></span>
-                                    <span class="badge rounded-pill" style="background:#0B2B6A;">${dateStr}</span>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="fw-semibold mb-1" style="max-height:40px; overflow:hidden;">${title}</div>
-                                    <div class="text-muted small" style="font-size:0.8rem; max-height:72px; overflow:hidden;">
-                                        ${preview || ""}
+                const checkboxStyle = isBulkDeleteMode
+                    ? "position:absolute; top:6px; left:6px; z-index:20;"
+                    : "display:none; position:absolute; top:6px; left:6px; z-index:20;";
+                let html = "";
+                if (currentViewMode === "list") {
+                    html = `
+                        <div class="col-12">
+                            <div class="position-relative">
+                                <input type="checkbox"
+                                       class="form-check-input file-select-checkbox"
+                                       data-file-id="${fileId}"
+                                       style="${checkboxStyle}"
+                                       onclick="window.toggleFileSelection(event, '${fileId}')">
+                                <a href="${detailUrl}" class="text-decoration-none text-reset">
+                                    <div class="border rounded-3 bg-white p-3 d-flex align-items-center justify-content-between file-card" data-file-id="${fileId}">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <span class="small text-muted">${iconHtml}</span>
+                                            <div>
+                                                <div class="fw-semibold mb-1" style="max-height:40px; overflow:hidden;">${title}</div>
+                                                <div class="d-flex align-items-start gap-2">
+                                                    <div class="file-card-category">
+                                                        ${categoryHtml}
+                                                    </div>
+                                                    <div class="text-muted small" style="font-size:0.8rem; max-height:72px; overflow:hidden;">
+                                                        ${preview || ""}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-column align-items-end gap-2">
+                                            <span class="badge rounded-pill" style="background:#0B2B6A;">${dateStr}</span>
+                                            <div class="d-flex align-items-center justify-content-end gap-1 file-card-commenters"></div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center mt-2">
-                                    <div class="file-card-category">
-                                        ${categoryHtml}
-                                    </div>
-                                    <div class="d-flex align-items-center justify-content-end gap-1 file-card-commenters"></div>
-                                </div>
+                                </a>
                             </div>
-                        </a>
-                    </div>
-                `;
+                        </div>
+                    `;
+                } else {
+                    html = `
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                            <div class="position-relative">
+                                <input type="checkbox"
+                                       class="form-check-input file-select-checkbox"
+                                       data-file-id="${fileId}"
+                                       style="${checkboxStyle}"
+                                       onclick="window.toggleFileSelection(event, '${fileId}')">
+                                <a href="${detailUrl}" class="text-decoration-none text-reset">
+                                    <div class="border shadow-purple rounded-3 bg-white p-3 d-flex flex-column justify-content-between file-card" data-file-id="${fileId}" style="min-height:200px;border:0px;">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <span class="small text-muted">${iconHtml}</span>
+                                            <span class="badge rounded-pill" style="background:#0B2B6A;">${dateStr}</span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold mb-1" style="max-height:40px; overflow:hidden;">${title}</div>
+                                            <div class="text-muted small" style="font-size:0.8rem; max-height:72px; overflow:hidden;">
+                                                ${preview || ""}
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <div class="file-card-category">
+                                                ${categoryHtml}
+                                            </div>
+                                            <div class="d-flex align-items-center justify-content-end gap-1 file-card-commenters"></div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }
                 filesGrid.insertAdjacentHTML("beforeend", html);
             });
             loadFileCommentAvatarsForList(files || []);
+        }
+
+        function syncFileCheckboxSelection() {
+            if (!filesGrid) return;
+            if (!Array.isArray(selectedFileIds) || !selectedFileIds.length) return;
+            const checkboxes = filesGrid.querySelectorAll(".file-select-checkbox");
+            checkboxes.forEach(cb => {
+                const id = cb.getAttribute("data-file-id") || "";
+                cb.checked = selectedFileIds.includes(id);
+            });
         }
 
         async function loadFileCommentAvatarsForList(files) {
@@ -1246,7 +1372,99 @@
             } catch (e) {
                 console.error("Failed to load some file commenters", e);
             }
+            if (isBulkDeleteMode) {
+                syncFileCheckboxSelection();
+            }
         }
+
+        function updateFilesBulkDeleteBar() {
+            const bar = document.getElementById("filesBulkDeleteBar");
+            const label = document.getElementById("filesSelectedCountLabel");
+            const btn = document.getElementById("filesBulkDeleteButton");
+            const count = selectedFileIds.length;
+            if (!bar || !label || !btn) return;
+            if (!isBulkDeleteMode) {
+                bar.style.display = "none";
+                return;
+            }
+            bar.style.display = "block";
+            label.innerText = count + " selected";
+            btn.disabled = count === 0;
+        }
+
+        window.enterFilesDeleteMode = function () {
+            if (!projectId) return;
+            isBulkDeleteMode = true;
+            selectedFileIds = [];
+            applyFileFilter();
+            updateFilesBulkDeleteBar();
+        };
+
+        window.cancelFilesBulkDelete = function () {
+            isBulkDeleteMode = false;
+            selectedFileIds = [];
+            applyFileFilter();
+            updateFilesBulkDeleteBar();
+        };
+
+        window.toggleFileSelection = function (event, fileId) {
+            if (event && event.stopPropagation) event.stopPropagation();
+            if (!isBulkDeleteMode) return;
+            if (!fileId) return;
+            const index = selectedFileIds.indexOf(fileId);
+            if (event.target && event.target.checked) {
+                if (index === -1) selectedFileIds.push(fileId);
+            } else {
+                if (index !== -1) selectedFileIds.splice(index, 1);
+            }
+            updateFilesBulkDeleteBar();
+        };
+
+        window.confirmFilesBulkDelete = async function () {
+            if (!projectId) return;
+            if (!isBulkDeleteMode) return;
+            if (!selectedFileIds || !selectedFileIds.length) return;
+            const btn = document.getElementById("filesBulkDeleteButton");
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "Deleting...";
+            }
+            try {
+                const ids = selectedFileIds.slice();
+                for (const id of ids) {
+                    try {
+                        await deleteDoc(doc(db, "projects", projectId, "files", id));
+                    } catch (e) {
+                        console.error("Failed to delete file", id, e);
+                    }
+                }
+            } catch (e) {
+                console.error("Bulk delete error", e);
+            } finally {
+                isBulkDeleteMode = false;
+                selectedFileIds = [];
+                applyFileFilter();
+                updateFilesBulkDeleteBar();
+                if (btn) {
+                    btn.innerHTML = '<i class="bi bi-trash3"></i><span>Delete</span>';
+                    btn.disabled = true;
+                }
+            }
+        };
+
+        window.setFilesViewMode = function (mode) {
+            if (mode !== "grid" && mode !== "list") return;
+            currentViewMode = mode;
+            const icon = document.getElementById("filesViewModeIcon");
+            if (icon) {
+                if (mode === "grid") {
+                    icon.className = "bi bi-grid-3x3-gap-fill me-1";
+                } else {
+                    icon.className = "bi bi-list-ul me-1";
+                }
+            }
+            applyFileFilter();
+        };
 
         function applyFileFilter() {
             const term = (currentSearch || "").trim().toLowerCase();
@@ -1263,8 +1481,53 @@
                     return name.includes(term);
                 });
             }
+            if (files && files.length) {
+                const list = files.slice();
+                if (currentSortMode === "newest") {
+                    list.sort((a, b) => {
+                        const aDate = a.created_at && a.created_at.toDate ? a.created_at.toDate().getTime() : 0;
+                        const bDate = b.created_at && b.created_at.toDate ? b.created_at.toDate().getTime() : 0;
+                        return bDate - aDate;
+                    });
+                    files = list;
+                } else if (currentSortMode === "oldest") {
+                    list.sort((a, b) => {
+                        const aDate = a.created_at && a.created_at.toDate ? a.created_at.toDate().getTime() : 0;
+                        const bDate = b.created_at && b.created_at.toDate ? b.created_at.toDate().getTime() : 0;
+                        return aDate - bDate;
+                    });
+                    files = list;
+                } else if (currentSortMode === "az") {
+                    list.sort((a, b) => {
+                        const aTitle = (a.title || "").toLowerCase();
+                        const bTitle = (b.title || "").toLowerCase();
+                        if (aTitle < bTitle) return -1;
+                        if (aTitle > bTitle) return 1;
+                        return 0;
+                    });
+                    files = list;
+                }
+            }
             renderFiles(files, folders);
         }
+
+        window.setFilesSortMode = function (mode) {
+            if (mode !== "unsorted" && mode !== "newest" && mode !== "oldest" && mode !== "az") return;
+            currentSortMode = mode;
+            const btn = document.getElementById("filesSortDropdownLabel");
+            if (btn) {
+                let label = "Unsorted";
+                if (mode === "newest") {
+                    label = "Newest first";
+                } else if (mode === "oldest") {
+                    label = "Oldest first";
+                } else if (mode === "az") {
+                    label = "A → Z";
+                }
+                btn.innerText = label;
+            }
+            applyFileFilter();
+        };
 
         function listenFiles() {
             try {
@@ -1395,6 +1658,11 @@
                     window.location.href = url;
                 });
             }
+            const backHomeLink = document.getElementById("filesBackHomeLink");
+            if (backHomeLink && projectId) {
+                backHomeLink.href = "project.html?id=" + encodeURIComponent(projectId);
+            }
+
             if (!projectId) {
                 allFiles = [];
                 allFolders = [];

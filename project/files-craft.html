@@ -236,9 +236,10 @@
                             <span class="small text-uppercase text-muted fw-semibold" style="letter-spacing:0.08em;">Category</span>
                         </div>
                         <div class="d-flex flex-wrap gap-2 mb-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('urgent')">Urgent</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('outcome')">Outcome</button>
                             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('important')">Important</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('low')">Low</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('reference')">Reference</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" onclick="handleQuickCategoryClick('upcoming')">Upcoming</button>
                         </div>
                         <input type="text"
                                id="categoryInput"
@@ -378,6 +379,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         let projectId = urlParams.get('projectId') || urlParams.get('id');
         const folderId = urlParams.get('folderId') || "";
+        const fileId = urlParams.get('fileId') || "";
         if (!projectId) {
             try {
                 const cached = localStorage.getItem('currentProjectId');
@@ -417,6 +419,7 @@
         let mentionActive = false;
         let mentionQuery = "";
         let mentionDropdownElement = null;
+        let existingFileData = null;
 
         function getDirectPhotoUrl(url, uid) {
             if (!url) return `https://i.pravatar.cc/150?u=${uid || "user"}`;
@@ -471,6 +474,30 @@
                 renderManageSubscriberList(manageSubscriberSearchQuery);
             } catch (e) {
                 console.error("Failed to load project header", e);
+            }
+        }
+
+        async function loadExistingFile() {
+            if (!projectId || !fileId) return;
+            try {
+                const ref = doc(db, "projects", projectId, "files", fileId);
+                const snap = await getDoc(ref);
+                if (!snap.exists()) return;
+                const data = snap.data() || {};
+                existingFileData = data;
+                const titleInput = document.getElementById('messageTitleInput');
+                const editor = document.getElementById('commentInput');
+                if (titleInput) {
+                    titleInput.value = data.title || "";
+                }
+                if (editor) {
+                    editor.innerHTML = data.text || "";
+                }
+                if (categoryInput) {
+                    categoryInput.value = data.category || "";
+                }
+            } catch (e) {
+                console.error("Failed to load file for edit", e);
             }
         }
 
@@ -1022,21 +1049,38 @@
                 const filesRef = getFilesCollectionRef();
                 if (!filesRef) throw new Error("Project ID tidak valid.");
                 const category = categoryInput ? (categoryInput.value || "").trim() : "";
-                await addDoc(filesRef, {
-                    title: title,
-                    text: htmlText,
-                    text_plain: plainText,
-                    attachments: attachments,
-                    user_id: uid,
-                    user_name: userName,
-                    user_initials: initials,
-                    user_photo: photoUrl,
-                    category: category || null,
-                    parent_id: folderId || null,
-                    created_at: serverTimestamp(),
-                    parent_comment_id: replyTargetCommentId || null,
-                    mentioned_user_ids: mentionedUnique
-                });
+                if (fileId) {
+                    const ref = doc(db, "projects", projectId, "files", fileId);
+                    const baseData = existingFileData || {};
+                    const existingAttachments = Array.isArray(baseData.attachments) ? baseData.attachments : [];
+                    const mergedAttachments = existingAttachments.concat(attachments);
+                    await updateDoc(ref, {
+                        title: title,
+                        text: htmlText,
+                        text_plain: plainText,
+                        attachments: mergedAttachments,
+                        category: category || null,
+                        mentioned_user_ids: mentionedUnique,
+                        updated_at: serverTimestamp()
+                    });
+                } else {
+                    await addDoc(filesRef, {
+                        title: title,
+                        text: htmlText,
+                        text_plain: plainText,
+                        attachments: attachments,
+                        user_id: uid,
+                        user_name: userName,
+                        user_initials: initials,
+                        user_photo: photoUrl,
+                        category: category || null,
+                        parent_id: folderId || null,
+                        created_at: serverTimestamp(),
+                        parent_comment_id: replyTargetCommentId || null,
+                        mentioned_user_ids: mentionedUnique,
+                        file_type: "doc"
+                    });
+                }
 
                 input.innerHTML = '';
                 pendingCommentFiles = [];
@@ -1176,6 +1220,10 @@
                 } catch (e) {}
                 updateSubscriptionUI();
             });
+
+            if (fileId) {
+                loadExistingFile();
+            }
         });
     </script>
 </body>
