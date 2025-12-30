@@ -1025,6 +1025,8 @@ export function renderSidebar(target) {
         lucide.createIcons();
         var questCurrentPriority = 'urgent';
         var sideQuestCurrentPriority = 'normal';
+        var questActionMode = null;
+        var questTasksById = {};
 
         function switchTab(priority, element) {
             document.querySelectorAll('.nav-card').forEach(card => card.classList.remove('active'));
@@ -2164,10 +2166,12 @@ export function renderSidebar(target) {
         function questDateToNumber(date) {
             return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
         }
-        function buildQuestTaskCard(task) {
+        function buildQuestTaskCard(task, category, taskId) {
             var title = task && task.title ? String(task.title) : 'Untitled Quest';
             var dueText = task && (task.due_date || task.dueDate) ? String(task.due_date || task.dueDate) : '';
             var priority = task && task.priority ? String(task.priority).toLowerCase() : '';
+            var categoryType = String(category || '').toLowerCase();
+            var id = taskId || (task && task.id ? String(task.id) : '');
             var descHtml = task && task.description ? String(task.description) : '';
             var tmp = document.createElement('div');
             tmp.innerHTML = descHtml;
@@ -2192,18 +2196,27 @@ export function renderSidebar(target) {
             var badgeClass = 'bg-blue-600';
             if (priority === 'urgent') {
                 borderClass = 'border-orange-500';
-                badgeClass = 'bg-red-500';
             } else if (priority === 'high') {
                 borderClass = 'border-red-500';
-                badgeClass = 'bg-red-500';
             } else if (priority === 'low') {
                 borderClass = 'border-gray-400';
-                badgeClass = 'bg-gray-500';
+            }
+            if (categoryType === 'overdue') {
+                badgeClass = 'bg-red-600';
+            } else if (categoryType === 'upcoming') {
+                badgeClass = 'bg-green-600';
+            } else if (categoryType === 'today' || categoryType === 'todays') {
+                badgeClass = 'bg-blue-600';
             }
             var wrapper = document.createElement('div');
-            wrapper.className = 'flex items-start gap-4';
+            wrapper.className = 'flex items-start gap-4 quest-card';
+            if (id) {
+                wrapper.setAttribute('data-task-id', id);
+            }
             var html = '';
-            html += '<div class="w-6 h-6 border-2 ' + borderClass + ' rounded-full mt-1.5 flex-shrink-0"></div>';
+            html += '<button type="button" class="w-6 h-6 border-2 ' + borderClass + ' rounded-full mt-1.5 flex-shrink-0 flex items-center justify-center bg-white quest-card-check-btn">';
+            html += '<i data-lucide="check" class="w-3 h-3 text-gray-400"></i>';
+            html += '</button>';
             html += '<div class="flex-1">';
             html += '<div class="flex flex-wrap items-center gap-2 mb-1">';
             html += '<h3 class="text-xl font-bold leading-tight">' + esc(title) + '</h3>';
@@ -2215,6 +2228,10 @@ export function renderSidebar(target) {
                 }
                 html += '</span>';
             }
+            html += '</div>';
+            html += '<div class="flex flex-wrap items-center gap-2 mb-2 quest-card-actions hidden">';
+            html += '<button type="button" class="px-3 py-1 text-xs font-semibold rounded-full border border-blue-500 text-blue-600 quest-card-edit-btn">Edit</button>';
+            html += '<button type="button" class="px-3 py-1 text-xs font-semibold rounded-full border border-red-500 text-red-600 quest-card-delete-btn">Delete</button>';
             html += '</div>';
             html += '<p class="text-gray-600 italic description-truncate text-sm mb-3">' + esc(descText) + '</p>';
             html += '<div class="flex flex-col gap-3">';
@@ -2245,6 +2262,7 @@ export function renderSidebar(target) {
             var parentWin = window.parent;
             if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) return;
             try {
+                questTasksById = {};
                 if (overdueList) overdueList.innerHTML = '';
                 if (todayList) todayList.innerHTML = '';
                 if (upcomingList) upcomingList.innerHTML = '';
@@ -2262,15 +2280,23 @@ export function renderSidebar(target) {
                     if (!dueDate) return;
                     var dayNum = questDateToNumber(dueDate);
                     var targetList = null;
+                    var category = '';
                     if (dayNum < todayNum) {
                         targetList = overdueList;
+                        category = 'overdue';
                     } else if (dayNum === todayNum) {
                         targetList = todayList;
+                        category = 'today';
                     } else if (dayNum > todayNum) {
                         targetList = upcomingList;
+                        category = 'upcoming';
                     }
                     if (!targetList) return;
-                    var card = buildQuestTaskCard(data);
+                    var id = docSnap.id;
+                    if (id) {
+                        questTasksById[id] = data;
+                    }
+                    var card = buildQuestTaskCard(data, category, id);
                     targetList.appendChild(card);
                 });
                 if (overdueList && !overdueList.innerHTML.trim()) {
@@ -2587,6 +2613,79 @@ export function renderSidebar(target) {
                 }
             }
         }
+        function updateQuestActionButtons() {
+            var actionContainers = document.querySelectorAll('.quest-card-actions');
+            var editButtons = document.querySelectorAll('.quest-card-edit-btn');
+            var deleteButtons = document.querySelectorAll('.quest-card-delete-btn');
+            if (questActionMode === 'edit') {
+                actionContainers.forEach(function (el) { el.classList.remove('hidden'); });
+                editButtons.forEach(function (el) { el.classList.remove('hidden'); });
+                deleteButtons.forEach(function (el) { el.classList.add('hidden'); });
+            } else if (questActionMode === 'delete') {
+                actionContainers.forEach(function (el) { el.classList.remove('hidden'); });
+                editButtons.forEach(function (el) { el.classList.add('hidden'); });
+                deleteButtons.forEach(function (el) { el.classList.remove('hidden'); });
+            } else {
+                actionContainers.forEach(function (el) { el.classList.add('hidden'); });
+            }
+        }
+        async function questEditTask(taskId) {
+            if (!taskId) return;
+            var parentWin = window.parent;
+            if (!parentWin || !parentWin.db || !parentWin.doc || !parentWin.updateDoc) {
+                alert('Tidak dapat mengedit quest: koneksi database tidak tersedia.');
+                return;
+            }
+            var existing = questTasksById && questTasksById[taskId] ? questTasksById[taskId] : {};
+            var currentTitle = existing && existing.title ? String(existing.title) : '';
+            var newTitle = window.prompt('Edit quest title:', currentTitle);
+            if (newTitle === null) return;
+            newTitle = String(newTitle).trim();
+            if (!newTitle) {
+                alert('Title tidak boleh kosong.');
+                return;
+            }
+            try {
+                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskId), { title: newTitle });
+                if (!questTasksById) questTasksById = {};
+                if (!questTasksById[taskId]) questTasksById[taskId] = {};
+                questTasksById[taskId].title = newTitle;
+                loadQuestTasks();
+            } catch (e) {
+                console.error('Gagal mengedit quest', e);
+                alert('Gagal mengedit quest: ' + (e && e.message ? e.message : String(e)));
+            }
+        }
+        async function questDeleteTask(taskId) {
+            if (!taskId) return;
+            var parentWin = window.parent;
+            if (!parentWin || !parentWin.db || !parentWin.doc || !parentWin.deleteDoc) {
+                alert('Tidak dapat menghapus quest: koneksi database tidak tersedia.');
+                return;
+            }
+            var ok = window.confirm('Yakin ingin menghapus quest ini?');
+            if (!ok) return;
+            try {
+                await parentWin.deleteDoc(parentWin.doc(parentWin.db, 'tasks', taskId));
+                if (questTasksById && questTasksById[taskId]) {
+                    delete questTasksById[taskId];
+                }
+                loadQuestTasks();
+            } catch (e) {
+                console.error('Gagal menghapus quest', e);
+                alert('Gagal menghapus quest: ' + (e && e.message ? e.message : String(e)));
+            }
+        }
+        function questOpenTask(taskId) {
+            if (!taskId) return;
+            var targetWin = window.parent && window.parent !== window ? window.parent : window;
+            var url = 'quest/quest-task.html?taskId=' + encodeURIComponent(taskId);
+            try {
+                targetWin.open(url, '_blank');
+            } catch (e) {
+                window.open(url, '_blank');
+            }
+        }
         async function saveQuest() {
             var parentWin = window.parent;
             if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.addDoc || !parentWin.serverTimestamp) {
@@ -2766,12 +2865,24 @@ export function renderSidebar(target) {
             if (menu) {
                 menu.classList.add('hidden');
             }
+            if (questActionMode === 'edit') {
+                questActionMode = null;
+            } else {
+                questActionMode = 'edit';
+            }
+            updateQuestActionButtons();
         }
         function questHeaderDelete() {
             var menu = document.getElementById('questHeaderMenu');
             if (menu) {
                 menu.classList.add('hidden');
             }
+            if (questActionMode === 'delete') {
+                questActionMode = null;
+            } else {
+                questActionMode = 'delete';
+            }
+            updateQuestActionButtons();
         }
         function questCloseDropdownIfOutside(event, dropdownId, usesDisplayStyle) {
             var dropdown = document.getElementById(dropdownId);
@@ -2792,6 +2903,39 @@ export function renderSidebar(target) {
             }
         }
         document.addEventListener('click', function (event) {
+            var checkBtn = event.target.closest('.quest-card-check-btn');
+            if (checkBtn) {
+                var card = checkBtn.closest('.quest-card');
+                if (card) {
+                    var id = card.getAttribute('data-task-id');
+                    if (id) {
+                        questOpenTask(id);
+                    }
+                }
+                return;
+            }
+            var editBtn = event.target.closest('.quest-card-edit-btn');
+            if (editBtn) {
+                var cardEdit = editBtn.closest('.quest-card');
+                if (cardEdit) {
+                    var idEdit = cardEdit.getAttribute('data-task-id');
+                    if (idEdit) {
+                        questEditTask(idEdit);
+                    }
+                }
+                return;
+            }
+            var deleteBtn = event.target.closest('.quest-card-delete-btn');
+            if (deleteBtn) {
+                var cardDelete = deleteBtn.closest('.quest-card');
+                if (cardDelete) {
+                    var idDelete = cardDelete.getAttribute('data-task-id');
+                    if (idDelete) {
+                        questDeleteTask(idDelete);
+                    }
+                }
+                return;
+            }
             questCloseDropdownIfOutside(event, 'questDepartmentDropdown', false);
             questCloseDropdownIfOutside(event, 'questAssignDropdown', false);
             questCloseDropdownIfOutside(event, 'questDueDropdown', false);
