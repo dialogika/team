@@ -157,7 +157,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
@@ -381,14 +381,28 @@
                         bigCheckbox.classList.remove("border-slate-600", "text-slate-500", "bg-slate-950");
                         bigCheckbox.classList.add("bg-emerald-500", "border-emerald-500", "text-white");
                     }
-                    bigCheckbox.addEventListener("click", function () {
+                    bigCheckbox.addEventListener("click", async function () {
                         const active = bigCheckbox.classList.contains("bg-emerald-500");
-                        if (active) {
-                            bigCheckbox.classList.remove("bg-emerald-500", "border-emerald-500", "text-white");
-                            bigCheckbox.classList.add("border-slate-600", "text-slate-500", "bg-slate-950");
-                        } else {
+                        const toComplete = !active;
+                        if (toComplete) {
                             bigCheckbox.classList.remove("border-slate-600", "text-slate-500", "bg-slate-950");
                             bigCheckbox.classList.add("bg-emerald-500", "border-emerald-500", "text-white");
+                        } else {
+                            bigCheckbox.classList.remove("bg-emerald-500", "border-emerald-500", "text-white");
+                            bigCheckbox.classList.add("border-slate-600", "text-slate-500", "bg-slate-950");
+                        }
+                        try {
+                            await updateDoc(doc(db, "tasks", taskId), { status: toComplete ? "Complete" : "Initiate" });
+                        } catch (e) {
+                            console.error("Failed to update quest status", e);
+                            if (toComplete) {
+                                bigCheckbox.classList.remove("bg-emerald-500", "border-emerald-500", "text-white");
+                                bigCheckbox.classList.add("border-slate-600", "text-slate-500", "bg-slate-950");
+                            } else {
+                                bigCheckbox.classList.remove("border-slate-600", "text-slate-500", "bg-slate-950");
+                                bigCheckbox.classList.add("bg-emerald-500", "border-emerald-500", "text-white");
+                            }
+                            alert("Gagal mengubah status quest.");
                         }
                     });
                 }

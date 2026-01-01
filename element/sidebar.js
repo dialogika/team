@@ -2230,7 +2230,6 @@ export function renderSidebar(target) {
             }
             html += '</div>';
             html += '<div class="flex flex-wrap items-center gap-2 mb-2 quest-card-actions hidden">';
-            html += '<button type="button" class="px-3 py-1 text-xs font-semibold rounded-full border border-blue-500 text-blue-600 quest-card-edit-btn">Edit</button>';
             html += '<button type="button" class="px-3 py-1 text-xs font-semibold rounded-full border border-red-500 text-red-600 quest-card-delete-btn">Delete</button>';
             html += '</div>';
             html += '<p class="text-gray-600 italic description-truncate text-sm mb-3">' + esc(descText) + '</p>';
@@ -2617,44 +2616,25 @@ export function renderSidebar(target) {
             var actionContainers = document.querySelectorAll('.quest-card-actions');
             var editButtons = document.querySelectorAll('.quest-card-edit-btn');
             var deleteButtons = document.querySelectorAll('.quest-card-delete-btn');
+            var cards = document.querySelectorAll('.quest-card');
             if (questActionMode === 'edit') {
                 actionContainers.forEach(function (el) { el.classList.remove('hidden'); });
                 editButtons.forEach(function (el) { el.classList.remove('hidden'); });
                 deleteButtons.forEach(function (el) { el.classList.add('hidden'); });
+                cards.forEach(function (card) { card.setAttribute('title', 'Click for Edit'); });
             } else if (questActionMode === 'delete') {
                 actionContainers.forEach(function (el) { el.classList.remove('hidden'); });
                 editButtons.forEach(function (el) { el.classList.add('hidden'); });
                 deleteButtons.forEach(function (el) { el.classList.remove('hidden'); });
+                cards.forEach(function (card) { card.removeAttribute('title'); });
             } else {
                 actionContainers.forEach(function (el) { el.classList.add('hidden'); });
+                cards.forEach(function (card) { card.removeAttribute('title'); });
             }
         }
-        async function questEditTask(taskId) {
+        function questEditTask(taskId) {
             if (!taskId) return;
-            var parentWin = window.parent;
-            if (!parentWin || !parentWin.db || !parentWin.doc || !parentWin.updateDoc) {
-                alert('Tidak dapat mengedit quest: koneksi database tidak tersedia.');
-                return;
-            }
-            var existing = questTasksById && questTasksById[taskId] ? questTasksById[taskId] : {};
-            var currentTitle = existing && existing.title ? String(existing.title) : '';
-            var newTitle = window.prompt('Edit quest title:', currentTitle);
-            if (newTitle === null) return;
-            newTitle = String(newTitle).trim();
-            if (!newTitle) {
-                alert('Title tidak boleh kosong.');
-                return;
-            }
-            try {
-                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskId), { title: newTitle });
-                if (!questTasksById) questTasksById = {};
-                if (!questTasksById[taskId]) questTasksById[taskId] = {};
-                questTasksById[taskId].title = newTitle;
-                loadQuestTasks();
-            } catch (e) {
-                console.error('Gagal mengedit quest', e);
-                alert('Gagal mengedit quest: ' + (e && e.message ? e.message : String(e)));
-            }
+            questOpenTask(taskId);
         }
         async function questDeleteTask(taskId) {
             if (!taskId) return;
