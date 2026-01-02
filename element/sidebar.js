@@ -1209,6 +1209,152 @@ export function renderSidebar(target) {
                 labelEl.textContent = '';
             }
         }
+        function getSideQuestTags() {
+            var hidden = document.getElementById('sideQuest-tags');
+            if (!hidden || !hidden.value) return [];
+            return hidden.value.split(',').map(function (t) { return t.trim(); }).filter(function (t) { return t; });
+        }
+        function setSideQuestTags(tags) {
+            var hidden = document.getElementById('sideQuest-tags');
+            if (!hidden) return;
+            var clean = Array.from(new Set(tags.map(function (t) { return String(t || '').trim(); }).filter(function (t) { return t; })));
+            hidden.value = clean.join(',');
+            updateSideQuestSelectedTagUI();
+            var optionsContainer = document.getElementById('sideQuest-tag-options');
+            if (!optionsContainer) return;
+            Array.prototype.slice.call(optionsContainer.children).forEach(function (opt) {
+                var tag = opt.getAttribute('data-tag') || '';
+                if (!tag) return;
+                if (clean.indexOf(tag) !== -1) {
+                    opt.classList.add('tag-option-selected');
+                } else {
+                    opt.classList.remove('tag-option-selected');
+                }
+            });
+        }
+        function updateSideQuestSelectedTagUI() {
+            var selectedContainer = document.getElementById('sideQuest-tag-selected');
+            if (!selectedContainer) return;
+            var tags = getSideQuestTags();
+            selectedContainer.innerHTML = '';
+            if (!tags.length) {
+                var span = document.createElement('span');
+                span.className = 'tag-placeholder';
+                span.textContent = 'Search or add tags...';
+                selectedContainer.appendChild(span);
+                return;
+            }
+            tags.forEach(function (tag) {
+                var pill = document.createElement('span');
+                pill.className = 'tag-pill';
+                pill.textContent = tag;
+                var remove = document.createElement('span');
+                remove.className = 'tag-remove';
+                remove.textContent = '×';
+                remove.onclick = function (event) {
+                    event.stopPropagation();
+                    removeSideQuestTagFromSelection(tag);
+                };
+                pill.appendChild(remove);
+                selectedContainer.appendChild(pill);
+            });
+        }
+        function toggleSideQuestTagDropdown() {
+            var dropdown = document.getElementById('sideQuest-tag-dropdown');
+            if (!dropdown) return;
+            var isOpen = dropdown.style.display === 'block';
+            dropdown.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) {
+                var input = document.getElementById('sideQuest-tag-input');
+                if (input) {
+                    input.focus();
+                    input.select();
+                }
+                filterSideQuestTagOptions();
+            }
+        }
+        function filterSideQuestTagOptions() {
+            var input = document.getElementById('sideQuest-tag-input');
+            var optionsContainer = document.getElementById('sideQuest-tag-options');
+            var createRow = document.getElementById('sideQuest-tag-create');
+            var createLabel = document.getElementById('sideQuest-tag-create-label');
+            if (!input || !optionsContainer || !createRow || !createLabel) return;
+            var query = input.value.trim().toLowerCase();
+            var hasVisible = false;
+            var hasExact = false;
+            Array.prototype.slice.call(optionsContainer.children).forEach(function (opt) {
+                var tag = String(opt.getAttribute('data-tag') || '').toLowerCase();
+                var visible = !query || tag.indexOf(query) !== -1;
+                opt.style.display = visible ? 'flex' : 'none';
+                if (visible) {
+                    hasVisible = true;
+                }
+                if (tag === query && query) {
+                    hasExact = true;
+                }
+            });
+            if (query && !hasExact) {
+                createRow.style.display = 'flex';
+                createLabel.textContent = input.value.trim();
+            } else {
+                createRow.style.display = 'none';
+                createLabel.textContent = '';
+            }
+            if (!query && !hasVisible) {
+                createRow.style.display = 'none';
+                createLabel.textContent = '';
+            }
+        }
+        function toggleSideQuestTagFromOption(tag) {
+            var current = getSideQuestTags();
+            var index = current.indexOf(tag);
+            if (index >= 0) {
+                current.splice(index, 1);
+            } else {
+                current.push(tag);
+            }
+            setSideQuestTags(current);
+        }
+        function createSideQuestTagFromInput() {
+            var input = document.getElementById('sideQuest-tag-input');
+            if (!input) return;
+            var value = input.value.trim();
+            if (!value) return;
+            var current = getSideQuestTags();
+            if (current.indexOf(value) === -1) {
+                current.push(value);
+            }
+            var optionsContainer = document.getElementById('sideQuest-tag-options');
+            if (optionsContainer) {
+                var exists = Array.prototype.slice.call(optionsContainer.children).some(function (opt) {
+                    return String(opt.getAttribute('data-tag') || '') === value;
+                });
+                if (!exists) {
+                    var opt = document.createElement('div');
+                    opt.className = 'tag-option';
+                    opt.setAttribute('data-tag', value);
+                    opt.onclick = function () {
+                        toggleSideQuestTagFromOption(value);
+                    };
+                    var pill = document.createElement('span');
+                    pill.className = 'tag-pill';
+                    pill.textContent = value;
+                    opt.appendChild(pill);
+                    optionsContainer.insertBefore(opt, optionsContainer.firstChild || null);
+                }
+            }
+            setSideQuestTags(current);
+            input.value = '';
+            filterSideQuestTagOptions();
+        }
+        function removeSideQuestTagFromSelection(tag) {
+            var current = getSideQuestTags();
+            var index = current.indexOf(tag);
+            if (index >= 0) {
+                current.splice(index, 1);
+                setSideQuestTags(current);
+            }
+        }
         function updateSideQuestDepartmentLabel() {
             var dropdown = document.getElementById('sideQuestDepartmentDropdown');
             var labelEl = document.getElementById('sideQuestDepartmentButtonLabel');
@@ -1361,6 +1507,8 @@ export function renderSidebar(target) {
             }
             var statusEl = document.getElementById('sideQuestStatusInput');
             var statusValue = statusEl && statusEl.value ? String(statusEl.value) : '';
+            var startEl = document.getElementById('sideQuestStartInput');
+            var startValue = startEl && startEl.value ? String(startEl.value) : '';
             var startEl = document.getElementById('sideQuestStartInput');
             var startValue = startEl && startEl.value ? String(startEl.value) : '';
             var dueEl = document.getElementById('sideQuestDueInput');
@@ -3805,21 +3953,18 @@ export function renderSidebar(target) {
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Start date</div>
+                        <div class="font-medium text-gray-500 w-24">Dates</div>
                         <div class="flex-1">
-                            <input id="sideQuestStartInput" type="date"
-                                onclick="if (this.showPicker) this.showPicker();"
-                                onfocus="if (this.showPicker) this.showPicker();"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Due date</div>
-                        <div class="flex-1">
-                            <input id="sideQuestDueInput" type="date"
-                                onclick="if (this.showPicker) this.showPicker();"
-                                onfocus="if (this.showPicker) this.showPicker();"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                            <div class="flex gap-2">
+                                <input id="sideQuestStartInput" type="date"
+                                    onclick="if (this.showPicker) this.showPicker();"
+                                    onfocus="if (this.showPicker) this.showPicker();"
+                                    class="w-1/2 border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                                <input id="sideQuestDueInput" type="date"
+                                    onclick="if (this.showPicker) this.showPicker();"
+                                    onfocus="if (this.showPicker) this.showPicker();"
+                                    class="w-1/2 border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                            </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
@@ -3918,9 +4063,23 @@ export function renderSidebar(target) {
                     <div class="flex items-center gap-3">
                         <div class="font-medium text-gray-500 w-24">Tags</div>
                         <div class="flex-1">
-                            <input id="sideQuestTagsInput" type="text"
-                                placeholder="tag1, tag2, tag3"
-                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                            <div class="tag-selector w-full" id="tag-selector-sidequest">
+                                <div class="tag-selector-control" onclick="toggleSideQuestTagDropdown()">
+                                    <div class="tag-selected-list" id="sideQuest-tag-selected">
+                                        <span class="tag-placeholder">Search or add tags...</span>
+                                    </div>
+                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
+                                </div>
+                                <div class="tag-dropdown" id="sideQuest-tag-dropdown">
+                                    <input type="text" id="sideQuest-tag-input" class="tag-search-input" placeholder="Search or add tags..." oninput="filterSideQuestTagOptions()">
+                                    <div class="tag-options" id="sideQuest-tag-options"></div>
+                                    <div class="tag-create" id="sideQuest-tag-create" style="display:none;" onclick="createSideQuestTagFromInput()">
+                                        <span>Create</span>
+                                        <span class="tag-create-label" id="sideQuest-tag-create-label"></span>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="sideQuest-tags" value="">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4296,11 +4455,11 @@ export function renderSidebar(target) {
             var dueValue = dueEl && dueEl.value ? String(dueEl.value) : '';
             var pointsEl = document.getElementById('sideQuestPointsInput');
             var pointsValue = pointsEl && pointsEl.value ? Number(pointsEl.value) || 0 : 0;
-            var tagsInput = document.getElementById('sideQuestTagsInput');
-            var rawTags = tagsInput && tagsInput.value ? String(tagsInput.value) : '';
-            var tags = rawTags
-                ? rawTags.split(',').map(function (t) { return t.trim(); }).filter(function (t) { return t; })
-                : [];
+            var hiddenTags = document.getElementById('sideQuest-tags');
+            var tags = [];
+            if (hiddenTags && hiddenTags.value) {
+                tags = hiddenTags.value.split(',').map(function (t) { return t.trim(); }).filter(function (t) { return t; });
+            }
             var descEl = document.getElementById('sideQuestDesc');
             var description = descEl ? String(descEl.innerHTML || '').trim() : '';
             var assignSelected = [];
@@ -4330,6 +4489,7 @@ export function renderSidebar(target) {
                     title: title,
                     description: description,
                     priority: sideQuestCurrentPriority || 'normal',
+                    start_date: startValue,
                     due_date: dueValue,
                     points: pointsValue,
                     departments: [],
@@ -4371,8 +4531,9 @@ export function renderSidebar(target) {
                 if (pointsEl) {
                     pointsEl.value = '';
                 }
-                if (tagsInput) {
-                    tagsInput.value = '';
+                var tagHidden = document.getElementById('sideQuest-tags');
+                if (tagHidden) {
+                    tagHidden.value = '';
                 }
                 if (descEl) {
                     descEl.innerHTML = '';
@@ -4683,6 +4844,15 @@ export function renderSidebar(target) {
                 var insideNotifyTrig = notifyTrigger && notifyTrigger.contains(target);
                 if (!insideNotifyDrop && !insideNotifyTrig && !notifyDropdown.classList.contains('hidden')) {
                     notifyDropdown.classList.add('hidden');
+                }
+            }
+            var tagDropdown = document.getElementById('sideQuest-tag-dropdown');
+            if (tagDropdown) {
+                var tagTrigger = document.getElementById('tag-selector-sidequest');
+                var insideTagDrop = tagDropdown.contains(target);
+                var insideTagTrig = tagTrigger && tagTrigger.contains(target);
+                if (!insideTagDrop && !insideTagTrig && tagDropdown.style.display === 'block') {
+                    tagDropdown.style.display = 'none';
                 }
             }
         });
