@@ -1209,6 +1209,144 @@ export function renderSidebar(target) {
                 labelEl.textContent = '';
             }
         }
+        function updateSideQuestDepartmentLabel() {
+            var dropdown = document.getElementById('sideQuestDepartmentDropdown');
+            var labelEl = document.getElementById('sideQuestDepartmentButtonLabel');
+            if (!dropdown || !labelEl) return;
+            var selected = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            if (!selected.length) {
+                labelEl.textContent = 'Select departments...';
+                return;
+            }
+            var names = selected.map(function (cb) {
+                var row = cb.closest('.sidequest-dept-option');
+                if (!row) return '';
+                var nameEl = row.querySelector('.sidequest-dept-name');
+                return nameEl ? nameEl.textContent.trim() : '';
+            }).filter(function (v) { return v; });
+            if (!names.length) {
+                labelEl.textContent = 'Select departments...';
+            } else if (names.length === 1) {
+                labelEl.textContent = names[0];
+            } else if (names.length === 2) {
+                labelEl.textContent = names[0] + ', ' + names[1];
+            } else {
+                labelEl.textContent = names[0] + ' and ' + (names.length - 1) + ' more';
+            }
+        }
+        function updateSideQuestPositionLabel() {
+            var dropdown = document.getElementById('sideQuestPositionDropdown');
+            var labelEl = document.getElementById('sideQuestPositionButtonLabel');
+            if (!dropdown || !labelEl) return;
+            var selected = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            if (!selected.length) {
+                labelEl.textContent = 'Select positions...';
+                return;
+            }
+            var names = selected.map(function (cb) {
+                var row = cb.closest('.sidequest-position-option');
+                if (!row) return '';
+                var nameEl = row.querySelector('.sidequest-position-name');
+                return nameEl ? nameEl.textContent.trim() : '';
+            }).filter(function (v) { return v; });
+            if (!names.length) {
+                labelEl.textContent = 'Select positions...';
+            } else if (names.length === 1) {
+                labelEl.textContent = names[0];
+            } else if (names.length === 2) {
+                labelEl.textContent = names[0] + ', ' + names[1];
+            } else {
+                labelEl.textContent = names[0] + ' and ' + (names.length - 1) + ' more';
+            }
+        }
+        async function loadSideQuestDepartments() {
+            var dropdown = document.getElementById('sideQuestDepartmentDropdown');
+            if (!dropdown) return;
+            dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading departments...</span>';
+            try {
+                var parentWin = window.parent;
+                if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                    dropdown.innerHTML = '<span class="text-red-500 text-xs">Departments not available.</span>';
+                    return;
+                }
+                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "departments"));
+                dropdown.innerHTML = '';
+                snap.forEach(function (docSnap) {
+                    var d = docSnap.data() || {};
+                    var name = d.name || "Untitled";
+                    var color = d.color || "#0B2B6A";
+                    var row = document.createElement('div');
+                    row.className = 'sidequest-dept-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
+                    row.innerHTML =
+                        '<span class="inline-flex w-2.5 h-2.5 rounded-full" style="background:' + color + ';"></span>' +
+                        '<span class="sidequest-dept-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-dept-id="' + docSnap.id + '">';
+                    dropdown.appendChild(row);
+                    var checkbox = row.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', updateSideQuestDepartmentLabel);
+                    row.addEventListener('click', function (e) {
+                        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                            return;
+                        }
+                        checkbox.checked = !checkbox.checked;
+                        updateSideQuestDepartmentLabel();
+                    });
+                });
+                if (!dropdown.innerHTML.trim()) {
+                    dropdown.innerHTML = '<span class="text-gray-400 text-xs">No departments available.</span>';
+                } else {
+                    updateSideQuestDepartmentLabel();
+                }
+            } catch (e) {
+                console.error('Failed to load departments for side quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load departments.</span>';
+            }
+        }
+        async function loadSideQuestPositions() {
+            var dropdown = document.getElementById('sideQuestPositionDropdown');
+            if (!dropdown) return;
+            dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading positions...</span>';
+            try {
+                var parentWin = window.parent;
+                if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                    dropdown.innerHTML = '<span class="text-red-500 text-xs">Positions not available.</span>';
+                    return;
+                }
+                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "positions"));
+                dropdown.innerHTML = '';
+                snap.forEach(function (docSnap) {
+                    var d = docSnap.data() || {};
+                    var name = d.name || "Untitled";
+                    var row = document.createElement('div');
+                    row.className = 'sidequest-position-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
+                    row.innerHTML =
+                        '<span class="sidequest-position-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-position-id="' + docSnap.id + '">';
+                    dropdown.appendChild(row);
+                    var checkbox = row.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', updateSideQuestPositionLabel);
+                    row.addEventListener('click', function (e) {
+                        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                            return;
+                        }
+                        checkbox.checked = !checkbox.checked;
+                        updateSideQuestPositionLabel();
+                    });
+                });
+                if (!dropdown.innerHTML.trim()) {
+                    dropdown.innerHTML = '<span class="text-gray-400 text-xs">No positions available.</span>';
+                } else {
+                    updateSideQuestPositionLabel();
+                }
+            } catch (e) {
+                console.error('Failed to load positions for side quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load positions.</span>';
+            }
+        }
         async function saveSideQuest() {
             var parentWin = window.parent;
             if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.addDoc || !parentWin.serverTimestamp) {
@@ -1223,6 +1361,8 @@ export function renderSidebar(target) {
             }
             var statusEl = document.getElementById('sideQuestStatusInput');
             var statusValue = statusEl && statusEl.value ? String(statusEl.value) : '';
+            var startEl = document.getElementById('sideQuestStartInput');
+            var startValue = startEl && startEl.value ? String(startEl.value) : '';
             var dueEl = document.getElementById('sideQuestDueInput');
             var dueValue = dueEl && dueEl.value ? String(dueEl.value) : '';
             var pointsEl = document.getElementById('sideQuestPointsInput');
@@ -1285,6 +1425,7 @@ export function renderSidebar(target) {
                     title: title,
                     description: description,
                     priority: sideQuestCurrentPriority || 'normal',
+                    start_date: startValue,
                     due_date: dueValue,
                     points: pointsValue,
                     departments: deptSelected,
@@ -3552,12 +3693,7 @@ export function renderSidebar(target) {
             background: linear-gradient(to top,#fcf221 22%, #f1ac15 100%);
             box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
         }
-        .btn-dlg-blue {
-            background: linear-gradient(to top, #4776e6 0%, #8e54e9 100%);
-        }
-        .btn-dlg-blue:hover {
-            background: linear-gradient(to top, #8e54e9 0%, #4776e6 100%);
-        }
+        
         .description-truncate {
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -3669,9 +3805,20 @@ export function renderSidebar(target) {
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
+                        <div class="font-medium text-gray-500 w-24">Start date</div>
+                        <div class="flex-1">
+                            <input id="sideQuestStartInput" type="date"
+                                onclick="if (this.showPicker) this.showPicker();"
+                                onfocus="if (this.showPicker) this.showPicker();"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
                         <div class="font-medium text-gray-500 w-24">Due date</div>
                         <div class="flex-1">
                             <input id="sideQuestDueInput" type="date"
+                                onclick="if (this.showPicker) this.showPicker();"
+                                onfocus="if (this.showPicker) this.showPicker();"
                                 class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                         </div>
                     </div>
@@ -3799,7 +3946,6 @@ export function renderSidebar(target) {
                 </button>
                 <button type="button"
                     class="rounded-full px-8 py-2.5 text-sm font-semibold text-white btn-dlg-blue"
-                    style="box-shadow: 0 10px 25px rgba(59,130,246,0.35);"
                     onclick="saveSideQuest()">
                     Add Side Quest
                 </button>
@@ -3916,6 +4062,224 @@ export function renderSidebar(target) {
                 dropdown.classList.add('hidden');
             }
         }
+        function toggleSideQuestUserDropdown(field) {
+            var dropdownId = field === 'assign' ? 'sideQuestAssignDropdown' : 'sideQuestNotifyDropdown';
+            var searchId = field === 'assign' ? 'sideQuestAssignSearch' : 'sideQuestNotifySearch';
+            var dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+            var isHidden = dropdown.classList.contains('hidden');
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                var search = document.getElementById(searchId);
+                if (search && search.focus) {
+                    search.focus();
+                    if (search.select) search.select();
+                }
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+        function updateSideQuestUserLabel(dropdownId, labelId, placeholderText, avatarsId) {
+            var dropdown = document.getElementById(dropdownId);
+            var labelEl = document.getElementById(labelId);
+            var avatarsEl = avatarsId ? document.getElementById(avatarsId) : null;
+            if (!dropdown) return;
+            var selected = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            if (!selected.length) {
+                if (labelEl) {
+                    labelEl.textContent = placeholderText;
+                }
+                if (avatarsEl) {
+                    avatarsEl.innerHTML = '';
+                }
+                return;
+            }
+            var names = selected.map(function (cb) {
+                var row = cb.closest('.quest-user-option');
+                if (!row) return '';
+                var nameEl = row.querySelector('.quest-user-name');
+                return nameEl ? nameEl.textContent.trim() : '';
+            }).filter(function (v) { return v; });
+            if (avatarsEl) {
+                avatarsEl.innerHTML = '';
+                var maxAvatars = 4;
+                selected.forEach(function (cb, index) {
+                    if (index >= maxAvatars) return;
+                    var row = cb.closest('.quest-user-option');
+                    var imgEl = row ? row.querySelector('img') : null;
+                    var name = names[index] || '';
+                    var uid = cb.getAttribute('data-user-id') || '';
+                    var source = name || uid;
+                    var initials = 'U';
+                    if (source) {
+                        var parts = String(source).trim().split(/\s+/);
+                        var tmp = parts.map(function (p) { return p[0]; }).join('');
+                        initials = tmp.substring(0, 2).toUpperCase();
+                    }
+                    var avatarNode;
+                    if (imgEl && imgEl.getAttribute('src')) {
+                        avatarNode = document.createElement('img');
+                        avatarNode.src = imgEl.getAttribute('src');
+                        avatarNode.alt = name || '';
+                        avatarNode.className = 'w-6 h-6 rounded-full object-cover border border-gray-200';
+                    } else {
+                        avatarNode = document.createElement('span');
+                        avatarNode.className = 'w-6 h-6 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center';
+                        avatarNode.textContent = initials;
+                    }
+                    avatarsEl.appendChild(avatarNode);
+                });
+                if (selected.length > maxAvatars) {
+                    var more = document.createElement('span');
+                    more.className = 'w-6 h-6 rounded-full bg-slate-800 text-slate-100 text-[10px] font-semibold flex items-center justify-center';
+                    more.textContent = '+' + (selected.length - maxAvatars);
+                    avatarsEl.appendChild(more);
+                }
+            }
+            if (labelEl) {
+                labelEl.textContent = '';
+            }
+        }
+        function updateSideQuestDepartmentLabel() {
+            var dropdown = document.getElementById('sideQuestDepartmentDropdown');
+            var labelEl = document.getElementById('sideQuestDepartmentButtonLabel');
+            if (!dropdown || !labelEl) return;
+            var selected = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            if (!selected.length) {
+                labelEl.textContent = 'Select departments...';
+                return;
+            }
+            var names = selected.map(function (cb) {
+                var row = cb.closest('.sidequest-dept-option');
+                if (!row) return '';
+                var nameEl = row.querySelector('.sidequest-dept-name');
+                return nameEl ? nameEl.textContent.trim() : '';
+            }).filter(function (v) { return v; });
+            if (!names.length) {
+                labelEl.textContent = 'Select departments...';
+            } else if (names.length === 1) {
+                labelEl.textContent = names[0];
+            } else if (names.length === 2) {
+                labelEl.textContent = names[0] + ', ' + names[1];
+            } else {
+                labelEl.textContent = names[0] + ' and ' + (names.length - 1) + ' more';
+            }
+        }
+        function updateSideQuestPositionLabel() {
+            var dropdown = document.getElementById('sideQuestPositionDropdown');
+            var labelEl = document.getElementById('sideQuestPositionButtonLabel');
+            if (!dropdown || !labelEl) return;
+            var selected = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            if (!selected.length) {
+                labelEl.textContent = 'Select positions...';
+                return;
+            }
+            var names = selected.map(function (cb) {
+                var row = cb.closest('.sidequest-position-option');
+                if (!row) return '';
+                var nameEl = row.querySelector('.sidequest-position-name');
+                return nameEl ? nameEl.textContent.trim() : '';
+            }).filter(function (v) { return v; });
+            if (!names.length) {
+                labelEl.textContent = 'Select positions...';
+            } else if (names.length === 1) {
+                labelEl.textContent = names[0];
+            } else if (names.length === 2) {
+                labelEl.textContent = names[0] + ', ' + names[1];
+            } else {
+                labelEl.textContent = names[0] + ' and ' + (names.length - 1) + ' more';
+            }
+        }
+        async function loadSideQuestDepartments() {
+            var dropdown = document.getElementById('sideQuestDepartmentDropdown');
+            if (!dropdown) return;
+            dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading departments...</span>';
+            try {
+                var parentWin = window.parent;
+                if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                    dropdown.innerHTML = '<span class="text-red-500 text-xs">Departments not available.</span>';
+                    return;
+                }
+                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "departments"));
+                dropdown.innerHTML = '';
+                snap.forEach(function (docSnap) {
+                    var d = docSnap.data() || {};
+                    var name = d.name || "Untitled";
+                    var color = d.color || "#0B2B6A";
+                    var row = document.createElement('div');
+                    row.className = 'sidequest-dept-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
+                    row.innerHTML =
+                        '<span class="inline-flex w-2.5 h-2.5 rounded-full" style="background:' + color + ';"></span>' +
+                        '<span class="sidequest-dept-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-dept-id="' + docSnap.id + '">';
+                    dropdown.appendChild(row);
+                    var checkbox = row.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', updateSideQuestDepartmentLabel);
+                    row.addEventListener('click', function (e) {
+                        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                            return;
+                        }
+                        checkbox.checked = !checkbox.checked;
+                        updateSideQuestDepartmentLabel();
+                    });
+                });
+                if (!dropdown.innerHTML.trim()) {
+                    dropdown.innerHTML = '<span class="text-gray-400 text-xs">No departments available.</span>';
+                } else {
+                    updateSideQuestDepartmentLabel();
+                }
+            } catch (e) {
+                console.error('Failed to load departments for side quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load departments.</span>';
+            }
+        }
+        async function loadSideQuestPositions() {
+            var dropdown = document.getElementById('sideQuestPositionDropdown');
+            if (!dropdown) return;
+            dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading positions...</span>';
+            try {
+                var parentWin = window.parent;
+                if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                    dropdown.innerHTML = '<span class="text-red-500 text-xs">Positions not available.</span>';
+                    return;
+                }
+                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "positions"));
+                dropdown.innerHTML = '';
+                snap.forEach(function (docSnap) {
+                    var d = docSnap.data() || {};
+                    var name = d.name || "Untitled";
+                    var row = document.createElement('div');
+                    row.className = 'sidequest-position-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
+                    row.innerHTML =
+                        '<span class="sidequest-position-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-position-id="' + docSnap.id + '">';
+                    dropdown.appendChild(row);
+                    var checkbox = row.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', updateSideQuestPositionLabel);
+                    row.addEventListener('click', function (e) {
+                        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                            return;
+                        }
+                        checkbox.checked = !checkbox.checked;
+                        updateSideQuestPositionLabel();
+                    });
+                });
+                if (!dropdown.innerHTML.trim()) {
+                    dropdown.innerHTML = '<span class="text-gray-400 text-xs">No positions available.</span>';
+                } else {
+                    updateSideQuestPositionLabel();
+                }
+            } catch (e) {
+                console.error('Failed to load positions for side quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load positions.</span>';
+            }
+        }
         async function saveSideQuest() {
             var parentWin = window.parent;
             if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.addDoc || !parentWin.serverTimestamp) {
@@ -3997,6 +4361,9 @@ export function renderSidebar(target) {
                 }
                 if (input) {
                     input.value = '';
+                }
+                if (startEl) {
+                    startEl.value = '';
                 }
                 if (dueEl) {
                     dueEl.value = '';
