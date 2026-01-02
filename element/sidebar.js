@@ -53,7 +53,11 @@ export function renderSidebar(target) {
                 <div class="smart-filters-grid">
                     <a href="#" class="filter-card">
                         <div class="filter-top"><div class="filter-icon" style="background-color: var(--dlg-blue);"><i class="bi bi-archive-fill"></i></div><div class="filter-count">429</div></div>
-                        <div class="filter-label">Quest</div>
+                        <div class="filter-label">Main Quest</div>
+                    </a>
+                    <a href="#" class="filter-card">
+                        <div class="filter-top"><div class="filter-icon" style="background-color: var(--dlg-yellow);"><i class="bi bi-archive-fill"></i></div><div class="filter-count">429</div></div>
+                        <div class="filter-label">Side Quest</div>
                     </a>
                     <a href="#" class="filter-card">
                         <div class="filter-top"><div class="filter-icon" style="background-color: var(--dlg-green);"><i class="bi bi-calendar-event-fill"></i></div><div class="filter-count" id="projectTasksTotalCount">0</div></div>
@@ -128,7 +132,8 @@ export function renderSidebar(target) {
                     instance.hide();
                 }
             };
-            const html = `<!DOCTYPE html>
+            const html = `
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -364,7 +369,8 @@ export function renderSidebar(target) {
     <div class="max-w-4xl mx-auto">
         
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-4xl font-extrabold tracking-tight">Quest Board</h1>
+            <h1 class="text-4xl font-extrabold tracking-tight">Main Quest</h1>
+    
             <div class="flex items-center gap-3">
                 <div class="relative">
                     <button id="questHeaderToggleButton" type="button"
@@ -393,6 +399,12 @@ export function renderSidebar(target) {
                     Close
                 </button>
             </div>
+        </div>
+
+        <div class="relative flex py-10 items-center">
+            <div class="flex-grow border-t border-gray-200"></div>
+            <span class="flex-shrink mx-6 text-gray-500 text-xs font-black uppercase tracking-[0.4em]">Main Quest</span>
+            <div class="flex-grow border-t border-gray-200"></div>
         </div>
 
         <div id="questCreateForm" class="mb-10 rounded-3xl border border-gray-200 bg-white shadow-sm p-6 md:p-8 hidden">
@@ -903,149 +915,6 @@ export function renderSidebar(target) {
             </div>
         </section>
 
-        <div class="relative flex py-10 items-center">
-            <div class="flex-grow border-t border-gray-200"></div>
-            <span class="flex-shrink mx-6 text-gray-500 text-xs font-black uppercase tracking-[0.4em]">Side Quest</span>
-            <div class="flex-grow border-t border-gray-200"></div>
-        </div>
-
-        <div class="flex items-center justify-between mb-8">
-            <div class="relative inline-block">
-                <button class="btn-dlg-yellow rounded-full px-6 py-2.5 text-sm font-semibold shadow-md"
-                    onclick="toggleSideQuestDropdown(event)">
-                    Add Side Quest
-                </button>
-                <div id="sideQuestCreateDropdown"
-                    class="absolute left-1/2 -translate-x-1/2 mt-3 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 text-sm hidden z-40">
-                    <div class="mb-3">
-                        <div class="text-xs font-semibold text-gray-500 mb-1">Priority</div>
-                        <div class="flex flex-wrap gap-2">
-                            <button type="button"
-                                class="side-quest-priority-btn px-3 py-1.5 rounded-full text-[11px] font-semibold bg-red-50 text-red-600 border border-transparent"
-                                data-priority="urgent"
-                                onclick="setSideQuestPriority('urgent', this)">
-                                Urgent
-                            </button>
-                            <button type="button"
-                                class="side-quest-priority-btn px-3 py-1.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-600 border border-transparent"
-                                data-priority="high"
-                                onclick="setSideQuestPriority('high', this)">
-                                High
-                            </button>
-                            <button type="button"
-                                class="side-quest-priority-btn px-3 py-1.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-600 border border-transparent"
-                                data-priority="normal"
-                                onclick="setSideQuestPriority('normal', this)">
-                                Normal
-                            </button>
-                            <button type="button"
-                                class="side-quest-priority-btn px-3 py-1.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-600 border border-transparent"
-                                data-priority="low"
-                                onclick="setSideQuestPriority('low', this)">
-                                Low
-                            </button>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <input id="sideQuestNameInput" type="text" placeholder="Quest Name"
-                            class="w-full text-2xl md:text-3xl font-semibold text-gray-900 border-none focus:ring-0 focus:outline-none placeholder-gray-400" />
-                    </div>
-                    <div class="flex justify-end gap-2">
-                        <button type="button"
-                            class="rounded-full px-4 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100"
-                            onclick="toggleSideQuestDropdown(event)">
-                            Cancel
-                        </button>
-                        <button type="button"
-                            class="rounded-full px-4 py-1.5 text-xs font-semibold text-white btn-dlg-blue"
-                            style="box-shadow: 0 10px 25px rgba(59,130,246,0.35);"
-                            onclick="saveSideQuest()">
-                            Add
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="relative inline-block">
-                <button id="sideQuestHeaderToggleButton" type="button"
-                    class="w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm"
-                    onclick="toggleSideQuestHeaderMenu(event)">
-                    <i data-lucide="more-vertical" class="w-4 h-4 text-gray-600"></i>
-                </button>
-                <div id="sideQuestHeaderMenu"
-                    class="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-sm text-gray-700 hidden z-40">
-                    <button type="button" class="w-full text-left px-3 py-1.5 hover:bg-gray-100"
-                        onclick="sideQuestHeaderEdit()">
-                        Edit
-                    </button>
-                    <button type="button" class="w-full text-left px-3 py-1.5 hover:bg-gray-100 text-red-600"
-                        onclick="sideQuestHeaderDelete()">
-                        Delete
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <ul class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" role="tablist">
-            <li class="nav-card active bg-[#FEE2E2] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('urgent', this)">
-                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
-                    <i data-lucide="alert-circle" class="w-6 h-6 text-red-500"></i>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold">12</div>
-                    <div class="text-xs font-bold text-red-700/60 uppercase tracking-widest">Urgent</div>
-                </div>
-            </li>
-            <li class="nav-card bg-[#E0F2FE] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('high', this)">
-                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
-                    <i data-lucide="trending-up" class="w-6 h-6 text-blue-500"></i>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold">08</div>
-                    <div class="text-xs font-bold text-blue-700/60 uppercase tracking-widest">High</div>
-                </div>
-            </li>
-            <li class="nav-card bg-[#FEF3C7] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('normal', this)">
-                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
-                    <i data-lucide="box" class="w-6 h-6 text-amber-500"></i>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold">24</div>
-                    <div class="text-xs font-bold text-amber-700/60 uppercase tracking-widest">Normal</div>
-                </div>
-            </li>
-            <li class="nav-card bg-[#F3E8FF] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('low', this)">
-                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
-                    <i data-lucide="users" class="w-6 h-6 text-purple-500"></i>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold">15</div>
-                    <div class="text-xs font-bold text-purple-700/60 uppercase tracking-widest">Low</div>
-                </div>
-            </li>
-        </ul>
-
-        <div class="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm min-h-[250px] transition-all">
-            <div id="urgent-content" class="tab-pane">
-                <h4 class="text-red-600 font-black text-sm mb-6 uppercase tracking-widest flex items-center gap-2">
-                    <span class="w-2 h-2 bg-red-600 rounded-full animate-ping"></span> Urgent Tasks
-                </h4>
-                <div id="sideQuestUrgentList" class="space-y-4"></div>
-            </div>
-            
-            <div id="high-content" class="tab-pane hidden">
-                <h4 class="text-blue-600 font-black text-sm mb-6 uppercase tracking-widest">High Priority Tasks</h4>
-                <div id="sideQuestHighList" class="space-y-4"></div>
-            </div>
-            <div id="normal-content" class="tab-pane hidden">
-                <h4 class="text-amber-600 font-black text-sm mb-6 uppercase tracking-widest">Normal Priority Tasks</h4>
-                <div id="sideQuestNormalList" class="space-y-4"></div>
-            </div>
-            <div id="low-content" class="tab-pane hidden">
-                <h4 class="text-purple-600 font-black text-sm mb-6 uppercase tracking-widest">Low Priority Tasks</h4>
-                <div id="sideQuestLowList" class="space-y-4"></div>
-            </div>
-        </div>
-
     </div>
 
     <div id="questReminderAlert"
@@ -1209,6 +1078,29 @@ export function renderSidebar(target) {
                 element.classList.add('border-slate-900', 'bg-slate-900', 'text-white');
             }
         }
+        function applyFormat(editorId, command) {
+            var editor = document.getElementById(editorId);
+            if (!editor) return;
+            editor.focus();
+            document.execCommand(command, false, null);
+        }
+        function toggleSideQuestUserDropdown(field) {
+            var dropdownId = field === 'assign' ? 'sideQuestAssignDropdown' : 'sideQuestNotifyDropdown';
+            var searchId = field === 'assign' ? 'sideQuestAssignSearch' : 'sideQuestNotifySearch';
+            var dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+            var isHidden = dropdown.classList.contains('hidden');
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                var search = document.getElementById(searchId);
+                if (search && search.focus) {
+                    search.focus();
+                    if (search.select) search.select();
+                }
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
         function toggleSideQuestDropdown(event) {
             var dropdown = document.getElementById('sideQuestCreateDropdown');
             if (!dropdown) return;
@@ -1237,6 +1129,86 @@ export function renderSidebar(target) {
                 dropdown.classList.add('hidden');
             }
         }
+        function toggleSideQuestUserDropdown(field) {
+            var dropdownId = field === 'assign' ? 'sideQuestAssignDropdown' : 'sideQuestNotifyDropdown';
+            var searchId = field === 'assign' ? 'sideQuestAssignSearch' : 'sideQuestNotifySearch';
+            var dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+            var isHidden = dropdown.classList.contains('hidden');
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                var search = document.getElementById(searchId);
+                if (search && search.focus) {
+                    search.focus();
+                    if (search.select) search.select();
+                }
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+        function updateSideQuestUserLabel(dropdownId, labelId, placeholderText, avatarsId) {
+            var dropdown = document.getElementById(dropdownId);
+            var labelEl = document.getElementById(labelId);
+            var avatarsEl = avatarsId ? document.getElementById(avatarsId) : null;
+            if (!dropdown) return;
+            var selected = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            if (!selected.length) {
+                if (labelEl) {
+                    labelEl.textContent = placeholderText;
+                }
+                if (avatarsEl) {
+                    avatarsEl.innerHTML = '';
+                }
+                return;
+            }
+            var names = selected.map(function (cb) {
+                var row = cb.closest('.quest-user-option');
+                if (!row) return '';
+                var nameEl = row.querySelector('.quest-user-name');
+                return nameEl ? nameEl.textContent.trim() : '';
+            }).filter(function (v) { return v; });
+            if (avatarsEl) {
+                avatarsEl.innerHTML = '';
+                var maxAvatars = 4;
+                selected.forEach(function (cb, index) {
+                    if (index >= maxAvatars) return;
+                    var row = cb.closest('.quest-user-option');
+                    var imgEl = row ? row.querySelector('img') : null;
+                    var name = names[index] || '';
+                    var uid = cb.getAttribute('data-user-id') || '';
+                    var source = name || uid;
+                    var initials = 'U';
+                    if (source) {
+                        var parts = String(source).trim().split(/\s+/);
+                        var tmp = parts.map(function (p) { return p[0]; }).join('');
+                        initials = tmp.substring(0, 2).toUpperCase();
+                    }
+                    var avatarNode;
+                    if (imgEl && imgEl.getAttribute('src')) {
+                        avatarNode = document.createElement('img');
+                        avatarNode.src = imgEl.getAttribute('src');
+                        avatarNode.alt = name || '';
+                        avatarNode.className = 'w-6 h-6 rounded-full object-cover border border-gray-200';
+                    } else {
+                        avatarNode = document.createElement('span');
+                        avatarNode.className = 'w-6 h-6 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center';
+                        avatarNode.textContent = initials;
+                    }
+                    avatarsEl.appendChild(avatarNode);
+                });
+                if (selected.length > maxAvatars) {
+                    var more = document.createElement('span');
+                    more.className = 'w-6 h-6 rounded-full bg-slate-800 text-slate-100 text-[10px] font-semibold flex items-center justify-center';
+                    more.textContent = '+' + (selected.length - maxAvatars);
+                    avatarsEl.appendChild(more);
+                }
+            }
+            if (labelEl) {
+                labelEl.textContent = '';
+            }
+        }
         async function saveSideQuest() {
             var parentWin = window.parent;
             if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.addDoc || !parentWin.serverTimestamp) {
@@ -1249,6 +1221,57 @@ export function renderSidebar(target) {
                 alert('Silakan isi Side Quest Name terlebih dahulu.');
                 return;
             }
+            var statusEl = document.getElementById('sideQuestStatusInput');
+            var statusValue = statusEl && statusEl.value ? String(statusEl.value) : '';
+            var dueEl = document.getElementById('sideQuestDueInput');
+            var dueValue = dueEl && dueEl.value ? String(dueEl.value) : '';
+            var pointsEl = document.getElementById('sideQuestPointsInput');
+            var pointsValue = pointsEl && pointsEl.value ? Number(pointsEl.value) || 0 : 0;
+            var assignSelected = [];
+            Array.prototype.slice.call(
+                document.querySelectorAll('#sideQuestAssignDropdown input[type="checkbox"]:checked')
+            ).forEach(function (cb) {
+                var uid = cb.getAttribute('data-user-id') || '';
+                if (uid) assignSelected.push(uid);
+            });
+            var notifySelected = [];
+            Array.prototype.slice.call(
+                document.querySelectorAll('#sideQuestNotifyDropdown input[type="checkbox"]:checked')
+            ).forEach(function (cb) {
+                var uid = cb.getAttribute('data-user-id') || '';
+                if (uid) notifySelected.push(uid);
+            });
+            var tagsInput = document.getElementById('sideQuestTagsInput');
+            var rawTags = tagsInput && tagsInput.value ? String(tagsInput.value) : '';
+            var tags = rawTags
+                ? rawTags.split(',').map(function (t) { return t.trim(); }).filter(function (t) { return t; })
+                : [];
+            var descEl = document.getElementById('sideQuestDesc');
+            var description = descEl ? String(descEl.innerHTML || '').trim() : '';
+            var deptSelected = [];
+            Array.prototype.slice.call(
+                document.querySelectorAll('#sideQuestDepartmentDropdown input[type=\"checkbox\"]:checked')
+            ).forEach(function (cb) {
+                var id = cb.getAttribute('data-dept-id') || '';
+                var row = cb.closest('.sidequest-dept-option');
+                var nameEl = row ? row.querySelector('.sidequest-dept-name') : null;
+                var name = nameEl ? nameEl.textContent.trim() : '';
+                if (id) {
+                    deptSelected.push({ id: id, name: name });
+                }
+            });
+            var positionSelected = [];
+            Array.prototype.slice.call(
+                document.querySelectorAll('#sideQuestPositionDropdown input[type=\"checkbox\"]:checked')
+            ).forEach(function (cb) {
+                var id = cb.getAttribute('data-position-id') || '';
+                var row = cb.closest('.sidequest-position-option');
+                var nameEl = row ? row.querySelector('.sidequest-position-name') : null;
+                var name = nameEl ? nameEl.textContent.trim() : '';
+                if (id) {
+                    positionSelected.push({ id: id, name: name });
+                }
+            });
             try {
                 var localData = null;
                 try {
@@ -1260,19 +1283,20 @@ export function renderSidebar(target) {
                 var createdByName = localData && localData.name ? localData.name : '';
                 var basePayload = {
                     title: title,
-                    description: '',
+                    description: description,
                     priority: sideQuestCurrentPriority || 'normal',
-                    due_date: '',
-                    points: 0,
-                    departments: [],
-                    positions: [],
-                    assign_to: [],
-                    notify_to: [],
-                    tags: [],
+                    due_date: dueValue,
+                    points: pointsValue,
+                    departments: deptSelected,
+                    positions: positionSelected,
+                    assign_to: assignSelected,
+                    notify_to: notifySelected,
+                    tags: tags,
                     reminder_mode: null,
                     reminder_dates: [],
                     recur: null,
                     status: 'SideQuest',
+                    task_status: statusValue || 'Initiate',
                     created_by: createdBy,
                     created_by_name: createdByName,
                     type: 'side-quest'
@@ -2711,6 +2735,144 @@ export function renderSidebar(target) {
                 dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load positions.</span>';
             }
         }
+        function updateSideQuestDepartmentLabel() {
+            var dropdown = document.getElementById('sideQuestDepartmentDropdown');
+            var labelEl = document.getElementById('sideQuestDepartmentButtonLabel');
+            if (!dropdown || !labelEl) return;
+            var selected = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            if (!selected.length) {
+                labelEl.textContent = 'Select departments...';
+                return;
+            }
+            var names = selected.map(function (cb) {
+                var row = cb.closest('.sidequest-dept-option');
+                if (!row) return '';
+                var nameEl = row.querySelector('.sidequest-dept-name');
+                return nameEl ? nameEl.textContent.trim() : '';
+            }).filter(function (v) { return v; });
+            if (!names.length) {
+                labelEl.textContent = 'Select departments...';
+            } else if (names.length === 1) {
+                labelEl.textContent = names[0];
+            } else if (names.length === 2) {
+                labelEl.textContent = names[0] + ', ' + names[1];
+            } else {
+                labelEl.textContent = names[0] + ' and ' + (names.length - 1) + ' more';
+            }
+        }
+        function updateSideQuestPositionLabel() {
+            var dropdown = document.getElementById('sideQuestPositionDropdown');
+            var labelEl = document.getElementById('sideQuestPositionButtonLabel');
+            if (!dropdown || !labelEl) return;
+            var selected = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            if (!selected.length) {
+                labelEl.textContent = 'Select positions...';
+                return;
+            }
+            var names = selected.map(function (cb) {
+                var row = cb.closest('.sidequest-position-option');
+                if (!row) return '';
+                var nameEl = row.querySelector('.sidequest-position-name');
+                return nameEl ? nameEl.textContent.trim() : '';
+            }).filter(function (v) { return v; });
+            if (!names.length) {
+                labelEl.textContent = 'Select positions...';
+            } else if (names.length === 1) {
+                labelEl.textContent = names[0];
+            } else if (names.length === 2) {
+                labelEl.textContent = names[0] + ', ' + names[1];
+            } else {
+                labelEl.textContent = names[0] + ' and ' + (names.length - 1) + ' more';
+            }
+        }
+        async function loadSideQuestDepartments() {
+            var dropdown = document.getElementById('sideQuestDepartmentDropdown');
+            if (!dropdown) return;
+            dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading departments...</span>';
+            try {
+                var parentWin = window.parent;
+                if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                    dropdown.innerHTML = '<span class="text-red-500 text-xs">Departments not available.</span>';
+                    return;
+                }
+                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "departments"));
+                dropdown.innerHTML = '';
+                snap.forEach(function (docSnap) {
+                    var d = docSnap.data() || {};
+                    var name = d.name || "Untitled";
+                    var color = d.color || "#0B2B6A";
+                    var row = document.createElement('div');
+                    row.className = 'sidequest-dept-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
+                    row.innerHTML =
+                        '<span class="inline-flex w-2.5 h-2.5 rounded-full" style="background:' + color + ';"></span>' +
+                        '<span class="sidequest-dept-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-dept-id="' + docSnap.id + '">';
+                    dropdown.appendChild(row);
+                    var checkbox = row.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', updateSideQuestDepartmentLabel);
+                    row.addEventListener('click', function (e) {
+                        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                            return;
+                        }
+                        checkbox.checked = !checkbox.checked;
+                        updateSideQuestDepartmentLabel();
+                    });
+                });
+                if (!dropdown.innerHTML.trim()) {
+                    dropdown.innerHTML = '<span class="text-gray-400 text-xs">No departments available.</span>';
+                } else {
+                    updateSideQuestDepartmentLabel();
+                }
+            } catch (e) {
+                console.error('Failed to load departments for side quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load departments.</span>';
+            }
+        }
+        async function loadSideQuestPositions() {
+            var dropdown = document.getElementById('sideQuestPositionDropdown');
+            if (!dropdown) return;
+            dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading positions...</span>';
+            try {
+                var parentWin = window.parent;
+                if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                    dropdown.innerHTML = '<span class="text-red-500 text-xs">Positions not available.</span>';
+                    return;
+                }
+                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "positions"));
+                dropdown.innerHTML = '';
+                snap.forEach(function (docSnap) {
+                    var d = docSnap.data() || {};
+                    var name = d.name || "Untitled";
+                    var row = document.createElement('div');
+                    row.className = 'sidequest-position-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
+                    row.innerHTML =
+                        '<span class="sidequest-position-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-position-id="' + docSnap.id + '">';
+                    dropdown.appendChild(row);
+                    var checkbox = row.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', updateSideQuestPositionLabel);
+                    row.addEventListener('click', function (e) {
+                        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                            return;
+                        }
+                        checkbox.checked = !checkbox.checked;
+                        updateSideQuestPositionLabel();
+                    });
+                });
+                if (!dropdown.innerHTML.trim()) {
+                    dropdown.innerHTML = '<span class="text-gray-400 text-xs">No positions available.</span>';
+                } else {
+                    updateSideQuestPositionLabel();
+                }
+            } catch (e) {
+                console.error('Failed to load positions for side quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load positions.</span>';
+            }
+        }
         async function loadQuestUsers() {
             var parentWin = window.parent;
             var assignList = document.getElementById('questAssignList');
@@ -3309,6 +3471,861 @@ export function renderSidebar(target) {
 </body>
 </html>`;
 
+            if (frame) {
+                frame.removeAttribute('src');
+                frame.srcdoc = html;
+            }
+            if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+                const overlay = document.getElementById('questBoardOverlay');
+                if (overlay) {
+                    overlay.classList.add('show');
+                }
+                modalEl.addEventListener('hidden.bs.modal', () => {
+                    const ov = document.getElementById('questBoardOverlay');
+                    if (ov) {
+                        ov.classList.remove('show');
+                    }
+                }, { once: true });
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            } else {
+                var newWin = window.open('', '_blank');
+                if (newWin && newWin.document) {
+                    newWin.document.open();
+                    newWin.document.write(html);
+                    newWin.document.close();
+                }
+            }
+        });
+    }
+    const sideQuestCard = target.querySelectorAll('.smart-filters-grid .filter-card')[1];
+    if (sideQuestCard) {
+        sideQuestCard.addEventListener('click', (e) => {
+            e.preventDefault();
+            const modalEl = document.getElementById('questBoardModal');
+            const frame = document.getElementById('questBoardFrame');
+            window.closeQuestBoardModal = function () {
+                const overlay = document.getElementById('questBoardOverlay');
+                if (overlay) {
+                    overlay.classList.remove('show');
+                }
+                if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+                    const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    instance.hide();
+                }
+            };
+            const html = `
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side Quest - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        body { font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        .btn-dlg-red {
+            background: linear-gradient(to bottom, #e7181b 5%, #a31818 100%);
+            box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+            color: #fff;
+            border: none;
+            transition: 0.3s;
+        }
+        .btn-dlg-red:hover {
+            background: linear-gradient(to bottom, #a31818 5%, #e7181b 100%);
+            color: #fff;
+            box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+        }
+        .btn-dlg-yellow {
+            background: linear-gradient(to top, #f1ac15 22%, #fcf221 100%);
+            box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+            color: black;
+            border: none;
+            transition: 0.3s;
+        }
+        .btn-dlg-yellow:hover {
+            background: linear-gradient(to top,#fcf221 22%, #f1ac15 100%);
+            box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
+        }
+        .btn-dlg-blue {
+            background: linear-gradient(to top, #4776e6 0%, #8e54e9 100%);
+        }
+        .btn-dlg-blue:hover {
+            background: linear-gradient(to top, #8e54e9 0%, #4776e6 100%);
+        }
+        .description-truncate {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6 md:p-12" style="background: #fff;">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-extrabold tracking-tight">Side Quest</h1>
+            <div class="flex items-center gap-3">
+                <div class="relative inline-block">
+                    <button id="sideQuestHeaderToggleButton" type="button"
+                        class="w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm"
+                        onclick="toggleSideQuestHeaderMenu(event)">
+                        <i data-lucide="more-vertical" class="w-4 h-4 text-gray-600"></i>
+                    </button>
+                    <div id="sideQuestHeaderMenu"
+                        class="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-sm text-gray-700 hidden z-40">
+                        <button type="button" class="w-full text-left px-3 py-1.5 hover:bg-gray-100"
+                            onclick="sideQuestHeaderEdit()">
+                            Edit
+                        </button>
+                        <button type="button" class="w-full text-left px-3 py-1.5 hover:bg-gray-100 text-red-600"
+                            onclick="sideQuestHeaderDelete()">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                <div class="relative inline-block">
+                    <button class="btn-dlg-yellow rounded-full px-6 py-2.5 text-sm font-semibold shadow-md"
+                        onclick="toggleSideQuestDropdown(event)">
+                        Add Side Quest
+                    </button>
+                </div>
+                <button class="btn-dlg-red rounded-full px-5 py-2 text-sm font-semibold shadow-md"
+                    onclick="if (window.parent && window.parent.closeQuestBoardModal) { window.parent.closeQuestBoardModal(); }">
+                    Close
+                </button>
+            </div>
+        </div>
+
+        <div id="sideQuestCreateDropdown"
+            class="mb-10 rounded-3xl border border-gray-200 bg-white shadow-sm p-6 md:p-8 hidden">
+            <div class="mb-6">
+                <input id="sideQuestNameInput" type="text" placeholder="Side Quest Name"
+                    class="w-full text-2xl md:text-3xl font-semibold text-gray-900 border-none focus:ring-0 focus:outline-none placeholder-gray-400" />
+            </div>
+            <div class="grid md:grid-cols-2 gap-6 mb-6 text-sm">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="font-medium text-gray-500 w-24">Department</div>
+                        <div class="flex-1">
+                            <div class="relative">
+                                <button type="button"
+                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
+                                    onclick="document.getElementById('sideQuestDepartmentDropdown').classList.toggle('hidden')">
+                                    <span class="flex items-center gap-2">
+                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-200">
+                                            <span class="text-xs font-semibold text-gray-500">D</span>
+                                        </span>
+                                        <span id="sideQuestDepartmentButtonLabel" class="text-xs md:text-sm">Select departments...</span>
+                                    </span>
+                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
+                                </button>
+                                <div id="sideQuestDepartmentDropdown"
+                                    class="absolute top-full left-0 right-0 mt-2 rounded-xl border border-gray-200 bg-white shadow-lg p-3 hidden max-h-60 overflow-y-auto text-xs md:text-sm z-20">
+                                    <span class="text-gray-400 text-xs">Loading departments...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="font-medium text-gray-500 w-24">Assign to</div>
+                        <div class="flex-1">
+                            <div class="relative">
+                                <button type="button"
+                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
+                                    onclick="toggleSideQuestUserDropdown('assign')">
+                                    <span class="flex items-center gap-2">
+                                        <span id="sideQuestAssignAvatars" class="flex -space-x-1"></span>
+                                        <span id="sideQuestAssignButtonLabel" class="text-xs md:text-sm">Select user...</span>
+                                    </span>
+                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
+                                </button>
+                                <div id="sideQuestAssignDropdown"
+                                    class="absolute top-full left-0 mt-2 w-72 md:w-80 rounded-2xl bg-slate-900 text-white shadow-2xl p-3 hidden text-xs md:text-sm z-40">
+                                    <div class="mb-3">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                                                &#128269;
+                                            </span>
+                                            <input id="sideQuestAssignSearch" type="text"
+                                                class="w-full rounded-full bg-slate-800 text-xs md:text-sm text-white placeholder-slate-500 pl-8 pr-3 py-1.5 outline-none border border-slate-700 focus:border-sky-500 focus:ring-0"
+                                                placeholder="Search..." />
+                                        </div>
+                                    </div>
+                                    <div class="text-[10px] tracking-[0.18em] text-slate-400 font-semibold mb-2">
+                                        PEOPLE
+                                    </div>
+                                    <div id="sideQuestAssignList" class="max-h-56 overflow-y-auto flex flex-col gap-1">
+                                        <div class="text-slate-500 text-xs">Loading users...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="font-medium text-gray-500 w-24">Due date</div>
+                        <div class="flex-1">
+                            <input id="sideQuestDueInput" type="date"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="font-medium text-gray-500 w-24">Priority</div>
+                        <div class="flex-1">
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button"
+                                    class="side-quest-priority-btn px-3 py-1.5 rounded-full text-[11px] font-semibold bg-red-50 text-red-600 border border-transparent"
+                                    data-priority="urgent"
+                                    onclick="setSideQuestPriority('urgent', this)">
+                                    Urgent
+                                </button>
+                                <button type="button"
+                                    class="side-quest-priority-btn px-3 py-1.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-600 border border-transparent"
+                                    data-priority="high"
+                                    onclick="setSideQuestPriority('high', this)">
+                                    High
+                                </button>
+                                <button type="button"
+                                    class="side-quest-priority-btn px-3 py-1.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-600 border border-transparent"
+                                    data-priority="normal"
+                                    onclick="setSideQuestPriority('normal', this)">
+                                    Normal
+                                </button>
+                                <button type="button"
+                                    class="side-quest-priority-btn px-3 py-1.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-600 border border-transparent"
+                                    data-priority="low"
+                                    onclick="setSideQuestPriority('low', this)">
+                                    Low
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="font-medium text-gray-500 w-24">Positions</div>
+                        <div class="flex-1">
+                            <div class="relative">
+                                <button type="button"
+                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
+                                    onclick="document.getElementById('sideQuestPositionDropdown').classList.toggle('hidden')">
+                                    <span id="sideQuestPositionButtonLabel" class="text-xs md:text-sm">Select positions...</span>
+                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
+                                </button>
+                                <div id="sideQuestPositionDropdown"
+                                    class="absolute top-full left-0 right-0 mt-2 rounded-xl border border-gray-200 bg-white shadow-lg p-3 hidden max-h-60 overflow-y-auto text-xs md:text-sm z-20">
+                                    <span class="text-gray-400 text-xs">Loading positions...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="font-medium text-gray-500 w-24">Notify to</div>
+                        <div class="flex-1">
+                            <div class="relative">
+                                <button type="button"
+                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
+                                    onclick="toggleSideQuestUserDropdown('notify')">
+                                    <span class="flex items-center gap-2">
+                                        <span id="sideQuestNotifyAvatars" class="flex -space-x-1"></span>
+                                        <span id="sideQuestNotifyButtonLabel" class="text-xs md:text-sm">Select user...</span>
+                                    </span>
+                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
+                                </button>
+                                <div id="sideQuestNotifyDropdown"
+                                    class="absolute top-full left-0 mt-2 w-72 md:w-80 rounded-2xl bg-slate-900 text-white shadow-2xl p-3 hidden text-xs md:text-sm z-40">
+                                    <div class="mb-3">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                                                &#128269;
+                                            </span>
+                                            <input id="sideQuestNotifySearch" type="text"
+                                                class="w-full rounded-full bg-slate-800 text-xs md:text-sm text-white placeholder-slate-500 pl-8 pr-3 py-1.5 outline-none border border-slate-700 focus:border-sky-500 focus:ring-0"
+                                                placeholder="Search..." />
+                                        </div>
+                                    </div>
+                                    <div class="text-[10px] tracking-[0.18em] text-slate-400 font-semibold mb-2">
+                                        PEOPLE
+                                    </div>
+                                    <div id="sideQuestNotifyList" class="max-h-56 overflow-y-auto flex flex-col gap-1">
+                                        <div class="text-slate-500 text-xs">Loading users...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="font-medium text-gray-500 w-24">Task point</div>
+                        <div class="flex-1">
+                            <input id="sideQuestPointsInput" type="number" min="0"
+                                class="w-24 rounded-xl border border-gray-200 px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="font-medium text-gray-500 w-24">Tags</div>
+                        <div class="flex-1">
+                            <input id="sideQuestTagsInput" type="text"
+                                placeholder="tag1, tag2, tag3"
+                                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border border-gray-200 rounded-2xl overflow-hidden mb-6">
+                <div class="rich-editor">
+                    <div class="rich-toolbar">
+                        <button type="button" class="rich-btn" onclick="applyFormat('sideQuestDesc','bold')"><i class="bi bi-type-bold"></i></button>
+                        <button type="button" class="rich-btn" onclick="applyFormat('sideQuestDesc','italic')"><i class="bi bi-type-italic"></i></button>
+                        <button type="button" class="rich-btn" onclick="applyFormat('sideQuestDesc','underline')"><i class="bi bi-type-underline"></i></button>
+                        <button type="button" class="rich-btn" onclick="applyFormat('sideQuestDesc','insertUnorderedList')"><i class="bi bi-list-ul"></i></button>
+                        <button type="button" class="rich-btn" onclick="applyFormat('sideQuestDesc','insertOrderedList')"><i class="bi bi-list-ol"></i></button>
+                    </div>
+                    <div id="sideQuestDesc" class="rich-editor-body min-h-[120px] px-4 py-3 text-sm text-gray-700 outline-none"
+                        contenteditable="true" data-placeholder="Task description or notes..."></div>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3">
+                <button type="button"
+                    class="rounded-full px-7 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200"
+                    onclick="toggleSideQuestDropdown(event)">
+                    Cancel
+                </button>
+                <button type="button"
+                    class="rounded-full px-8 py-2.5 text-sm font-semibold text-white btn-dlg-blue"
+                    style="box-shadow: 0 10px 25px rgba(59,130,246,0.35);"
+                    onclick="saveSideQuest()">
+                    Add Side Quest
+                </button>
+            </div>
+        </div>
+
+        <div class="relative flex py-10 items-center">
+            <div class="flex-grow border-t border-gray-200"></div>
+            <span class="flex-shrink mx-6 text-gray-500 text-xs font-black uppercase tracking-[0.4em]">Side Quest</span>
+            <div class="flex-grow border-t border-gray-200"></div>
+        </div>
+        <ul class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" role="tablist">
+            <li class="nav-card active bg-[#FEE2E2] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('urgent', this)">
+                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
+                    <i data-lucide="alert-circle" class="w-6 h-6 text-red-500"></i>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold">12</div>
+                    <div class="text-xs font-bold text-red-700/60 uppercase tracking-widest">Urgent</div>
+                </div>
+            </li>
+            <li class="nav-card bg-[#E0F2FE] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('high', this)">
+                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
+                    <i data-lucide="trending-up" class="w-6 h-6 text-blue-500"></i>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold">08</div>
+                    <div class="text-xs font-bold text-blue-700/60 uppercase tracking-widest">High</div>
+                </div>
+            </li>
+            <li class="nav-card bg-[#FEF3C7] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('normal', this)">
+                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
+                    <i data-lucide="box" class="w-6 h-6 text-amber-500"></i>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold">24</div>
+                    <div class="text-xs font-bold text-amber-700/60 uppercase tracking-widest">Normal</div>
+                </div>
+            </li>
+            <li class="nav-card bg-[#F3E8FF] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('low', this)">
+                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
+                    <i data-lucide="arrow-down-circle" class="w-6 h-6 text-purple-500"></i>
+                </div>
+                <div>
+                    <div class="text-3xl font-bold">05</div>
+                    <div class="text-xs font-bold text-purple-700/60 uppercase tracking-widest">Low</div>
+                </div>
+            </li>
+        </ul>
+        <div id="urgent-content" class="tab-pane space-y-4">
+            <div id="sideQuestUrgentList" class="space-y-3"></div>
+        </div>
+        <div id="high-content" class="tab-pane space-y-4 hidden">
+            <div id="sideQuestHighList" class="space-y-3"></div>
+        </div>
+        <div id="normal-content" class="tab-pane space-y-4 hidden">
+            <div id="sideQuestNormalList" class="space-y-3"></div>
+        </div>
+        <div id="low-content" class="tab-pane space-y-4 hidden">
+            <div id="sideQuestLowList" class="space-y-3"></div>
+        </div>
+    </div>
+    <script>
+        lucide.createIcons();
+        var questCurrentPriority = 'urgent';
+        var sideQuestCurrentPriority = 'normal';
+        function switchTab(priority, element) {
+            document.querySelectorAll('.nav-card').forEach(function (card) { card.classList.remove('active'); });
+            if (element) {
+                element.classList.add('active');
+            }
+            questCurrentPriority = priority;
+            document.querySelectorAll('.tab-pane').forEach(function (pane) { pane.classList.add('hidden'); });
+            var pane = document.getElementById(priority + '-content');
+            if (pane) {
+                pane.classList.remove('hidden');
+            }
+        }
+        function setSideQuestPriority(priority, element) {
+            sideQuestCurrentPriority = priority || 'normal';
+            var buttons = document.querySelectorAll('.side-quest-priority-btn');
+            Array.prototype.slice.call(buttons).forEach(function (btn) {
+                btn.classList.remove('border-slate-900', 'bg-slate-900', 'text-white');
+            });
+            if (element) {
+                element.classList.add('border-slate-900', 'bg-slate-900', 'text-white');
+            }
+        }
+        function toggleSideQuestDropdown(event) {
+            var dropdown = document.getElementById('sideQuestCreateDropdown');
+            if (!dropdown) return;
+            if (event && event.stopPropagation) {
+                event.stopPropagation();
+            }
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                var input = document.getElementById('sideQuestNameInput');
+                if (input && input.focus) {
+                    input.focus();
+                }
+                if (!sideQuestCurrentPriority) {
+                    setSideQuestPriority('normal');
+                } else {
+                    var buttons = document.querySelectorAll('.side-quest-priority-btn');
+                    Array.prototype.slice.call(buttons).forEach(function (btn) {
+                        if (btn.getAttribute('data-priority') === sideQuestCurrentPriority) {
+                            btn.classList.add('border-slate-900', 'bg-slate-900', 'text-white');
+                        } else {
+                            btn.classList.remove('border-slate-900', 'bg-slate-900', 'text-white');
+                        }
+                    });
+                }
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+        async function saveSideQuest() {
+            var parentWin = window.parent;
+            if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.addDoc || !parentWin.serverTimestamp) {
+                alert('Tidak dapat menyimpan side quest: koneksi database tidak tersedia.');
+                return;
+            }
+            var input = document.getElementById('sideQuestNameInput');
+            var title = input ? String(input.value || '').trim() : '';
+            if (!title) {
+                alert('Silakan isi Side Quest Name terlebih dahulu.');
+                return;
+            }
+            var dueEl = document.getElementById('sideQuestDueInput');
+            var dueValue = dueEl && dueEl.value ? String(dueEl.value) : '';
+            var pointsEl = document.getElementById('sideQuestPointsInput');
+            var pointsValue = pointsEl && pointsEl.value ? Number(pointsEl.value) || 0 : 0;
+            var tagsInput = document.getElementById('sideQuestTagsInput');
+            var rawTags = tagsInput && tagsInput.value ? String(tagsInput.value) : '';
+            var tags = rawTags
+                ? rawTags.split(',').map(function (t) { return t.trim(); }).filter(function (t) { return t; })
+                : [];
+            var descEl = document.getElementById('sideQuestDesc');
+            var description = descEl ? String(descEl.innerHTML || '').trim() : '';
+            var assignSelected = [];
+            Array.prototype.slice.call(
+                document.querySelectorAll('#sideQuestAssignDropdown input[type=\"checkbox\"]:checked')
+            ).forEach(function (cb) {
+                var uid = cb.getAttribute('data-user-id') || '';
+                if (uid) assignSelected.push(uid);
+            });
+            var notifySelected = [];
+            Array.prototype.slice.call(
+                document.querySelectorAll('#sideQuestNotifyDropdown input[type=\"checkbox\"]:checked')
+            ).forEach(function (cb) {
+                var uid = cb.getAttribute('data-user-id') || '';
+                if (uid) notifySelected.push(uid);
+            });
+            try {
+                var localData = null;
+                try {
+                    localData = JSON.parse(localStorage.getItem('userData') || 'null');
+                } catch (e) {
+                    localData = null;
+                }
+                var createdBy = localData && localData.uid ? localData.uid : '';
+                var createdByName = localData && localData.name ? localData.name : '';
+                var basePayload = {
+                    title: title,
+                    description: description,
+                    priority: sideQuestCurrentPriority || 'normal',
+                    due_date: dueValue,
+                    points: pointsValue,
+                    departments: [],
+                    positions: [],
+                    assign_to: assignSelected,
+                    notify_to: notifySelected,
+                    tags: tags,
+                    reminder_mode: null,
+                    reminder_dates: [],
+                    recur: null,
+                    status: 'SideQuest',
+                    task_status: 'Initiate',
+                    created_by: createdBy,
+                    created_by_name: createdByName,
+                    type: 'side-quest'
+                };
+                var payload = basePayload;
+                if (parentWin.JSON && parentWin.JSON.parse && parentWin.JSON.stringify) {
+                    try {
+                        payload = parentWin.JSON.parse(parentWin.JSON.stringify(basePayload));
+                    } catch (e) {
+                        payload = basePayload;
+                    }
+                }
+                payload.created_at = parentWin.serverTimestamp();
+                await parentWin.addDoc(parentWin.collection(parentWin.db, 'tasks'), payload);
+                if (typeof loadSideQuestTasks === 'function') {
+                    loadSideQuestTasks();
+                }
+                if (input) {
+                    input.value = '';
+                }
+                if (dueEl) {
+                    dueEl.value = '';
+                }
+                if (pointsEl) {
+                    pointsEl.value = '';
+                }
+                if (tagsInput) {
+                    tagsInput.value = '';
+                }
+                if (descEl) {
+                    descEl.innerHTML = '';
+                }
+                Array.prototype.slice.call(
+                    document.querySelectorAll('#sideQuestDepartmentDropdown input[type=\"checkbox\"]')
+                ).forEach(function (cb) { cb.checked = false; });
+                updateSideQuestDepartmentLabel();
+                Array.prototype.slice.call(
+                    document.querySelectorAll('#sideQuestPositionDropdown input[type=\"checkbox\"]')
+                ).forEach(function (cb) { cb.checked = false; });
+                updateSideQuestPositionLabel();
+                Array.prototype.slice.call(
+                    document.querySelectorAll('#sideQuestAssignDropdown input[type=\"checkbox\"]')
+                ).forEach(function (cb) { cb.checked = false; });
+                Array.prototype.slice.call(
+                    document.querySelectorAll('#sideQuestNotifyDropdown input[type=\"checkbox\"]')
+                ).forEach(function (cb) { cb.checked = false; });
+                updateSideQuestUserLabel('sideQuestAssignDropdown', 'sideQuestAssignButtonLabel', 'Select user...', 'sideQuestAssignAvatars');
+                updateSideQuestUserLabel('sideQuestNotifyDropdown', 'sideQuestNotifyButtonLabel', 'Select user...', 'sideQuestNotifyAvatars');
+                var dropdown = document.getElementById('sideQuestCreateDropdown');
+                if (dropdown) {
+                    dropdown.classList.add('hidden');
+                }
+                alert('Side Quest berhasil disimpan.');
+            } catch (err) {
+                console.error('Gagal menyimpan side quest', err);
+                alert('Gagal menyimpan side quest: ' + (err && err.message ? err.message : String(err)));
+            }
+        }
+        async function loadSideQuestTasks() {
+            var urgentList = document.getElementById('sideQuestUrgentList');
+            var highList = document.getElementById('sideQuestHighList');
+            var normalList = document.getElementById('sideQuestNormalList');
+            var lowList = document.getElementById('sideQuestLowList');
+            if (!urgentList && !highList && !normalList && !lowList) return;
+            var parentWin = window.parent;
+            if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) return;
+            try {
+                function esc(str) {
+                    return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                }
+                if (urgentList) urgentList.innerHTML = '';
+                if (highList) highList.innerHTML = '';
+                if (normalList) normalList.innerHTML = '';
+                if (lowList) lowList.innerHTML = '';
+                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks'));
+                snap.forEach(function (docSnap) {
+                    var data = docSnap.data() || {};
+                    if (data.project_id || data.projectId) return;
+                    var type = String(data.type || '').toLowerCase();
+                    var status = String(data.status || '').toLowerCase();
+                    if (type !== 'side-quest' && status !== 'sidequest') return;
+                    var title = data.title || '';
+                    if (!title) return;
+                    var priority = String(data.priority || 'normal').toLowerCase();
+                    var targetList = null;
+                    if (priority === 'urgent') {
+                        targetList = urgentList;
+                    } else if (priority === 'high') {
+                        targetList = highList;
+                    } else if (priority === 'low') {
+                        targetList = lowList;
+                    } else {
+                        targetList = normalList;
+                    }
+                    if (!targetList) return;
+                    var el = document.createElement('div');
+                    el.className = 'p-4 rounded-2xl bg-gray-50 flex items-center justify-between';
+                    var label = '#' + String(docSnap.id || '').substring(0, 6).toUpperCase();
+                    var htmlCard = '';
+                    htmlCard += '<span class="font-bold text-gray-700">' + esc(title) + '</span>';
+                    htmlCard += '<span class="text-xs bg-white px-3 py-1 rounded-full shadow-sm font-bold text-gray-400">' + esc(label) + '</span>';
+                    el.innerHTML = htmlCard;
+                    targetList.appendChild(el);
+                });
+                function ensureList(listEl, message) {
+                    if (!listEl) return;
+                    if (!listEl.innerHTML.trim()) {
+                        listEl.innerHTML = '<p class="text-gray-400 italic text-sm">' + esc(message) + '</p>';
+                    }
+                }
+                ensureList(urgentList, 'No urgent side quests yet.');
+                ensureList(highList, 'No high side quests yet.');
+                ensureList(normalList, 'No normal side quests yet.');
+                ensureList(lowList, 'No low side quests yet.');
+            } catch (e) {
+                console.error('Failed to load side quests', e);
+                if (urgentList) urgentList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
+                if (highList) highList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
+                if (normalList) normalList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
+                if (lowList) lowList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
+            }
+        }
+        function toggleSideQuestHeaderMenu(event) {
+            var menu = document.getElementById('sideQuestHeaderMenu');
+            if (!menu) return;
+            if (event && event.stopPropagation) {
+                event.stopPropagation();
+            }
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+        function sideQuestHeaderEdit() {
+            var menu = document.getElementById('sideQuestHeaderMenu');
+            if (menu) {
+                menu.classList.add('hidden');
+            }
+        }
+        function sideQuestHeaderDelete() {
+            var menu = document.getElementById('sideQuestHeaderMenu');
+            if (menu) {
+                menu.classList.add('hidden');
+            }
+        }
+        function loadSideQuestUsersForForm() {
+            var parentWin = window.parent;
+            var assignList = document.getElementById('sideQuestAssignList');
+            var notifyList = document.getElementById('sideQuestNotifyList');
+            if (!assignList && !notifyList) return;
+            if (assignList) {
+                assignList.innerHTML = '<div class="text-slate-500 text-xs">Loading users...</div>';
+            }
+            if (notifyList) {
+                notifyList.innerHTML = '<div class="text-slate-500 text-xs">Loading users...</div>';
+            }
+            if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                if (assignList) {
+                    assignList.innerHTML = '<div class="text-red-500 text-xs">Users not available.</div>';
+                }
+                if (notifyList) {
+                    notifyList.innerHTML = '<div class="text-red-500 text-xs">Users not available.</div>';
+                }
+                return;
+            }
+            function computeInitials(user) {
+                var source = user.name || user.email || user.uid || '';
+                if (!source) return 'U';
+                var parts = String(source).trim().split(/\s+/);
+                var initials = parts.map(function (p) { return p[0]; }).join('');
+                return initials.substring(0, 2).toUpperCase();
+            }
+            function filterUsers(list, query) {
+                var q = String(query || '').trim().toLowerCase();
+                if (!q) return list.slice();
+                return list.filter(function (u) {
+                    var name = String(u.name || '').toLowerCase();
+                    var email = String(u.email || '').toLowerCase();
+                    return name.indexOf(q) !== -1 || email.indexOf(q) !== -1;
+                });
+            }
+            parentWin.getDocs(parentWin.collection(parentWin.db, 'users')).then(function (snap) {
+                var users = [];
+                snap.forEach(function (docSnap) {
+                    var d = docSnap.data() || {};
+                    users.push({
+                        uid: docSnap.id,
+                        name: d.name || d.email || 'Unknown',
+                        email: d.email || '',
+                        photo: d.photo || ''
+                    });
+                });
+                users.sort(function (a, b) {
+                    return a.name.localeCompare(b.name);
+                });
+                if (assignList) {
+                    var baseUsers = users.slice();
+                    function renderAssign(list) {
+                        assignList.innerHTML = '';
+                        list.forEach(function (user) {
+                            var row = document.createElement('div');
+                            row.className = 'quest-user-option flex items-center gap-3 px-2 py-2 hover:bg-slate-800 rounded-xl cursor-pointer';
+                            var initials = computeInitials(user);
+                            var avatar;
+                            if (user.photo) {
+                                avatar = '<img src="' + user.photo + '" alt="' + user.name + '" class="w-8 h-8 rounded-full object-cover border border-slate-700">';
+                            } else {
+                                avatar = '<span class="w-8 h-8 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center">' + initials + '</span>';
+                            }
+                            row.innerHTML =
+                                '<div class="flex items-center gap-3 flex-1">' +
+                                    avatar +
+                                    '<span class="quest-user-name text-xs md:text-sm text-white">' + user.name + '</span>' +
+                                '</div>' +
+                                '<input type="checkbox" class="ml-2 accent-sky-500" data-user-id="' + user.uid + '">';
+                            assignList.appendChild(row);
+                            var checkbox = row.querySelector('input[type="checkbox"]');
+                            checkbox.addEventListener('change', function () {
+                                updateSideQuestUserLabel('sideQuestAssignDropdown', 'sideQuestAssignButtonLabel', 'Select user...', 'sideQuestAssignAvatars');
+                            });
+                            row.addEventListener('click', function (e) {
+                                if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                                    return;
+                                }
+                                checkbox.checked = !checkbox.checked;
+                                updateSideQuestUserLabel('sideQuestAssignDropdown', 'sideQuestAssignButtonLabel', 'Select user...', 'sideQuestAssignAvatars');
+                            });
+                        });
+                        if (!assignList.innerHTML.trim()) {
+                            assignList.innerHTML = '<div class="text-slate-500 text-xs">No users found.</div>';
+                        } else {
+                            updateSideQuestUserLabel('sideQuestAssignDropdown', 'sideQuestAssignButtonLabel', 'Select user...', 'sideQuestAssignAvatars');
+                        }
+                    }
+                    renderAssign(baseUsers);
+                    var assignSearch = document.getElementById('sideQuestAssignSearch');
+                    if (assignSearch) {
+                        assignSearch.addEventListener('input', function () {
+                            var filtered = filterUsers(baseUsers, assignSearch.value);
+                            renderAssign(filtered);
+                        });
+                    }
+                }
+                if (notifyList) {
+                    var baseUsersNotify = users.slice();
+                    function renderNotify(listN) {
+                        notifyList.innerHTML = '';
+                        listN.forEach(function (user) {
+                            var row2 = document.createElement('div');
+                            row2.className = 'quest-user-option flex items-center gap-3 px-2 py-2 hover:bg-slate-800 rounded-xl cursor-pointer';
+                            var initials2 = computeInitials(user);
+                            var avatar2;
+                            if (user.photo) {
+                                avatar2 = '<img src="' + user.photo + '" alt="' + user.name + '" class="w-8 h-8 rounded-full object-cover border border-slate-700">';
+                            } else {
+                                avatar2 = '<span class="w-8 h-8 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center">' + initials2 + '</span>';
+                            }
+                            row2.innerHTML =
+                                '<div class="flex items-center gap-3 flex-1">' +
+                                    avatar2 +
+                                    '<span class="quest-user-name text-xs md:text-sm text-white">' + user.name + '</span>' +
+                                '</div>' +
+                                '<input type="checkbox" class="ml-2 accent-sky-500" data-user-id="' + user.uid + '">';
+                            notifyList.appendChild(row2);
+                            var cb2 = row2.querySelector('input[type="checkbox"]');
+                            cb2.addEventListener('change', function () {
+                                updateSideQuestUserLabel('sideQuestNotifyDropdown', 'sideQuestNotifyButtonLabel', 'Select user...', 'sideQuestNotifyAvatars');
+                            });
+                            row2.addEventListener('click', function (e) {
+                                if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                                    return;
+                                }
+                                cb2.checked = !cb2.checked;
+                                updateSideQuestUserLabel('sideQuestNotifyDropdown', 'sideQuestNotifyButtonLabel', 'Select user...', 'sideQuestNotifyAvatars');
+                            });
+                        });
+                        if (!notifyList.innerHTML.trim()) {
+                            notifyList.innerHTML = '<div class="text-slate-500 text-xs">No users found.</div>';
+                        } else {
+                            updateSideQuestUserLabel('sideQuestNotifyDropdown', 'sideQuestNotifyButtonLabel', 'Select user...', 'sideQuestNotifyAvatars');
+                        }
+                    }
+                    renderNotify(baseUsersNotify);
+                    var notifySearch = document.getElementById('sideQuestNotifySearch');
+                    if (notifySearch) {
+                        notifySearch.addEventListener('input', function () {
+                            var filteredN = filterUsers(baseUsersNotify, notifySearch.value);
+                            renderNotify(filteredN);
+                        });
+                    }
+                }
+            }).catch(function (e) {
+                console.error('Failed to load users for side quest', e);
+                if (assignList) {
+                    assignList.innerHTML = '<div class="text-red-500 text-xs">Failed to load users.</div>';
+                }
+                if (notifyList) {
+                    notifyList.innerHTML = '<div class="text-red-500 text-xs">Failed to load users.</div>';
+                }
+            });
+        }
+        document.addEventListener('click', function (event) {
+            var target = event.target;
+            var dropdown = document.getElementById('sideQuestCreateDropdown');
+            if (dropdown) {
+                var trigger = dropdown.previousElementSibling;
+                var insideDropdown = dropdown.contains(target);
+                var insideTrigger = trigger && trigger.contains(target);
+                if (!insideDropdown && !insideTrigger && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+            var menu = document.getElementById('sideQuestHeaderMenu');
+            if (menu) {
+                var btn = document.getElementById('sideQuestHeaderToggleButton');
+                var insideMenu = menu.contains(target);
+                var insideBtn = btn && btn.contains(target);
+                if (!insideMenu && !insideBtn && !menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
+                }
+            }
+            var assignDropdown = document.getElementById('sideQuestAssignDropdown');
+            if (assignDropdown) {
+                var assignTrigger = assignDropdown.previousElementSibling;
+                var insideAssignDrop = assignDropdown.contains(target);
+                var insideAssignTrig = assignTrigger && assignTrigger.contains(target);
+                if (!insideAssignDrop && !insideAssignTrig && !assignDropdown.classList.contains('hidden')) {
+                    assignDropdown.classList.add('hidden');
+                }
+            }
+            var notifyDropdown = document.getElementById('sideQuestNotifyDropdown');
+            if (notifyDropdown) {
+                var notifyTrigger = notifyDropdown.previousElementSibling;
+                var insideNotifyDrop = notifyDropdown.contains(target);
+                var insideNotifyTrig = notifyTrigger && notifyTrigger.contains(target);
+                if (!insideNotifyDrop && !insideNotifyTrig && !notifyDropdown.classList.contains('hidden')) {
+                    notifyDropdown.classList.add('hidden');
+                }
+            }
+        });
+        loadSideQuestUsersForForm();
+        loadSideQuestDepartments();
+        loadSideQuestPositions();
+        loadSideQuestTasks();
+    </script>
+</body>
+</html>`;
             if (frame) {
                 frame.removeAttribute('src');
                 frame.srcdoc = html;
