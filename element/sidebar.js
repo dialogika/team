@@ -907,13 +907,13 @@ export function renderSidebar(target) {
         </section>
 
         <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6">Todays</h2>
+            <h2 class="text-2xl font-bold mb-6 text-blue-600">Todays</h2>
             <div class="space-y-6" id="questTodayList">
             </div>
         </section>
 
         <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6">Upcoming</h2>
+            <h2 class="text-2xl font-bold mb-6 text-green-600">Upcoming</h2>
             <div class="space-y-6" id="questUpcomingList">
             </div>
         </section>
@@ -1142,11 +1142,18 @@ export function renderSidebar(target) {
         function toggleQuestForm() {
             var el = document.getElementById('questCreateForm');
             if (!el) return;
-            if (el.classList.contains('hidden')) {
+            var headerToggle = document.getElementById('questHeaderToggleButton');
+            var headerMenu = document.getElementById('questHeaderMenu');
+            var willShow = el.classList.contains('hidden');
+            if (willShow) {
                 el.classList.remove('hidden');
+                if (headerToggle) headerToggle.classList.add('hidden');
+                if (headerMenu) headerMenu.classList.add('hidden');
                 el.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } else {
                 el.classList.add('hidden');
+                if (headerToggle) headerToggle.classList.remove('hidden');
+                if (headerMenu) headerMenu.classList.add('hidden');
             }
         }
         function setSideQuestPriority(priority, element) {
@@ -1188,8 +1195,13 @@ export function renderSidebar(target) {
             if (event && event.stopPropagation) {
                 event.stopPropagation();
             }
-            if (dropdown.classList.contains('hidden')) {
+            var headerToggle = document.getElementById('sideQuestHeaderToggleButton');
+            var headerMenu = document.getElementById('sideQuestHeaderMenu');
+            var willShow = dropdown.classList.contains('hidden');
+            if (willShow) {
                 dropdown.classList.remove('hidden');
+                if (headerToggle) headerToggle.classList.add('hidden');
+                if (headerMenu) headerMenu.classList.add('hidden');
                 var input = document.getElementById('sideQuestNameInput');
                 if (input && input.focus) {
                     input.focus();
@@ -1208,6 +1220,8 @@ export function renderSidebar(target) {
                 }
             } else {
                 dropdown.classList.add('hidden');
+                if (headerToggle) headerToggle.classList.remove('hidden');
+                if (headerMenu) headerMenu.classList.add('hidden');
             }
         }
         function toggleSideQuestUserDropdown(field) {
@@ -3024,7 +3038,7 @@ export function renderSidebar(target) {
                     }
                     var status = data && data.status ? String(data.status).toLowerCase() : '';
                     var wrapper = document.createElement('div');
-                    wrapper.className = 'p-4 rounded-2xl bg-gray-50 flex flex-col gap-2 quest-card';
+                    wrapper.className = 'relative p-4 rounded-2xl bg-gray-50 flex flex-col gap-2 quest-card';
                     var html = '';
                     html += '<div class="flex items-start justify-between gap-2">';
                     html += '<div class="flex items-start gap-2">';
@@ -3034,6 +3048,11 @@ export function renderSidebar(target) {
                     html += '<div class="flex flex-col gap-1">';
                     html += '<h3 class="font-semibold text-gray-900 text-sm md:text-base leading-snug">' + esc(title) + '</h3>';
                     html += '</div>';
+                    html += '</div>';
+                    html += '<div class="quest-card-actions hidden">';
+                    html += '<button type="button" class="quest-card-delete-btn">';
+                    html += '<i data-lucide="trash" class="w-4 h-4 text-red-500"></i>';
+                    html += '</button>';
                     html += '</div>';
                     html += '</div>';
                     if (descText) {
@@ -4493,8 +4512,13 @@ export function renderSidebar(target) {
             if (event && event.stopPropagation) {
                 event.stopPropagation();
             }
-            if (dropdown.classList.contains('hidden')) {
+            var headerToggle = document.getElementById('sideQuestHeaderToggleButton');
+            var headerMenu = document.getElementById('sideQuestHeaderMenu');
+            var willShow = dropdown.classList.contains('hidden');
+            if (willShow) {
                 dropdown.classList.remove('hidden');
+                if (headerToggle) headerToggle.classList.add('hidden');
+                if (headerMenu) headerMenu.classList.add('hidden');
                 var input = document.getElementById('sideQuestNameInput');
                 if (input && input.focus) {
                     input.focus();
@@ -4513,6 +4537,8 @@ export function renderSidebar(target) {
                 }
             } else {
                 dropdown.classList.add('hidden');
+                if (headerToggle) headerToggle.classList.remove('hidden');
+                if (headerMenu) headerMenu.classList.add('hidden');
             }
         }
         function toggleSideQuestUserDropdown(field) {
@@ -5002,7 +5028,7 @@ export function renderSidebar(target) {
                     }
                     var dueText = data.due_date || data.dueDate || '';
                     var el = document.createElement('div');
-                    el.className = 'p-4 rounded-2xl bg-gray-50 flex flex-col gap-2 quest-card';
+                    el.className = 'relative p-4 rounded-2xl bg-gray-50 flex flex-col gap-2 quest-card';
                     var headerRight = dueText ? String(dueText) : '';
                     var pointsValue = 0;
                     if (typeof data.points === 'number') {
@@ -5023,20 +5049,25 @@ export function renderSidebar(target) {
                     htmlCard += '<h3 class="font-semibold text-gray-900 text-sm md:text-base leading-snug">' + esc(title) + '</h3>';
                     htmlCard += '</div>';
                     htmlCard += '</div>';
-                    if (headerRight || pointsValue > 0) {
-                        htmlCard += '<div class="flex flex-col items-end gap-1">';
-                        if (headerRight) {
-                            htmlCard += '<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-red-500 text-white text-[10px] md:text-xs font-semibold">';
-                            htmlCard += esc(headerRight);
-                            htmlCard += '</span>';
-                        }
-                        if (pointsValue > 0) {
-                            htmlCard += '<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 text-[10px] md:text-xs font-semibold">';
-                            htmlCard += esc(String(pointsValue) + ' XP');
-                            htmlCard += '</span>';
-                        }
-                        htmlCard += '</div>';
+                    htmlCard += '<div class="flex items-start gap-2">';
+                    htmlCard += '<div class="flex flex-col items-end gap-1">';
+                    if (headerRight) {
+                        htmlCard += '<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-red-500 text-white text-[10px] md:text-xs font-semibold">';
+                        htmlCard += esc(headerRight);
+                        htmlCard += '</span>';
                     }
+                    if (pointsValue > 0) {
+                        htmlCard += '<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 text-[10px] md:text-xs font-semibold">';
+                        htmlCard += esc(String(pointsValue) + ' XP');
+                        htmlCard += '</span>';
+                    }
+                    htmlCard += '</div>';
+                    htmlCard += '<div class="quest-card-actions hidden">';
+                    htmlCard += '<button type="button" class="quest-card-delete-btn">';
+                    htmlCard += '<i data-lucide="trash" class="w-4 h-4 text-red-500"></i>';
+                    htmlCard += '</button>';
+                    htmlCard += '</div>';
+                    htmlCard += '</div>';
                     htmlCard += '</div>';
                     if (descText) {
                         htmlCard += '<p class="text-xs md:text-sm text-gray-600 leading-snug">' + esc(descText) + '</p>';
@@ -5103,6 +5134,7 @@ export function renderSidebar(target) {
                     el.innerHTML = htmlCard;
                     el.setAttribute('data-task-id', String(docSnap.id || ''));
                     var btn = el.querySelector('.quest-card-check-btn');
+                    var deleteBtn = el.querySelector('.quest-card-delete-btn');
 
                     // Set tampilan awal jika sudah complete
                     var isTaskComplete = status === 'complete';
@@ -5135,6 +5167,14 @@ export function renderSidebar(target) {
                             }
                         });
                     }
+                    if (deleteBtn && taskId) {
+                        deleteBtn.addEventListener('click', function (evt) {
+                            if (evt && evt.stopPropagation) {
+                                evt.stopPropagation();
+                            }
+                            questDeleteTask(taskId);
+                        });
+                    }
                     targetList.appendChild(el);
                 });
                 function ensureList(listEl, message) {
@@ -5154,6 +5194,7 @@ export function renderSidebar(target) {
                 if (window.lucide && window.lucide.createIcons) {
                     window.lucide.createIcons();
                 }
+                updateSideQuestActionButtons();
             } catch (e) {
                 console.error('Failed to load side quests', e);
                 if (urgentList) urgentList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
@@ -5162,11 +5203,84 @@ export function renderSidebar(target) {
                 if (lowList) lowList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
             }
         }
+        function updateSideQuestActionButtons() {
+            var actionContainers = document.querySelectorAll('.quest-card-actions');
+            var deleteButtons = document.querySelectorAll('.quest-card-delete-btn');
+            var cards = document.querySelectorAll('.quest-card');
+            var checkButtons = document.querySelectorAll('.quest-card-check-btn');
+            if (questActionMode === 'edit') {
+                actionContainers.forEach(function (el) { el.classList.remove('hidden'); });
+                deleteButtons.forEach(function (el) { el.classList.add('hidden'); });
+                cards.forEach(function (card) { card.setAttribute('title', 'Click for Edit'); });
+                checkButtons.forEach(function (btn) {
+                    var originalClass = btn.getAttribute('data-original-class');
+                    var originalHtml = btn.getAttribute('data-original-html');
+                    if (!originalClass) {
+                        btn.setAttribute('data-original-class', btn.className);
+                    }
+                    if (!originalHtml) {
+                        btn.setAttribute('data-original-html', btn.innerHTML);
+                    }
+                    btn.className = 'px-3 py-1 text-xs font-semibold rounded-full border border-blue-500 text-blue-600 quest-card-check-btn';
+                    btn.textContent = 'Edit';
+                });
+            } else if (questActionMode === 'delete') {
+                actionContainers.forEach(function (el) { el.classList.remove('hidden'); });
+                deleteButtons.forEach(function (el) { el.classList.remove('hidden'); });
+                cards.forEach(function (card) { card.removeAttribute('title'); });
+                checkButtons.forEach(function (btn) {
+                    var originalClass = btn.getAttribute('data-original-class');
+                    var originalHtml = btn.getAttribute('data-original-html');
+                    if (originalClass) {
+                        btn.className = originalClass;
+                    }
+                    if (originalHtml) {
+                        btn.innerHTML = originalHtml;
+                    }
+                });
+            } else {
+                actionContainers.forEach(function (el) { el.classList.add('hidden'); });
+                cards.forEach(function (card) { card.removeAttribute('title'); });
+                checkButtons.forEach(function (btn) {
+                    var originalClass = btn.getAttribute('data-original-class');
+                    var originalHtml = btn.getAttribute('data-original-html');
+                    if (originalClass) {
+                        btn.className = originalClass;
+                    }
+                    if (originalHtml) {
+                        btn.innerHTML = originalHtml;
+                    }
+                });
+            }
+        }
+        function updateSideQuestHeaderToggleButton() {
+            var btn = document.getElementById('sideQuestHeaderToggleButton');
+            if (!btn) return;
+            if (questActionMode === 'edit') {
+                btn.className = 'px-4 py-1.5 text-xs font-semibold rounded-full border border-blue-500 text-blue-600 bg-white shadow-sm';
+                btn.textContent = 'Exit Edit';
+            } else if (questActionMode === 'delete') {
+                btn.className = 'px-4 py-1.5 text-xs font-semibold rounded-full border border-red-500 text-red-600 bg-white shadow-sm';
+                btn.textContent = 'Exit Delete';
+            } else {
+                btn.className = 'w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm';
+                btn.innerHTML = '<i data-lucide="more-vertical" class="w-4 h-4 text-gray-600"></i>';
+                if (window.lucide && window.lucide.createIcons) {
+                    window.lucide.createIcons();
+                }
+            }
+        }
         function toggleSideQuestHeaderMenu(event) {
             var menu = document.getElementById('sideQuestHeaderMenu');
             if (!menu) return;
             if (event && event.stopPropagation) {
                 event.stopPropagation();
+            }
+            if (questActionMode === 'edit' || questActionMode === 'delete') {
+                questActionMode = null;
+                updateSideQuestActionButtons();
+                updateSideQuestHeaderToggleButton();
+                return;
             }
             if (menu.classList.contains('hidden')) {
                 menu.classList.remove('hidden');
@@ -5179,12 +5293,26 @@ export function renderSidebar(target) {
             if (menu) {
                 menu.classList.add('hidden');
             }
+            if (questActionMode === 'edit') {
+                questActionMode = null;
+            } else {
+                questActionMode = 'edit';
+            }
+            updateSideQuestActionButtons();
+            updateSideQuestHeaderToggleButton();
         }
         function sideQuestHeaderDelete() {
             var menu = document.getElementById('sideQuestHeaderMenu');
             if (menu) {
                 menu.classList.add('hidden');
             }
+            if (questActionMode === 'delete') {
+                questActionMode = null;
+            } else {
+                questActionMode = 'delete';
+            }
+            updateSideQuestActionButtons();
+            updateSideQuestHeaderToggleButton();
         }
         function loadSideQuestUsersForForm() {
             var parentWin = window.parent;
