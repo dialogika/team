@@ -4,6 +4,7 @@ export function renderSidebar(target) {
         <style>
             #questBoardModal {
                 padding: 0;
+                pointer-events: none;
             }
             #questBoardModal .modal-dialog {
                 position: fixed;
@@ -15,6 +16,7 @@ export function renderSidebar(target) {
                 margin : 20px;
                 max-width: none;
                 height: calc(100vh - 120px);
+                pointer-events: auto;
             }
             #questBoardModal .modal-content {
                 height: 100%;
@@ -38,6 +40,7 @@ export function renderSidebar(target) {
                 
                 z-index: 1049;
                 display: none;
+                pointer-events: none;
             }
             #questBoardOverlay.show {
                 display: block;
