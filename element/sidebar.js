@@ -3650,7 +3650,6 @@ export function renderSidebar(target) {
             var parentWin = window.parent;
             var assignList = document.getElementById('questAssignList');
             var notifyList = document.getElementById('questNotifyList');
-            if (!assignList && !notifyList) return;
             if (assignList) {
                 assignList.innerHTML = '<div class="text-slate-500 text-xs">Loading users...</div>';
             }
@@ -4757,13 +4756,18 @@ export function renderSidebar(target) {
     var detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
     var activeModalReportId = null;
     var pendingFeedbackFiles = [];
+    if (typeof loadQuestUsers === 'function') {
+        loadQuestUsers();
+    }
 
     function getParentUsers() {
-        if (typeof questUsersById !== 'undefined') {
-            return questUsersById;
-        }
-        var parentWin = window.parent;
-        return parentWin && parentWin.questUsersById ? parentWin.questUsersById : {};
+        var w = window;
+        if (w.reportUsersById && Object.keys(w.reportUsersById).length) return w.reportUsersById;
+        if (w.questUsersById && Object.keys(w.questUsersById).length) return w.questUsersById;
+        var parentWin = w.parent;
+        if (parentWin && parentWin.reportUsersById && Object.keys(parentWin.reportUsersById).length) return parentWin.reportUsersById;
+        if (parentWin && parentWin.questUsersById && Object.keys(parentWin.questUsersById).length) return parentWin.questUsersById;
+        return {};
     }
 
     function getUserDisplay(uid) {
@@ -4787,6 +4791,15 @@ export function renderSidebar(target) {
         return s.split(' ')[0];
     }
 
+    function initialsOf(source) {
+        var s = String(source || '').trim();
+        if (!s) return 'U';
+        var parts = s.split(/\s+/);
+        var letters = parts.map(function (p) { return p[0]; }).join('');
+        letters = letters || s.substring(0, 2);
+        return letters.substring(0, 2).toUpperCase();
+    }
+
     function renderAvatarPile(uids, max) {
         var ids = Array.isArray(uids) ? uids.filter(Boolean) : [];
         if (ids.length === 0) return '<span class="text-muted">-</span>';
@@ -4794,8 +4807,12 @@ export function renderSidebar(target) {
         var html = '<div class="d-flex align-items-center gap-1">';
         for (var i = 0; i < Math.min(ids.length, limit); i++) {
             var info = getUserDisplay(ids[i]);
-            var src = info.photo || ('https://i.pravatar.cc/150?u=' + encodeURIComponent(info.name));
-            html += '<img src="' + escapeAttr(src) + '" width="28" height="28" class="rounded-circle border" style="object-fit:cover;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">';
+            if (info.photo) {
+                html += '<img src="' + escapeAttr(info.photo) + '" width="28" height="28" class="rounded-circle border" style="object-fit:cover;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">';
+            } else {
+                var ini = initialsOf(info.name || ids[i]);
+                html += '<span class="d-inline-flex align-items-center justify-content-center rounded-circle border bg-secondary text-white" style="width:28px;height:28px;font-size:11px;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name || ids[i]) + '">' + escapeAttr(ini) + '</span>';
+            }
         }
         if (ids.length > limit) {
             html += '<span class="badge bg-light text-dark border">+' + String(ids.length - limit) + '</span>';
@@ -4809,13 +4826,22 @@ export function renderSidebar(target) {
         if (ids.length === 0) return '<span class="text-muted">-</span>';
         if (ids.length === 1) {
             var info = getUserDisplay(ids[0]);
-            var src = info.photo || ('https://i.pravatar.cc/150?u=' + encodeURIComponent(info.name));
-            return (
-                '<div class="d-flex align-items-center">' +
-                    '<img src="' + escapeAttr(src) + '" class="rounded-circle me-2 border" width="30" height="30" style="object-fit:cover;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">' +
-                    '<span class="fw-bold text-truncate-custom" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">' + escapeAttr(formatNameWords(info.name, 3)) + '</span>' +
-                '</div>'
-            );
+            if (info.photo) {
+                return (
+                    '<div class="d-flex align-items-center">' +
+                        '<img src="' + escapeAttr(info.photo) + '" class="rounded-circle me-2 border" width="30" height="30" style="object-fit:cover;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">' +
+                        '<span class="fw-bold text-truncate-custom" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">' + escapeAttr(formatNameWords(info.name, 3)) + '</span>' +
+                    '</div>'
+                );
+            } else {
+                var ini = initialsOf(info.name || ids[0]);
+                return (
+                    '<div class="d-flex align-items-center">' +
+                        '<span class="d-inline-flex align-items-center justify-content-center rounded-circle border bg-secondary text-white me-2" style="width:30px;height:30px;font-size:12px;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name || ids[0]) + '">' + escapeAttr(ini) + '</span>' +
+                        '<span class="fw-bold text-truncate-custom" data-bs-toggle="tooltip" title="' + escapeAttr(info.name || ids[0]) + '">' + escapeAttr(formatNameWords(info.name || ids[0], 3)) + '</span>' +
+                    '</div>'
+                );
+            }
         }
         var fullNames = [];
         var shortNames = [];
