@@ -6676,12 +6676,12 @@ export function renderSidebar(target) {
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="sideQuestDetailTitle"><b>Side Quest Detail</b></h5>
+                    <h5 class="modal-title fw-bolder" id="sideQuestDetailTitle">Side Quest Detail</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <div class="text-muted small mb-1"><i>Description</i></div>
+                        <div class="text-muted small mb-1 fw-semibold">Description</div>
                         <div id="sideQuestDetailDescription" class="border rounded p-2 bg-light" style="max-height: 260px; overflow-y: auto;"></div>
                     </div>
                     <div class="row g-3">
@@ -6697,18 +6697,15 @@ export function renderSidebar(target) {
                         </div>
                         <div class="col-md-6">
                             <div class="small text-muted">Assign to</div>
-                            <div id="sideQuestDetailAssign" class="fw-semibold mb-2">-</div>
+                            <div id="sideQuestDetailAssign" class="fw-semibold mb-2 d-flex flex-wrap gap-1 align-items-center">-</div>
                             <div class="small text-muted">Report to</div>
-                            <div id="sideQuestDetailNotify" class="fw-semibold mb-2">-</div>
+                            <div id="sideQuestDetailNotify" class="fw-semibold mb-2 d-flex flex-wrap gap-1 align-items-center">-</div>
                             <div class="small text-muted">Departments</div>
-                            <div id="sideQuestDetailDepartments" class="fw-semibold mb-2">-</div>
+                            <div id="sideQuestDetailDepartments" class="fw-semibold mb-2 d-flex flex-wrap gap-1 align-items-center">-</div>
                             <div class="small text-muted">Positions</div>
-                            <div id="sideQuestDetailPositions" class="fw-semibold mb-2">-</div>
+                            <div id="sideQuestDetailPositions" class="fw-semibold mb-2 d-flex flex-wrap gap-1 align-items-center">-</div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -7161,7 +7158,7 @@ export function renderSidebar(target) {
                 } else if (value) {
                     ids = [value];
                 }
-                var names = [];
+                var html = '';
                 ids.forEach(function (uid) {
                     var u = null;
                     if (questUsersById && questUsersById[uid]) {
@@ -7171,43 +7168,60 @@ export function renderSidebar(target) {
                     } else if (window.parent && window.parent.questUsersById && window.parent.questUsersById[uid]) {
                         u = window.parent.questUsersById[uid];
                     }
-                    if (u && (u.name || u.email)) {
-                        names.push(u.name || u.email);
-                    } else if (uid) {
-                        names.push(uid);
+                    
+                    var name = (u && (u.name || u.email)) ? (u.name || u.email) : uid;
+                    var photo = (u && u.photo && !u.photo.includes('pravatar.cc')) ? u.photo : '';
+                    
+                    if (photo) {
+                        html += '<img src="' + photo + '" class="rounded-circle" style="width: 24px; height: 24px; object-fit: cover;" data-bs-toggle="tooltip" title="' + name + '">';
+                    } else {
+                        var initials = '';
+                        if (u) {
+                            var source = u.name || u.email || uid || '';
+                            var parts = source.split(/\s+/);
+                            for (var i = 0; i < parts.length && i < 2; i++) {
+                                if (parts[i]) initials += parts[i].charAt(0).toUpperCase();
+                            }
+                        }
+                        if (!initials) initials = 'U';
+                        html += '<span class="d-inline-flex align-items-center justify-center rounded-circle bg-secondary text-white" style="width: 24px; height: 24px; font-size: 10px;" data-bs-toggle="tooltip" title="' + name + '">' + initials + '</span>';
                     }
                 });
-                if (!names.length) return '-';
-                return names.join(', ');
+                return html || '-';
             }
 
             if (assignEl) {
-                assignEl.textContent = mapUserList(data.assign_to);
+                assignEl.innerHTML = mapUserList(data.assign_to || data.assignTo || []);
             }
             if (notifyEl) {
-                notifyEl.textContent = mapUserList(data.notify_to || data.notifyTo || []);
+                notifyEl.innerHTML = mapUserList(data.notify_to || data.notifyTo || []);
             }
 
             function mapCollectionItems(value) {
                 var items = Array.isArray(value) ? value : [];
-                var names = [];
+                var html = '';
                 items.forEach(function (item) {
                     if (!item) return;
+                    var name = '';
+                    var color = '#6c757d';
                     if (typeof item === 'string') {
-                        names.push(item);
-                    } else if (item.name) {
-                        names.push(item.name);
+                        name = item;
+                    } else {
+                        name = item.name || '';
+                        color = item.color || color;
+                    }
+                    if (name) {
+                        html += '<span class="badge" style="background-color: ' + color + ';">' + name + '</span>';
                     }
                 });
-                if (!names.length) return '-';
-                return names.join(', ');
+                return html || '-';
             }
 
             if (deptEl) {
-                deptEl.textContent = mapCollectionItems(data.departments || []);
+                deptEl.innerHTML = mapCollectionItems(data.departments || []);
             }
             if (posEl) {
-                posEl.textContent = mapCollectionItems(data.positions || []);
+                posEl.innerHTML = mapCollectionItems(data.positions || []);
             }
 
             if (pointsEl) {
@@ -7225,10 +7239,35 @@ export function renderSidebar(target) {
 
             if (priorityEl) {
                 var p = String(data.priority || 'normal').toLowerCase();
-                priorityEl.textContent = p.charAt(0).toUpperCase() + p.slice(1);
+                var badgeClass = 'bg-secondary';
+                if (p === 'urgent') badgeClass = 'bg-danger';
+                else if (p === 'high') badgeClass = 'bg-primary';
+                else if (p === 'normal') badgeClass = 'bg-warning text-dark';
+                else if (p === 'low') badgeClass = 'bg-info text-dark';
+                
+                priorityEl.innerHTML = '<span class="badge ' + badgeClass + '">' + p.charAt(0).toUpperCase() + p.slice(1) + '</span>';
+            }
+
+            var editBtn = document.getElementById('sideQuestDetailEditBtn');
+            if (editBtn) {
+                editBtn.onclick = function() {
+                    var modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                    if (typeof questEditTask === 'function') {
+                        questEditTask(taskId);
+                    }
+                };
             }
 
             var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modalEl.removeEventListener('shown.bs.modal', initTooltips);
+            function initTooltips() {
+                var tooltipTriggerList = [].slice.call(modalEl.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+            modalEl.addEventListener('shown.bs.modal', initTooltips);
             modal.show();
         }
 
