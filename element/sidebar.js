@@ -112,11 +112,11 @@ export function renderSidebar(target) {
                 <!-- Smart Filters (4 Kotak Besar) -->
                 <div class="smart-filters-grid">
                     <a href="#" class="filter-card">
-                        <div class="filter-top"><div class="filter-icon" style="background-color: var(--dlg-blue);"><i class="bi bi-archive-fill"></i></div><div class="filter-count">429</div></div>
+                        <div class="filter-top"><div class="filter-icon" style="background-color: var(--dlg-blue);"><i class="bi bi-archive-fill"></i></div><div class="filter-count" id="mainQuestCount">0</div></div>
                         <div class="filter-label">Main Quest</div>
                     </a>
                     <a href="#" class="filter-card">
-                        <div class="filter-top"><div class="filter-icon" style="background-color: var(--dlg-yellow);"><i class="bi bi-archive-fill"></i></div><div class="filter-count">429</div></div>
+                        <div class="filter-top"><div class="filter-icon" style="background-color: var(--dlg-yellow);"><i class="bi bi-archive-fill"></i></div><div class="filter-count" id="sideQuestCount">0</div></div>
                         <div class="filter-label">Side Quest</div>
                     </a>
                     <a href="#" class="filter-card">
@@ -190,69 +190,117 @@ export function renderSidebar(target) {
         </div>
         `;
 
-    async function refreshReportPendingApprovalCount(attempt) {
-        var countEl = document.getElementById('reportPendingApprovalCount');
-        if (!countEl) return;
+    var cachedTasks = null;
+    var cachedTasksTime = 0;
+
+    async function getTasksCached(w) {
+        var now = Date.now();
+        if (cachedTasks && (now - cachedTasksTime < 5000)) {
+            return cachedTasks;
+        }
+        var snap = await w.getDocs(w.collection(w.db, 'tasks'));
+        cachedTasks = snap;
+        cachedTasksTime = now;
+        return snap;
+    }
+    window.getTasksCached = getTasksCached;
+
+    async function refreshSidebarCounts(snapshotOrAttempt) {
+        var mainCountEl = document.getElementById('mainQuestCount');
+        var sideCountEl = document.getElementById('sideQuestCount');
+        var reportCountEl = document.getElementById('reportPendingApprovalCount');
+        
         var w = window;
         if (!w || !w.db || !w.collection || !w.getDocs) {
-            var nextAttempt = typeof attempt === 'number' ? attempt + 1 : 1;
+            var attempt = typeof snapshotOrAttempt === 'number' ? snapshotOrAttempt : 0;
+            var nextAttempt = attempt + 1;
             if (nextAttempt <= 30) {
-                setTimeout(function () { refreshReportPendingApprovalCount(nextAttempt); }, 500);
+                setTimeout(function () { refreshSidebarCounts(nextAttempt); }, 500);
             }
             return;
         }
+
         try {
-            function timeKey(v) {
-                if (!v) return '';
-                if (v.toDate && typeof v.toDate === 'function') {
-                    var d = v.toDate();
-                    if (!isNaN(d.getTime())) return d.toISOString();
-                    return '';
-                }
-                if (typeof v === 'number') {
-                    var d2 = new Date(v);
-                    if (!isNaN(d2.getTime())) return d2.toISOString();
-                    return '';
-                }
-                return String(v);
+            var tasksSnap;
+            if (snapshotOrAttempt && typeof snapshotOrAttempt === 'object' && typeof snapshotOrAttempt.forEach === 'function') {
+                tasksSnap = snapshotOrAttempt;
+                // Update cache
+                cachedTasks = tasksSnap;
+                cachedTasksTime = Date.now();
+            } else {
+                tasksSnap = await getTasksCached(w);
             }
-            var tasksSnap = await w.getDocs(w.collection(w.db, 'tasks'));
+
+            var totalMain = 0;
+            var totalSide = 0;
             var completeIds = [];
             var completeSet = {};
+
             tasksSnap.forEach(function (docSnap) {
                 var data = docSnap.data() || {};
+                // Projects have project_id, Quests do not.
+                if (data.project_id || data.projectId) return;
+
                 var archived = !!(data.archived || data.is_archived);
-                if (archived) return;
+                
+                // Status normalization
                 var statusRaw = '';
                 if (typeof data.status === 'string') statusRaw = data.status;
                 else if (data.status && typeof data.status === 'object') statusRaw = data.status.name || data.status.label || '';
                 var normStatus = String(statusRaw || '').trim().toLowerCase().replace(/[\s_]/g, '');
-                var isComplete = normStatus === 'complete' || normStatus === 'done';
-                if (data.task_status) {
-                    var tsRaw = '';
-                    if (typeof data.task_status === 'string') {
-                        tsRaw = data.task_status;
-                    } else if (typeof data.task_status === 'object' && (data.task_status.name || data.task_status.label)) {
-                        tsRaw = data.task_status.name || data.task_status.label || '';
-                    }
-                    var normTaskStatus = String(tsRaw || '').trim().toLowerCase().replace(/[\s_]/g, '');
-                    if (normTaskStatus === 'complete' || normTaskStatus === 'done') {
-                        isComplete = true;
-                    }
+                
+                // Task Status normalization
+                var tsRaw = '';
+                if (typeof data.task_status === 'string') tsRaw = data.task_status;
+                else if (data.task_status && typeof data.task_status === 'object') tsRaw = data.task_status.name || data.task_status.label || '';
+                var normTaskStatus = String(tsRaw || '').trim().toLowerCase().replace(/[\s_]/g, '');
+
+                var isComplete = normStatus === 'complete' || normStatus === 'done' || normTaskStatus === 'complete' || normTaskStatus === 'done';
+
+                // Count Main Quest (Recurring tasks that are not complete/archived)
+                if (data.recur && !isComplete && !archived) {
+                    totalMain++;
                 }
-                if (!isComplete) return;
-                completeIds.push(docSnap.id);
-                completeSet[docSnap.id] = true;
+
+                // Count Side Quest (Tasks with type sidequest OR has task_status, and not complete/archived)
+                var rawType = String(data.type || '').toLowerCase();
+                var isSideQuest = rawType === 'sidequest' || rawType === 'side-quest' || normStatus === 'sidequest' || !!data.task_status;
+                if (isSideQuest && !isComplete && !archived) {
+                    totalSide++;
+                }
+
+                if (isComplete && !archived) {
+                    completeIds.push(docSnap.id);
+                    completeSet[docSnap.id] = true;
+                }
             });
 
-            var latestByTaskId = {};
-            try {
+            if (mainCountEl) mainCountEl.innerText = String(totalMain);
+            if (sideCountEl) sideCountEl.innerText = String(totalSide);
+
+            // Report Pending Approval Logic
+            if (reportCountEl) {
+                function timeKey(v) {
+                    if (!v) return '';
+                    if (v.toDate && typeof v.toDate === 'function') {
+                        var d = v.toDate();
+                        if (!isNaN(d.getTime())) return d.toISOString();
+                        return '';
+                    }
+                    if (typeof v === 'number') {
+                        var d2 = new Date(v);
+                        if (!isNaN(d2.getTime())) return d2.toISOString();
+                        return '';
+                    }
+                    return String(v);
+                }
+
                 var rootSnap = await w.getDocs(w.collection(w.db, 'quest_reports'));
+                var latestByTaskId = {};
                 rootSnap.forEach(function (repSnap) {
                     var rdataRoot = repSnap.data() || {};
                     var taskIdRoot = rdataRoot.taskId || rdataRoot.task_id || '';
-                    if (!taskIdRoot) return;
-                    if (!completeSet[taskIdRoot]) return;
+                    if (!taskIdRoot || !completeSet[taskIdRoot]) return;
                     var prevRoot = latestByTaskId[taskIdRoot];
                     var prevTimeRoot = prevRoot ? String(prevRoot._time || '') : '';
                     var currTimeRoot = timeKey(rdataRoot.submittedAt || rdataRoot.createdAt || rdataRoot.timestamp || '');
@@ -260,43 +308,47 @@ export function renderSidebar(target) {
                         latestByTaskId[taskIdRoot] = { data: rdataRoot, _time: currTimeRoot };
                     }
                 });
-            } catch (eRoot) {}
 
-            for (var i = 0; i < completeIds.length; i++) {
-                var taskId = completeIds[i];
-                if (latestByTaskId[taskId]) continue;
-                try {
-                    var repSnap0 = await w.getDocs(w.collection(w.db, 'tasks', taskId, 'reports'));
-                    repSnap0.forEach(function (docRep) {
-                        var rdata = docRep.data() || {};
-                        var prev = latestByTaskId[taskId];
-                        var prevTime = prev ? String(prev._time || '') : '';
-                        var currTime = timeKey(rdata.submittedAt || rdata.createdAt || rdata.timestamp || '');
-                        if (!prev || currTime > prevTime) {
-                            latestByTaskId[taskId] = { data: rdata, _time: currTime };
-                        }
-                    });
-                } catch (eSub) {}
-            }
-
-            var pendingCount = 0;
-            for (var j = 0; j < completeIds.length; j++) {
-                var tid = completeIds[j];
-                var entry = latestByTaskId[tid];
-                if (!entry || !entry.data) continue;
-                var appr = entry.data.approval_status || entry.data.approvalStatus || '';
-                appr = String(appr || '').toLowerCase();
-                if (appr !== 'approved') {
-                    pendingCount++;
+                var tasksToFetchSub = completeIds.filter(id => !latestByTaskId[id]);
+                if (tasksToFetchSub.length > 0) {
+                    const batchSize = 10;
+                    for (let i = 0; i < tasksToFetchSub.length; i += batchSize) {
+                        const batch = tasksToFetchSub.slice(i, i + batchSize);
+                        await Promise.all(batch.map(async (taskId) => {
+                            try {
+                                var repSnap0 = await w.getDocs(w.collection(w.db, 'tasks', taskId, 'reports'));
+                                repSnap0.forEach(function (docRep) {
+                                    var rdata = docRep.data() || {};
+                                    var prev = latestByTaskId[taskId];
+                                    var prevTime = prev ? String(prev._time || '') : '';
+                                    var currTime = timeKey(rdata.submittedAt || rdata.createdAt || rdata.timestamp || '');
+                                    if (!prev || currTime > prevTime) {
+                                        latestByTaskId[taskId] = { data: rdata, _time: currTime };
+                                    }
+                                });
+                            } catch (eSub) {}
+                        }));
+                    }
                 }
+
+                var pendingCount = 0;
+                for (var j = 0; j < completeIds.length; j++) {
+                    var tid = completeIds[j];
+                    var entry = latestByTaskId[tid];
+                    if (!entry || !entry.data) continue;
+                    var appr = (entry.data.approval_status || entry.data.approvalStatus || '').toLowerCase();
+                    if (appr !== 'approved') pendingCount++;
+                }
+                reportCountEl.innerText = String(pendingCount);
             }
-            countEl.innerText = String(pendingCount);
         } catch (e) {
-            countEl.innerText = '0';
+            console.error('Error refreshing sidebar counts:', e);
         }
     }
 
-    refreshReportPendingApprovalCount(0);
+    window.refreshSidebarCounts = refreshSidebarCounts;
+
+    refreshSidebarCounts(0);
 
     const questCard = target.querySelector('.smart-filters-grid .filter-card');
     if (questCard) {
@@ -1337,6 +1389,8 @@ export function renderSidebar(target) {
             }
         }
 
+
+
         function questOpenTask(taskId) {
             if (!taskId) return;
             if (!questTasksById || !questTasksById[taskId]) {
@@ -1565,11 +1619,32 @@ export function renderSidebar(target) {
         }
 
         function openSideQuestDescription(taskId, descHtml) {
+            console.log('openSideQuestDescription called for taskId:', taskId);
+            // Try to find the modal in the current window or parent
             var modal = document.getElementById('sideQuestDescModal');
             var body = document.getElementById('sideQuestDescModalBody');
-            if (!modal || !body) return;
-            body.innerHTML = descHtml || '';
-            modal.classList.remove('hidden');
+            
+            if (!modal || !body) {
+                // Try parent if not found locally
+                if (window.parent && window.parent.document) {
+                    modal = window.parent.document.getElementById('sideQuestDescModal');
+                    body = window.parent.document.getElementById('sideQuestDescModalBody');
+                }
+            }
+
+            if (modal && body) {
+                body.innerHTML = descHtml || 'No description available.';
+                modal.classList.remove('hidden');
+            } else {
+                console.warn('Could not find sideQuestDescModal or body, falling back to alert');
+                if (descHtml) {
+                    // Strip HTML for alert
+                    var plainText = descHtml.replace(/<[^>]*>/g, '');
+                    alert(plainText);
+                } else {
+                    alert('No description available.');
+                }
+            }
         }
 
         function closeSideQuestDescModal() {
@@ -3399,14 +3474,25 @@ export function renderSidebar(target) {
                 if (overdueList) overdueList.innerHTML = '';
                 if (todayList) todayList.innerHTML = '';
                 if (upcomingList) upcomingList.innerHTML = '';
-                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks'));
+                
+                var fetchFn = typeof getTasksCached === 'function' ? getTasksCached : (window.parent && typeof window.parent.getTasksCached === 'function' ? window.parent.getTasksCached : null);
+                var snap = fetchFn ? await fetchFn(parentWin) : await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks'));
+                
                 var now = new Date();
                 var todayNum = questDateToNumber(now);
+                var totalMainQuest = 0;
+
                 snap.forEach(function (docSnap) {
                     var data = docSnap.data() || {};
                     if (data.project_id || data.projectId) return;
-                    var status = String(data.status || '').toLowerCase();
-                    if (status === 'complete') return;
+
+                    // Update Main Quest Count: must be recurring and not complete/archived
+                    var statusRaw = String(data.status || '').toLowerCase();
+                    if (data.recur && statusRaw !== 'complete' && !data.archived) {
+                        totalMainQuest++;
+                    }
+
+                    if (statusRaw === 'complete') return;
                     var dueText = data.due_date || data.dueDate || '';
                     if (!dueText) return;
                     var dueDate = parseQuestDueDateString(dueText);
@@ -3441,6 +3527,12 @@ export function renderSidebar(target) {
                 if (upcomingList && !upcomingList.innerHTML.trim()) {
                     upcomingList.innerHTML = '<p class="text-gray-400 italic text-sm">No upcoming quests.</p>';
                 }
+
+                var mainCountEl = document.getElementById('mainQuestCount');
+                if (mainCountEl) {
+                    mainCountEl.textContent = totalMainQuest;
+                }
+
                 if (window.lucide && window.lucide.createIcons) {
                     window.lucide.createIcons();
                 }
@@ -4413,14 +4505,21 @@ export function renderSidebar(target) {
             questCloseDropdownIfOutside(event, 'sideQuestCreateDropdown', false);
             questCloseDropdownIfOutside(event, 'sideQuestHeaderMenu', false);
         });
-        loadQuestDepartments();
-        loadQuestPositions();
-        loadQuestUsers();
-        loadQuestTasks();
-        if (typeof loadSideQuestTasks === 'function') {
-            loadSideQuestTasks();
-        } else if (window.parent && typeof window.parent.loadSideQuestTasks === 'function') {
-            window.parent.loadSideQuestTasks();
+        (async function() {
+            await loadQuestDepartments();
+            await loadQuestPositions();
+            await loadQuestUsers();
+            await loadQuestTasks();
+            if (typeof loadSideQuestTasks === 'function') {
+                await loadSideQuestTasks();
+            } else if (window.parent && typeof window.parent.loadSideQuestTasks === 'function') {
+                await window.parent.loadSideQuestTasks();
+            }
+        })();
+        
+        // Expose functions to window for cross-frame access
+        if (typeof window !== 'undefined') {
+            window.openSideQuestDescription = openSideQuestDescription;
         }
     </script>
 </body>
@@ -4428,6 +4527,20 @@ export function renderSidebar(target) {
 
             if (frame) {
                 frame.removeAttribute('src');
+                frame.onload = function() {
+                    try {
+                        if (frame.contentWindow) {
+                            if (window.openSideQuestDescription) {
+                                frame.contentWindow.openSideQuestDescription = window.openSideQuestDescription;
+                                console.log('Injected openSideQuestDescription into iframe');
+                            } else {
+                                console.warn('window.openSideQuestDescription not available to inject');
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to inject openSideQuestDescription', e);
+                    }
+                };
                 frame.srcdoc = html;
             }
             if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
@@ -4458,7 +4571,9 @@ export function renderSidebar(target) {
     if (reportCard) {
         reportCard.addEventListener('click', (e) => {
             e.preventDefault();
-            refreshReportPendingApprovalCount(0);
+            if (typeof refreshSidebarCounts === 'function') {
+                refreshSidebarCounts(0);
+            }
             const modalEl = document.getElementById('reportBoardModal');
             const frame = document.getElementById('reportBoardFrame');
             window.closeReportBoardModal = function () {
@@ -5333,16 +5448,16 @@ export function renderSidebar(target) {
                 }
                 var rejectBtn = row.querySelector('.js-reject-report');
                 if (rejectBtn) {
-                    rejectBtn.addEventListener('click', function (e) {
+                    rejectBtn.addEventListener('click', async function (e) {
                         e.stopPropagation();
-                        rejectReport(id, true);
+                        await rejectReport(id, true);
                     });
                 }
                 var approveBtn = row.querySelector('.js-approve-report');
                 if (approveBtn) {
-                    approveBtn.addEventListener('click', function (e) {
+                    approveBtn.addEventListener('click', async function (e) {
                         e.stopPropagation();
-                        approveReport(id);
+                        await approveReport(id);
                     });
                 }
             })(r2.id);
@@ -5373,34 +5488,63 @@ export function renderSidebar(target) {
         }
     }
 
-    function approveReport(id) {
+    async function approveReport(id) {
         setReportStatusInternal(id, 'approved');
         renderReports();
         updateStats();
-        persistApprovalStatus(id, 'approved', '');
-    }
-
-    function rejectReport(id, openFeedback) {
-        setReportStatusInternal(id, 'rejected');
-        renderReports();
-        updateStats();
-        persistApprovalStatus(id, 'rejected', '');
-        if (openFeedback) {
-            var found = null;
-            for (var i = 0; i < allReports.length; i++) {
-                if (allReports[i].id === id) {
-                    found = allReports[i];
-                    break;
-                }
-            }
-            if (found) openModalForReport(found, 'feedback');
+        try {
+            await persistApprovalStatus(id, 'approved', '');
+        } catch (e) {
+            console.error('Failed to approve report:', e);
+            alert('Failed to approve report: ' + (e.message || 'Unknown error'));
+            // Revert status on error
+            setReportStatusInternal(id, 'pending');
+            renderReports();
+            updateStats();
         }
     }
 
-    function approveAllReports() {
+    async function rejectReport(id, openFeedback) {
+        setReportStatusInternal(id, 'rejected');
+        renderReports();
+        updateStats();
+        try {
+            await persistApprovalStatus(id, 'rejected', '');
+            if (openFeedback) {
+                var found = null;
+                for (var i = 0; i < allReports.length; i++) {
+                    if (allReports[i].id === id) {
+                        found = allReports[i];
+                        break;
+                    }
+                }
+                if (found) openModalForReport(found, 'feedback');
+            }
+        } catch (e) {
+            console.error('Failed to reject report:', e);
+            alert('Failed to reject report: ' + (e.message || 'Unknown error'));
+            // Revert status on error
+            setReportStatusInternal(id, 'pending');
+            renderReports();
+            updateStats();
+        }
+    }
+
+    async function approveAllReports() {
+        var errors = [];
         for (var i = 0; i < currentReports.length; i++) {
             currentReports[i].status = 'approved';
-            persistApprovalStatus(currentReports[i].id, 'approved', '');
+            try {
+                await persistApprovalStatus(currentReports[i].id, 'approved', '');
+            } catch (e) {
+                console.error('Failed to approve report ' + currentReports[i].id + ':', e);
+                errors.push('Report ' + currentReports[i].id + ': ' + (e.message || 'Unknown error'));
+                // Revert status on error
+                currentReports[i].status = 'pending';
+            }
+        }
+        if (errors.length > 0) {
+            alert('Failed to approve some reports:\\n' + errors.join('\\n'));
         }
         renderReports();
         updateStats();
@@ -5430,9 +5574,9 @@ export function renderSidebar(target) {
 
     var approveTaskBtn = document.getElementById('approveTaskButton');
     if (approveTaskBtn) {
-        approveTaskBtn.addEventListener('click', function () {
+        approveTaskBtn.addEventListener('click', async function () {
             if (!activeModalReportId) return;
-            approveReport(activeModalReportId);
+            await approveReport(activeModalReportId);
             detailModal.hide();
         });
     }
@@ -5474,9 +5618,9 @@ export function renderSidebar(target) {
     var bulkBtn = document.getElementById('reportBulkActionButton');
     if (bulkBtn) {
         bulkBtn.style.display = '';
-        bulkBtn.addEventListener('click', function () {
+        bulkBtn.addEventListener('click', async function () {
             if (!bulkMode) {
-                approveAllReports();
+                await approveAllReports();
                 return;
             }
             var selected = Object.keys(selectedTaskIds).filter(function (k) { return !!selectedTaskIds[k]; });
@@ -5602,28 +5746,57 @@ export function renderSidebar(target) {
         return null;
     }
 
+    function toParentFirestoreValue(value, parentWin) {
+        if (!parentWin) return value;
+        if (value === null || value === undefined) return value;
+        if (typeof value !== 'object') return value;
+        if (Array.isArray(value)) {
+            var arr = new parentWin.Array();
+            for (var i = 0; i < value.length; i++) {
+                arr.push(toParentFirestoreValue(value[i], parentWin));
+            }
+            return arr;
+        }
+        var proto = Object.getPrototypeOf(value);
+        if (proto === Object.prototype || proto === null) {
+            var obj = new parentWin.Object();
+            var keys = Object.keys(value);
+            for (var k = 0; k < keys.length; k++) {
+                var key = keys[k];
+                obj[key] = toParentFirestoreValue(value[key], parentWin);
+            }
+            return obj;
+        }
+        return value;
+    }
+
     async function persistApprovalStatus(id, status, feedbackHtml) {
         var parentWin = window.parent;
         var r = findReportById(id);
         if (!r || !parentWin || !parentWin.db || !parentWin.updateDoc || !parentWin.doc) return;
-        var payload = {
-            approval_status: status,
-            approvalStatus: status,
-            approvalUpdatedAt: parentWin.serverTimestamp ? parentWin.serverTimestamp() : new Date().toISOString()
-        };
-        if (feedbackHtml) {
-            payload.feedback = feedbackHtml;
-            payload.feedback_at = parentWin.serverTimestamp ? parentWin.serverTimestamp() : new Date().toISOString();
-            payload.feedback_by = parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : '';
-        }
+        
         try {
+            var payload = {
+                approval_status: status,
+                approvalStatus: status,
+                approvalUpdatedAt: parentWin.serverTimestamp ? parentWin.serverTimestamp() : new Date().toISOString()
+            };
+            
+            if (feedbackHtml) {
+                payload.feedback = feedbackHtml;
+                payload.feedback_at = parentWin.serverTimestamp ? parentWin.serverTimestamp() : new Date().toISOString();
+                payload.feedback_by = parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : '';
+            }
+
+            var plainPayload = toParentFirestoreValue(payload, parentWin);
             if (r.reportSource === 'root' && r.reportDocId) {
-                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'quest_reports', r.reportDocId), payload);
+                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'quest_reports', r.reportDocId), plainPayload);
             } else if (r.reportSource === 'sub' && r.reportDocId) {
-                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', id, 'reports', r.reportDocId), payload);
+                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', id, 'reports', r.reportDocId), plainPayload);
             }
         } catch (e) {
             console.error('Failed to persist approval status', e);
+            throw e; // Re-throw to handle upstream
         }
     }
 
@@ -5663,6 +5836,7 @@ export function renderSidebar(target) {
                         feedback_files: attachments,
                         feedbackFiles: attachments
                     };
+                    payload = toParentFirestoreValue(payload, parentWin);
                     if (r.reportSource === 'root' && r.reportDocId) {
                         await parentWin.updateDoc(parentWin.doc(parentWin.db, 'quest_reports', r.reportDocId), payload);
                     } else if (r.reportSource === 'sub' && r.reportDocId) {
@@ -5672,7 +5846,7 @@ export function renderSidebar(target) {
                     console.error('Failed to submit feedback', e);
                 }
             }
-            persistApprovalStatus(id, 'rejected', html);
+            await persistApprovalStatus(id, 'rejected', html);
             setReportStatusInternal(id, 'rejected');
             renderReports();
             updateStats();
@@ -5689,11 +5863,13 @@ export function renderSidebar(target) {
         if (!parentWin || !parentWin.updateDoc || !parentWin.doc || !parentWin.db) return;
         try {
             for (var i = 0; i < taskIds.length; i++) {
-                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskIds[i]), {
+                var payload = {
                     archived: true,
                     archived_at: parentWin.serverTimestamp ? parentWin.serverTimestamp() : new Date().toISOString(),
                     archived_by: parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : ''
-                });
+                };
+                payload = toParentFirestoreValue(payload, parentWin);
+                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskIds[i]), payload);
             }
         } catch (e) {
             console.error('Failed to archive tasks', e);
@@ -5804,12 +5980,39 @@ export function renderSidebar(target) {
                         isComplete = true;
                     }
                 }
-                if (!isComplete) return;
-                completeTaskIds.push(docSnap.id);
+
+                // Always register the quest type so root-level reports can find their task
                 var questType = 'Side Quest';
                 if (data.project_id) questType = 'Project Quest';
                 else if (data.recur) questType = 'Main Quest';
                 taskQuestTypeById[docSnap.id] = questType;
+
+                // Check if we should fetch sub-collection reports (complete or pending/review status)
+                var shouldFetchSubReports = isComplete;
+                if (!shouldFetchSubReports) {
+                     // Check status string for keywords indicating a report might exist
+                     var s = normStatus;
+                     if (s.indexOf('wait') >= 0 || s.indexOf('pending') >= 0 || s.indexOf('review') >= 0 || s.indexOf('approv') >= 0 || s.indexOf('submit') >= 0) {
+                         shouldFetchSubReports = true;
+                     }
+                     // Check task_status string as well
+                     if (data.task_status) {
+                         var tsRaw = '';
+                         if (typeof data.task_status === 'string') {
+                             tsRaw = data.task_status;
+                         } else if (typeof data.task_status === 'object' && (data.task_status.name || data.task_status.label)) {
+                             tsRaw = data.task_status.name || data.task_status.label || '';
+                         }
+                         var nts = String(tsRaw || '').trim().toLowerCase().replace(/[\s_]/g, '');
+                         if (nts.indexOf('wait') >= 0 || nts.indexOf('pending') >= 0 || nts.indexOf('review') >= 0 || nts.indexOf('approv') >= 0 || nts.indexOf('submit') >= 0) {
+                             shouldFetchSubReports = true;
+                         }
+                     }
+                }
+                
+                if (shouldFetchSubReports) {
+                    completeTaskIds.push(docSnap.id);
+                }
             });
 
             var latestByTaskId = {};
@@ -5827,8 +6030,7 @@ export function renderSidebar(target) {
                 }
             });
 
-            for (var i0 = 0; i0 < completeTaskIds.length; i0++) {
-                var tId0 = completeTaskIds[i0];
+            async function fetchLatestSubReport(tId0) {
                 try {
                     var repSnap0 = await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks', tId0, 'reports'));
                     repSnap0.forEach(function (docRep) {
@@ -5842,6 +6044,20 @@ export function renderSidebar(target) {
                     });
                 } catch (eSub0) {}
             }
+
+            var cursor0 = 0;
+            var concurrency0 = 8;
+            var workers0 = [];
+            for (var w0 = 0; w0 < concurrency0; w0++) {
+                workers0.push((async function () {
+                    while (cursor0 < completeTaskIds.length) {
+                        var idx0 = cursor0++;
+                        var tId0 = completeTaskIds[idx0];
+                        await fetchLatestSubReport(tId0);
+                    }
+                })());
+            }
+            await Promise.all(workers0);
 
             var reports = [];
             Object.keys(latestByTaskId).forEach(function (taskId) {
@@ -6425,6 +6641,7 @@ export function renderSidebar(target) {
         var questCurrentPriority = 'urgent';
         var sideQuestCurrentPriority = 'normal';
         var questTasksById = {};
+        var questUsersById = {};
         var questActionMode = null;
         var sideQuestEditingTaskId = null;
 
@@ -7316,7 +7533,11 @@ export function renderSidebar(target) {
                 if (highList) highList.innerHTML = '';
                 if (normalList) normalList.innerHTML = '';
                 if (lowList) lowList.innerHTML = '';
-                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks'));
+                
+                var totalSideQuestCount = 0;
+                var fetchFn = typeof getTasksCached === 'function' ? getTasksCached : (window.parent && typeof window.parent.getTasksCached === 'function' ? window.parent.getTasksCached : null);
+                var snap = fetchFn ? await fetchFn(parentWin) : await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks'));
+                
                 snap.forEach(function (docSnap) {
                     var data = docSnap.data() || {};
                     if (data.project_id || data.projectId) return;
@@ -7338,12 +7559,22 @@ export function renderSidebar(target) {
                     }
                     if (!isSideQuest) return;
 
+                    if (normStatus !== 'complete' && !data.archived) {
+                        totalSideQuestCount++;
+                    }
+
                     if (normStatus === 'complete') return;
 
                     var taskId = String(docSnap.id || '');
                     // Pastikan task masuk ke questTasksById supaya questToggleComplete tahu statusnya
                     if (typeof questTasksById !== 'undefined') {
                         questTasksById[taskId] = data;
+                    }
+                    // Sinkronkan ke parent window jika tersedia
+                    if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
+                        if (typeof window.parent.questTasksById !== 'undefined') {
+                            window.parent.questTasksById[taskId] = data;
+                        }
                     }
 
                     var title = data.title || 'Untitled Side Quest';
@@ -7581,18 +7812,83 @@ export function renderSidebar(target) {
                                 if (evt && evt.stopPropagation) {
                                     evt.stopPropagation();
                                 }
+                                console.log('More button clicked for taskId:', taskId);
+                                
                                 var fullHtml = '';
-                                if (questTasksById && questTasksById[taskId] && questTasksById[taskId].description) {
-                                    fullHtml = String(questTasksById[taskId].description);
+                                // Try finding full description from different possible stores
+                                var stores = [
+                                    typeof questTasksById !== 'undefined' ? questTasksById : null,
+                                    window.questTasksById,
+                                    typeof window !== 'undefined' && window.parent ? window.parent.questTasksById : null
+                                ];
+                                
+                                for (var i = 0; i < stores.length; i++) {
+                                    if (stores[i] && stores[i][taskId] && (stores[i][taskId].description || stores[i][taskId].desc)) {
+                                        fullHtml = String(stores[i][taskId].description || stores[i][taskId].desc);
+                                        console.log('Found fullHtml from store index ' + i);
+                                        break;
+                                    }
                                 }
+
+                                if (!fullHtml) {
+                                    console.log('fullHtml not found in stores, using DOM fallback');
+                                    var p = moreBtn.closest('p');
+                                    if (p) {
+                                        var pClone = p.cloneNode(true);
+                                        var mBtn = pClone.querySelector('.sidequest-more-link');
+                                        if (mBtn) mBtn.remove();
+                                        fullHtml = pClone.innerHTML;
+                                    }
+                                }
+                                
+                                // Find the open function with more robust checking
                                 var fn = null;
-                                if (window.parent && typeof window.parent.openSideQuestDescription === 'function') {
-                                    fn = window.parent.openSideQuestDescription;
-                                } else if (typeof openSideQuestDescription === 'function') {
-                                    fn = openSideQuestDescription;
+                                
+                                // Check multiple possible locations for the function
+                                var functionSources = [
+                                    function() { return typeof window !== 'undefined' && window.openSideQuestDescription ? window.openSideQuestDescription : null; },
+                                    function() { return typeof openSideQuestDescription !== 'undefined' ? openSideQuestDescription : null; },
+                                    function() { return typeof window !== 'undefined' && window.parent && window.parent.openSideQuestDescription ? window.parent.openSideQuestDescription : null; },
+                                    function() { return typeof window !== 'undefined' && window.top && window.top.openSideQuestDescription ? window.top.openSideQuestDescription : null; }
+                                ];
+                                
+                                for (var j = 0; j < functionSources.length; j++) {
+                                    var candidateFn = functionSources[j]();
+                                    if (candidateFn && typeof candidateFn === 'function') {
+                                        fn = candidateFn;
+                                        break;
+                                    }
                                 }
+                                
                                 if (fn) {
+                                    console.log('Calling openSideQuestDescription with fullHtml length:', fullHtml.length);
                                     fn(taskId, fullHtml);
+                                } else {
+                                    console.error('Function openSideQuestDescription not found in any scope');
+                                    // Fallback: try to access modal from parent window
+                                    var parentModal = null;
+                                    var parentBody = null;
+                                    if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
+                                        parentModal = window.parent.document.getElementById('sideQuestDescModal');
+                                        parentBody = window.parent.document.getElementById('sideQuestDescModalBody');
+                                    }
+                                    if (!parentModal && typeof window !== 'undefined' && window.top && window.top !== window) {
+                                        try {
+                                            parentModal = window.top.document.getElementById('sideQuestDescModal');
+                                            parentBody = window.top.document.getElementById('sideQuestDescModalBody');
+                                        } catch (e) {
+                                            console.warn('Access to top window blocked', e);
+                                        }
+                                    }
+                                    if (parentModal && parentBody) {
+                                        parentBody.innerHTML = fullHtml || 'No description available.';
+                                        parentModal.classList.remove('hidden');
+                                    } else {
+                                        // Last resort: alert with plain text
+                                        if (fullHtml) {
+                                            alert(fullHtml.replace(/<[^>]*>/g, ''));
+                                        }
+                                    }
                                 }
                             });
                         }
@@ -7674,6 +7970,12 @@ export function renderSidebar(target) {
                 setSideQuestCount(highCountEl, highCount);
                 setSideQuestCount(normalCountEl, normalCount);
                 setSideQuestCount(lowCountEl, lowCount);
+
+                var sideCountEl = document.getElementById('sideQuestCount');
+                if (sideCountEl) {
+                    sideCountEl.textContent = totalSideQuestCount;
+                }
+
                 if (window.lucide && window.lucide.createIcons) {
                     window.lucide.createIcons();
                 }
@@ -8024,6 +8326,20 @@ export function renderSidebar(target) {
 </html>`;
             if (frame) {
                 frame.removeAttribute('src');
+                frame.onload = function() {
+                    try {
+                        if (frame.contentWindow) {
+                            if (window.openSideQuestDescription) {
+                                frame.contentWindow.openSideQuestDescription = window.openSideQuestDescription;
+                                console.log('Injected openSideQuestDescription into Side Quest iframe (instance 3)');
+                            } else {
+                                console.warn('window.openSideQuestDescription not available to inject into Side Quest iframe');
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to inject openSideQuestDescription into Side Quest iframe', e);
+                    }
+                };
                 frame.srcdoc = html;
             }
             if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
