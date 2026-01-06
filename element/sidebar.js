@@ -4789,8 +4789,8 @@ export function renderSidebar(target) {
         </div>
         <div class="d-flex gap-2">
             <div class="btn-group shadow-sm">
-                <button class="btn btn-white border bg-white btn-sm px-3"><i class="fas fa-th-large text-secondary"></i></button>
-                <button class="btn btn-white border bg-white btn-sm px-3"><i class="fas fa-list text-muted"></i></button>
+                <button class="btn btn-white border bg-white btn-sm px-3"><i class="fas fa-pen-to-square text-secondary"></i></button>
+                <button class="btn btn-white border bg-white btn-sm px-3"><i class="fas fa-trash-can text-muted"></i></button>
             </div>
             <ul class="nav nav-tabs border-bottom-0 me-2">
                 <li class="nav-item">
