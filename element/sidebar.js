@@ -206,7 +206,7 @@ export function renderSidebar(target) {
                     <a href="javascript:void(0)" class="sidebar-submenu-link">Happy</a>
                     <a href="javascript:void(0)" class="sidebar-submenu-link">Branding</a>
                 </div>
-                <a href="#" class="sidebar-link"><i class="bi bi-list-columns-reverse"></i> Shortcut <span class="sidebar-badge">4</span></a>
+                <a href="#" class="sidebar-link"><i class="bi bi-list-columns-reverse"></i> Shortcut 
                 <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-chat-dots"></i> Pings</a>
                 <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-bell"></i> Hey!</a>
                 <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-activity"></i> Activity</a>
@@ -219,14 +219,14 @@ export function renderSidebar(target) {
             </div> <!-- End Scroll Wrapper -->
 
             <!-- PENDING WIDGET (Pinned di Bawah, di luar scroll wrapper) -->
-            <div class="pending-widget">
-                <div class="fire-icon-wrapper"><i class="bi bi-fire fire-icon"></i></div>
-                <h6 class="fw-bold" style="color:#0B2B6A; margin-bottom: 5px;">Pending Tasks</h6>
+            <div class="pending-widget" style="background-color: #1c83e368; color:#fff;margin-bottom: -17px;">
+                <div class="fire-icon-wrapper shadow-purple"><i class="bi bi-fire fire-icon"></i></div>
+                <h6 class="fw-bold" style="color:#0B2B6A; margin-bottom: 5px;">Pending Reports</h6>
                 <p class="small text-muted mb-3">You have 5 approvals waiting.</p>
-                <button class="btn-review">Review Now</button>
+                <button class="btn-review btn-dlg-blue shadow-none" style="margin-bottom:7px;">Review Now</button>
                 
                 <!-- COPYRIGHT (Muncul hanya saat scroll mentok bawah) -->
-                <div class="sidebarCopyright">
+                <div class="sidebarCopyright fw-semibold" style="font-size: 12px;">
                     &copy; 2025 PT Dialogika Persona Indonesia
                 </div>
             </div>
