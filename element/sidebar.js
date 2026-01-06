@@ -4744,6 +4744,7 @@ export function renderSidebar(target) {
         .diff-up { color: #0ea5e9; }
         .diff-down { color: #f43f5e; }
         .table { table-layout: fixed; width: 100%; }
+        .col-select { width: 56px; }
         .col-team { width: 180px; }
         .col-type { width: 130px; }
         .col-date { width: 140px; }
@@ -4789,8 +4790,8 @@ export function renderSidebar(target) {
         </div>
         <div class="d-flex gap-2">
             <div class="btn-group shadow-sm">
-                <button class="btn btn-white border bg-white btn-sm px-3"><i class="fas fa-pen-to-square text-secondary"></i></button>
-                <button class="btn btn-white border bg-white btn-sm px-3"><i class="fas fa-trash-can text-muted"></i></button>
+                <button id="reportTopArchiveButton" type="button" class="btn btn-white border bg-white btn-sm px-3"><i class="fas fa-box-archive text-secondary"></i></button>
+                <button id="reportTopDeleteButton" type="button" class="btn btn-white border bg-white btn-sm px-3"><i class="fas fa-trash-can text-muted"></i></button>
             </div>
             <ul class="nav nav-tabs border-bottom-0 me-2">
                 <li class="nav-item">
@@ -4910,6 +4911,7 @@ export function renderSidebar(target) {
             <table class="table align-middle mb-0">
                 <thead>
                     <tr>
+                        <th class="col-select text-center js-bulk-only" style="display:none;" data-sort-key=""></th>
                         <th class="col-team px-4" data-sort-key="user">Team</th>
                         <th class="col-date" data-sort-key="date">Date</th>
                         <th class="col-task" data-sort-key="task">Task</th>
@@ -5498,19 +5500,15 @@ export function renderSidebar(target) {
             }
             var row = document.createElement('tr');
             row.setAttribute('data-report-id', r2.id);
-            var checkboxHtml = '';
+            var teamHtml = renderAssigneesCell(r2.assignees || []);
+            teamHtml = '<div class="d-flex align-items-center">' + teamHtml + '</div>';
+            var selectCellHtml = '<td class="col-select text-center js-bulk-only" style="display:none;"></td>';
             if (bulkMode) {
                 var checked = selectedTaskIds[r2.id] ? ' checked' : '';
-                checkboxHtml =
-                    '<label class="form-check me-2 mb-0" style="cursor:pointer;">' +
+                selectCellHtml =
+                    '<td class="col-select text-center js-bulk-only">' +
                         '<input type="checkbox" class="form-check-input js-bulk-checkbox"' + checked + ' style="width:18px;height:18px;">' +
-                    '</label>';
-            }
-            var teamHtml = renderAssigneesCell(r2.assignees || []);
-            if (bulkMode) {
-                teamHtml = '<div class="d-flex align-items-center">' + checkboxHtml + teamHtml + '</div>';
-            } else {
-                teamHtml = '<div class="d-flex align-items-center">' + teamHtml + '</div>';
+                    '</td>';
             }
             var filesHtml = '<span class="text-muted">-</span>';
             if (Array.isArray(r2.files) && r2.files.length > 0) {
@@ -5544,6 +5542,7 @@ export function renderSidebar(target) {
                 '</a>';
             }
             row.innerHTML =
+                selectCellHtml +
                 '<td class="px-4">' +
                     teamHtml +
                 '</td>' +
@@ -5721,6 +5720,10 @@ export function renderSidebar(target) {
         var btn = document.getElementById('reportBulkActionButton');
         if (!btn) return;
         var selected = Object.keys(selectedTaskIds).filter(function (k) { return !!selectedTaskIds[k]; });
+        var bulkCols = document.querySelectorAll('.js-bulk-only');
+        for (var i = 0; i < bulkCols.length; i++) {
+            bulkCols[i].style.display = bulkMode ? '' : 'none';
+        }
         if (!bulkMode) {
             btn.className = 'btn btn-dlg-green px-3 py-2 rounded-3';
             btn.innerHTML = '<i class="fas fa-check-double me-1"></i> Approve all';
@@ -5785,6 +5788,27 @@ export function renderSidebar(target) {
                     renderReports();
                 }, { once: true });
             });
+        });
+    }
+
+    var topArchiveBtn = document.getElementById('reportTopArchiveButton');
+    if (topArchiveBtn) {
+        topArchiveBtn.addEventListener('click', function () {
+            bulkMode = 'archive';
+            selectedTaskIds = {};
+            visibleCount = pageSize;
+            syncBulkActionButton();
+            renderReports();
+        });
+    }
+    var topDeleteBtn = document.getElementById('reportTopDeleteButton');
+    if (topDeleteBtn) {
+        topDeleteBtn.addEventListener('click', function () {
+            bulkMode = 'delete';
+            selectedTaskIds = {};
+            visibleCount = pageSize;
+            syncBulkActionButton();
+            renderReports();
         });
     }
 
@@ -6000,16 +6024,36 @@ export function renderSidebar(target) {
 
     async function bulkArchiveTasks(taskIds) {
         var parentWin = window.parent;
-        if (!parentWin || !parentWin.updateDoc || !parentWin.doc || !parentWin.db) return;
+        if (!parentWin || !parentWin.updateDoc || !parentWin.doc || !parentWin.db || !parentWin.addDoc || !parentWin.collection) return;
         try {
             for (var i = 0; i < taskIds.length; i++) {
+                var taskId = taskIds[i];
+                var taskData = {};
+                if (parentWin.getDoc) {
+                    try {
+                        var tSnap = await parentWin.getDoc(parentWin.doc(parentWin.db, 'tasks', taskId));
+                        if (tSnap && typeof tSnap.exists === 'function' ? tSnap.exists() : tSnap && tSnap.exists) {
+                            taskData = tSnap.data() || {};
+                        }
+                    } catch (eGet) {}
+                }
+                var archiveEntry = {
+                    taskId: taskId,
+                    task: taskData,
+                    archivedAt: parentWin.serverTimestamp ? parentWin.serverTimestamp() : new Date().toISOString(),
+                    archivedBy: parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : ''
+                };
+                archiveEntry = toParentFirestoreValue(archiveEntry, parentWin);
+                try {
+                    await parentWin.addDoc(parentWin.collection(parentWin.db, 'Archives'), archiveEntry);
+                } catch (eAdd) {}
                 var payload = {
                     archived: true,
                     archived_at: parentWin.serverTimestamp ? parentWin.serverTimestamp() : new Date().toISOString(),
                     archived_by: parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : ''
                 };
                 payload = toParentFirestoreValue(payload, parentWin);
-                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskIds[i]), payload);
+                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskId), payload);
             }
         } catch (e) {
             console.error('Failed to archive tasks', e);
@@ -6022,13 +6066,32 @@ export function renderSidebar(target) {
 
     async function bulkDeleteTasks(taskIds) {
         var parentWin = window.parent;
-        if (!parentWin || !parentWin.deleteDoc || !parentWin.doc || !parentWin.db || !parentWin.collection || !parentWin.getDocs) return;
+        if (!parentWin || !parentWin.deleteDoc || !parentWin.doc || !parentWin.db || !parentWin.collection || !parentWin.getDocs || !parentWin.addDoc) return;
         try {
             var rootSnap = await parentWin.getDocs(parentWin.collection(parentWin.db, 'quest_reports'));
             var rootDocs = [];
             rootSnap.forEach(function (d) { rootDocs.push({ id: d.id, data: d.data() || {} }); });
             for (var i = 0; i < taskIds.length; i++) {
                 var tId = taskIds[i];
+                var tData = {};
+                if (parentWin.getDoc) {
+                    try {
+                        var tSnap = await parentWin.getDoc(parentWin.doc(parentWin.db, 'tasks', tId));
+                        if (tSnap && typeof tSnap.exists === 'function' ? tSnap.exists() : tSnap && tSnap.exists) {
+                            tData = tSnap.data() || {};
+                        }
+                    } catch (eGet) {}
+                }
+                var trashEntry = {
+                    taskId: tId,
+                    task: tData,
+                    deletedAt: parentWin.serverTimestamp ? parentWin.serverTimestamp() : new Date().toISOString(),
+                    deletedBy: parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : ''
+                };
+                trashEntry = toParentFirestoreValue(trashEntry, parentWin);
+                try {
+                    await parentWin.addDoc(parentWin.collection(parentWin.db, 'Trash'), trashEntry);
+                } catch (eAdd) {}
                 try {
                     var repSnap = await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks', tId, 'reports'));
                     var deletes = [];
