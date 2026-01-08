@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Target Kandidat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-title {
+            color: #0B2B6A;
+            font-weight: 800;
+            font-size: 1.8rem;
+            letter-spacing: -0.02em;
+        }
+
+        .filter-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 1.25rem;
+            box-shadow: 0 10px 30px rgba(11, 43, 106, 0.04);
+            margin-bottom: 2.5rem;
+            border: 1px solid rgba(11, 43, 106, 0.05);
+        }
+
+        .candidate-card {
+            background: white;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            height: 100%;
+            border: none;
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        .img-wrapper {
+            position: relative;
+            height: 350px;
+            border-radius: 16px 16px 0 0;
+            overflow: hidden;
+        }
+
+        .candidate-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .social-tags {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .tag-icon {
+            width: 35px;
+            height: 35px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #0f172a;
+            backdrop-filter: blur(4px);
+            transition: 0.2s;
+        }
+
+        .tag-icon:hover {
+            background: white;
+            transform: scale(1.1);
+            color: #3b82f6;
+        }
+
+        .card-action-menu {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+        }
+
+        .img-assign-badge {
+            position: absolute;
+            right: 15px;
+            bottom: 15px;
+        }
+
+        .assign-avatar-stack {
+            display: flex;
+        }
+
+        .assign-avatar-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 999px;
+            border: 2px solid #ffffff;
+            overflow: hidden;
+            background: #1e40af;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #f9fafb;
+        }
+
+        .assign-avatar-circle + .assign-avatar-circle {
+            margin-left: -10px;
+        }
+
+        .assign-avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .assign-avatar-initials {
+            background: #1e3a8a;
+        }
+
+        .list-view-container {
+            display: none;
+        }
+
+        .table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            vertical-align: middle;
+        }
+
+        .list-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .status-select {
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-not-contacted { background-color: #f1f5f9; color: #475569; }
+        .status-replied { background-color: #dcfce7; color: #166534; }
+        .status-waiting { background-color: #fef9c3; color: #854d0e; }
+
+        .assign-badge {
+            font-size: 0.8rem;
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .assign-panel {
+            background: #020617;
+            border-radius: 18px;
+            padding: 12px 14px;
+            color: #e5e7eb;
+        }
+
+        .assign-search {
+            display: flex;
+            align-items: center;
+            background: #020617;
+            border-radius: 999px;
+            border: 1px solid #4b5563;
+            padding: 6px 12px;
+            margin-bottom: 10px;
+        }
+
+        .assign-search-icon {
+            color: #9ca3af;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .assign-search-input {
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #e5e7eb;
+            width: 100%;
+            font-size: 0.85rem;
+        }
+
+        .assign-search-input::placeholder {
+            color: #6b7280;
+        }
+
+        .assign-list-header {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            color: #9ca3af;
+            margin-bottom: 6px;
+        }
+
+        .candidate-assign-users {
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .assign-user-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 4px;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        .assign-user-item:hover {
+            background: rgba(148, 163, 184, 0.25);
+        }
+
+        .assign-user-item.active {
+            background: rgba(37, 99, 235, 0.3);
+        }
+
+        .assign-user-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .assign-user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            object-fit: cover;
+        }
+
+        .assign-user-initials {
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #111827;
+            color: #e5e7eb;
+            font-weight: 700;
+        }
+
+        .assign-user-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #f9fafb;
+        }
+
+        .assign-user-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #f9fafb;
+        }
+
+        .assign-dropdown {
+            position: relative;
+        }
+
+        .assign-display {
+            border-radius: 999px;
+            border: 1px solid #cbd5e1;
+            padding: 8px 14px;
+            font-size: 0.9rem;
+            color: #64748b;
+            background: #ffffff;
+            cursor: pointer;
+        }
+
+        .assign-display.has-value {
+            color: #0f172a;
+        }
+
+        .assign-panel {
+            position: absolute;
+            left: 0;
+            right: 0;
+            margin-top: 6px;
+            z-index: 30;
+            display: none;
+        }
+
+        .assign-dropdown.open .assign-panel {
+            display: block;
+        }
+
+        .photo-upload-box {
+            border-radius: 18px;
+            border: 2px dashed #3b82f6;
+            background: #eff6ff;
+            padding: 18px 16px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .photo-upload-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: #1e3a8a;
+        }
+
+        .photo-upload-icon {
+            font-size: 2rem;
+            color: #2563eb;
+        }
+
+        .photo-upload-title {
+            font-weight: 600;
+        }
+
+        .photo-upload-subtitle {
+            font-size: 0.8rem;
+            color: #334155;
+        }
+
+        .photo-upload-box.has-photo .photo-upload-inner {
+            display: none;
+        }
+    </style>
+</head>
+<body class="p-8">
+
+    <div id="topbarContainer"></div>
+
+    <div class="dashboard-container">
+        <div id="sidebarContainer"></div>
+
+        <main class="main-content">
+
+            <div class="container-fluid">
+                <div class="container">
+
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
+                        <div>
+                            <h1 class="page-title">Scouting Candidate</h1>
+                            <p class="text-muted small mb-0">Kumpulkan dan pantau calon talenta terbaik untuk tim Anda.</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="btn-group" role="group" aria-label="View toggle" style="background-color: #fff; border-radius: 10px;">
+                                <button type="button" class="btn view-btn active" id="btnGrid"><i class="fas fa-th-large"></i></button>
+                                <button type="button" class="btn view-btn" id="btnList"><i class="fas fa-list"></i></button>
+                            </div>
+                            <button class="btn btn-dlg-blue rounded-pill px-4 fw-bold border-0" id="btnAddCandidate" data-bs-toggle="modal" data-bs-target="#candidateAddModal">
+                                <i class="fas fa-plus me-2"></i>Tambah Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-panel">
+                        <div class="row g-3 justify-content-between">
+                            <div class="col-md-6">
+                                <div class="input-group border-0 bg-light rounded-4 px-2">
+                                    <span class="input-group-text bg-transparent border-0"><i class="fas fa-search text-muted"></i></span>
+                                    <input type="text" id="candidateSearchInput" class="form-control bg-transparent border-0 py-2 shadow-none" placeholder="Cari kandidat...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="candidateSortSelect" class="form-select border-0 bg-light rounded-4 w-100 shadow-none py-2 px-3 fw-bold" style="font-size: 13px;">
+                                    <option value="none">Urutkan</option>
+                                    <option value="name_asc">Nama A-Z</option>
+                                    <option value="name_desc">Nama Z-A</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="gridView" class="row g-4"></div>
+
+                    <div class="modal fade" id="candidateAddModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 rounded-4 shadow-lg">
+                                <div class="modal-header border-0 pb-0">
+                                    <h5 class="modal-title fw-bold">Tambah Kandidat</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <hr style="margin-top: 8px;"/>
+                                <div class="modal-body">
+                                    <form id="candidateAddForm">
+                                        <div class="row g-3">
+                                            <div class="col-md-12">
+                                                <input type="text" class="form-control" placeholder="Nama Kandidat" id="candidateNameInput" style="border-radius: 75px;" required>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <select class="form-select" id="candidatePositionSelect" style="border-radius: 75px;" required>
+                                                    <option value="">Memuat data posisi...</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <select class="form-select" id="candidateRoleInput" style="border-radius: 75px;" required>
+                                                        <option value="">Memuat data role...</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <select class="form-select" id="candidateChannelTypeSelect" style="border-radius: 75px;" required>
+                                                        <option value="">Pilih channel</option>
+                                                        <option value="linkedin">LinkedIn</option>
+                                                        <option value="facebook">Facebook</option>
+                                                        <option value="instagram">Instagram</option>
+                                                        <option value="tiktok">TikTok</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <input type="url" class="form-control" id="candidateChannelUrlInput" style="border-radius: 75px;" placeholder="Put link social media here">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div id="assignDisplay" class="assign-display">Pilih assign...</div>
+                                                <div class="assign-dropdown" id="assignDropdown">
+                                                    <div class="assign-panel">
+                                                        <div class="assign-search">
+                                                            <span class="assign-search-icon"><i class="fas fa-search"></i></span>
+                                                            <input type="text" id="assignUserSearch" class="assign-search-input" placeholder="Search...">
+                                                        </div>
+                                                        <div class="assign-list">
+                                                            <div class="assign-list-header">PEOPLE</div>
+                                                            <div id="candidateAssignUsers" class="candidate-assign-users"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" id="candidateAssignInput">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div id="candidatePhotoUpload" class="photo-upload-box">
+                                                    <div class="photo-upload-inner">
+                                                        <i class="fas fa-cloud-upload-alt photo-upload-icon"></i>
+                                                        <div class="photo-upload-title">Upload Photo Candidate</div>
+                                                        <div class="photo-upload-subtitle">Format PNG, JPG (Max. 5MB), disarankan 400x400 px</div>
+                                                    </div>
+                                                </div>
+                                                <input type="file" class="form-control d-none" id="candidateImageUrlInput" accept="image/*">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-end gap-2 mt-3">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-dlg-blue fw-bold">Simpan</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="listView" class="list-view-container">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle shadow-sm">
+                                <thead class="table-light text-center">
+                                    <tr>
+                                        <th class="ps-4">Nama Kandidat</th>
+                                        <th>Channel</th>
+                                        <th>Status</th>
+                                        <th>Assign</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="ps-4 candidate-row" data-name="Raka Sudirman">
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=800" class="list-img">
+                                                <div>
+                                                    <div class="fw-bold candidate-name">Raka Sudirman</div>
+                                                    <small class="text-muted">Creative Director</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a href="#" class="text-primary"><i class="fab fa-linkedin fa-lg"></i></a>
+                                                <a href="#" class="text-dark"><i class="fab fa-tiktok fa-lg"></i></a>
+                                                <a href="#" class="text-danger"><i class="fab fa-instagram fa-lg"></i></a>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <select class="form-select form-select-sm status-select status-waiting w-75">
+                                                <option>Belum Dihubungi</option>
+                                                <option selected>Menunggu Balasan</option>
+                                            </select>
+                                        </td>
+                                        <td><span class="assign-badge">Sarah Johnson</span></td>
+                                        <td class="text-center">
+                                            <div class="dropdown">
+                                                <button class="btn btn-light btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><button class="dropdown-item candidate-edit-btn" type="button">Edit</button></li>
+                                                    <li><button class="dropdown-item text-danger candidate-delete-btn" type="button">Delete</button></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Baris 2 -->
+                                    <tr class="candidate-row" data-name="Nadia Putri">
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=800" class="list-img">
+                                                <div>
+                                                    <div class="fw-bold candidate-name">Nadia Putri</div>
+                                                    <small class="text-muted">Fullstack Developer</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a href="#" class="text-primary"><i class="fab fa-linkedin fa-lg"></i></a>
+                                                <a href="#" class="text-primary"><i class="fab fa-facebook fa-lg"></i></a>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <select class="form-select form-select-sm status-select status-replied w-75">
+                                                <option selected>Membalas (Tertarik)</option>
+                                                <option>Menolak</option>
+                                            </select>
+                                        </td>
+                                        <td><span class="assign-badge">Budi Doremi</span></td>
+                                        <td class="text-center">
+                                            <div class="dropdown">
+                                                <button class="btn btn-light btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><button class="dropdown-item candidate-edit-btn" type="button">Edit</button></li>
+                                                    <li><button class="dropdown-item text-danger candidate-delete-btn" type="button">Delete</button></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const btnGrid = document.getElementById('btnGrid');
+        const btnList = document.getElementById('btnList');
+        const gridView = document.getElementById('gridView');
+        const listView = document.getElementById('listView');
+        const searchInput = document.getElementById('candidateSearchInput');
+        const sortSelect = document.getElementById('candidateSortSelect');
+
+        function applyCandidateFilters() {
+            const term = (searchInput?.value || "").toLowerCase();
+            const sortValue = sortSelect?.value || "none";
+
+            const gridItems = Array.from(document.querySelectorAll('.candidate-item'));
+            const listRows = Array.from(document.querySelectorAll('.candidate-row'));
+
+            gridItems.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                item.style.display = text.includes(term) ? "" : "none";
+            });
+
+            listRows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(term) ? "" : "none";
+            });
+
+            if (sortValue === "none") return;
+
+            const compare = (a, b) => {
+                const nameA = (a.dataset.name || "").toLowerCase();
+                const nameB = (b.dataset.name || "").toLowerCase();
+                if (sortValue === "name_asc") {
+                    return nameA.localeCompare(nameB, "id");
+                } else if (sortValue === "name_desc") {
+                    return nameB.localeCompare(nameA, "id");
+                }
+                return 0;
+            };
+
+            const gridContainer = document.getElementById('gridView');
+            const listTbody = document.querySelector('#listView tbody');
+
+            const visibleGrid = gridItems.filter(item => item.style.display !== "none");
+            visibleGrid.sort(compare).forEach(item => gridContainer.appendChild(item));
+
+            const visibleRows = listRows.filter(row => row.style.display !== "none");
+            visibleRows.sort(compare).forEach(row => listTbody.appendChild(row));
+        }
+
+        btnGrid.addEventListener('click', () => {
+            btnGrid.classList.add('active');
+            btnList.classList.remove('active');
+            gridView.style.display = 'flex';
+            listView.style.display = 'none';
+        });
+
+        btnList.addEventListener('click', () => {
+            btnList.classList.add('active');
+            btnGrid.classList.remove('active');
+            gridView.style.display = 'none';
+            listView.style.display = 'block';
+        });
+
+        if (searchInput) {
+            searchInput.addEventListener('input', applyCandidateFilters);
+        }
+
+        if (sortSelect) {
+            sortSelect.addEventListener('change', applyCandidateFilters);
+        }
+
+        if (window.bootstrap && typeof window.bootstrap.Tooltip === 'function') {
+            window.refreshTooltips = function () {
+                const triggers = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                triggers.forEach(el => {
+                    if (!el._tooltipInstance) {
+                        el._tooltipInstance = new bootstrap.Tooltip(el);
+                    }
+                });
+            };
+        }
+
+        document.addEventListener('click', async (e) => {
+            const editBtn = e.target.closest('.candidate-edit-btn');
+            const deleteBtn = e.target.closest('.candidate-delete-btn');
+            if (editBtn) {
+                const row = editBtn.closest('tr');
+                const card = editBtn.closest('.candidate-item') || editBtn.closest('.col-12.col-md-6.col-lg-4');
+                const candidateEl = row || card;
+                const talentId = candidateEl && candidateEl.dataset ? candidateEl.dataset.talentId : null;
+                if (talentId && window.startEditCandidate) {
+                    window.startEditCandidate(talentId);
+                }
+            }
+            if (deleteBtn) {
+                const row = deleteBtn.closest('tr');
+                const card = deleteBtn.closest('.col-12.col-md-6.col-lg-4');
+                const candidateEl = row || card || (card && card.querySelector('.candidate-item'));
+                const talentId = candidateEl && candidateEl.dataset ? candidateEl.dataset.talentId : null;
+                const confirmDelete = confirm(talentId
+                    ? 'Hapus kandidat ini dari database dan tampilan?'
+                    : 'Hapus kandidat ini dari tampilan saja?');
+                if (!confirmDelete) return;
+                try {
+                    if (talentId && window.deleteTalentById) {
+                        await window.deleteTalentById(talentId);
+                    }
+                    if (row) row.remove();
+                    if (card) card.remove();
+                } catch (err) {
+                    console.error(err);
+                    alert('Gagal menghapus kandidat dari database.');
+                }
+            }
+        });
+
+        document.addEventListener('change', (e) => {
+            const select = e.target.closest('.status-select');
+            if (!select) return;
+            const row = select.closest('.candidate-row');
+            const card = select.closest('.candidate-item') || select.closest('.col-12.col-md-6.col-lg-4');
+            const talentId = (row && row.dataset && row.dataset.talentId) ||
+                (card && card.dataset && card.dataset.talentId) ||
+                null;
+            const newStatus = select.value || "none";
+            if (talentId) {
+                const gridSelect = document.querySelector('.candidate-item[data-talent-id="' + talentId + '"] .status-select');
+                const listSelect = document.querySelector('.candidate-row[data-talent-id="' + talentId + '"] .status-select');
+                if (gridSelect && gridSelect !== select) {
+                    gridSelect.value = newStatus;
+                }
+                if (listSelect && listSelect !== select) {
+                    listSelect.value = newStatus;
+                }
+            }
+        });
+    </script>
+
+    <script type="module">
+        import { renderTopBar } from "../element/topbar.js";
+        import { renderSidebar } from "../element/sidebar.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import {
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            updateDoc,
+            deleteDoc,
+            arrayUnion,
+            serverTimestamp,
+            getDocs,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import {
+            getStorage,
+            ref as storageRef,
+            uploadBytes,
+            getDownloadURL
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com", 
+            projectId: "pre-dialogika", 
+            storageBucket: "pre-dialogika.firebasestorage.app", 
+            messagingSenderId: "343771410480", 
+            appId: "1:343771410480:web:32881c9868522090237df5", 
+            measurementId: "G-SXN811P3N0" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const topbarTarget = document.getElementById('topbarContainer');
+        renderTopBar(topbarTarget);
+
+        const sidebarTarget = document.getElementById('sidebarContainer');
+        renderSidebar(sidebarTarget);
+
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById('sidebarNav');
+            if (sidebar) sidebar.classList.toggle('show');
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "../index.html";
+            }
+        });
+
+        async function createTalent(payload) {
+            const talentsRef = collection(db, "talents");
+            const newDocRef = doc(talentsRef);
+            const nowIso = new Date().toISOString();
+
+            const baseStatus = payload.recruitment_status && payload.recruitment_status.current
+                ? payload.recruitment_status
+                : {
+                    current: "radar",
+                    history: [
+                        { status: "radar", date: nowIso }
+                    ]
+                };
+
+            const data = {
+                basic_info: payload.basic_info || null,
+                scouting_info: payload.scouting_info || null,
+                recruitment_status: baseStatus,
+                contact_info: payload.contact_info || null,
+                availability: payload.availability || null,
+                education: payload.education || null,
+                organizations: payload.organizations || [],
+                work: payload.work || null,
+                events: payload.events || [],
+                routines: payload.routines || null,
+                experience: payload.experience || null,
+                profiling: payload.profiling || null,
+                devices: payload.devices || null,
+                interview_notes: payload.interview_notes || null,
+                logs: payload.logs || [],
+                score_fit: typeof payload.score_fit === "number" ? payload.score_fit : null,
+                priority: payload.priority || "medium",
+                created_at: serverTimestamp()
+            };
+
+            await setDoc(newDocRef, data);
+            return newDocRef.id;
+        }
+
+        async function uploadCandidateImage(file) {
+            if (!file) return null;
+            const path = "talent-avatars/" + Date.now() + "-" + file.name;
+            const fileRef = storageRef(storage, path);
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
+            return url;
+        }
+
+        async function updateTalentStatus(talentId, newStatus, actorName) {
+            const ref = doc(db, "talents", talentId);
+            const nowIso = new Date().toISOString();
+            const logEntry = {
+                action: "status_change",
+                to: newStatus,
+                by: actorName || null,
+                date: nowIso
+            };
+            await updateDoc(ref, {
+                "recruitment_status.current": newStatus,
+                "recruitment_status.history": arrayUnion({
+                    status: newStatus,
+                    date: nowIso
+                }),
+                logs: arrayUnion(logEntry)
+            });
+        }
+
+        async function addTalentLog(talentId, logEntry) {
+            const ref = doc(db, "talents", talentId);
+            const nowIso = new Date().toISOString();
+            const entry = Object.assign({}, logEntry);
+            if (!entry.date) entry.date = nowIso;
+            await updateDoc(ref, {
+                logs: arrayUnion(entry)
+            });
+        }
+
+        async function loadCandidateRoles() {
+            const select = document.getElementById('candidateRoleInput');
+            if (!select) return;
+            select.innerHTML = '<option value="">Memuat data role...</option>';
+            try {
+                const snap = await getDocs(collection(db, "roles"));
+                if (snap.empty) {
+                    select.innerHTML = '<option value="">Tidak ada data role</option>';
+                    return;
+                }
+                const options = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const name = data.name || data.label || data.title || "Role";
+                    options.push({
+                        id: docSnap.id,
+                        name
+                    });
+                });
+                select.innerHTML = '<option value="">Pilih role</option>';
+                options.forEach(role => {
+                    const opt = document.createElement('option');
+                    opt.value = role.id;
+                    opt.textContent = role.name;
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                select.innerHTML = '<option value="">Gagal memuat role</option>';
+            }
+        }
+
+        async function loadCandidatePositions() {
+            const select = document.getElementById('candidatePositionSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">Memuat data posisi...</option>';
+            try {
+                let snap = await getDocs(collection(db, "position"));
+                if (snap.empty) {
+                    try {
+                        const fallbackSnap = await getDocs(collection(db, "positions"));
+                        snap = fallbackSnap;
+                    } catch (e) {}
+                }
+                const options = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const name = data.name || data.label || data.title || data.position || "Unknown Position";
+                    options.push({
+                        id: docSnap.id,
+                        name
+                    });
+                });
+                select.innerHTML = '<option value="">Pilih posisi</option>';
+                options.forEach(pos => {
+                    const opt = document.createElement('option');
+                    opt.value = pos.id;
+                    opt.textContent = pos.name;
+                    select.appendChild(opt);
+                });
+            } catch (e) {
+                select.innerHTML = '<option value="">Gagal memuat posisi</option>';
+            }
+        }
+
+        const assignUsersMap = {};
+        let currentEditingTalentId = null;
+        let currentAvatarUrl = null;
+
+        window.deleteTalentById = async function (talentId) {
+            try {
+                await deleteDoc(doc(db, "talents", talentId));
+            } catch (e) {
+                console.error("Failed to delete talent", talentId, e);
+                throw e;
+            }
+        };
+
+        function escapeHtml(str) {
+            return (str || "").toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function buildAssignAvatarStack(userIds) {
+            const ids = Array.isArray(userIds) ? userIds : [];
+            const valid = ids.filter(uid => assignUsersMap[uid]);
+            if (!valid.length) return "";
+            const maxShown = 3;
+            const shownIds = valid.slice(0, maxShown);
+            let html = '<div class="assign-avatar-stack">';
+            shownIds.forEach(uid => {
+                const u = assignUsersMap[uid] || {};
+                const name = escapeHtml(u.name || "User");
+                const photo = u.photo || "";
+                const initialsSource = u.name || "";
+                const initials = initialsSource
+                    ? initialsSource.split(" ").map(part => part[0]).join("").substring(0, 2).toUpperCase()
+                    : "U";
+                if (photo) {
+                    html += '<div class="assign-avatar-circle" data-bs-toggle="tooltip" title="' + name + '"><img src="' + photo + '" alt="' + name + '"></div>';
+                } else {
+                    html += '<div class="assign-avatar-circle assign-avatar-initials" data-bs-toggle="tooltip" title="' + name + '">' + initials + '</div>';
+                }
+            });
+            html += '</div>';
+            return html;
+        }
+
+        async function loadTalents() {
+            const gridContainer = document.getElementById('gridView');
+            const listTbody = document.querySelector('#listView tbody');
+            if (!gridContainer || !listTbody) return;
+            gridContainer.innerHTML = "";
+            listTbody.innerHTML = "";
+            try {
+                const snap = await getDocs(collection(db, "talents"));
+                if (snap.empty) return;
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const basic = data.basic_info || {};
+                    const scouting = data.scouting_info || {};
+                    const name = basic.full_name || scouting.full_name || "Tanpa Nama";
+                    const role = basic.current_role || scouting.role_name || "";
+                    const positionName = scouting.position_name || "";
+                    const avatarUrl = basic.avatar_url || null;
+                    const channelType = scouting.channel_type || "linkedin";
+                    const channelUrl = scouting.channel_url || "#";
+                    const assignedTo = Array.isArray(scouting.assigned_to) ? scouting.assigned_to.filter(Boolean) : [];
+                    let assignLabel = "";
+                    if (assignedTo.length > 0) {
+                        const names = assignedTo.map(uid => (assignUsersMap[uid]?.name || "User"));
+                        const shown = names.slice(0, 2);
+                        const extra = names.length - shown.length;
+                        assignLabel = extra > 0 ? (shown.join(', ') + ' +' + extra) : shown.join(', ');
+                    }
+                    const assignAvatarHtml = assignedTo.length > 0 ? buildAssignAvatarStack(assignedTo) : "";
+                    appendCandidateToUI({
+                        name,
+                        role,
+                        positionName,
+                        avatarUrl,
+                        channelType,
+                        channelUrl,
+                        assignLabel,
+                        assignAvatarHtml,
+                        talentId: docSnap.id
+                    });
+                });
+            } catch (e) {}
+        }
+
+        window.startEditCandidate = async function (talentId) {
+            try {
+                const ref = doc(db, "talents", talentId);
+                const snap = await getDoc(ref);
+                if (!snap.exists()) {
+                    alert('Data kandidat tidak ditemukan.');
+                    return;
+                }
+                const data = snap.data() || {};
+                const basic = data.basic_info || {};
+                const scouting = data.scouting_info || {};
+                const name = basic.full_name || scouting.full_name || "";
+                const roleName = basic.current_role || scouting.role_name || "";
+                const roleId = scouting.role_id || null;
+                const positionId = scouting.position_id || null;
+                const positionName = scouting.position_name || "";
+                const channelType = scouting.channel_type || "";
+                const channelUrl = scouting.channel_url || "";
+                const assignedTo = Array.isArray(scouting.assigned_to) ? scouting.assigned_to.filter(Boolean) : [];
+                const avatarUrl = basic.avatar_url || null;
+
+                const nameInput = document.getElementById('candidateNameInput');
+                if (nameInput) nameInput.value = name;
+
+                const roleSelect = document.getElementById('candidateRoleInput');
+                if (roleSelect) {
+                    let selectedRoleId = "";
+                    if (roleId) {
+                        const hasRole = Array.from(roleSelect.options).some(opt => opt.value === roleId);
+                        if (hasRole) selectedRoleId = roleId;
+                    }
+                    if (!selectedRoleId && roleName) {
+                        const matchRole = Array.from(roleSelect.options).find(opt => opt.textContent === roleName);
+                        if (matchRole) selectedRoleId = matchRole.value;
+                    }
+                    roleSelect.value = selectedRoleId;
+                }
+
+                const positionSelect = document.getElementById('candidatePositionSelect');
+                if (positionSelect) {
+                    let selectedPositionId = "";
+                    if (positionId) {
+                        const hasPos = Array.from(positionSelect.options).some(opt => opt.value === positionId);
+                        if (hasPos) selectedPositionId = positionId;
+                    }
+                    if (!selectedPositionId && positionName) {
+                        const matchPos = Array.from(positionSelect.options).find(opt => opt.textContent === positionName);
+                        if (matchPos) selectedPositionId = matchPos.value;
+                    }
+                    positionSelect.value = selectedPositionId;
+                }
+
+                const channelTypeSelect = document.getElementById('candidateChannelTypeSelect');
+                if (channelTypeSelect) channelTypeSelect.value = channelType || "";
+
+                const channelUrlInput = document.getElementById('candidateChannelUrlInput');
+                if (channelUrlInput) channelUrlInput.value = channelUrl || "";
+
+                const hiddenAssign = document.getElementById('candidateAssignInput');
+                const assignItems = document.querySelectorAll('#candidateAssignUsers .assign-user-item');
+                if (assignItems && assignItems.length) {
+                    const selectedSet = new Set(assignedTo);
+                    assignItems.forEach(item => {
+                        const cb = item.querySelector('input[type="checkbox"]');
+                        if (!cb) return;
+                        const uid = item.dataset.userId;
+                        cb.checked = selectedSet.has(uid);
+                        const event = new Event('change');
+                        cb.dispatchEvent(event);
+                    });
+                } else if (hiddenAssign) {
+                    hiddenAssign.value = assignedTo.join(',');
+                }
+
+                currentEditingTalentId = talentId;
+                currentAvatarUrl = avatarUrl || null;
+
+                const imageInput = document.getElementById('candidateImageUrlInput');
+                if (imageInput) {
+                    imageInput.value = "";
+                }
+
+                const photoUploadBoxEl = document.getElementById('candidatePhotoUpload');
+                if (photoUploadBoxEl) {
+                    if (avatarUrl) {
+                        photoUploadBoxEl.style.backgroundImage = 'url(' + avatarUrl + ')';
+                        photoUploadBoxEl.style.backgroundSize = 'cover';
+                        photoUploadBoxEl.style.backgroundPosition = 'center';
+                        photoUploadBoxEl.classList.add('has-photo');
+                    } else {
+                        photoUploadBoxEl.style.backgroundImage = '';
+                        photoUploadBoxEl.style.backgroundSize = '';
+                        photoUploadBoxEl.style.backgroundPosition = '';
+                        photoUploadBoxEl.classList.remove('has-photo');
+                    }
+                }
+
+                const modalElement = document.getElementById('candidateAddModal');
+                if (modalElement && window.bootstrap && window.bootstrap.Modal) {
+                    const titleEl = modalElement.querySelector('.modal-title');
+                    if (titleEl) titleEl.textContent = 'Edit Kandidat';
+                    const modalInstance = window.bootstrap.Modal.getInstance(modalElement) || new window.bootstrap.Modal(modalElement);
+                    modalInstance.show();
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Gagal memuat data kandidat untuk edit.');
+            }
+        };
+
+        function appendCandidateToUI(params) {
+            const name = escapeHtml(params.name);
+            const role = escapeHtml(params.role || "");
+            const position = escapeHtml(params.positionName || "");
+            const avatarUrl = params.avatarUrl || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=800";
+            const channelType = params.channelType || "linkedin";
+            const channelUrl = params.channelUrl || "#";
+            const assignLabel = params.assignLabel ? escapeHtml(params.assignLabel) : "";
+            const assignAvatarHtml = params.assignAvatarHtml || "";
+            const talentId = params.talentId || "";
+
+            const subtitleParts = [];
+            if (role) subtitleParts.push(role);
+            if (position) subtitleParts.push(position);
+            const subtitle = subtitleParts.join(' | ');
+
+            const gridContainer = document.getElementById('gridView');
+            const listTbody = document.querySelector('#listView tbody');
+            if (!gridContainer || !listTbody) return;
+
+            let channelIcon = "fab fa-linkedin-in";
+            if (channelType === "facebook") channelIcon = "fab fa-facebook-f";
+            if (channelType === "instagram") channelIcon = "fab fa-instagram";
+            if (channelType === "tiktok") channelIcon = "fab fa-tiktok";
+
+            const assignBadgeHtml = assignAvatarHtml
+                ? '<div class="img-assign-badge">' + assignAvatarHtml + "</div>"
+                : "";
+
+            const gridHtml =
+                '<div class="col-12 col-md-6 col-lg-4 candidate-item" data-name="' + name + '" data-talent-id="' + talentId + '">' +
+                    '<div class="candidate-card">' +
+                        '<div class="img-wrapper">' +
+                            '<img src="' + avatarUrl + '" class="candidate-img" alt="Kandidat">' +
+                            '<div class="card-action-menu dropdown">' +
+                                '<button class="btn btn-light btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">' +
+                                    '<i class="fas fa-ellipsis-v"></i>' +
+                                '</button>' +
+                                '<ul class="dropdown-menu dropdown-menu-end">' +
+                                    '<li><button class="dropdown-item candidate-edit-btn" type="button">Edit</button></li>' +
+                                    '<li><button class="dropdown-item text-danger candidate-delete-btn" type="button">Delete</button></li>' +
+                                '</ul>' +
+                            '</div>' +
+                            '<div class="social-tags">' +
+                                '<a href="' + channelUrl + '" target="_blank" class="tag-icon"><i class="' + channelIcon + '"></i></a>' +
+                            '</div>' +
+                            assignBadgeHtml +
+                        '</div>' +
+                        '<div class="p-4">' +
+                            '<div class="d-flex justify-content-between align-items-start mb-3">' +
+                                '<div>' +
+                                    '<h5 class="fw-bold mb-0 candidate-name">' + name + '</h5>' +
+                                    '<small class="text-muted">' + subtitle + '</small>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="status-box">' +
+                                '<hr/>' +
+                                '<select class="form-select status-select status-waiting">' +
+                                    '<option value="none" selected>Radar</option>' +
+                                    '<option value="contacted">Contacted</option>' +
+                                    '<option value="replied">Respond</option>' +
+                                    '<option value="interview">Interview</option>' +
+                                    '<option value="ojt">On Job Test</option>' +
+                                    '<option value="decision">Decision</option>' +
+                                    '<option value="rejected">Rejected</option>' +
+                                    '<option value="accepted">Accepted</option>' +
+                                '</select>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+
+            const listHtml =
+                '<tr class="candidate-row" data-name="' + name + '" data-talent-id="' + talentId + '">' +
+                    '<td class="ps-4">' +
+                        '<div class="d-flex align-items-center">' +
+                            '<img src="' + avatarUrl + '" class="list-img">' +
+                            '<div>' +
+                                '<div class="fw-bold candidate-name">' + name + '</div>' +
+                                '<small class="text-muted">' + subtitle + '</small>' +
+                            '</div>' +
+                        '</div>' +
+                    '</td>' +
+                    '<td>' +
+                        '<div class="d-flex gap-2">' +
+                            '<a href="' + channelUrl + '" target="_blank" class="text-primary"><i class="' + channelIcon + ' fa-lg"></i></a>' +
+                        '</div>' +
+                    '</td>' +
+                    '<td>' +
+                        '<select class="form-select status-select status-waiting">' +
+                            '<option value="none" selected>Radar</option>' +
+                            '<option value="contacted">Contacted</option>' +
+                            '<option value="replied">Respond</option>' +
+                            '<option value="interview">Interview</option>' +
+                            '<option value="ojt">On Job Test</option>' +
+                            '<option value="decision">Decision</option>' +
+                            '<option value="rejected">Rejected</option>' +
+                            '<option value="accepted">Accepted</option>' +
+                        '</select>' +
+                    '</td>' +
+                    '<td>' + (assignAvatarHtml || (assignLabel ? '<span class="assign-badge" data-bs-toggle="tooltip" title="' + assignLabel + '">' + assignLabel + '</span>' : '')) + '</td>' +
+                    '<td class="text-center">' +
+                        '<div class="dropdown">' +
+                            '<button class="btn btn-light btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">' +
+                                '<i class="fas fa-ellipsis-v"></i>' +
+                            '</button>' +
+                            '<ul class="dropdown-menu dropdown-menu-end">' +
+                                '<li><button class="dropdown-item candidate-edit-btn" type="button">Edit</button></li>' +
+                                '<li><button class="dropdown-item text-danger candidate-delete-btn" type="button">Delete</button></li>' +
+                            '</ul>' +
+                        '</div>' +
+                    '</td>' +
+                '</tr>';
+
+            gridContainer.insertAdjacentHTML('afterbegin', gridHtml);
+            listTbody.insertAdjacentHTML('afterbegin', listHtml);
+            if (window.refreshTooltips) {
+                window.refreshTooltips();
+            }
+        }
+
+        async function loadAssignUsers() {
+            const container = document.getElementById('candidateAssignUsers');
+            const hiddenInput = document.getElementById('candidateAssignInput');
+            if (!container || !hiddenInput) return;
+            container.innerHTML = "";
+            try {
+                const snap = await getDocs(collection(db, "users"));
+                if (snap.empty) return;
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const id = docSnap.id;
+                    const name = data.displayName || data.name || data.email || "User";
+                    const photo = data.photo || data.photoURL || data.avatar_url || data.avatar || null;
+                    assignUsersMap[id] = { name, photo };
+                    const item = document.createElement('div');
+                    item.className = "assign-user-item";
+                    item.dataset.userId = id;
+                    item.dataset.name = name;
+                    const left = document.createElement('div');
+                    left.className = "assign-user-left";
+                    let avatarElement;
+                    if (photo) {
+                        avatarElement = document.createElement('img');
+                        avatarElement.src = photo;
+                        avatarElement.alt = name;
+                        avatarElement.className = "assign-user-avatar";
+                    } else {
+                        avatarElement = document.createElement('div');
+                        avatarElement.className = "assign-user-initials";
+                        const initials = name.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase();
+                        avatarElement.textContent = initials || "U";
+                    }
+                    const nameSpan = document.createElement('div');
+                    nameSpan.className = "assign-user-name";
+                    nameSpan.textContent = name;
+                    left.appendChild(avatarElement);
+                    left.appendChild(nameSpan);
+                    const right = document.createElement('div');
+                    right.className = "assign-user-checkbox";
+                    const checkbox = document.createElement('input');
+                    checkbox.type = "checkbox";
+                    checkbox.addEventListener('change', () => {
+                        item.classList.toggle('active', checkbox.checked);
+                        const selected = [];
+                        const items = container.querySelectorAll('.assign-user-item');
+                        items.forEach(it => {
+                            const cb = it.querySelector('input[type="checkbox"]');
+                            if (cb && cb.checked) selected.push(it.dataset.userId);
+                        });
+                        hiddenInput.value = selected.join(',');
+                        const display = document.getElementById('assignDisplay');
+                        if (display) {
+                            if (selected.length === 0) {
+                                display.textContent = 'Pilih assign...';
+                                display.classList.remove('has-value');
+                            } else {
+                                const names = selected.map(uid => (assignUsersMap[uid]?.name || "User"));
+                                const shown = names.slice(0, 2);
+                                const extra = names.length - shown.length;
+                                const label = extra > 0 ? (shown.join(', ') + ' +' + extra) : shown.join(', ');
+                                display.textContent = label;
+                                display.classList.add('has-value');
+                            }
+                        }
+                    });
+                    right.appendChild(checkbox);
+                    item.appendChild(left);
+                    item.appendChild(right);
+                    item.addEventListener('click', (ev) => {
+                        if (ev.target.tagName.toLowerCase() !== 'input') {
+                            const cb = item.querySelector('input[type="checkbox"]');
+                            if (cb) {
+                                cb.checked = !cb.checked;
+                                const event = new Event('change');
+                                cb.dispatchEvent(event);
+                            }
+                        }
+                    });
+                    container.appendChild(item);
+                });
+            } catch (e) {}
+        }
+
+        const candidateAddForm = document.getElementById('candidateAddForm');
+        const btnAddCandidate = document.getElementById('btnAddCandidate');
+        const assignSearchInput = document.getElementById('assignUserSearch');
+        const assignDropdown = document.getElementById('assignDropdown');
+        const assignDisplay = document.getElementById('assignDisplay');
+        const photoUploadBox = document.getElementById('candidatePhotoUpload');
+        const photoInput = document.getElementById('candidateImageUrlInput');
+
+        if (btnAddCandidate) {
+            btnAddCandidate.addEventListener('click', () => {
+                currentEditingTalentId = null;
+                currentAvatarUrl = null;
+                const modalElement = document.getElementById('candidateAddModal');
+                if (modalElement) {
+                    const titleEl = modalElement.querySelector('.modal-title');
+                    if (titleEl) titleEl.textContent = 'Tambah Kandidat';
+                }
+                if (candidateAddForm) {
+                    candidateAddForm.reset();
+                }
+                const assignHiddenInput = document.getElementById('candidateAssignInput');
+                const assignDisplayEl = document.getElementById('assignDisplay');
+                const assignSearchInputEl = document.getElementById('assignUserSearch');
+                const assignItems = document.querySelectorAll('#candidateAssignUsers .assign-user-item');
+                if (assignHiddenInput) {
+                    assignHiddenInput.value = "";
+                }
+                if (assignDisplayEl) {
+                    assignDisplayEl.textContent = 'Pilih assign...';
+                    assignDisplayEl.classList.remove('has-value');
+                }
+                if (assignSearchInputEl) {
+                    assignSearchInputEl.value = "";
+                }
+                assignItems.forEach(item => {
+                    const cb = item.querySelector('input[type="checkbox"]');
+                    if (cb) {
+                        cb.checked = false;
+                    }
+                    item.classList.remove('active');
+                    item.style.display = "";
+                });
+                if (photoUploadBox) {
+                    photoUploadBox.style.backgroundImage = '';
+                    photoUploadBox.style.backgroundSize = '';
+                    photoUploadBox.style.backgroundPosition = '';
+                    photoUploadBox.classList.remove('has-photo');
+                }
+                if (photoInput) {
+                    photoInput.value = "";
+                }
+            });
+        }
+
+        if (assignSearchInput) {
+            assignSearchInput.addEventListener('input', () => {
+                const term = assignSearchInput.value.toLowerCase();
+                const items = document.querySelectorAll('.assign-user-item');
+                items.forEach(item => {
+                    const text = (item.dataset.name || "").toLowerCase();
+                    item.style.display = text.includes(term) ? "" : "none";
+                });
+            });
+        }
+
+        if (assignDisplay && assignDropdown) {
+            assignDisplay.addEventListener('click', (e) => {
+                e.stopPropagation();
+                assignDropdown.classList.toggle('open');
+                if (assignDropdown.classList.contains('open') && assignSearchInput) {
+                    assignSearchInput.focus();
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!assignDropdown.contains(e.target)) {
+                    assignDropdown.classList.remove('open');
+                }
+            });
+        }
+
+        if (photoUploadBox && photoInput) {
+            photoUploadBox.addEventListener('click', () => {
+                photoInput.click();
+            });
+
+            photoInput.addEventListener('change', () => {
+                const file = photoInput.files && photoInput.files[0];
+                if (!file) return;
+                const maxSize = 5 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert('Ukuran file maksimal 5MB.');
+                    photoInput.value = "";
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => {
+                    photoUploadBox.style.backgroundImage = 'url(' + reader.result + ')';
+                    photoUploadBox.style.backgroundSize = 'cover';
+                    photoUploadBox.style.backgroundPosition = 'center';
+                    photoUploadBox.classList.add('has-photo');
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (candidateAddForm) {
+            candidateAddForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const isEdit = !!currentEditingTalentId;
+                const name = document.getElementById('candidateNameInput').value.trim();
+                const roleSelect = document.getElementById('candidateRoleInput');
+                const roleId = roleSelect ? (roleSelect.value || null) : null;
+                const role = roleSelect && roleSelect.selectedIndex > -1 ? roleSelect.options[roleSelect.selectedIndex].text : "";
+                const imageInput = document.getElementById('candidateImageUrlInput');
+                const imageFile = imageInput && imageInput.files && imageInput.files[0] ? imageInput.files[0] : null;
+                const positionSelect = document.getElementById('candidatePositionSelect');
+                const positionId = positionSelect.value || null;
+                const positionName = positionSelect.options[positionSelect.selectedIndex]?.text || null;
+                const channelUrl = document.getElementById('candidateChannelUrlInput').value.trim();
+                const channelType = document.getElementById('candidateChannelTypeSelect').value || null;
+                const assignValue = document.getElementById('candidateAssignInput').value || "";
+                const assignUserIds = assignValue ? assignValue.split(',').filter(Boolean) : [];
+
+                let avatarUrl = currentAvatarUrl || null;
+                if (imageFile) {
+                    avatarUrl = await uploadCandidateImage(imageFile);
+                }
+
+                const payload = {
+                    basic_info: {
+                        full_name: name,
+                        current_role: role,
+                        avatar_url: avatarUrl || null
+                    },
+                    scouting_info: {
+                        role_id: roleId,
+                        role_name: role,
+                        position_id: positionId,
+                        position_name: positionName,
+                        channel_type: channelType,
+                        channel_url: channelUrl || null,
+                        assigned_to: assignUserIds
+                    }
+                };
+
+                try {
+                    if (isEdit && currentEditingTalentId) {
+                        const ref = doc(db, "talents", currentEditingTalentId);
+                        await updateDoc(ref, {
+                            basic_info: payload.basic_info,
+                            scouting_info: payload.scouting_info
+                        });
+                        await loadTalents();
+                    } else {
+                        const talentId = await createTalent(payload);
+                        let assignLabel = "";
+                        if (assignUserIds.length > 0) {
+                            const names = assignUserIds.map(uid => (assignUsersMap[uid]?.name || "User"));
+                            const shown = names.slice(0, 2);
+                            const extra = names.length - shown.length;
+                            assignLabel = extra > 0 ? (shown.join(', ') + ' +' + extra) : shown.join(', ');
+                        }
+                        const assignAvatarHtml = assignUserIds.length > 0 ? buildAssignAvatarStack(assignUserIds) : "";
+                        appendCandidateToUI({
+                            name,
+                            role,
+                            positionName,
+                            avatarUrl,
+                            channelType,
+                            channelUrl,
+                            assignLabel,
+                            assignAvatarHtml,
+                            talentId
+                        });
+                    }
+                    candidateAddForm.reset();
+                    const assignHiddenInput = document.getElementById('candidateAssignInput');
+                    const assignDisplayEl = document.getElementById('assignDisplay');
+                    const assignSearchInputEl = document.getElementById('assignUserSearch');
+                    const assignItems = document.querySelectorAll('#candidateAssignUsers .assign-user-item');
+                    if (assignHiddenInput) {
+                        assignHiddenInput.value = "";
+                    }
+                    if (assignDisplayEl) {
+                        assignDisplayEl.textContent = 'Pilih assign...';
+                        assignDisplayEl.classList.remove('has-value');
+                    }
+                    if (assignSearchInputEl) {
+                        assignSearchInputEl.value = "";
+                    }
+                    assignItems.forEach(item => {
+                        const cb = item.querySelector('input[type="checkbox"]');
+                        if (cb) {
+                            cb.checked = false;
+                        }
+                        item.classList.remove('active');
+                        item.style.display = "";
+                    });
+                    if (photoUploadBox) {
+                        photoUploadBox.style.backgroundImage = '';
+                        photoUploadBox.style.backgroundSize = '';
+                        photoUploadBox.style.backgroundPosition = '';
+                        photoUploadBox.classList.remove('has-photo');
+                    }
+                    if (photoInput) {
+                        photoInput.value = "";
+                    }
+                    const modalElement = document.getElementById('candidateAddModal');
+                    const modalInstance = window.bootstrap.Modal.getInstance(modalElement) || new window.bootstrap.Modal(modalElement);
+                    modalInstance.hide();
+                    currentEditingTalentId = null;
+                    currentAvatarUrl = null;
+                    const message = isEdit ? 'Data kandidat berhasil diperbarui.' : 'Data kandidat berhasil disimpan ke database.';
+                    alert(message);
+                } catch (err) {
+                    console.error(err);
+                    alert('Gagal menyimpan data kandidat. Silakan coba lagi.');
+                }
+            });
+        }
+        
+        async function initScoutingPage() {
+            await loadAssignUsers();
+            await loadCandidateRoles();
+            await loadCandidatePositions();
+            await loadTalents();
+        }
+
+        initScoutingPage();
+
+        window.createTalent = createTalent;
+        window.updateTalentStatus = updateTalentStatus;
+        window.addTalentLog = addTalentLog;
+    </script>
+</body>
+</html>
