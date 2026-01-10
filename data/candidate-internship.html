@@ -1069,10 +1069,10 @@
                     const roleNameRaw = data.role_name || data.role || basic.current_role || scouting.role_name || "";
                     const roleIdValue = (roleIdRaw || "").toString().toLowerCase();
                     const roleNameValue = (roleNameRaw || "").toString().toLowerCase();
-                    const hasInternshipBlock = internship && Object.keys(internship).length > 0;
                     const normalizedRoleId = roleIdValue.replace(/\s/g, "");
                     const normalizedRoleName = roleNameValue.replace(/\s/g, "");
-                    if (!hasInternshipBlock && normalizedRoleId !== "internship" && normalizedRoleName !== "internship") {
+                    const isInternshipRole = normalizedRoleId === "internship" && normalizedRoleName === "internship";
+                    if (!isInternshipRole) {
                         return;
                     }
 

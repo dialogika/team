@@ -131,7 +131,7 @@
 
                 <section class="row g-4 mb-5">
                     <div class="col-md-2">
-                        <div class="card p-3 h-100 border-0 shadow">
+                        <div class="card p-3 h-100 border-0 shadow-sm">
                             <span class="text-muted-custom">Head Count</span>
                             <div class="stat-number mt-2">
                                 12
@@ -142,7 +142,7 @@
                     <div class="col-md-2">
                         <div class="card p-3 h-100 border-0 shadow-sm">
                             <span class="text-muted-custom">Applicants</span>
-                            <div class="stat-number mt-2">150</div>
+                            <div class="stat-number mt-2" id="applicantsCount">0</div>
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -173,28 +173,28 @@
 
                 <section class="row g-4 mb-5">
                     <div class="col-md-4">
-                        <div class="card p-4 h-100">
+                        <div class="card p-4 h-100 shadow-sm">
                             <h5 class="fw-bold mb-4">Recruitment Step</h5>
                             <div class="recruitment-step-item">
-                                <span>Screening</span> <span class="badge bg-light text-dark rounded-pill">10</span>
+                                <span>Screening</span> <span class="badge bg-light text-dark rounded-pill" id="stepScreeningCount">0</span>
                             </div>
                             <div class="recruitment-step-item">
-                                <span>Interview</span> <span class="badge bg-light text-dark rounded-pill">15</span>
+                                <span>Interview</span> <span class="badge bg-light text-dark rounded-pill" id="stepInterviewCount">0</span>
                             </div>
                             <div class="recruitment-step-item">
-                                <span>Decision</span> <span class="badge bg-light text-dark rounded-pill">14</span>
+                                <span>Decision</span> <span class="badge bg-light text-dark rounded-pill" id="stepDecisionCount">0</span>
                             </div>
                             <div class="recruitment-step-item">
-                                <span>Accept</span> <span class="badge bg-success-subtle text-success rounded-pill">13</span>
+                                <span>Accepted</span> <span class="badge bg-success-subtle text-success rounded-pill" id="stepAcceptedCount">0</span>
                             </div>
                             <div class="recruitment-step-item border-0">
-                                <span>Reject</span> <span class="badge bg-danger-subtle text-danger rounded-pill">25</span>
+                                <span>Rejected</span> <span class="badge bg-danger-subtle text-danger rounded-pill" id="stepRejectedCount">0</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-md-4">
-                        <div class="card p-4 h-100">
+                        <div class="card p-4 h-100 shadow-sm">
                             <h5 class="fw-bold mb-4">Upcoming Interview</h5>
                             <div class="interview-list-item">
                                 <div class="fw-bold">Budi <span class="badge bg-primary-subtle text-primary fw-normal ms-2">Internship</span></div>
@@ -208,7 +208,7 @@
                     </div>
 
                     <div class="col-md-4">
-                        <div class="card p-4 h-100">
+                        <div class="card p-4 h-100 shadow-sm">
                             <h5 class="fw-bold mb-2">Platform Jobposting</h5>
                             <div class="text-muted-custom mb-4">Total Candidate: <span class="text-dark fw-bold">500</span></div>
                             
@@ -253,7 +253,7 @@
                     </div>
 
                     <div class="col-md-4">
-                        <div class="card p-4 h-100">
+                        <div class="card p-4 h-100 shadow-sm">
                             <h5 class="fw-bold mb-4">Scouting Radar</h5>
                             <div class="d-flex flex-wrap gap-3" id="scoutingRadarList"></div>
                             <p class="text-muted-custom mt-4 mb-0">Baru masuk radar scouting hari ini.</p>
@@ -312,6 +312,7 @@
 
             fetchMaxHeadCount();
             loadOnLeaveCount();
+            loadRecruitmentStats();
             loadScoutingRadar(rangeStart, rangeEnd);
         });
 
@@ -455,6 +456,65 @@
                 onLeaveEl.textContent = onLeaveCount.toString();
             } catch (error) {
                 console.error("Failed to load on leave count:", error);
+            }
+        }
+
+        function normalizeStatus(value) {
+            if (!value) return "";
+            return value.toString().trim().toLowerCase();
+        }
+
+        async function loadRecruitmentStats() {
+            try {
+                const applicantsEl = document.getElementById("applicantsCount");
+                const screeningEl = document.getElementById("stepScreeningCount");
+                const interviewEl = document.getElementById("stepInterviewCount");
+                const decisionEl = document.getElementById("stepDecisionCount");
+                const acceptedEl = document.getElementById("stepAcceptedCount");
+                const rejectedEl = document.getElementById("stepRejectedCount");
+
+                const talentsRef = collection(db, "talents");
+                const snap = await getDocs(talentsRef);
+
+                let totalApplicants = 0;
+                let screeningCount = 0;
+                let interviewCount = 0;
+                let decisionCount = 0;
+                let acceptedCount = 0;
+                let rejectedCount = 0;
+
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const recruitment = data.recruitment_status || {};
+                    const currentRaw = recruitment.current || "";
+                    const current = normalizeStatus(currentRaw);
+
+                    const historyArray = Array.isArray(recruitment.history) ? recruitment.history : [];
+                    const hasNonRadarHistory = historyArray.some(entry => {
+                        const status = normalizeStatus(entry && entry.status);
+                        return status && status !== "radar";
+                    });
+
+                    const includeInApplicants = hasNonRadarHistory || (current && current !== "radar");
+                    if (includeInApplicants) {
+                        totalApplicants += 1;
+                    }
+
+                    if (current === "screening") screeningCount += 1;
+                    else if (current === "interview") interviewCount += 1;
+                    else if (current === "decision") decisionCount += 1;
+                    else if (current === "accepted" || current === "accept") acceptedCount += 1;
+                    else if (current === "rejected" || current === "reject") rejectedCount += 1;
+                });
+
+                if (applicantsEl) applicantsEl.textContent = totalApplicants.toString();
+                if (screeningEl) screeningEl.textContent = screeningCount.toString();
+                if (interviewEl) interviewEl.textContent = interviewCount.toString();
+                if (decisionEl) decisionEl.textContent = decisionCount.toString();
+                if (acceptedEl) acceptedEl.textContent = acceptedCount.toString();
+                if (rejectedEl) rejectedEl.textContent = rejectedCount.toString();
+            } catch (error) {
+                console.error("Failed to load recruitment stats:", error);
             }
         }
 

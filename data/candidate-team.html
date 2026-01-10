@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candidate Mentor</title>
+    <title>Candidate Team</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -71,12 +71,6 @@
             border-radius: 8px;
             object-fit: cover;
         }
-        .mentor-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
         .status-badge {
             font-size: 0.7rem;
             letter-spacing: 0.08em;
@@ -136,7 +130,7 @@
         .assign-dropdown.open .assign-panel {
             display: block;
         }
-        .mentor-assign-users {
+        .team-assign-users {
             max-height: 220px;
             overflow-y: auto;
         }
@@ -205,15 +199,15 @@
 
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
                         <div>
-                            <h1 class="page-title">Candidate Mentor</h1>
-                            <p class="text-muted small mb-0">Daftar calon mentor yang melamar di Dialogika.</p>
+                            <h1 class="page-title">Candidate Team</h1>
+                            <p class="text-muted small mb-0">Daftar calon anggota tim yang melamar di Dialogika.</p>
                         </div>
                         <div class="d-flex align-items-center gap-3">
                             <div class="btn-group" role="group" aria-label="View toggle" style="background-color: #fff; border-radius: 10px;">
                                 <button type="button" class="btn view-btn active" id="btnGrid"><i class="fas fa-th-large"></i></button>
                                 <button type="button" class="btn view-btn" id="btnList"><i class="fas fa-list"></i></button>
                             </div>
-                            <button type="button" class="btn btn-dlg-blue rounded-4 fw-semibold px-4 py-2" data-bs-toggle="modal" data-bs-target="#addMentorModal">
+                            <button type="button" class="btn btn-dlg-blue rounded-4 fw-semibold px-4 py-2" data-bs-toggle="modal" data-bs-target="#addTeamModal">
                                 + Candidate
                             </button>
                         </div>
@@ -224,11 +218,11 @@
                             <div class="col-md-6">
                                 <div class="input-group border-0 bg-light rounded-4 px-2">
                                     <span class="input-group-text bg-transparent border-0"><i class="fas fa-search text-muted"></i></span>
-                                    <input type="text" id="mentorSearchInput" class="form-control bg-transparent border-0 py-2 shadow-none" placeholder="Cari kandidat mentor...">
+                                    <input type="text" id="teamSearchInput" class="form-control bg-transparent border-0 py-2 shadow-none" placeholder="Cari kandidat team...">
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <select id="mentorSortSelect" class="form-select border-0 bg-light rounded-4 w-100 shadow-none py-2 px-3 fw-bold" style="font-size: 13px;">
+                                <select id="teamSortSelect" class="form-select border-0 bg-light rounded-4 w-100 shadow-none py-2 px-3 fw-bold" style="font-size: 13px;">
                                     <option value="none">Urutkan</option>
                                     <option value="name_asc">Nama A-Z</option>
                                     <option value="name_desc">Nama Z-A</option>
@@ -240,7 +234,7 @@
                     <div id="gridView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"></div>
 
                     <div id="listView" class="mt-4">
-                        <div id="mentorTableBody" class="space-y-4"></div>
+                        <div id="teamTableBody" class="space-y-4"></div>
                     </div>
 
                 </div>
@@ -248,67 +242,59 @@
         </main>
     </div>
 
-    <div class="modal fade" id="addMentorModal" tabindex="-1" aria-labelledby="addMentorModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addTeamModal" tabindex="-1" aria-labelledby="addTeamModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="addMentorModalLabel">Tambah Candidate Mentor</h5>
+                    <h5 class="modal-title fw-bold" id="addTeamModalLabel">Tambah Candidate Team</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" style="background-color: #f1f7fd;">
-                    <form id="addMentorForm">
+                    <form id="addTeamForm">
                         <div class="container-fluid">
                             <div class="mb-4">
-                                <p class="text-muted mb-0">Lengkapi formulir di bawah ini untuk menambahkan kandidat mentor baru.</p>
+                                <p class="text-muted mb-0">Lengkapi formulir di bawah ini untuk menambahkan kandidat team baru.</p>
                             </div>
 
                             <div class="card mb-4 border-0 shadow-sm">
                                 <div class="card-body">
-                                    <h6 class="fw-semibold mb-3 border-bottom pb-2">Data Mentor</h6>
+                                    <h6 class="fw-semibold mb-3 border-bottom pb-2">Data Kandidat</h6>
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <label class="form-label small">Nama Lengkap</label>
-                                            <input type="text" class="form-control" id="candidateFullName" placeholder="Nama lengkap kandidat">
+                                            <input type="text" class="form-control" id="teamFullName" placeholder="Nama lengkap kandidat">
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label small">Photo</label>
-                                            <input type="file" class="form-control" id="candidatePhoto">
+                                            <input type="file" class="form-control" id="teamPhoto">
                                         </div>
                                         <div class="col-12">
-                                            <label class="form-label small">Deskripsi Singkat Pengalaman Mentor</label>
-                                            <textarea rows="3" class="form-control" id="candidateDescription" placeholder="Ceritakan secara singkat pengalaman dan latar belakang mentoring..."></textarea>
+                                            <label class="form-label small">Deskripsi Singkat</label>
+                                            <textarea rows="3" class="form-control" id="teamDescription" placeholder="Ceritakan secara singkat pengalaman dan latar belakang..."></textarea>
                                         </div>
                                         <div class="col-12">
                                             <label class="form-label small">Alamat Lengkap</label>
-                                            <textarea rows="2" class="form-control" id="candidateAddress" placeholder="Masukkan alamat domisili..."></textarea>
+                                            <textarea rows="2" class="form-control" id="teamAddress" placeholder="Masukkan alamat domisili..."></textarea>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label small">Nomor Whatsapp</label>
-                                            <input type="tel" class="form-control" id="candidateWhatsapp" placeholder="0812...">
+                                            <input type="tel" class="form-control" id="teamWhatsapp" placeholder="0812...">
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label small">Email</label>
-                                            <input type="email" class="form-control" id="candidateEmail" placeholder="nama@email.com">
+                                            <input type="email" class="form-control" id="teamEmail" placeholder="nama@email.com">
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small">Link Instagram</label>
-                                            <input type="text" class="form-control" id="candidateInstagram" placeholder="@username">
+                                            <input type="text" class="form-control" id="teamInstagram" placeholder="@username">
                                         </div>
                                         <div class="col-md-3">
                                             <label class="form-label small">Link LinkedIn</label>
-                                            <input type="text" class="form-control" id="candidateLinkedin" placeholder="linkedin.com/in/...">
+                                            <input type="text" class="form-control" id="teamLinkedin" placeholder="linkedin.com/in/...">
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label small">Resume / CV</label>
-                                            <input type="file" class="form-control" id="candidateResume">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small">Notebook / Perangkat</label>
-                                            <input type="text" class="form-control" id="candidateDevices" placeholder="Misal: Laptop Pribadi, RAM 8GB">
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label class="form-label small">Provider</label>
-                                            <input type="text" class="form-control" id="candidateProvider" placeholder="Misal: Website Dialogika, LinkedIn, Instagram">
+                                            <input type="file" class="form-control" id="teamResume">
                                         </div>
                                     </div>
                                 </div>
@@ -324,14 +310,14 @@
         </div>
     </div>
 
-    <div class="modal fade" id="viewMentorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="viewTeamModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content border-0 bg-transparent">
                 <div class="modal-body p-0 position-relative">
                     <button type="button" class="position-absolute top-3 end-3 z-10 border-0 bg-transparent text-gray-400 hover:text-gray-600" data-bs-dismiss="modal" aria-label="Close">
                         <i class="fa-solid fa-xmark fs-3"></i>
                     </button>
-                    <div id="viewMentorContent"></div>
+                    <div id="viewTeamContent"></div>
                 </div>
             </div>
         </div>
@@ -343,15 +329,15 @@
         const btnList = document.getElementById('btnList');
         const gridView = document.getElementById('gridView');
         const listView = document.getElementById('listView');
-        const mentorSearchInput = document.getElementById('mentorSearchInput');
-        const mentorSortSelect = document.getElementById('mentorSortSelect');
+        const teamSearchInput = document.getElementById('teamSearchInput');
+        const teamSortSelect = document.getElementById('teamSortSelect');
 
-        function applyMentorFilters() {
-            const term = (mentorSearchInput && mentorSearchInput.value ? mentorSearchInput.value : "").toLowerCase();
-            const sortValue = mentorSortSelect ? (mentorSortSelect.value || "none") : "none";
+        function applyTeamFilters() {
+            const term = (teamSearchInput && teamSearchInput.value ? teamSearchInput.value : "").toLowerCase();
+            const sortValue = teamSortSelect ? (teamSortSelect.value || "none") : "none";
 
-            const cards = Array.from(document.querySelectorAll('.mentor-item'));
-            const rows = Array.from(document.querySelectorAll('.mentor-row'));
+            const cards = Array.from(document.querySelectorAll('.team-item'));
+            const rows = Array.from(document.querySelectorAll('.team-row'));
 
             cards.forEach(card => {
                 const text = card.innerText.toLowerCase();
@@ -377,13 +363,13 @@
             };
 
             const gridContainer = document.getElementById('gridView');
-            const listTbody = document.getElementById('mentorTableBody');
+            const listBody = document.getElementById('teamTableBody');
 
             const visibleCards = cards.filter(card => card.style.display !== "none");
             visibleCards.sort(compare).forEach(card => gridContainer.appendChild(card));
 
             const visibleRows = rows.filter(row => row.style.display !== "none");
-            visibleRows.sort(compare).forEach(row => listTbody.appendChild(row));
+            visibleRows.sort(compare).forEach(row => listBody.appendChild(row));
         }
 
         if (gridView && listView) {
@@ -407,12 +393,12 @@
             });
         }
 
-        if (mentorSearchInput) {
-            mentorSearchInput.addEventListener('input', applyMentorFilters);
+        if (teamSearchInput) {
+            teamSearchInput.addEventListener('input', applyTeamFilters);
         }
 
-        if (mentorSortSelect) {
-            mentorSortSelect.addEventListener('change', applyMentorFilters);
+        if (teamSortSelect) {
+            teamSortSelect.addEventListener('change', applyTeamFilters);
         }
     </script>
 
@@ -453,20 +439,6 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        if (typeof window !== "undefined") {
-            window.app = app;
-            window.auth = auth;
-            window.db = db;
-            window.collection = collection;
-            window.getDoc = getDoc;
-            window.getDocs = getDocs;
-            window.addDoc = addDoc;
-            window.storage = storage;
-            window.storageRef = storageRef;
-            window.uploadBytes = uploadBytes;
-            window.getDownloadURL = getDownloadURL;
-        }
-
         const topbarTarget = document.getElementById('topbarContainer');
         renderTopBar(topbarTarget);
 
@@ -478,35 +450,8 @@
             if (sidebar) sidebar.classList.toggle('show');
         };
 
-        const candidatePositionSelect = document.getElementById("candidatePosition");
-        const candidatePhotoInput = document.getElementById("candidatePhoto");
-        const candidateResumeInput = document.getElementById("candidateResume");
-
-        async function loadCandidatePositions() {
-            if (!candidatePositionSelect) return;
-            try {
-                candidatePositionSelect.innerHTML = '<option value="">Pilih posisi</option>';
-                const snap = await getDocs(collection(db, "positions"));
-                if (snap.empty) return;
-                const options = [];
-                snap.forEach(docSnap => {
-                    const data = docSnap.data() || {};
-                    const name = (data.name || "").toString().trim();
-                    if (!name) return;
-                    options.push({ id: docSnap.id, name });
-                });
-                options
-                    .sort((a, b) => a.name.localeCompare(b.name, "id"))
-                    .forEach(item => {
-                        const opt = document.createElement("option");
-                        opt.value = item.id;
-                        opt.textContent = item.name;
-                        candidatePositionSelect.appendChild(opt);
-                    });
-            } catch (e) {
-                console.error("Failed to load candidate positions", e);
-            }
-        }
+        const teamPhotoInput = document.getElementById("teamPhoto");
+        const teamResumeInput = document.getElementById("teamResume");
 
         function escapeHtml(str) {
             return (str || "").toString()
@@ -551,29 +496,6 @@
             return '<span class="badge rounded-pill ' + cls + '">' + escapeHtml(label) + '</span>';
         }
 
-        function extractNotebook(devices) {
-            if (!devices) return "";
-            if (typeof devices === "string" || typeof devices === "number") {
-                return devices.toString();
-            }
-            if (Array.isArray(devices)) {
-                return devices.join(", ");
-            }
-            if (typeof devices === "object") {
-                const keys = ["notebook", "laptop", "device", "devices"];
-                for (const key of keys) {
-                    if (devices[key]) {
-                        return devices[key].toString();
-                    }
-                }
-                const firstKey = Object.keys(devices)[0];
-                if (firstKey && devices[firstKey]) {
-                    return devices[firstKey].toString();
-                }
-            }
-            return "";
-        }
-
         async function uploadFileToStorage(file, folder) {
             if (!file) return null;
             const safeFolder = folder || "uploads";
@@ -584,8 +506,8 @@
             return url;
         }
 
-        async function loadMentorDetail(talentId) {
-            const container = document.getElementById("viewMentorContent");
+        async function loadTeamDetail(talentId) {
+            const container = document.getElementById("viewTeamContent");
             if (!container || !talentId) return;
             const ref = doc(db, "talents", talentId);
             const snap = await getDoc(ref);
@@ -598,15 +520,14 @@
             const contact = data.contact_info || {};
             const education = data.education || {};
             const profiling = data.profiling || {};
-            const internship = data.internship || data.internship_info || {};
 
             const name = escapeHtml(basic.full_name || data.full_name || "Tanpa Nama");
             const campus = escapeHtml(education.campus || education.university || "");
-            const address = escapeHtml(contact.address || internship.address || "");
-            const instagram = escapeHtml(contact.instagram || internship.instagram || "");
-            const linkedin = escapeHtml(contact.linkedin || internship.linkedin || "");
-            const whatsapp = escapeHtml(contact.whatsapp || contact.phone || internship.whatsapp || "");
-            const email = escapeHtml(contact.email || basic.email || internship.email || "");
+            const address = escapeHtml(contact.address || "");
+            const instagram = escapeHtml(contact.instagram || "");
+            const linkedin = escapeHtml(contact.linkedin || "");
+            const whatsapp = escapeHtml(contact.whatsapp || contact.phone || "");
+            const email = escapeHtml(contact.email || basic.email || "");
             const shortDesc = escapeHtml(profiling.short_description || "");
             const avatarUrl = basic.avatar_url || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=800";
 
@@ -651,15 +572,15 @@
                 '</div>';
         }
 
-        const mentorAssignUsersMap = {};
+        const teamAssignUsersMap = {};
 
-        async function ensureMentorUsersLoaded() {
-            if (Object.keys(mentorAssignUsersMap).length > 0) {
-                return mentorAssignUsersMap;
+        async function ensureTeamUsersLoaded() {
+            if (Object.keys(teamAssignUsersMap).length > 0) {
+                return teamAssignUsersMap;
             }
             if (window.questUsersById && Object.keys(window.questUsersById).length > 0) {
-                Object.assign(mentorAssignUsersMap, window.questUsersById);
-                return mentorAssignUsersMap;
+                Object.assign(teamAssignUsersMap, window.questUsersById);
+                return teamAssignUsersMap;
             }
             try {
                 const snap = await getDocs(collection(db, "users"));
@@ -668,25 +589,25 @@
                     const id = docSnap.id;
                     const name = data.displayName || data.name || data.email || "User";
                     const photo = data.photo || data.photoURL || data.avatar_url || data.avatar || null;
-                    mentorAssignUsersMap[id] = { name, photo };
+                    teamAssignUsersMap[id] = { name, photo };
                 });
             } catch (e) {}
-            return mentorAssignUsersMap;
+            return teamAssignUsersMap;
         }
 
-        function buildAssignLabelFromIds(userIds) {
+        function buildTeamAssignLabelFromIds(userIds) {
             const ids = Array.isArray(userIds) ? userIds : [];
-            const valid = ids.filter(uid => mentorAssignUsersMap[uid]);
+            const valid = ids.filter(uid => teamAssignUsersMap[uid]);
             if (!valid.length) return "";
-            const names = valid.map(uid => (mentorAssignUsersMap[uid]?.name || "User"));
+            const names = valid.map(uid => (teamAssignUsersMap[uid]?.name || "User"));
             const shown = names.slice(0, 2);
             const extra = names.length - shown.length;
             return extra > 0 ? (shown.join(", ") + " +" + extra) : shown.join(", ");
         }
 
-        function getMentorSelectedIds(fieldEl) {
+        function getTeamSelectedIds(fieldEl) {
             if (!fieldEl) return [];
-            const items = fieldEl.querySelectorAll(".mentor-assign-users .assign-user-item");
+            const items = fieldEl.querySelectorAll(".team-assign-users .assign-user-item");
             const selected = [];
             items.forEach(item => {
                 if (item.classList.contains("active")) {
@@ -697,10 +618,10 @@
             return selected;
         }
 
-        function refreshMentorInterviewerDisplay(fieldEl, selectedIds) {
+        function refreshTeamInterviewerDisplay(fieldEl, selectedIds) {
             if (!fieldEl) return;
-            const display = fieldEl.querySelector(".mentor-interviewer-display");
-            const hiddenInput = fieldEl.querySelector(".mentor-interviewer-input");
+            const display = fieldEl.querySelector(".team-interviewer-display");
+            const hiddenInput = fieldEl.querySelector(".team-interviewer-input");
             if (!display || !hiddenInput) return;
             const ids = Array.isArray(selectedIds) ? selectedIds : [];
             hiddenInput.value = ids.join(",");
@@ -709,7 +630,7 @@
                 display.classList.remove("has-value");
                 return;
             }
-            const label = buildAssignLabelFromIds(ids);
+            const label = buildTeamAssignLabelFromIds(ids);
             if (label) {
                 display.textContent = label;
                 display.classList.add("has-value");
@@ -719,7 +640,7 @@
             }
         }
 
-        async function saveMentorInterviewers(talentId, interviewerIds) {
+        async function saveTeamInterviewers(talentId, interviewerIds) {
             if (!talentId) return;
             const ids = Array.isArray(interviewerIds) ? interviewerIds.filter(Boolean) : [];
             const ref = doc(db, "talents", talentId);
@@ -728,11 +649,11 @@
                     interviewers: ids
                 });
             } catch (e) {
-                console.error("Failed to save mentor interviewers", e);
+                console.error("Failed to save team interviewers", e);
             }
         }
 
-        function buildMentorAssignItem(fieldEl, container, userId, userData, selectedSet) {
+        function buildTeamAssignItem(fieldEl, container, userId, userData, selectedSet) {
             const name = userData && userData.name ? userData.name : "User";
             const photo = userData ? userData.photo : null;
             const item = document.createElement("div");
@@ -768,11 +689,11 @@
             checkbox.checked = selectedSet && selectedSet.has(userId);
             checkbox.addEventListener("change", () => {
                 item.classList.toggle("active", checkbox.checked);
-                const selectedIds = getMentorSelectedIds(fieldEl);
-                refreshMentorInterviewerDisplay(fieldEl, selectedIds);
+                const selectedIds = getTeamSelectedIds(fieldEl);
+                refreshTeamInterviewerDisplay(fieldEl, selectedIds);
                 const talentId = fieldEl.dataset.talentId || "";
                 if (talentId) {
-                    saveMentorInterviewers(talentId, selectedIds);
+                    saveTeamInterviewers(talentId, selectedIds);
                 }
             });
             right.appendChild(checkbox);
@@ -788,14 +709,14 @@
             container.appendChild(item);
         }
 
-        async function openMentorInterviewerDropdownForField(fieldEl) {
+        async function openTeamInterviewerDropdownForField(fieldEl) {
             if (!fieldEl) return;
-            const panel = fieldEl.querySelector(".mentor-interviewer-panel");
-            const listContainer = fieldEl.querySelector(".mentor-assign-users");
-            const hiddenInput = fieldEl.querySelector(".mentor-interviewer-input");
+            const panel = fieldEl.querySelector(".team-interviewer-panel");
+            const listContainer = fieldEl.querySelector(".team-assign-users");
+            const hiddenInput = fieldEl.querySelector(".team-interviewer-input");
             if (!panel || !listContainer || !hiddenInput) return;
             listContainer.innerHTML = "";
-            const users = await ensureMentorUsersLoaded();
+            const users = await ensureTeamUsersLoaded();
             const currentIds = (hiddenInput.value || "").split(",").map(v => v.trim()).filter(Boolean);
             const selectedSet = new Set(currentIds);
             const entries = Object.entries(users);
@@ -806,17 +727,17 @@
                     return nameA.localeCompare(nameB, "id");
                 })
                 .forEach(([uid, data]) => {
-                    buildMentorAssignItem(fieldEl, listContainer, uid, data, selectedSet);
+                    buildTeamAssignItem(fieldEl, listContainer, uid, data, selectedSet);
                 });
-            refreshMentorInterviewerDisplay(fieldEl, currentIds);
+            refreshTeamInterviewerDisplay(fieldEl, currentIds);
         }
 
-        async function updateMentorStatus(talentId, newStatus, actorName) {
+        async function updateTeamStatus(talentId, newStatus, actorName) {
             if (!talentId || !newStatus) return;
             const ref = doc(db, "talents", talentId);
             const nowIso = new Date().toISOString();
             const logEntry = {
-                action: "mentor_status_change",
+                action: "team_status_change",
                 to: newStatus,
                 by: actorName || null,
                 date: nowIso
@@ -831,19 +752,19 @@
                     logs: arrayUnion(logEntry)
                 });
             } catch (e) {
-                console.error("Failed to update mentor status", e);
+                console.error("Failed to update team status", e);
             }
         }
 
-        function updateMentorStatusUI(talentId, newStatus, sourceSelect) {
+        function updateTeamStatusUI(talentId, newStatus, sourceSelect) {
             if (!talentId) return;
-            const selects = document.querySelectorAll('.mentor-status-select[data-talent-id="' + talentId + '"]');
+            const selects = document.querySelectorAll('.team-status-select[data-talent-id="' + talentId + '"]');
             selects.forEach(sel => {
                 if (sel !== sourceSelect) {
                     sel.value = newStatus;
                 }
             });
-            const card = document.querySelector('.mentor-item[data-talent-id="' + talentId + '"]');
+            const card = document.querySelector('.team-item[data-talent-id="' + talentId + '"]');
             if (card) {
                 const badge = card.querySelector(".status-badge");
                 if (badge) {
@@ -859,8 +780,8 @@
             }
         }
 
-        function appendMentorToTable(params) {
-            const tbody = document.getElementById("mentorTableBody");
+        function appendTeamToTable(params) {
+            const tbody = document.getElementById("teamTableBody");
             const gridContainer = document.getElementById("gridView");
             if (!tbody || !gridContainer) return;
 
@@ -868,43 +789,23 @@
             const avatarUrl = params.avatarUrl || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=800";
             const resumeUrl = params.resumeUrl || "";
             const statusText = params.statusCandidate || "";
-            const statusHtml = buildStatusBadge(statusText);
             const createdText = escapeHtml(params.createdText || "");
             const instagramUrl = params.instagramUrl || "";
             const linkedinUrl = params.linkedinUrl || "";
             const address = escapeHtml(params.address || "");
-            const provider = escapeHtml(params.provider || "");
-            const notebook = escapeHtml(params.notebook || "");
             const whatsapp = escapeHtml(params.whatsapp || "");
             const email = escapeHtml(params.email || "");
             const talentId = params.talentId || "";
             const interviewers = Array.isArray(params.interviewers) ? params.interviewers.filter(Boolean) : [];
 
-            const instagramHtml = instagramUrl
-                ? '<a href="' + instagramUrl + '" target="_blank" class="text-decoration-none">Open</a>'
-                : '-';
-
-            const linkedinHtml = linkedinUrl
-                ? '<a href="' + linkedinUrl + '" target="_blank" class="text-decoration-none">Open</a>'
-                : '-';
-
-            const resumeHtml = resumeUrl
-                ? '<a href="' + resumeUrl + '" target="_blank" class="text-decoration-none">View</a>'
-                : '-';
-
             const card = document.createElement("div");
-            card.className = "mentor-item";
+            card.className = "team-item";
             card.dataset.name = name;
             card.dataset.talentId = talentId;
             card.innerHTML =
                 '<div class="talent-card group bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex flex-col">' +
                     '<div class="relative aspect-square overflow-hidden bg-slate-100">' +
                         '<img src="' + avatarUrl + '" alt="' + name + '" class="w-full h-full object-cover">' +
-                        '<div class="absolute top-4 left-4">' +
-                            '<span class="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-slate-800 uppercase tracking-widest shadow-sm">' +
-                                (provider || 'Mentor') +
-                            '</span>' +
-                        '</div>' +
                         '<div class="absolute bottom-4 left-4">' +
                             '<span class="badge rounded-pill status-badge status-badge-default">' + (statusText ? statusText.toUpperCase() : '-') + '</span>' +
                         '</div>' +
@@ -918,20 +819,19 @@
                         '</div>' +
                         '<div class="space-y-1 mb-4 text-[11px] text-slate-600">' +
                             (address ? '<div class="d-flex align-items-start gap-2"><i class="fas fa-map-marker-alt text-slate-300 mt-1"></i><span class="text-ellipsis-2">' + address + '</span></div>' : '') +
-                            (notebook ? '<div class="d-flex align-items-center gap-2"><i class="fas fa-laptop text-slate-300"></i><span>' + notebook + '</span></div>' : '') +
                         '</div>' +
                         '<div class="mt-auto d-flex justify-content-between align-items-center gap-2">' +
                             '<div class="d-flex align-items-center gap-2">' +
                                 (instagramUrl ? '<a href="' + instagramUrl + '" target="_blank" class="btn btn-sm btn-light rounded-3 border-0" title="Instagram"><i class="fab fa-instagram text-danger"></i></a>' : '') +
                                 (linkedinUrl ? '<a href="' + linkedinUrl + '" target="_blank" class="btn btn-sm btn-light rounded-3 border-0" title="LinkedIn"><i class="fab fa-linkedin text-primary"></i></a>' : '') +
                             '</div>' +
-                            '<button type="button" class="btn btn-sm btn-outline-dark rounded-3 mentor-view-btn">View Profile</button>' +
+                            '<button type="button" class="btn btn-sm btn-outline-dark rounded-3 team-view-btn">View Profile</button>' +
                         '</div>' +
                     '</div>' +
                 '</div>';
 
             const row = document.createElement("div");
-            row.className = "mentor-row bg-white border border-slate-100 rounded-2xl p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow";
+            row.className = "team-row bg-white border border-slate-100 rounded-2xl p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow";
             row.dataset.name = name;
             row.dataset.talentId = talentId;
             row.innerHTML =
@@ -943,30 +843,30 @@
                             (createdText
                                 ? '<p class="text-xs text-slate-500 mb-1">Mendaftar: ' + createdText + '</p>'
                                 : '') +
-                            '<div class="mt-1 mentor-interviewer-field" data-talent-id="' + talentId + '">' +
-                                '<div class="mentor-interviewer-display assign-display small">Pilih interviewer...</div>' +
-                                '<div class="mentor-interviewer-panel assign-dropdown mt-1">' +
+                            '<div class="mt-1 team-interviewer-field" data-talent-id="' + talentId + '">' +
+                                '<div class="team-interviewer-display assign-display small">Pilih interviewer...</div>' +
+                                '<div class="team-interviewer-panel assign-dropdown mt-1">' +
                                     '<div class="assign-panel card border-0 shadow-sm">' +
                                         '<div class="card-body p-2">' +
                                             '<div class="assign-search mb-2 d-flex align-items-center gap-2">' +
                                                 '<span class="assign-search-icon text-muted"><i class="fas fa-search"></i></span>' +
-                                                '<input type="text" class="form-control form-control-sm assign-search-input mentor-interviewer-search" placeholder="Search...">' +
+                                                '<input type="text" class="form-control form-control-sm assign-search-input team-interviewer-search" placeholder="Search...">' +
                                             '</div>' +
                                             '<div class="assign-list">' +
                                                 '<div class="assign-list-header text-uppercase text-[10px] text-slate-400 fw-bold mb-1">People</div>' +
-                                                '<div class="mentor-assign-users"></div>' +
+                                                '<div class="team-assign-users"></div>' +
                                             '</div>' +
                                         '</div>' +
                                     '</div>' +
                                 '</div>' +
-                                '<input type="hidden" class="mentor-interviewer-input" value="' + interviewers.join(",") + '">' +
+                                '<input type="hidden" class="team-interviewer-input" value="' + interviewers.join(",") + '">' +
                             '</div>' +
                         '</div>' +
                     '</div>' +
-                    '<div class="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 items-center border-y lg:border-y-0 lg:border-x border-slate-50 py-3 lg:py-0 px-0 lg:px-4">' +
+                    '<div class="flex-1 grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 items-center border-y lg:border-y-0 lg:border-x border-slate-50 py-3 lg:py-0 px-0 lg:px-4">' +
                         '<div>' +
                             '<span class="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-1">Status</span>' +
-                            '<select class="form-select form-select-sm mentor-status-select" data-talent-id="' + talentId + '">' +
+                            '<select class="form-select form-select-sm team-status-select" data-talent-id="' + talentId + '">' +
                                 '<option value="screening"' + (statusText.toLowerCase() === "screening" ? ' selected' : '') + '>Screening</option>' +
                                 '<option value="interview"' + (statusText.toLowerCase() === "interview" ? ' selected' : '') + '>Interview</option>' +
                                 '<option value="microteaching"' + (statusText.toLowerCase() === "microteaching" ? ' selected' : '') + '>Microteaching</option>' +
@@ -974,11 +874,6 @@
                                 '<option value="rejected"' + (statusText.toLowerCase() === "rejected" || statusText.toLowerCase() === "reject" ? ' selected' : '') + '>Reject</option>' +
                                 '<option value="accepted"' + (statusText.toLowerCase() === "accepted" || statusText.toLowerCase() === "accept" ? ' selected' : '') + '>Accept</option>' +
                             '</select>' +
-                        '</div>' +
-                        '<div>' +
-                            '<span class="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-1">Provider & Device</span>' +
-                            '<p class="text-sm text-slate-700 font-medium">' + (provider || '-') + '</p>' +
-                            '<p class="text-xs text-slate-500">' + (notebook || '-') + '</p>' +
                         '</div>' +
                         '<div class="col-span-2">' +
                             '<span class="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-1">Alamat</span>' +
@@ -1010,7 +905,7 @@
                                     ? '<a href="' + resumeUrl + '" target="_blank" class="text-slate-400 hover:text-blue-600 text-decoration-none"><i class="fa-solid fa-file-pdf"></i> CV</a>'
                                     : '') +
                             '</div>' +
-                            '<button type="button" class="text-blue-600 hover:text-blue-800 text-sm fw-bold d-flex align-items-center gap-1 border-0 bg-transparent mentor-view-btn">' +
+                            '<button type="button" class="text-blue-600 hover:text-blue-800 text-sm fw-bold d-flex align-items-center gap-1 border-0 bg-transparent team-view-btn">' +
                                 '<span>Detail</span>' +
                                 '<i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>' +
                             '</button>' +
@@ -1022,8 +917,8 @@
             tbody.appendChild(row);
         }
 
-        async function loadMentorCandidates() {
-            const tbody = document.getElementById("mentorTableBody");
+        async function loadTeamCandidates() {
+            const tbody = document.getElementById("teamTableBody");
             const gridContainer = document.getElementById("gridView");
             if (!tbody || !gridContainer) return;
             tbody.innerHTML = "";
@@ -1032,7 +927,7 @@
                 const snap = await getDocs(collection(db, "talents"));
                 if (snap.empty) {
                     tbody.innerHTML =
-                        '<tr><td colspan="13" class="text-center text-muted small py-4">Belum ada data kandidat mentor yang dapat ditampilkan.</td></tr>';
+                        '<tr><td colspan="13" class="text-center text-muted small py-4">Belum ada data kandidat team yang dapat ditampilkan.</td></tr>';
                     return;
                 }
                 let found = 0;
@@ -1047,16 +942,23 @@
                     const roleNameRaw = data.role_name || data.role || basic.current_role || scouting.role_name || "";
                     const roleIdValue = (roleIdRaw || "").toString().trim().toLowerCase();
                     const roleNameValue = (roleNameRaw || "").toString().trim().toLowerCase();
-
-                    if (roleIdValue !== "mentor" && roleNameValue !== "mentor") {
-                        return;
-                    }
+                    const normalizedRoleId = roleIdValue.replace(/\s/g, "");
+                    const normalizedRoleName = roleNameValue.replace(/\s/g, "");
+                    const isInternshipRole = normalizedRoleId === "internship" && normalizedRoleName === "internship";
+                    const isMentorRole = normalizedRoleId === "mentor" && normalizedRoleName === "mentor";
 
                     const name = basic.full_name || scouting.full_name || data.full_name || "Tanpa Nama";
                     const avatarUrl = basic.avatar_url || null;
 
-                    const recruitment = data.recruitment_status || {};
+                    const recruitment = data.recruitment_status || data.recruitment_system || {};
                     const statusCandidate = recruitment.current || "";
+                    const history = Array.isArray(recruitment.history) ? recruitment.history : [];
+                    const hasRadarHistory = history.some(item => ((item && item.status) || "").toString().toLowerCase() === "radar");
+                    const isRadarCurrent = (statusCandidate || "").toString().toLowerCase() === "radar";
+
+                    if (isInternshipRole || isMentorRole || hasRadarHistory || isRadarCurrent) {
+                        return;
+                    }
 
                     const createdRaw = data.created_at || data.createdAt || data.created || null;
                     const createdText = formatCreatedDate(createdRaw);
@@ -1067,16 +969,13 @@
                     const whatsapp = contact.whatsapp || contact.phone || internship.whatsapp || "";
                     const email = contact.email || basic.email || internship.email || "";
 
-                    const provider = internship.platform || scouting.channel_type || "";
-                    const notebook = extractNotebook(data.devices || null);
-
                     const resumeUrl = internship.resume_url || data.resume_url || "";
 
                     const interviewers = Array.isArray(data.interviewers)
                         ? data.interviewers.filter(Boolean)
                         : [];
 
-                    appendMentorToTable({
+                    appendTeamToTable({
                         name,
                         avatarUrl,
                         resumeUrl,
@@ -1085,8 +984,6 @@
                         instagramUrl,
                         linkedinUrl,
                         address,
-                        provider,
-                        notebook,
                         whatsapp,
                         email,
                         talentId: docSnap.id,
@@ -1096,73 +993,53 @@
                 });
                 if (!found) {
                     tbody.innerHTML =
-                        '<tr><td colspan="13" class="text-center text-muted small py-4">Belum ada data kandidat mentor dengan role_id atau role_name = \"mentor\".</td></tr>';
+                        '<tr><td colspan="13" class="text-center text-muted small py-4">Belum ada data kandidat team yang dapat ditampilkan.</td></tr>';
                 }
-                applyMentorFilters();
+                applyTeamFilters();
             } catch (e) {
-                console.error("Failed to load mentor candidates", e);
+                console.error("Failed to load team candidates", e);
                 tbody.innerHTML =
-                    '<tr><td colspan="13" class="text-center text-danger small py-4">Gagal memuat data kandidat mentor.</td></tr>';
+                    '<tr><td colspan="13" class="text-center text-danger small py-4">Gagal memuat data kandidat team.</td></tr>';
             }
         }
 
-        async function saveMentorCandidate() {
-            const formEl = document.getElementById("addMentorForm");
-            const saveBtn = document.querySelector('#addMentorModal .modal-footer .btn-dlg-blue');
+        async function saveTeamCandidate() {
+            const formEl = document.getElementById("addTeamForm");
+            const saveBtn = document.querySelector('#addTeamModal .modal-footer .btn-dlg-blue');
             if (!formEl) return;
 
-            const modeSelect = document.getElementById("candidateMode");
-            const positionSelect = document.getElementById("candidatePosition");
-            const platformSelect = document.getElementById("candidatePlatform");
-            const fullNameInput = document.getElementById("candidateFullName");
-            const descriptionInput = document.getElementById("candidateDescription");
-            const addressInput = document.getElementById("candidateAddress");
-            const campusInput = document.getElementById("candidateCampus");
-            const whatsappInput = document.getElementById("candidateWhatsapp");
-            const emailInput = document.getElementById("candidateEmail");
-            const instagramInput = document.getElementById("candidateInstagram");
-            const linkedinInput = document.getElementById("candidateLinkedin");
-            const devicesInput = document.getElementById("candidateDevices");
-            const providerInput = document.getElementById("candidateProvider");
+            const fullNameInput = document.getElementById("teamFullName");
+            const descriptionInput = document.getElementById("teamDescription");
+            const addressInput = document.getElementById("teamAddress");
+            const whatsappInput = document.getElementById("teamWhatsapp");
+            const emailInput = document.getElementById("teamEmail");
+            const instagramInput = document.getElementById("teamInstagram");
+            const linkedinInput = document.getElementById("teamLinkedin");
 
-            const mode = modeSelect ? (modeSelect.value || "").trim() : "";
-            const platform = platformSelect ? (platformSelect.value || "").trim() : "";
             const fullName = fullNameInput ? (fullNameInput.value || "").trim() : "";
             const description = descriptionInput ? (descriptionInput.value || "").trim() : "";
             const address = addressInput ? (addressInput.value || "").trim() : "";
-            const campus = campusInput ? (campusInput.value || "").trim() : "";
             const whatsapp = whatsappInput ? (whatsappInput.value || "").trim() : "";
             const email = emailInput ? (emailInput.value || "").trim() : "";
             const instagram = instagramInput ? (instagramInput.value || "").trim() : "";
             const linkedin = linkedinInput ? (linkedinInput.value || "").trim() : "";
-            const devicesText = devicesInput ? (devicesInput.value || "").trim() : "";
-            const provider = providerInput ? (providerInput.value || "").trim() : "";
-
-            let positionId = "";
-            let positionName = "";
-            if (positionSelect) {
-                positionId = positionSelect.value || "";
-                if (positionSelect.selectedIndex > -1) {
-                    positionName = positionSelect.options[positionSelect.selectedIndex].text || "";
-                }
-            }
 
             if (!fullName) {
                 alert("Nama lengkap wajib diisi.");
                 return;
             }
 
-            const ROLE_ID = "mentor";
-            const ROLE_NAME = "mentor";
+            const ROLE_ID = "sub_team";
+            const ROLE_NAME = "Sub Team";
 
             let avatarUrl = null;
             let resumeUrl = null;
 
-            const photoFile = candidatePhotoInput && candidatePhotoInput.files && candidatePhotoInput.files[0]
-                ? candidatePhotoInput.files[0]
+            const photoFile = teamPhotoInput && teamPhotoInput.files && teamPhotoInput.files[0]
+                ? teamPhotoInput.files[0]
                 : null;
-            const resumeFile = candidateResumeInput && candidateResumeInput.files && candidateResumeInput.files[0]
-                ? candidateResumeInput.files[0]
+            const resumeFile = teamResumeInput && teamResumeInput.files && teamResumeInput.files[0]
+                ? teamResumeInput.files[0]
                 : null;
 
             const nowIso = new Date().toISOString();
@@ -1175,7 +1052,6 @@
                 },
                 contact_info: {
                     address: address || null,
-                    campus: campus || null,
                     whatsapp: whatsapp || null,
                     email: email || null,
                     instagram: instagram || null,
@@ -1184,19 +1060,7 @@
                 profiling: {
                     short_description: description || null
                 },
-                education: campus ? { campus } : null,
-                devices: devicesText ? { notebook: devicesText } : null,
                 internship: {
-                    mode: mode || null,
-                    position_id: positionId || null,
-                    position: positionName || null,
-                    platform: provider || null,
-                    address: address || null,
-                    campus: campus || null,
-                    whatsapp: whatsapp || null,
-                    email: email || null,
-                    instagram: instagram || null,
-                    linkedin: linkedin || null,
                     resume_url: resumeUrl || null,
                     role_id: ROLE_ID,
                     role_name: ROLE_NAME
@@ -1229,15 +1093,15 @@
                 await addDoc(collection(db, "talents"), payload);
 
                 formEl.reset();
-                const modalEl = document.getElementById("addMentorModal");
+                const modalEl = document.getElementById("addTeamModal");
                 if (modalEl && window.bootstrap && window.bootstrap.Modal) {
                     const modalInstance = window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl);
                     modalInstance.hide();
                 }
-                await loadMentorCandidates();
-                alert("Data candidate mentor berhasil disimpan.");
+                await loadTeamCandidates();
+                alert("Data candidate team berhasil disimpan.");
             } catch (e) {
-                console.error("Gagal menyimpan candidate mentor", e);
+                console.error("Gagal menyimpan candidate team", e);
                 alert("Gagal menyimpan data. Silakan coba lagi.");
             } finally {
                 if (saveBtn) {
@@ -1247,22 +1111,22 @@
             }
         }
 
-        const saveMentorBtn = document.querySelector('#addMentorModal .modal-footer .btn-dlg-blue');
-        if (saveMentorBtn) {
-            saveMentorBtn.addEventListener('click', saveMentorCandidate);
+        const saveTeamBtn = document.querySelector('#addTeamModal .modal-footer .btn-dlg-blue');
+        if (saveTeamBtn) {
+            saveTeamBtn.addEventListener('click', saveTeamCandidate);
         }
 
         document.addEventListener("click", async (e) => {
-            const viewBtn = e.target.closest(".mentor-view-btn");
+            const viewBtn = e.target.closest(".team-view-btn");
             if (viewBtn) {
-                const row = viewBtn.closest(".mentor-row");
-                const card = viewBtn.closest(".mentor-item");
+                const row = viewBtn.closest(".team-row");
+                const card = viewBtn.closest(".team-item");
                 const el = row || card;
                 const talentId = el && el.dataset ? el.dataset.talentId : null;
                 if (!talentId) return;
                 try {
-                    await loadMentorDetail(talentId);
-                    const modalEl = document.getElementById("viewMentorModal");
+                    await loadTeamDetail(talentId);
+                    const modalEl = document.getElementById("viewTeamModal");
                     if (modalEl && window.bootstrap && window.bootstrap.Modal) {
                         const modalInstance = window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl);
                         modalInstance.show();
@@ -1275,24 +1139,24 @@
         });
 
         document.addEventListener("click", async (e) => {
-            const display = e.target.closest(".mentor-interviewer-display");
+            const display = e.target.closest(".team-interviewer-display");
             if (display) {
                 e.preventDefault();
-                const fieldEl = display.closest(".mentor-interviewer-field");
+                const fieldEl = display.closest(".team-interviewer-field");
                 if (!fieldEl) return;
-                const panel = fieldEl.querySelector(".mentor-interviewer-panel");
+                const panel = fieldEl.querySelector(".team-interviewer-panel");
                 if (!panel) return;
                 const alreadyOpen = panel.classList.contains("open");
-                const allPanels = document.querySelectorAll(".mentor-interviewer-panel.open");
+                const allPanels = document.querySelectorAll(".team-interviewer-panel.open");
                 allPanels.forEach(p => {
                     if (p !== panel) {
                         p.classList.remove("open");
                     }
                 });
                 if (!alreadyOpen) {
-                    await openMentorInterviewerDropdownForField(fieldEl);
+                    await openTeamInterviewerDropdownForField(fieldEl);
                     panel.classList.add("open");
-                    const searchInput = fieldEl.querySelector(".mentor-interviewer-search");
+                    const searchInput = fieldEl.querySelector(".team-interviewer-search");
                     if (searchInput) {
                         searchInput.focus();
                     }
@@ -1301,7 +1165,7 @@
                 }
                 return;
             }
-            const openPanels = document.querySelectorAll(".mentor-interviewer-panel.open");
+            const openPanels = document.querySelectorAll(".team-interviewer-panel.open");
             openPanels.forEach(panel => {
                 if (!panel.contains(e.target)) {
                     panel.classList.remove("open");
@@ -1310,12 +1174,12 @@
         });
 
         document.addEventListener("input", (e) => {
-            const search = e.target.closest(".mentor-interviewer-search");
+            const search = e.target.closest(".team-interviewer-search");
             if (!search) return;
-            const fieldEl = search.closest(".mentor-interviewer-field");
+            const fieldEl = search.closest(".team-interviewer-field");
             if (!fieldEl) return;
             const term = search.value.toLowerCase();
-            const items = fieldEl.querySelectorAll(".mentor-assign-users .assign-user-item");
+            const items = fieldEl.querySelectorAll(".team-assign-users .assign-user-item");
             items.forEach(item => {
                 const text = (item.dataset.name || "").toLowerCase();
                 item.style.display = text.includes(term) ? "" : "none";
@@ -1323,13 +1187,13 @@
         });
 
         document.addEventListener("change", async (e) => {
-            const select = e.target.closest(".mentor-status-select");
+            const select = e.target.closest(".team-status-select");
             if (select) {
                 const talentId = select.dataset.talentId || "";
                 const newStatus = select.value || "";
                 if (!talentId || !newStatus) return;
-                updateMentorStatusUI(talentId, newStatus, select);
-                await updateMentorStatus(talentId, newStatus, (auth.currentUser && auth.currentUser.displayName) || null);
+                updateTeamStatusUI(talentId, newStatus, select);
+                await updateTeamStatus(talentId, newStatus, (auth.currentUser && auth.currentUser.displayName) || null);
             }
         });
 
@@ -1338,8 +1202,7 @@
                 window.location.href = "../index.html";
                 return;
             }
-            loadCandidatePositions();
-            loadMentorCandidates();
+            loadTeamCandidates();
         });
     </script>
 </body>
