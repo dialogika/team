@@ -4,11 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Candidate Internship</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        .candidate-profile-wrapper {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .candidate-profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
         .page-title {
             color: #0B2B6A;
             font-weight: 800;
@@ -155,6 +167,55 @@
         .status-not-contacted { background-color: #f1f5f9; color: #475569; }
         .status-replied { background-color: #dcfce7; color: #166534; }
         .status-waiting { background-color: #fef9c3; color: #854d0e; }
+
+        .talent-card:hover .action-overlay { opacity: 1; transform: translateY(0); }
+        .talent-card img { transition: transform 0.5s ease; }
+        .talent-card:hover img { transform: scale(1.08); }
+
+        .list-view-container table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .list-view-container thead th {
+            border-bottom: 0;
+        }
+
+        .list-view-container tbody td {
+            border: 0;
+        }
+
+        .list-view-container tbody tr.candidate-row-main td {
+            border-top: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .list-view-container tbody tr.candidate-row-detail td {
+            border-top: 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+        }
+
+        .address-clamp span {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .essay-clamp {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .modal-gradient {
+            background: linear-gradient(135deg, #1c84e3 0%, #0B2B6A 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
 <body class="p-8">
@@ -178,11 +239,14 @@
                                 <button type="button" class="btn view-btn active" id="btnGrid"><i class="fas fa-th-large"></i></button>
                                 <button type="button" class="btn view-btn" id="btnList"><i class="fas fa-list"></i></button>
                             </div>
+                            <button type="button" class="btn btn-dlg-blue rounded-4 fw-semibold px-4 py-2" data-bs-toggle="modal" data-bs-target="#addCandidateModal">
+                                    + Candidate
+                            </button>
                         </div>
                     </div>
 
                     <div class="filter-panel">
-                        <div class="row g-3 justify-content-between">
+                        <div class="row g-3 justify-content-between align-items-center">
                             <div class="col-md-6">
                                 <div class="input-group border-0 bg-light rounded-4 px-2">
                                     <span class="input-group-text bg-transparent border-0"><i class="fas fa-search text-muted"></i></span>
@@ -196,37 +260,26 @@
                                     <option value="name_desc">Nama Z-A</option>
                                 </select>
                             </div>
+                            
                         </div>
                     </div>
 
-                    <div id="gridView" class="row g-4"></div>
+                    <div id="gridView" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"></div>
 
                     <div id="listView" class="list-view-container mt-4">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle shadow-sm">
-                                <thead class="table-light text-center">
-                                    <tr>
-                                        <th class="ps-4">Mode</th>
-                                        <th>Created</th>
-                                        <th>Position</th>
-                                        <th>Platform</th>
-                                        <th>Portofolio</th>
-                                        <th>Resume</th>
-                                        <th>Address</th>
-                                        <th>Condition</th>
-                                        <th>Campus</th>
-                                        <th>Instagram</th>
-                                        <th>LinkedIn</th>
-                                        <th>Email</th>
-                                        <th>Whatsapp</th>
-                                        <th>Experience</th>
-                                        <th>Reason</th>
-                                        <th>Hope</th>
-                                        <th>Other</th>
-                                        <th>Choose</th>
+                            <table class="table align-middle shadow-sm border-0">
+                                <thead class="bg-slate-50/50 border-b border-slate-100">
+                                    <tr class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+                                        <th class="ps-4 px-3 py-3">Candidate</th>
+                                        <th class="px-3 py-3">Information</th>
+                                        <th class="px-3 py-3">Platform</th>
+                                        <th class="px-3 py-3">Contact</th>
+                                        <th class="px-3 py-3 text-center">Documents</th>
+                                        <th class="px-3 py-3">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody></tbody>
+                                <tbody class="text-[13px] text-slate-700"></tbody>
                             </table>
                         </div>
                     </div>
@@ -234,6 +287,166 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <div class="modal fade" id="addCandidateModal" tabindex="-1" aria-labelledby="addCandidateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="addCandidateModalLabel">Tambah Candidate Internship</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="background-color: #f1f7fd;">
+                    <form id="addCandidateForm">
+                        <div class="container-fluid">
+                            <div class="mb-4">
+                                <p class="text-muted mb-0">Lengkapi formulir di bawah ini untuk menambahkan kandidat magang baru.</p>
+                            </div>
+
+                            <div class="card mb-4 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="fw-semibold mb-3 border-bottom pb-2">1. Informasi Umum</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label small">Mode</label>
+                                            <select class="form-select" id="candidateMode">
+                                                <option value="">Pilih mode</option>
+                                                <option value="WFO">WFO</option>
+                                                <option value="WFH">WFH</option>
+                                                <option value="Hybrid">Hybrid</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small">Posisi</label>
+                                            <select class="form-select" id="candidatePosition">
+                                                <option value="">Pilih posisi</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label small">Platform</label>
+                                            <select class="form-select" id="candidatePlatform">
+                                                <option value="">Pilih platform</option>
+                                                <option value="Website Dialogika">Website Dialogika</option>
+                                                <option value="Website MSIB">Website MSIB</option>
+                                                <option value="LinkedIn">LinkedIn</option>
+                                                <option value="Instagram">Instagram</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-4 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="fw-semibold mb-3 border-bottom pb-2">2. Data Pribadi & Kontak</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Nama Lengkap</label>
+                                            <input type="text" class="form-control" id="candidateFullName" placeholder="Nama lengkap kandidat">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Photo</label>
+                                            <input type="file" class="form-control" id="candidatePhoto">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label small">Deskripsi Singkat Tentang Diri</label>
+                                            <textarea rows="3" class="form-control" id="candidateShortDescription" placeholder="Contoh: Mahasiswa semester 5 yang tertarik di bidang marketing digital"></textarea>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label small">Alamat Lengkap</label>
+                                            <textarea rows="2" class="form-control" id="candidateAddress" placeholder="Masukkan alamat domisili..."></textarea>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Nama Kampus</label>
+                                            <input type="text" class="form-control" id="candidateCampus">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Nomor Whatsapp</label>
+                                            <input type="tel" class="form-control" id="candidateWhatsapp" placeholder="0812...">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Email</label>
+                                            <input type="email" class="form-control" id="candidateEmail" placeholder="nama@email.com">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">Link Instagram</label>
+                                            <input type="text" class="form-control" id="candidateInstagram" placeholder="@username">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">Link LinkedIn</label>
+                                            <input type="text" class="form-control" id="candidateLinkedin" placeholder="linkedin.com/in/...">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h6 class="fw-semibold mb-3 border-bottom pb-2">3. Dokumen & Motivasi</h6>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Portofolio (Link/File)</label>
+                                            <input type="file" class="form-control" id="candidatePortfolio">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Resume / CV</label>
+                                            <input type="file" class="form-control" id="candidateResume">
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <label class="form-label small">Pengalaman yang Relevan</label>
+                                            <textarea rows="3" class="form-control" id="candidateExperience"></textarea>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Alasan Memilih Dialogika</label>
+                                            <textarea rows="3" class="form-control" id="candidateChoose"></textarea>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Apakah kamu sedang mendaftar magang atau kerja di perusahaan lain?</label>
+                                            <select class="form-select" id="candidateReason">
+                                                <option value="">Pilih jawaban</option>
+                                                <option value="Iya > Kerja > Tahap Interview">Iya &gt; Kerja &gt; Tahap Interview</option>
+                                                <option value="Iya > Magang > Tahap Interview">Iya &gt; Magang &gt; Tahap Interview</option>
+                                                <option value="Iya > Kerja > Tapi Gak Ada Kabar">Iya &gt; Kerja &gt; Tapi Gak Ada Kabar</option>
+                                                <option value="Iya > Magang > Tapi Gak Ada Kabar">Iya &gt; Magang &gt; Tapi Gak Ada Kabar</option>
+                                                <option value="Tidak Ada Sama Sekali.">Tidak Ada Sama Sekali.</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Harapan Selama Magang</label>
+                                            <textarea rows="3" class="form-control" id="candidateHope"></textarea>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Jika kamu di terima di perusahaan tersebut bagaimana?</label>
+                                            <textarea rows="3" class="form-control" id="candidateOther"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-dlg-blue">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="viewCandidateModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 bg-transparent">
+                <div class="modal-body p-0 position-relative">
+                    <button type="button" class="position-absolute top-3 end-3 z-10 border-0 bg-transparent text-gray-400 hover:text-gray-600" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="fa-solid fa-xmark fs-3"></i>
+                    </button>
+                    <div id="viewCandidateContent"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -289,7 +502,7 @@
             btnGrid.addEventListener('click', () => {
                 btnGrid.classList.add('active');
                 btnList.classList.remove('active');
-                gridView.style.display = 'flex';
+                gridView.style.display = 'grid';
                 listView.style.display = 'none';
             });
 
@@ -328,9 +541,21 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import {
             getFirestore,
+            doc,
             collection,
-            getDocs
+            getDoc,
+            getDocs,
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import {
+            getStorage,
+            ref as storageRef,
+            uploadBytes,
+            getDownloadURL
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
@@ -345,6 +570,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         const topbarTarget = document.getElementById('topbarContainer');
         renderTopBar(topbarTarget);
@@ -357,6 +583,16 @@
             if (sidebar) sidebar.classList.toggle('show');
         };
 
+        const candidatePositionSelect = document.getElementById("candidatePosition");
+        const candidatePhotoInput = document.getElementById("candidatePhoto");
+        const candidatePortfolioInput = document.getElementById("candidatePortfolio");
+        const candidateResumeInput = document.getElementById("candidateResume");
+
+        let currentEditingTalentId = null;
+        let currentAvatarUrl = null;
+        let currentPortfolioUrl = null;
+        let currentResumeUrl = null;
+
         function escapeHtml(str) {
             return (str || "").toString()
                 .replace(/&/g, "&amp;")
@@ -366,10 +602,30 @@
                 .replace(/'/g, "&#039;");
         }
 
-        function truncateText(text, maxLength) {
-            const value = (text || "").toString();
-            if (value.length <= maxLength) return value;
-            return value.substring(0, maxLength) + "...";
+        async function loadCandidatePositions() {
+            if (!candidatePositionSelect) return;
+            try {
+                candidatePositionSelect.innerHTML = '<option value="">Pilih posisi</option>';
+                const snap = await getDocs(collection(db, "positions"));
+                if (snap.empty) return;
+                const options = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const name = (data.name || "").toString().trim();
+                    if (!name) return;
+                    options.push({ id: docSnap.id, name });
+                });
+                options
+                    .sort((a, b) => a.name.localeCompare(b.name, "id"))
+                    .forEach(item => {
+                        const opt = document.createElement("option");
+                        opt.value = item.id;
+                        opt.textContent = item.name;
+                        candidatePositionSelect.appendChild(opt);
+                    });
+            } catch (e) {
+                console.error("Failed to load candidate positions", e);
+            }
         }
 
         function formatCreatedDate(raw) {
@@ -398,10 +654,166 @@
         function buildEssayCell(text) {
             const full = (text || "").toString().trim();
             if (!full) return "-";
-            const short = truncateText(full, 40);
             const fullEsc = escapeHtml(full);
-            const shortEsc = escapeHtml(short);
-            return '<span data-bs-toggle="tooltip" title="' + fullEsc + '">' + shortEsc + '</span>';
+            return '<span class="essay-clamp" data-bs-toggle="tooltip" title="' + fullEsc + '">' + fullEsc + '</span>';
+        }
+
+        async function copyToClipboard(text) {
+            const value = (text || "").toString();
+            if (!value) return;
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(value);
+                } else {
+                    const textarea = document.createElement("textarea");
+                    textarea.value = value;
+                    textarea.style.position = "fixed";
+                    textarea.style.opacity = "0";
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(textarea);
+                }
+            } catch (e) {
+                console.error("Failed to copy", e);
+            }
+        }
+
+        async function uploadFileToStorage(file, folder) {
+            if (!file) return null;
+            const safeFolder = folder || "uploads";
+            const path = safeFolder + "/" + Date.now() + "-" + file.name;
+            const fileRef = storageRef(storage, path);
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
+            return url;
+        }
+
+        async function deleteInternshipTalentById(talentId) {
+            if (!talentId) return;
+            await deleteDoc(doc(db, "talents", talentId));
+        }
+
+        async function loadInternshipTalentForEdit(talentId) {
+            const ref = doc(db, "talents", talentId);
+            const snap = await getDoc(ref);
+            if (!snap.exists()) {
+                alert("Data kandidat tidak ditemukan.");
+                return null;
+            }
+            return { id: snap.id, ...(snap.data() || {}) };
+        }
+
+        function renderInternshipCandidateDetail(data) {
+            const container = document.getElementById("viewCandidateContent");
+            if (!container) return;
+            const basic = data.basic_info || {};
+            const internship = data.internship || data.internship_info || {};
+            const contact = data.contact_info || {};
+            const education = data.education || {};
+            const profiling = data.profiling || {};
+
+            const name = escapeHtml(basic.full_name || data.full_name || "Tanpa Nama");
+            const positionName = escapeHtml(internship.position || "");
+            const campus = escapeHtml(internship.campus || education.campus || education.university || "");
+            const address = escapeHtml(internship.address || contact.address || "");
+            const mode = escapeHtml(internship.mode || "");
+            const platform = escapeHtml(internship.platform || "");
+            const whatsapp = escapeHtml(internship.whatsapp || contact.whatsapp || contact.phone || "");
+            const email = escapeHtml(internship.email || contact.email || basic.email || "");
+            const instagram = escapeHtml(internship.instagram || contact.instagram || "");
+            const linkedin = escapeHtml(internship.linkedin || contact.linkedin || "");
+            const experience = escapeHtml(internship.experience || "");
+            const hope = escapeHtml(internship.hope || profiling.hope || "");
+            const reason = escapeHtml(internship.reason || profiling.reason || "");
+            const other = escapeHtml(internship.other || profiling.other || "");
+            const shortDesc = escapeHtml(profiling.short_description || "");
+            const avatarUrl = basic.avatar_url || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=800";
+
+            container.innerHTML =
+                '<div class="candidate-profile-wrapper py-4 px-2 md:px-4 flex justify-center items-center">' +
+                    '<div class="w-full max-w-4xl">' +
+                        '<div class="relative w-full glass-card rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">' +
+                            '<div class="flex flex-col md:flex-row">' +
+                                '<div class="md:w-1/3 modal-gradient p-8 text-white">' +
+                                    '<div class="text-center">' +
+                                        '<div class="w-32 h-32 bg-white rounded-full mx-auto mb-4 p-1 shadow-xl">' +
+                                            '<img src="' + avatarUrl + '" alt="' + name + '" class="rounded-full w-full h-full object-cover">' +
+                                        '</div>' +
+                                        '<h2 class="text-2xl font-bold uppercase tracking-wide">' + name + '</h2>' +
+                                        (positionName ? '<p class="text-indigo-100 font-light mt-1">' + positionName + '</p>' : '') +
+                                        '<span class="inline-flex justify-center items-center mt-3 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 border border-white/30 text-white text-center">' + (campus || "-") + '</span>' +
+                                    '</div>' +
+                                    '<div class="mt-10 space-y-4 text-sm">' +
+                                        '<h3 class="font-semibold border-b border-indigo-400 pb-2 uppercase tracking-wider text-xs">Contact</h3>' +
+                                        (whatsapp
+                                            ? '<a href="tel:' + whatsapp + '" class="flex items-center space-x-3 hover:text-indigo-200 transition"><i class="fa-solid fa-phone w-5"></i><span>' + whatsapp + '</span></a>'
+                                            : '') +
+                                        (email
+                                            ? '<a href="mailto:' + email + '" class="flex items-center space-x-3 hover:text-indigo-200 transition"><i class="fa-solid fa-envelope w-5"></i><span>' + email + '</span></a>'
+                                            : '') +
+                                        (instagram
+                                            ? '<a href="' + instagram + '" target="_blank" class="flex items-center space-x-3 hover:text-indigo-200 transition"><i class="fa-brands fa-instagram w-5"></i><span>' + instagram + '</span></a>'
+                                            : '') +
+                                        (linkedin
+                                            ? '<a href="' + linkedin + '" target="_blank" class="flex items-center space-x-3 hover:text-indigo-200 transition"><i class="fa-brands fa-linkedin w-5"></i><span>LinkedIn Profile</span></a>'
+                                            : '') +
+                                    '</div>' +
+                                    '<div class="mt-8 text-sm">' +
+                                        '<h3 class="font-semibold border-b border-indigo-400 pb-2 uppercase tracking-wider text-xs mb-3">Alamat</h3>' +
+                                        (address
+                                            ? '<p class="text-indigo-100 leading-relaxed italic text-xs">' + address + '</p>'
+                                            : '') +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="md:w-2/3 p-8 md:p-10 max-h-[85vh] overflow-y-auto bg-white/90">' +
+                                    '<section class="mb-8">' +
+                                        '<h3 class="text-xl font-bold text-gray-800 mb-3 flex items-center">' +
+                                            '<i class="fa-solid fa-user-graduate mr-2" style="color: #0B2B6A;"></i> Professional Profile' +
+                                        '</h3>' +
+                                        '<p class="text-gray-600 leading-relaxed">' +
+                                            (shortDesc || hope || "-") +
+                                        '</p>' +
+                                    '</section>' +
+                                    '<section class="mb-8">' +
+                                        '<h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">' +
+                                            '<i class="fa-solid fa-briefcase mr-2" style="color: #0B2B6A;"></i> Experience' +
+                                        '</h3>' +
+                                        (experience
+                                            ? '<div class="space-y-4"><div class="border-l-2 border-blue-500 pl-4 py-1">' +
+                                                '<h4 class="font-semibold text-gray-800">Pengalaman</h4>' +
+                                                '<p class="text-sm text-gray-500">' + experience + '</p>' +
+                                              '</div></div>'
+                                            : '<p class="text-gray-500 text-sm">Belum ada pengalaman yang tercatat.</p>') +
+                                    '</section>' +
+                                    '<section class="mb-8 bg-yellow-50 p-5 rounded-xl border-l-4 border-yellow-500">' +
+                                        '<h3 class="text-lg font-bold text-indigo-900 mb-2">Harapan Selama Magang</h3>' +
+                                        '<p class="text-indigo-800 text-sm leading-relaxed">' +
+                                            (hope || "-") +
+                                        '</p>' +
+                                    '</section>' +
+                                    '<section class="mb-4">' +
+                                        '<h3 class="text-lg font-bold text-gray-800 mb-2 underline decoration-indigo-300">Komitmen & Loyalitas</h3>' +
+                                        '<p class="text-gray-600 text-sm italic">' +
+                                            (reason || "-") +
+                                        '</p>' +
+                                    '</section>' +
+                                    '<section class="mb-4">' +
+                                        '<h3 class="text-sm md:text-base font-bold text-slate-800 mb-3 border-b pb-2">Jika Diterima di Perusahaan Lain</h3>' +
+                                        '<p class="text-slate-600 text-sm leading-relaxed italic">' +
+                                            (other || "-") +
+                                        '</p>' +
+                                    '</section>' +
+                                    '<div class="mt-8 pt-6 border-t border-gray-100 text-[10px] text-gray-400 flex flex-wrap justify-between gap-2 uppercase tracking-widest">' +
+                                        '<span class="inline-flex justify-center items-center px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-center">Platform: ' + (platform || "-") + '</span>' +
+                                        '<span class="inline-flex justify-center items-center px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 text-center">' + (mode || "") + ' ' + name + '</span>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
         }
 
         function appendCandidateToUI(params) {
@@ -428,11 +840,13 @@
             const chooseHtml = buildEssayCell(params.chooseText || "");
             const talentId = params.talentId || "";
 
+            const whatsappRaw = (params.whatsapp || "").toString();
+            const whatsappNumber = whatsappRaw.replace(/[^0-9]/g, "");
+            const whatsappHref = whatsappNumber ? "https://wa.me/" + whatsappNumber : "";
+
             let platformIcon = "fab fa-globe";
-            if (platform === "linkedin") platformIcon = "fab fa-linkedin";
-            if (platform === "instagram") platformIcon = "fab fa-instagram";
-            if (platform === "facebook") platformIcon = "fab fa-facebook";
-            if (platform === "tiktok") platformIcon = "fab fa-tiktok";
+            if (linkedinUrl) platformIcon = "fab fa-linkedin";
+            else if (instagramUrl) platformIcon = "fab fa-instagram";
 
             const gridContainer = document.getElementById('gridView');
             const listTbody = document.querySelector('#listView tbody');
@@ -460,75 +874,153 @@
                 ? '<a href="' + resumeUrl + '" target="_blank" class="text-primary" data-bs-toggle="tooltip" title="' + escapeHtml(resumeUrl) + '">View</a>'
                 : '-';
 
-            const instagramHtml = instagramUrl
-                ? '<a href="' + instagramUrl + '" target="_blank" class="text-danger"><i class="fab fa-instagram"></i></a>'
-                : '-';
+            const socialButtons = [];
+            if (instagramUrl) {
+                socialButtons.push('<a href="' + instagramUrl + '" target="_blank" class="btn btn-sm btn-light rounded-3 border-0" title="Instagram"><i class="fab fa-instagram text-danger"></i></a>');
+            }
+            if (linkedinUrl) {
+                socialButtons.push('<a href="' + linkedinUrl + '" target="_blank" class="btn btn-sm btn-light rounded-3 border-0" title="LinkedIn"><i class="fab fa-linkedin text-primary"></i></a>');
+            }
+            if (whatsapp) {
+                socialButtons.push('<button type="button" class="btn btn-sm btn-light rounded-3 border-0 copy-whatsapp-btn" data-copy-value="' + escapeHtml(whatsapp) + '" title="Copy WhatsApp"><i class="fab fa-whatsapp text-success"></i></button>');
+            }
+            if (email) {
+                socialButtons.push('<button type="button" class="btn btn-sm btn-light rounded-3 border-0 copy-email-btn" data-copy-value="' + escapeHtml(email) + '" title="Copy Email"><i class="fas fa-envelope text-primary"></i></button>');
+            }
 
-            const linkedinHtml = linkedinUrl
-                ? '<a href="' + linkedinUrl + '" target="_blank" class="text-primary"><i class="fab fa-linkedin"></i></a>'
-                : '-';
+            let socialHtml = "";
+            if (socialButtons.length) {
+                if (socialButtons.length === 4) {
+                    socialHtml =
+                        '<div class="d-grid gap-1" style="grid-template-columns: repeat(2, minmax(0, 1fr));">' +
+                            socialButtons.join("") +
+                        '</div>';
+                } else {
+                    socialHtml =
+                        '<div class="d-flex align-items-center gap-2 mb-1">' +
+                            socialButtons.join("") +
+                        '</div>';
+                }
+            }
 
             const gridHtml =
-                '<div class="col-12 col-md-6 col-lg-4 candidate-item" data-name="' + name + '" data-talent-id="' + talentId + '">' +
-                    '<div class="candidate-card">' +
-                        '<div class="img-wrapper">' +
-                            '<img src="' + avatarUrl + '" class="candidate-img" alt="Kandidat">' +
-                            '<div class="card-action-menu dropdown">' +
-                                '<button class="btn btn-light btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">' +
-                                    '<i class="fas fa-ellipsis-v"></i>' +
-                                '</button>' +
-                                '<ul class="dropdown-menu dropdown-menu-end">' +
-                                    '<li><span class="dropdown-item disabled">Detail hanya tampilan</span></li>' +
-                                '</ul>' +
+                '<div class="candidate-item" data-name="' + name + '" data-talent-id="' + talentId + '">' +
+                    '<div class="talent-card group bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex flex-col">' +
+                        '<div class="relative aspect-square overflow-hidden bg-slate-100">' +
+                            '<img src="' + avatarUrl + '" alt="Kandidat" class="w-full h-full object-cover">' +
+                            '<div class="action-overlay absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center opacity-0 transform translate-y-4 transition-all duration-300 gap-3">' +
+                                (linkedinUrl
+                                    ? '<a href="' + linkedinUrl + '" target="_blank" class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-colors shadow-xl" title="LinkedIn"><i class="fab fa-linkedin"></i></a>'
+                                    : '') +
+                                (whatsappHref
+                                    ? '<a href="' + whatsappHref + '" target="_blank" class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-900 hover:bg-green-600 hover:text-white transition-colors shadow-xl" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>'
+                                    : '') +
                             '</div>' +
-                            '<div class="social-tags">' +
-                                '<a href="' + (linkedinUrl || instagramUrl || "#") + '" target="_blank" class="tag-icon"><i class="' + platformIcon + '"></i></a>' +
+                            '<div class="absolute top-4 left-4">' +
+                                '<span class="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-slate-800 uppercase tracking-widest shadow-sm">' +
+                                    (platformLabel || 'Internship') +
+                                '</span>' +
                             '</div>' +
                         '</div>' +
-                        '<div class="p-4">' +
-                            '<div class="d-flex justify-content-between align-items-start mb-3">' +
-                                '<div>' +
-                                    '<h5 class="fw-bold mb-0 candidate-name">' + name + '</h5>' +
-                                    '<small class="text-muted">' + subtitle + '</small>' +
-                                '</div>' +
+                        '<div class="p-4 md:p-6 flex flex-col flex-grow">' +
+                            '<div class="mb-3">' +
+                                '<h3 class="text-sm md:text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">' + name + '</h3>' +
+                                (position
+                                    ? '<p class="text-[10px] md:text-[11px] font-semibold text-slate-400 mt-1 uppercase tracking-wider">' + position + '</p>'
+                                    : '') +
                             '</div>' +
-                            '<div class="status-box">' +
-                                '<hr/>' +
-                                '<div class="small text-muted">Mode: ' + (modeValue || "-") + '</div>' +
-                                '<div class="small text-muted">Platform: ' + platformLabel + '</div>' +
+                            '<div class="space-y-1 mb-4">' +
+                                (campus
+                                    ? '<div class="flex items-center gap-2 text-slate-600 text-xs"><i class="fas fa-graduation-cap text-slate-300"></i><span class="font-medium">' + campus + '</span></div>'
+                                    : '') +
+                                (address
+                                    ? '<div class="flex items-center gap-2 text-slate-500 text-[11px] italic"><i class="fas fa-map-marker-alt text-slate-300"></i><span>' + address + '</span></div>'
+                                    : '') +
+                            '</div>' +
+                            '<div class="mt-auto">' +
+                                (portfolioUrl
+                                    ? '<button type="button" class="w-full inline-flex justify-center items-center py-2.5 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-bold text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all uppercase tracking-widest internship-view-btn">View Profile</button>'
+                                    : '<span class="inline-flex justify-center items-center w-full py-2.5 bg-slate-50 border border-dashed border-slate-200 rounded-2xl text-[11px] font-medium text-slate-400 uppercase tracking-widest">No Portfolio</span>') +
                             '</div>' +
                         '</div>' +
                     '</div>' +
                 '</div>';
 
+            const docsHtml = 
+                '<div class="d-flex flex-column gap-1 align-items-center justify-content-center">' +
+                    (portfolioUrl 
+                        ? '<a href="' + portfolioUrl + '" target="_blank" class="text-decoration-none"><span class="small fw-semibold d-inline-block text-center">Portfolio</span></a>'
+                        : '<span class="small text-muted text-center d-inline-block">No Portfolio</span>') +
+                    (resumeUrl
+                        ? '<a href="' + resumeUrl + '" target="_blank" class="text-decoration-none"><span class="small fw-semibold d-inline-block text-center">Resume</span></a>'
+                        : '') +
+                '</div>';
+
             const listHtml =
-                '<tr class="candidate-row" data-name="' + name + '" data-talent-id="' + talentId + '">' +
-                    '<td class="ps-4">' + modeSelectHtml + '</td>' +
-                    '<td>' + createdText + '</td>' +
-                    '<td>' +
-                        '<div class="d-flex align-items-center">' +
-                            '<img src="' + avatarUrl + '" class="list-img">' +
+                '<tr class="candidate-row candidate-row-main" data-name="' + name + '" data-talent-id="' + talentId + '">' +
+                    '<td class="ps-4">' +
+                        '<div class="d-flex align-items-center gap-3">' +
+                            '<div class="position-relative">' +
+                                '<img src="' + avatarUrl + '" class="list-img rounded-3 shadow-sm">' +
+                            '</div>' +
                             '<div>' +
-                                '<div class="fw-bold candidate-name">' + name + '</div>' +
-                                '<small class="text-muted">' + subtitle + '</small>' +
+                                '<div class="fw-bold text-dark mb-1 candidate-name">' + name + '</div>' +
+                                '<div class="d-flex flex-column">' +
+                                    (position ? '<span class="badge rounded-pill text-bg-primary-subtle bg-yellow-400/50 text-primary-emphasis mb-1 text-start">' + position + '</span>' : '') +
+                                    '<small class="text-muted"><i class="fas fa-calendar-alt me-1"></i>' + (createdText || '-') + '</small>' +
+                                '</div>' +
                             '</div>' +
                         '</div>' +
                     '</td>' +
-                    '<td>' + platformLabel + '</td>' +
-                    '<td>' + portfolioHtml + '</td>' +
-                    '<td>' + resumeHtml + '</td>' +
-                    '<td>' + (address || "-") + '</td>' +
-                    '<td>' + (condition || "-") + '</td>' +
-                    '<td>' + (campus || "-") + '</td>' +
-                    '<td>' + instagramHtml + '</td>' +
-                    '<td>' + linkedinHtml + '</td>' +
-                    '<td>' + (email || "-") + '</td>' +
-                    '<td>' + (whatsapp || "-") + '</td>' +
-                    '<td>' + experienceHtml + '</td>' +
-                    '<td>' + reasonHtml + '</td>' +
-                    '<td>' + hopeHtml + '</td>' +
-                    '<td>' + otherHtml + '</td>' +
-                    '<td>' + chooseHtml + '</td>' +
+                    '<td>' +
+                        '<div class="d-flex flex-column small text-muted">' +
+                            (campus ? '<div><i class="fas fa-graduation-cap me-1"></i>' + campus + '</div>' : '') +
+                            (address ? '<div class="address-clamp d-flex align-items-start gap-1"><i class="fas fa-map-marker-alt flex-shrink-0"></i><span>' + address + '</span></div>' : '') +
+                        '</div>' +
+                    '</td>' +
+                    '<td>' +
+                        '<div class="d-flex flex-column small">' +
+                            '<span class="fw-semibold text-dark">' + (platformLabel || '-') + '</span>' +
+                            (modeValue
+                                ? '<span class="mt-1 inline-flex justify-center items-center w-fit px-2 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 uppercase text-center" style="font-size: 0.65rem; letter-spacing: 0.08em; line-height: 1;">' + modeValue + '</span>'
+                                : '') +
+                        '</div>' +
+                    '</td>' +
+                    '<td>' +
+                        socialHtml +
+                    '</td>' +
+                    '<td class="text-center">' + docsHtml + '</td>' +
+                    '<td>' +
+                        '<div class="d-flex gap-2">' +
+                            '<button class="btn btn-sm btn-light rounded-3 internship-view-btn" type="button" title="View">' +
+                                '<i class="fas fa-eye"></i>' +
+                            '</button>' +
+                            '<button class="btn btn-sm btn-outline-secondary rounded-3 internship-edit-btn" type="button" title="Edit">' +
+                                '<i class="fas fa-pen"></i>' +
+                            '</button>' +
+                            '<button class="btn btn-sm btn-outline-danger rounded-3 internship-delete-btn" type="button" title="Delete">' +
+                                '<i class="fas fa-trash"></i>' +
+                            '</button>' +
+                        '</div>' +
+                    '</td>' +
+                '</tr>' +
+                '<tr class="candidate-row-detail bg-slate-50/30">' +
+                    '<td colspan="6" class="px-4 py-3">' +
+                        '<div class="d-flex gap-4 small text-muted">' +
+                            '<div class="flex-grow-1">' +
+                                '<div class="text-uppercase fw-bold text-secondary mb-1" style="font-size: 0.7rem;">Harapan Kandidat</div>' +
+                                '<div>' + (hopeHtml || '-') + '</div>' +
+                            '</div>' +
+                            '<div class="flex-grow-1">' +
+                                '<div class="text-uppercase fw-bold text-secondary mb-1" style="font-size: 0.7rem;">Pengalaman</div>' +
+                                '<div>' + (experienceHtml || '-') + '</div>' +
+                            '</div>' +
+                            '<div class="flex-grow-1">' +
+                                '<div class="text-uppercase fw-bold text-secondary mb-1" style="font-size: 0.7rem;">Kondisi</div>' +
+                                '<div>' + (condition || "-") + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</td>' +
                 '</tr>';
 
             gridContainer.insertAdjacentHTML('beforeend', gridHtml);
@@ -555,6 +1047,14 @@
                     const education = data.education || {};
                     const availability = data.availability || {};
                     const internship = data.internship || data.internship_info || {};
+
+                    const roleIdRaw = data.role_id || data.roleId || scouting.role_id || internship.role_id || "";
+                    const roleNameRaw = data.role_name || data.role || basic.current_role || scouting.role_name || "";
+                    const roleIdValue = (roleIdRaw || "").toString().toLowerCase();
+                    const roleNameValue = (roleNameRaw || "").toString().toLowerCase();
+                    if (roleIdValue !== "internship" && roleNameValue !== "internship") {
+                        return;
+                    }
 
                     const name = basic.full_name || scouting.full_name || data.full_name || "Tanpa Nama";
                     const positionName = scouting.position_name || internship.position || "";
@@ -614,14 +1114,316 @@
             }
         }
 
+        async function saveInternshipCandidate() {
+            const formEl = document.getElementById("addCandidateForm");
+            const saveBtn = document.querySelector('#addCandidateModal .modal-footer .btn-dlg-blue');
+            if (!formEl) return;
+
+            const modeSelect = document.getElementById("candidateMode");
+            const positionSelect = document.getElementById("candidatePosition");
+            const platformSelect = document.getElementById("candidatePlatform");
+            const fullNameInput = document.getElementById("candidateFullName");
+            const addressInput = document.getElementById("candidateAddress");
+            const shortDescInput = document.getElementById("candidateShortDescription");
+            const campusInput = document.getElementById("candidateCampus");
+            const whatsappInput = document.getElementById("candidateWhatsapp");
+            const emailInput = document.getElementById("candidateEmail");
+            const instagramInput = document.getElementById("candidateInstagram");
+            const linkedinInput = document.getElementById("candidateLinkedin");
+            const experienceInput = document.getElementById("candidateExperience");
+            const chooseInput = document.getElementById("candidateChoose");
+            const reasonInput = document.getElementById("candidateReason");
+            const hopeInput = document.getElementById("candidateHope");
+            const otherInput = document.getElementById("candidateOther");
+
+            const mode = modeSelect ? (modeSelect.value || "").trim() : "";
+            const platform = platformSelect ? (platformSelect.value || "").trim() : "";
+            const fullName = fullNameInput ? (fullNameInput.value || "").trim() : "";
+            const address = addressInput ? (addressInput.value || "").trim() : "";
+            const shortDesc = shortDescInput ? (shortDescInput.value || "").trim() : "";
+            const campus = campusInput ? (campusInput.value || "").trim() : "";
+            const whatsapp = whatsappInput ? (whatsappInput.value || "").trim() : "";
+            const email = emailInput ? (emailInput.value || "").trim() : "";
+            const instagram = instagramInput ? (instagramInput.value || "").trim() : "";
+            const linkedin = linkedinInput ? (linkedinInput.value || "").trim() : "";
+            const experienceText = experienceInput ? (experienceInput.value || "").trim() : "";
+            const chooseText = chooseInput ? (chooseInput.value || "").trim() : "";
+            const reasonText = reasonInput ? (reasonInput.value || "").trim() : "";
+            const hopeText = hopeInput ? (hopeInput.value || "").trim() : "";
+            const otherText = otherInput ? (otherInput.value || "").trim() : "";
+
+            let positionId = "";
+            let positionName = "";
+            if (positionSelect) {
+                positionId = positionSelect.value || "";
+                if (positionSelect.selectedIndex > -1) {
+                    positionName = positionSelect.options[positionSelect.selectedIndex].text || "";
+                }
+            }
+
+            if (!fullName) {
+                alert("Nama lengkap wajib diisi.");
+                return;
+            }
+
+            const ROLE_ID = "internship";
+            const ROLE_NAME = "internship";
+
+            let avatarUrl = currentAvatarUrl || null;
+            let portfolioUrl = currentPortfolioUrl || null;
+            let resumeUrl = currentResumeUrl || null;
+
+            const photoFile = candidatePhotoInput && candidatePhotoInput.files && candidatePhotoInput.files[0]
+                ? candidatePhotoInput.files[0]
+                : null;
+            const portfolioFile = candidatePortfolioInput && candidatePortfolioInput.files && candidatePortfolioInput.files[0]
+                ? candidatePortfolioInput.files[0]
+                : null;
+            const resumeFile = candidateResumeInput && candidateResumeInput.files && candidateResumeInput.files[0]
+                ? candidateResumeInput.files[0]
+                : null;
+
+            const payload = {
+                basic_info: {
+                    full_name: fullName,
+                    current_role: ROLE_NAME,
+                    avatar_url: avatarUrl || null
+                },
+                contact_info: {
+                    address: address || null,
+                    campus: campus || null,
+                    whatsapp: whatsapp || null,
+                    email: email || null,
+                    instagram: instagram || null,
+                    linkedin: linkedin || null
+                },
+                education: campus ? { campus } : null,
+                profiling: shortDesc ? { short_description: shortDesc } : null,
+                internship: {
+                    mode: mode || null,
+                    position_id: positionId || null,
+                    position: positionName || null,
+                    platform: platform || null,
+                    address: address || null,
+                    campus: campus || null,
+                    whatsapp: whatsapp || null,
+                    email: email || null,
+                    instagram: instagram || null,
+                    linkedin: linkedin || null,
+                    portfolio_url: portfolioUrl || null,
+                    resume_url: resumeUrl || null,
+                    experience: experienceText || null,
+                    choose: chooseText || null,
+                    reason: reasonText || null,
+                    hope: hopeText || null,
+                    other: otherText || null,
+                    role_id: ROLE_ID,
+                    role_name: ROLE_NAME
+                },
+                role_id: ROLE_ID,
+                role_name: ROLE_NAME,
+                created_at: serverTimestamp()
+            };
+
+            try {
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.textContent = "Menyimpan...";
+                }
+                if (photoFile) {
+                    avatarUrl = await uploadFileToStorage(photoFile, "talent-avatars");
+                    payload.basic_info.avatar_url = avatarUrl || null;
+                }
+                if (portfolioFile) {
+                    portfolioUrl = await uploadFileToStorage(portfolioFile, "talent-portfolio");
+                    payload.internship.portfolio_url = portfolioUrl || null;
+                }
+                if (resumeFile) {
+                    resumeUrl = await uploadFileToStorage(resumeFile, "talent-resume");
+                    payload.internship.resume_url = resumeUrl || null;
+                }
+
+                if (currentEditingTalentId) {
+                    const ref = doc(db, "talents", currentEditingTalentId);
+                    await updateDoc(ref, payload);
+                } else {
+                    await addDoc(collection(db, "talents"), payload);
+                }
+                formEl.reset();
+                currentEditingTalentId = null;
+                currentAvatarUrl = null;
+                currentPortfolioUrl = null;
+                currentResumeUrl = null;
+                const modalEl = document.getElementById("addCandidateModal");
+                if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+                    const modalInstance = window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl);
+                    modalInstance.hide();
+                }
+                await loadInternshipCandidates();
+                alert("Data candidate internship berhasil disimpan.");
+            } catch (e) {
+                console.error("Gagal menyimpan candidate internship", e);
+                alert("Gagal menyimpan data. Silakan coba lagi.");
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = "Simpan";
+                }
+            }
+        }
+
+        const saveCandidateButton = document.querySelector('#addCandidateModal .modal-footer .btn-dlg-blue');
+        if (saveCandidateButton) {
+            saveCandidateButton.addEventListener("click", (e) => {
+                e.preventDefault();
+                saveInternshipCandidate();
+            });
+        }
+
+        document.addEventListener("click", async (e) => {
+            const editBtn = e.target.closest(".internship-edit-btn");
+            const deleteBtn = e.target.closest(".internship-delete-btn");
+            const viewBtn = e.target.closest(".internship-view-btn");
+            const copyWaBtn = e.target.closest(".copy-whatsapp-btn");
+            const copyEmailBtn = e.target.closest(".copy-email-btn");
+            if (editBtn) {
+                const row = editBtn.closest("tr");
+                const card = editBtn.closest(".candidate-item") || editBtn.closest(".col-12.col-md-6.col-lg-4");
+                const el = row || card;
+                const talentId = el && el.dataset ? el.dataset.talentId : null;
+                if (!talentId) return;
+                try {
+                    const data = await loadInternshipTalentForEdit(talentId);
+                    if (!data) return;
+                    currentEditingTalentId = talentId;
+                    const basic = data.basic_info || {};
+                    const internship = data.internship || data.internship_info || {};
+                    const contact = data.contact_info || {};
+                    const education = data.education || {};
+                    const profiling = data.profiling || {};
+
+                    const modeSelect = document.getElementById("candidateMode");
+                    const positionSelect = document.getElementById("candidatePosition");
+                    const platformSelect = document.getElementById("candidatePlatform");
+                    const fullNameInput = document.getElementById("candidateFullName");
+                    const shortDescInput = document.getElementById("candidateShortDescription");
+                    const addressInput = document.getElementById("candidateAddress");
+                    const campusInput = document.getElementById("candidateCampus");
+                    const whatsappInput = document.getElementById("candidateWhatsapp");
+                    const emailInput = document.getElementById("candidateEmail");
+                    const instagramInput = document.getElementById("candidateInstagram");
+                    const linkedinInput = document.getElementById("candidateLinkedin");
+                    const experienceInput = document.getElementById("candidateExperience");
+                    const chooseInput = document.getElementById("candidateChoose");
+                    const reasonInput = document.getElementById("candidateReason");
+                    const hopeInput = document.getElementById("candidateHope");
+                    const otherInput = document.getElementById("candidateOther");
+
+                    currentAvatarUrl = basic.avatar_url || null;
+                    currentPortfolioUrl = internship.portfolio_url || null;
+                    currentResumeUrl = internship.resume_url || null;
+
+                    if (modeSelect) modeSelect.value = internship.mode || "";
+                    if (platformSelect) platformSelect.value = internship.platform || "";
+
+                    if (positionSelect) {
+                        const internshipPositionId = internship.position_id || "";
+                        positionSelect.value = internshipPositionId || "";
+                    }
+
+                    if (fullNameInput) fullNameInput.value = basic.full_name || data.full_name || "";
+                    if (shortDescInput) shortDescInput.value = profiling.short_description || "";
+                    if (addressInput) addressInput.value = internship.address || contact.address || "";
+                    if (campusInput) campusInput.value = internship.campus || education.campus || education.university || "";
+                    if (whatsappInput) whatsappInput.value = internship.whatsapp || contact.whatsapp || contact.phone || "";
+                    if (emailInput) emailInput.value = internship.email || contact.email || basic.email || "";
+                    if (instagramInput) instagramInput.value = internship.instagram || contact.instagram || "";
+                    if (linkedinInput) linkedinInput.value = internship.linkedin || contact.linkedin || "";
+                    if (experienceInput) experienceInput.value = internship.experience || "";
+                    if (chooseInput) chooseInput.value = internship.choose || "";
+                    if (reasonInput) reasonInput.value = internship.reason || "";
+                    if (hopeInput) hopeInput.value = internship.hope || "";
+                    if (otherInput) otherInput.value = internship.other || "";
+
+                    if (candidatePhotoInput) {
+                        candidatePhotoInput.value = "";
+                    }
+                    if (candidatePortfolioInput) {
+                        candidatePortfolioInput.value = "";
+                    }
+                    if (candidateResumeInput) {
+                        candidateResumeInput.value = "";
+                    }
+
+                    const modalEl = document.getElementById("addCandidateModal");
+                    if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+                        const modalTitle = modalEl.querySelector(".modal-title");
+                        if (modalTitle) modalTitle.textContent = "Edit Candidate Internship";
+                        const modalInstance = window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl);
+                        modalInstance.show();
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Gagal memuat data kandidat untuk edit.");
+                }
+            }
+            if (deleteBtn) {
+                const row = deleteBtn.closest("tr");
+                const card = deleteBtn.closest(".candidate-item") || deleteBtn.closest(".col-12.col-md-6.col-lg-4");
+                const el = row || card;
+                const talentId = el && el.dataset ? el.dataset.talentId : null;
+                if (!talentId) return;
+                const ok = confirm("Hapus kandidat internship ini?");
+                if (!ok) return;
+                try {
+                    await deleteInternshipTalentById(talentId);
+                    if (row) row.remove();
+                    if (card) card.remove();
+                } catch (err) {
+                    console.error(err);
+                    alert("Gagal menghapus kandidat dari database.");
+                }
+            }
+            if (viewBtn) {
+                const row = viewBtn.closest("tr");
+                const card = viewBtn.closest(".candidate-item") || viewBtn.closest(".col-12.col-md-6.col-lg-4");
+                const el = row || card;
+                const talentId = el && el.dataset ? el.dataset.talentId : null;
+                if (!talentId) return;
+                try {
+                    const data = await loadInternshipTalentForEdit(talentId);
+                    if (!data) return;
+                    renderInternshipCandidateDetail(data);
+                    const modalEl = document.getElementById("viewCandidateModal");
+                    if (modalEl && window.bootstrap && window.bootstrap.Modal) {
+                        const modalInstance = window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl);
+                        modalInstance.show();
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Gagal memuat detail kandidat.");
+                }
+            }
+            if (copyWaBtn) {
+                const value = copyWaBtn.getAttribute("data-copy-value") || "";
+                await copyToClipboard(value);
+                alert("Nomor WhatsApp disalin ke clipboard.");
+            }
+            if (copyEmailBtn) {
+                const value = copyEmailBtn.getAttribute("data-copy-value") || "";
+                await copyToClipboard(value);
+                alert("Email disalin ke clipboard.");
+            }
+        });
+
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = "../index.html";
                 return;
             }
+            loadCandidatePositions();
             loadInternshipCandidates();
         });
     </script>
 </body>
 </html>
-

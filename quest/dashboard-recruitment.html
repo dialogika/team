@@ -131,7 +131,7 @@
 
                 <section class="row g-4 mb-5">
                     <div class="col-md-2">
-                        <div class="card p-3 h-100 border-0 shadow-purple">
+                        <div class="card p-3 h-100 border-0 shadow">
                             <span class="text-muted-custom">Head Count</span>
                             <div class="stat-number mt-2">
                                 12
@@ -140,31 +140,31 @@
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="card p-3 h-100 border-0 shadow-purple">
+                        <div class="card p-3 h-100 border-0 shadow-sm">
                             <span class="text-muted-custom">Total Applicant</span>
                             <div class="stat-number mt-2">150</div>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="card p-3 h-100 border-0 shadow-purple">
+                        <div class="card p-3 h-100 border-0 shadow-sm">
                             <span class="text-muted-custom">On Leave</span>
-                            <div class="stat-number mt-2 text-danger">6</div>
+                            <div class="stat-number mt-2 text-danger" id="onLeaveCount">0</div>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="card p-3 h-100 border-0 shadow-purple">
+                        <div class="card p-3 h-100 border-0 shadow-sm">
                             <span class="text-muted-custom">Scouting</span>
                             <div class="stat-number mt-2" id="scoutingCount">0</div>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="card p-3 h-100 border-0 shadow-purple">
+                        <div class="card p-3 h-100 border-0 shadow-sm">
                             <span class="text-muted-custom">Onboarding</span>
                             <div class="stat-number mt-2 text-success">3</div>
                         </div>
                     </div>
                     <div class="col-md-2">
-                        <div class="card p-3 h-100 border-0 shadow-purple">
+                        <div class="card p-3 h-100 border-0 shadow-sm">
                             <span class="text-muted-custom">Offboarding</span>
                             <div class="stat-number mt-2">1</div>
                         </div>
@@ -311,6 +311,7 @@
             }
 
             fetchMaxHeadCount();
+            loadOnLeaveCount();
             loadScoutingRadar(rangeStart, rangeEnd);
         });
 
@@ -361,6 +362,99 @@
                 }
             } catch (error) {
                 console.error("Failed to fetch max head count:", error);
+            }
+        }
+
+        function normalizeInternshipDate(value) {
+            if (!value) return "";
+            let dateObj = null;
+            if (typeof value.toDate === "function") {
+                dateObj = value.toDate();
+            } else if (value instanceof Date) {
+                dateObj = value;
+            } else if (typeof value === "string" || typeof value === "number") {
+                const tmp = new Date(value);
+                if (!isNaN(tmp.getTime())) {
+                    dateObj = tmp;
+                }
+            }
+            if (!dateObj || isNaN(dateObj.getTime())) return "";
+            return dateObj;
+        }
+
+        function getInternshipDisplayStatus(u) {
+            const base = (u.status || "").toLowerCase();
+            const end = u.endDateObj instanceof Date && !isNaN(u.endDateObj.getTime()) ? u.endDateObj : null;
+            const today = new Date();
+            const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            let label = u.status || "-";
+            let type = "success";
+
+            if (base === "left") {
+                label = "Left";
+                type = "danger";
+                return { label, type };
+            }
+
+            if (base === "graduate") {
+                label = "Graduate";
+                type = "success";
+                return { label, type };
+            }
+
+            if (!end) {
+                label = u.status || "Active";
+                type = "success";
+                return { label, type };
+            }
+
+            const endMid = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+            const diffDays = Math.round((endMid - todayMid) / 86400000);
+            if (diffDays < 0) {
+                label = "Graduate";
+                type = "success";
+            } else if (diffDays <= 20) {
+                label = "On Leave";
+                type = "warning";
+            } else {
+                label = "Active";
+                type = "success";
+            }
+            return { label, type };
+        }
+
+        async function loadOnLeaveCount() {
+            try {
+                const onLeaveEl = document.getElementById("onLeaveCount");
+                if (!onLeaveEl) return;
+
+                const usersRef = collection(db, "users");
+                const q = query(usersRef, where("role", "in", ["Internship", "internship"]));
+                const snap = await getDocs(q);
+
+                const list = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const employment = data.employment || {};
+                    const status = data.status || data.internshipStatus || "";
+                    const endDateRaw = data.endDate || data.internshipEndDate || (data.internship && data.internship.endDate) || employment.endDate || employment.end_date || null;
+                    const endDateObj = normalizeInternshipDate(endDateRaw);
+
+                    list.push({
+                        status,
+                        endDateObj
+                    });
+                });
+
+                let onLeaveCount = 0;
+                list.forEach(u => {
+                    const s = getInternshipDisplayStatus(u).label;
+                    if (s === "On Leave") onLeaveCount += 1;
+                });
+
+                onLeaveEl.textContent = onLeaveCount.toString();
+            } catch (error) {
+                console.error("Failed to load on leave count:", error);
             }
         }
 

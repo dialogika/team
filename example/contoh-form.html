@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Talent Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fcfcfd; }
+        .talent-card:hover .action-overlay { opacity: 1; transform: translateY(0); }
+        .talent-card img { transition: transform 0.5s ease; }
+        .talent-card:hover img { transform: scale(1.08); }
+    </style>
+</head>
+<body class="p-8 md:p-16">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Talent Directory</h1>
+                <p class="text-slate-500 mt-2">Menampilkan profil terbaik untuk kolaborasi masa depan.</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="relative">
+                    <input type="text" placeholder="Cari talent..." class="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-slate-900 outline-none w-64 shadow-sm transition-all">
+                    <i data-lucide="search" class="absolute left-3 top-3 w-4 h-4 text-slate-400"></i>
+                </div>
+                <button class="p-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:bg-slate-50">
+                    <i data-lucide="sliders-horizontal" class="w-5 h-5 text-slate-600"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- GRID SYSTEM (3-4 Kolom) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            
+            <!-- CARD 1 (Data dari gambar Anda) -->
+            <div class="talent-card group bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex flex-col">
+                
+                <!-- PHOTO AREA (Large & Square) -->
+                <div class="relative aspect-square overflow-hidden bg-slate-100">
+                    <img src="https://i.ibb.co/3N3Yv4z/profile.jpg" alt="Khoirinnida Sofyan" class="w-full h-full object-cover">
+                    
+                    <!-- Hover Action Overlay -->
+                    <div class="action-overlay absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center opacity-0 transform translate-y-4 transition-all duration-300 gap-3">
+                        <button class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-900 hover:bg-slate-900 hover:text-white transition-colors shadow-xl" title="LinkedIn">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i>
+                        </button>
+                        <button class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-900 hover:bg-green-600 hover:text-white transition-colors shadow-xl" title="WhatsApp">
+                            <i data-lucide="message-circle" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Badge Status -->
+                    <div class="absolute top-4 left-4">
+                        <span class="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-slate-800 uppercase tracking-widest shadow-sm">Verified</span>
+                    </div>
+                </div>
+
+                <!-- CONTENT AREA -->
+                <div class="p-6 flex flex-col flex-grow">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">Khoirinnida Sofyan Ramadhani</h3>
+                        <p class="text-xs font-semibold text-slate-400 mt-1 uppercase tracking-wider">Talent Creator</p>
+                    </div>
+
+                    <div class="space-y-2 mb-6">
+                        <div class="flex items-center gap-2 text-slate-600">
+                            <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-300"></i>
+                            <span class="text-xs font-medium">Univ. Gadjah Mada</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-slate-500">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-slate-300"></i>
+                            <span class="text-[11px] italic">Yogyakarta</span>
+                        </div>
+                    </div>
+
+                    <!-- CTA Button -->
+                    <div class="mt-auto">
+                        <button class="w-full py-3 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-bold text-slate-700 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all uppercase tracking-widest">
+                            View Portfolio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 2 (Placeholder untuk simulasi grid) -->
+            <div class="talent-card group bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 opacity-60">
+                <div class="aspect-square bg-slate-200 flex items-center justify-center italic text-slate-400 text-xs">
+                    Next Talent Space
+                </div>
+                <div class="p-6">
+                    <div class="h-5 w-3/4 bg-slate-100 rounded mb-2"></div>
+                    <div class="h-3 w-1/2 bg-slate-50 rounded mb-6"></div>
+                    <div class="h-10 w-full bg-slate-50 rounded-2xl"></div>
+                </div>
+            </div>
+
+            <!-- Tambahkan card lain di sini -->
+
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
