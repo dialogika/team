@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Management - Dialogika</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons (CDN for icons) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .card-candidate { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #f1f5f9;
+        }
+        .card-candidate:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+            border-color: #e2e8f0;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-interview { background-color: #dbeafe; color: #1e40af; }
+        .status-screening { background-color: #fef3c7; color: #92400e; }
+        
+        .custom-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Manajemen Kandidat</h1>
+                <p class="text-slate-500 text-sm">Kelola proses rekrutmen Dialogika</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                    <input type="text" placeholder="Cari kandidat..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition">
+                </div>
+            </div>
+        </div>
+
+        <!-- Candidate List Container -->
+        <div class="space-y-4">
+
+            <!-- CARD 1: Umi Arifah -->
+            <div class="card-candidate bg-white rounded-2xl p-5 flex flex-wrap lg:flex-nowrap gap-6 items-center">
+                <!-- Profile Part -->
+                <div class="flex items-center gap-4 w-full lg:w-1/4">
+                    <img src="https://ui-avatars.com/api/?name=Umi+Arifah&background=0D8ABC&color=fff" class="w-16 h-16 rounded-2xl object-cover shadow-sm" alt="Umi Arifah">
+                    <div>
+                        <h3 class="font-bold text-slate-800 leading-tight">Umi Arifah</h3>
+                        <p class="text-xs text-slate-400 mt-1">Daftar: 10 Jan 2026</p>
+                        <select class="custom-select mt-2 text-[11px] font-medium text-slate-500 border border-slate-200 rounded px-2 py-1 bg-slate-50 focus:outline-none w-full">
+                            <option>Pilih Interviewer...</option>
+                            <option>Haryo</option>
+                            <option>Siska</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Status & Date Part -->
+                <div class="flex flex-col gap-4 w-full lg:w-1/4 border-l border-slate-100 pl-6">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Status</label>
+                        <span class="status-badge status-interview">Interview</span>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Jadwal Interview</label>
+                        <div class="flex items-center gap-2 text-sm font-medium text-slate-700">
+                            <i data-lucide="calendar" class="w-4 h-4 text-blue-500"></i>
+                            12 Jan 2026
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Device & Location Part -->
+                <div class="flex flex-col gap-4 w-full lg:w-1/4 border-l border-slate-100 pl-6">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Provider & Device</label>
+                        <p class="text-sm font-semibold text-slate-700">- <span class="text-slate-400 font-normal">/ HP</span></p>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Alamat Domisili</label>
+                        <p class="text-xs text-slate-500 line-clamp-1">Giwangan, Kec. Umbulharjo, Kota Yogyakarta...</p>
+                    </div>
+                </div>
+
+                <!-- Actions Part -->
+                <div class="w-full lg:w-1/4 flex flex-col items-end gap-3 border-l border-slate-100 pl-6">
+                    <div class="flex gap-3">
+                        <a href="#" class="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-pink-500 hover:bg-pink-50 transition"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+                        <a href="#" class="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+                        <a href="#" class="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition"><i data-lucide="file-text" class="w-4 h-4"></i></a>
+                        <a href="#" class="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-50 transition"><i data-lucide="mail" class="w-4 h-4"></i></a>
+                    </div>
+                    <div class="flex items-center gap-3 w-full">
+                        <button class="flex-1 bg-[#25D366] hover:bg-[#20ba5a] text-white py-2 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-green-200">
+                            <i data-lucide="phone" class="w-4 h-4"></i> WhatsApp
+                        </button>
+                        <a href="#" class="text-blue-600 font-bold text-sm hover:underline flex items-center gap-1">
+                            Detail <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 2: Muhamad Mirza -->
+            <div class="card-candidate bg-white rounded-2xl p-5 flex flex-wrap lg:flex-nowrap gap-6 items-center">
+                <div class="flex items-center gap-4 w-full lg:w-1/4">
+                    <img src="https://ui-avatars.com/api/?name=Muhamad+Mirza&background=A5A6F6&color=fff" class="w-16 h-16 rounded-2xl object-cover shadow-sm" alt="Muhamad Mirza">
+                    <div>
+                        <h3 class="font-bold text-slate-800 leading-tight">Muhamad Mirza K.</h3>
+                        <p class="text-xs text-slate-400 mt-1">Daftar: 10 Jan 2026</p>
+                        <select class="custom-select mt-2 text-[11px] font-medium text-slate-500 border border-slate-200 rounded px-2 py-1 bg-slate-50 focus:outline-none w-full border-blue-200">
+                            <option>Pilih Interviewer...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4 w-full lg:w-1/4 border-l border-slate-100 pl-6">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Status</label>
+                        <span class="status-badge status-screening">Screening</span>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Jadwal Interview</label>
+                        <p class="text-sm font-medium text-slate-300 italic text-xs">Belum dijadwalkan</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-4 w-full lg:w-1/4 border-l border-slate-100 pl-6">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Provider & Device</label>
+                        <p class="text-sm font-semibold text-slate-700 uppercase">MyRepublic <span class="text-slate-400 font-normal">/ HP</span></p>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Alamat Domisili</label>
+                        <p class="text-xs text-slate-500 line-clamp-1">Ciangsana, Gunung Putri, Bogor Regency...</p>
+                    </div>
+                </div>
+
+                <div class="w-full lg:w-1/4 flex flex-col items-end gap-3 border-l border-slate-100 pl-6">
+                    <div class="flex gap-3">
+                        <a href="#" class="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-pink-500 transition"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+                        <a href="#" class="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-blue-600 transition"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+                        <a href="#" class="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-red-500 transition"><i data-lucide="file-text" class="w-4 h-4"></i></a>
+                        <a href="#" class="p-2 bg-slate-50 rounded-lg text-slate-400 hover:text-blue-500 transition"><i data-lucide="mail" class="w-4 h-4"></i></a>
+                    </div>
+                    <div class="flex items-center gap-3 w-full">
+                        <button class="flex-1 bg-[#25D366] hover:bg-[#20ba5a] text-white py-2 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-green-200">
+                            <i data-lucide="phone" class="w-4 h-4"></i> WhatsApp
+                        </button>
+                        <a href="#" class="text-blue-600 font-bold text-sm hover:underline flex items-center gap-1">
+                            Detail <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

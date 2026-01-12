@@ -448,13 +448,28 @@
                                 </div>
                             </div>
                             <div class="col-md-3">
+                                <select id="candidateStatusFilter" class="form-select border-0 bg-light rounded-4 w-100 shadow-none py-2 px-3 fw-bold" style="font-size: 13px;">
+                                    <option value="">Semua status</option>
+                                    <option value="screening">Screening</option>
+                                    <option value="interview">Interview</option>
+                                    <option value="microteaching">Microteaching</option>
+                                    <option value="decision">Decision</option>
+                                    <option value="accepted">Accept</option>
+                                    <option value="rejected">Reject</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
                                 <select id="candidateSortSelect" class="form-select border-0 bg-light rounded-4 w-100 shadow-none py-2 px-3 fw-bold" style="font-size: 13px;">
                                     <option value="none">Urutkan</option>
+                                    <option value="status">Status</option>
+                                    <option value="created_desc">Tanggal input (terbaru)</option>
+                                    <option value="created_asc">Tanggal input (terlama)</option>
+                                    <option value="interview_asc">Tanggal interview (terdekat)</option>
+                                    <option value="interview_desc">Tanggal interview (terjauh)</option>
                                     <option value="name_asc">Nama A-Z</option>
                                     <option value="name_desc">Nama Z-A</option>
                                 </select>
                             </div>
-                            
                         </div>
                     </div>
 
@@ -650,10 +665,12 @@
         const gridView = document.getElementById('gridView');
         const listView = document.getElementById('listView');
         const searchInput = document.getElementById('candidateSearchInput');
+        const statusFilter = document.getElementById('candidateStatusFilter');
         const sortSelect = document.getElementById('candidateSortSelect');
 
         function applyCandidateFilters() {
             const term = (searchInput && searchInput.value ? searchInput.value : "").toLowerCase();
+            const statusValue = statusFilter ? (statusFilter.value || "").toLowerCase() : "";
             const sortValue = sortSelect ? (sortSelect.value || "none") : "none";
 
             const gridItems = Array.from(document.querySelectorAll('.candidate-item'));
@@ -661,12 +678,18 @@
 
             gridItems.forEach(item => {
                 const text = item.innerText.toLowerCase();
-                item.style.display = text.includes(term) ? "" : "none";
+                const itemStatus = (item.dataset.status || "").toLowerCase();
+                const matchesSearch = text.includes(term);
+                const matchesStatus = !statusValue || itemStatus === statusValue;
+                item.style.display = matchesSearch && matchesStatus ? "" : "none";
             });
 
             listRows.forEach(row => {
                 const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(term) ? "" : "none";
+                const rowStatus = (row.dataset.status || "").toLowerCase();
+                const matchesSearch = text.includes(term);
+                const matchesStatus = !statusValue || rowStatus === statusValue;
+                row.style.display = matchesSearch && matchesStatus ? "" : "none";
             });
 
             if (sortValue === "none") return;
@@ -674,7 +697,28 @@
             const compare = (a, b) => {
                 const nameA = (a.dataset.name || "").toLowerCase();
                 const nameB = (b.dataset.name || "").toLowerCase();
-                if (sortValue === "name_asc") {
+                const statusA = (a.dataset.status || "").toLowerCase();
+                const statusB = (b.dataset.status || "").toLowerCase();
+                const createdA = Number(a.dataset.created || "0");
+                const createdB = Number(b.dataset.created || "0");
+                const dueA = a.dataset.dueDate || "";
+                const dueB = b.dataset.dueDate || "";
+
+                if (sortValue === "status") {
+                    return statusA.localeCompare(statusB, "id");
+                } else if (sortValue === "created_desc") {
+                    return createdB - createdA;
+                } else if (sortValue === "created_asc") {
+                    return createdA - createdB;
+                } else if (sortValue === "interview_asc") {
+                    const valA = dueA || "9999-12-31";
+                    const valB = dueB || "9999-12-31";
+                    return valA.localeCompare(valB, "id");
+                } else if (sortValue === "interview_desc") {
+                    const valA = dueA || "0000-01-01";
+                    const valB = dueB || "0000-01-01";
+                    return valB.localeCompare(valA, "id");
+                } else if (sortValue === "name_asc") {
                     return nameA.localeCompare(nameB, "id");
                 } else if (sortValue === "name_desc") {
                     return nameB.localeCompare(nameA, "id");
@@ -710,6 +754,10 @@
 
         if (searchInput) {
             searchInput.addEventListener('input', applyCandidateFilters);
+        }
+
+        if (statusFilter) {
+            statusFilter.addEventListener('change', applyCandidateFilters);
         }
 
         if (sortSelect) {

@@ -11,9 +11,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
         }
         .page-title {
             color: #0B2B6A;
@@ -47,14 +50,23 @@
         .talent-card {
             background: white;
             border-radius: 32px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #f1f5f9;
             transition: all 0.3s ease;
             height: 100%;
             overflow: hidden;
         }
         .talent-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(15,23,42,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
+        }
+        .mentor-row {
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+        }
+        .mentor-row:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05);
+            border-color: #e2e8f0;
         }
         .list-view-container {
             display: none;
@@ -79,7 +91,11 @@
             object-fit: cover;
         }
         .status-badge {
-            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
             letter-spacing: 0.08em;
         }
         .status-badge-screening {
@@ -101,6 +117,11 @@
         .status-badge-default {
             background-color: #f1f5f9;
             color: #475569;
+        }
+        .flatpickr-calendar {
+            border-radius: 12px !important;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
+            border: none !important;
         }
         .text-ellipsis-2 {
             display: -webkit-box;
@@ -366,8 +387,24 @@
                                 </div>
                             </div>
                             <div class="col-md-3">
+                                <select id="mentorStatusFilter" class="form-select border-0 bg-light rounded-4 w-100 shadow-none py-2 px-3 fw-bold" style="font-size: 13px;">
+                                    <option value="">Semua status</option>
+                                    <option value="screening">Screening</option>
+                                    <option value="interview">Interview</option>
+                                    <option value="microteaching">Microteaching</option>
+                                    <option value="decision">Decision</option>
+                                    <option value="accepted">Accept</option>
+                                    <option value="rejected">Reject</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
                                 <select id="mentorSortSelect" class="form-select border-0 bg-light rounded-4 w-100 shadow-none py-2 px-3 fw-bold" style="font-size: 13px;">
                                     <option value="none">Urutkan</option>
+                                    <option value="status">Status</option>
+                                    <option value="created_desc">Tanggal input (terbaru)</option>
+                                    <option value="created_asc">Tanggal input (terlama)</option>
+                                    <option value="interview_asc">Tanggal interview (terdekat)</option>
+                                    <option value="interview_desc">Tanggal interview (terjauh)</option>
                                     <option value="name_asc">Nama A-Z</option>
                                     <option value="name_desc">Nama Z-A</option>
                                 </select>
@@ -482,10 +519,12 @@
         const gridView = document.getElementById('gridView');
         const listView = document.getElementById('listView');
         const mentorSearchInput = document.getElementById('mentorSearchInput');
+        const mentorStatusFilter = document.getElementById('mentorStatusFilter');
         const mentorSortSelect = document.getElementById('mentorSortSelect');
 
         function applyMentorFilters() {
             const term = (mentorSearchInput && mentorSearchInput.value ? mentorSearchInput.value : "").toLowerCase();
+            const statusFilter = mentorStatusFilter ? (mentorStatusFilter.value || "").toLowerCase() : "";
             const sortValue = mentorSortSelect ? (mentorSortSelect.value || "none") : "none";
 
             const cards = Array.from(document.querySelectorAll('.mentor-item'));
@@ -493,12 +532,18 @@
 
             cards.forEach(card => {
                 const text = card.innerText.toLowerCase();
-                card.style.display = text.includes(term) ? "" : "none";
+                const cardStatus = (card.dataset.status || "").toLowerCase();
+                const matchesSearch = text.includes(term);
+                const matchesStatus = !statusFilter || cardStatus === statusFilter;
+                card.style.display = matchesSearch && matchesStatus ? "" : "none";
             });
 
             rows.forEach(row => {
                 const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(term) ? "" : "none";
+                const rowStatus = (row.dataset.status || "").toLowerCase();
+                const matchesSearch = text.includes(term);
+                const matchesStatus = !statusFilter || rowStatus === statusFilter;
+                row.style.display = matchesSearch && matchesStatus ? "" : "none";
             });
 
             if (sortValue === "none") return;
@@ -506,7 +551,28 @@
             const compare = (a, b) => {
                 const nameA = (a.dataset.name || "").toLowerCase();
                 const nameB = (b.dataset.name || "").toLowerCase();
-                if (sortValue === "name_asc") {
+                const statusA = (a.dataset.status || "").toLowerCase();
+                const statusB = (b.dataset.status || "").toLowerCase();
+                const createdA = Number(a.dataset.created || "0");
+                const createdB = Number(b.dataset.created || "0");
+                const dueA = a.dataset.dueDate || "";
+                const dueB = b.dataset.dueDate || "";
+
+                if (sortValue === "status") {
+                    return statusA.localeCompare(statusB, "id");
+                } else if (sortValue === "created_desc") {
+                    return createdB - createdA;
+                } else if (sortValue === "created_asc") {
+                    return createdA - createdB;
+                } else if (sortValue === "interview_asc") {
+                    const valA = dueA || "9999-12-31";
+                    const valB = dueB || "9999-12-31";
+                    return valA.localeCompare(valB, "id");
+                } else if (sortValue === "interview_desc") {
+                    const valA = dueA || "0000-01-01";
+                    const valB = dueB || "0000-01-01";
+                    return valB.localeCompare(valA, "id");
+                } else if (sortValue === "name_asc") {
                     return nameA.localeCompare(nameB, "id");
                 } else if (sortValue === "name_desc") {
                     return nameB.localeCompare(nameA, "id");
@@ -549,10 +615,16 @@
             mentorSearchInput.addEventListener('input', applyMentorFilters);
         }
 
+        if (mentorStatusFilter) {
+            mentorStatusFilter.addEventListener('change', applyMentorFilters);
+        }
+
         if (mentorSortSelect) {
             mentorSortSelect.addEventListener('change', applyMentorFilters);
         }
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
@@ -678,6 +750,24 @@
             } catch (e) {
                 return "";
             }
+        }
+
+        function formatDueDateForInput(raw) {
+            if (!raw) return "";
+            let dateObj = null;
+            if (typeof raw.toDate === "function") {
+                dateObj = raw.toDate();
+            } else if (raw instanceof Date) {
+                dateObj = raw;
+            } else if (typeof raw === "string" || typeof raw === "number") {
+                const tmp = new Date(raw);
+                if (!isNaN(tmp.getTime())) dateObj = tmp;
+            }
+            if (!dateObj) return "";
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+            const day = String(dateObj.getDate()).padStart(2, "0");
+            return year + "-" + month + "-" + day;
         }
 
         function buildStatusBadge(status) {
@@ -975,6 +1065,18 @@
             }
         }
 
+        async function updateMentorDueDate(talentId, dueDate) {
+            if (!talentId) return;
+            const ref = doc(db, "talents", talentId);
+            try {
+                await updateDoc(ref, {
+                    "recruitment_status.due_date": dueDate || null
+                });
+            } catch (e) {
+                console.error("Failed to update mentor due date", e);
+            }
+        }
+
         function updateMentorStatusUI(talentId, newStatus, sourceSelect) {
             if (!talentId) return;
             const selects = document.querySelectorAll('.mentor-status-select[data-talent-id="' + talentId + '"]');
@@ -1010,6 +1112,7 @@
             const statusText = params.statusCandidate || "";
             const statusHtml = buildStatusBadge(statusText);
             const createdText = escapeHtml(params.createdText || "");
+            const dueDateInputValue = params.dueDateInputValue || "";
             const instagramUrl = params.instagramUrl || "";
             const linkedinUrl = params.linkedinUrl || "";
             const address = escapeHtml(params.address || "");
@@ -1019,6 +1122,7 @@
             const email = escapeHtml(params.email || "");
             const talentId = params.talentId || "";
             const interviewers = Array.isArray(params.interviewers) ? params.interviewers.filter(Boolean) : [];
+            const createdSortValue = typeof params.createdSortValue === "number" ? params.createdSortValue : 0;
 
             const instagramHtml = instagramUrl
                 ? '<a href="' + instagramUrl + '" target="_blank" class="text-decoration-none">Open</a>'
@@ -1036,6 +1140,9 @@
             card.className = "mentor-item";
             card.dataset.name = name;
             card.dataset.talentId = talentId;
+            card.dataset.status = (statusText || "").toString().toLowerCase();
+            card.dataset.created = String(createdSortValue || 0);
+            card.dataset.dueDate = dueDateInputValue || "";
             card.innerHTML =
                 '<div class="talent-card group bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500 flex flex-col">' +
                     '<div class="relative aspect-square overflow-hidden bg-slate-100">' +
@@ -1074,6 +1181,9 @@
             row.className = "mentor-row bg-white border border-slate-100 rounded-2xl p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow";
             row.dataset.name = name;
             row.dataset.talentId = talentId;
+            row.dataset.status = (statusText || "").toString().toLowerCase();
+            row.dataset.created = String(createdSortValue || 0);
+            row.dataset.dueDate = dueDateInputValue || "";
             row.innerHTML =
                 '<div class="flex flex-col lg:flex-row gap-4 md:gap-6">' +
                     '<div class="flex items-center gap-4 lg:w-1/4">' +
@@ -1114,6 +1224,16 @@
                                 '<option value="rejected"' + (statusText.toLowerCase() === "rejected" || statusText.toLowerCase() === "reject" ? ' selected' : '') + '>Reject</option>' +
                                 '<option value="accepted"' + (statusText.toLowerCase() === "accepted" || statusText.toLowerCase() === "accept" ? ' selected' : '') + '>Accept</option>' +
                             '</select>' +
+                        '</div>' +
+                        '<div>' +
+                            '<span class="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-1">Tanggal Interview</span>' +
+                            '<div class="mentor-due-date-field" data-talent-id="' + talentId + '">' +
+                                '<div class="input-group input-group-sm" style="max-width:220px;">' +
+                                    '<span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-event"></i></span>' +
+                                    '<input type="text" class="form-control form-control-sm mentor-due-date-input border-start-0" placeholder="Pilih tanggal" data-talent-id="' + talentId + '" value="' + dueDateInputValue + '">' +
+                                    '<button type="button" class="btn btn-outline-secondary btn-sm mentor-due-date-clear d-flex align-items-center justify-content-center" style="width:28px;height:28px;padding:0;"><i class="fa-solid fa-xmark text-xs"></i></button>' +
+                                '</div>' +
+                            '</div>' +
                         '</div>' +
                         '<div>' +
                             '<span class="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-1">Provider & Device</span>' +
@@ -1160,6 +1280,23 @@
 
             gridContainer.appendChild(card);
             tbody.appendChild(row);
+
+            const lastRow = tbody.lastElementChild;
+            if (lastRow && window.flatpickr) {
+                const dueInput = lastRow.querySelector(".mentor-due-date-input");
+                if (dueInput) {
+                    flatpickr(dueInput, {
+                        dateFormat: "Y-m-d",
+                        defaultDate: dueDateInputValue || null,
+                        allowInput: true,
+                        onChange: (selectedDates, dateStr, instance) => {
+                            const inputEl = instance && instance.input ? instance.input : dueInput;
+                            const tId = inputEl.getAttribute("data-talent-id") || talentId;
+                            updateMentorDueDate(tId, dateStr || null);
+                        }
+                    });
+                }
+            }
         }
 
         async function loadMentorCandidates() {
@@ -1200,6 +1337,26 @@
 
                     const createdRaw = data.created_at || data.createdAt || data.created || null;
                     const createdText = formatCreatedDate(createdRaw);
+                    let createdSortValue = 0;
+                    if (createdRaw) {
+                        try {
+                            let createdDate = null;
+                            if (typeof createdRaw.toDate === "function") {
+                                createdDate = createdRaw.toDate();
+                            } else if (createdRaw instanceof Date) {
+                                createdDate = createdRaw;
+                            } else {
+                                const tmp = new Date(createdRaw);
+                                if (!isNaN(tmp.getTime())) createdDate = tmp;
+                            }
+                            if (createdDate) {
+                                createdSortValue = createdDate.getTime();
+                            }
+                        } catch (e) {}
+                    }
+
+                    const dueDateRaw = recruitment.due_date || null;
+                    const dueDateInputValue = formatDueDateForInput(dueDateRaw);
 
                     const instagramUrl = contact.instagram || internship.instagram || "";
                     const linkedinUrl = contact.linkedin || internship.linkedin || "";
@@ -1222,6 +1379,7 @@
                         resumeUrl,
                         statusCandidate,
                         createdText,
+                        dueDateInputValue,
                         instagramUrl,
                         linkedinUrl,
                         address,
@@ -1230,7 +1388,8 @@
                         whatsapp,
                         email,
                         talentId: docSnap.id,
-                        interviewers
+                        interviewers,
+                        createdSortValue
                     });
                     found += 1;
                 });
@@ -1415,6 +1574,23 @@
         });
 
         document.addEventListener("click", async (e) => {
+            const clearDueBtn = e.target.closest(".mentor-due-date-clear");
+            if (clearDueBtn) {
+                const field = clearDueBtn.closest(".mentor-due-date-field");
+                const inputEl = field ? field.querySelector(".mentor-due-date-input") : null;
+                if (inputEl) {
+                    const tId = inputEl.getAttribute("data-talent-id") || "";
+                    inputEl.value = "";
+                    if (inputEl._flatpickr) {
+                        inputEl._flatpickr.clear();
+                    }
+                    if (tId) {
+                        await updateMentorDueDate(tId, null);
+                    }
+                }
+                return;
+            }
+
             const display = e.target.closest(".mentor-interviewer-display");
             if (display) {
                 e.preventDefault();
