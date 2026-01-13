@@ -343,35 +343,30 @@
                                 <span>Screening</span>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="d-flex flex-wrap align-items-center gap-2" id="stepScreeningAvatars"></div>
-                                    <span class="badge bg-light text-dark rounded-pill" id="stepScreeningCount">0</span>
                                 </div>
                             </div>
                             <div class="recruitment-step-item">
                                 <span>Interview</span>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="d-flex flex-wrap align-items-center gap-2" id="stepInterviewAvatars"></div>
-                                    <span class="badge bg-light text-dark rounded-pill" id="stepInterviewCount">0</span>
                                 </div>
                             </div>
                             <div class="recruitment-step-item">
                                 <span>Decision</span>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="d-flex flex-wrap align-items-center gap-2" id="stepDecisionAvatars"></div>
-                                    <span class="badge bg-light text-dark rounded-pill" id="stepDecisionCount">0</span>
                                 </div>
                             </div>
                             <div class="recruitment-step-item">
                                 <span>Accepted</span>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="d-flex flex-wrap align-items-center gap-2" id="stepAcceptedAvatars"></div>
-                                    <span class="badge bg-success-subtle text-success rounded-pill" id="stepAcceptedCount">0</span>
                                 </div>
                             </div>
                             <div class="recruitment-step-item border-0">
                                 <span>Rejected</span>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="d-flex flex-wrap align-items-center gap-2" id="stepRejectedAvatars"></div>
-                                    <span class="badge bg-danger-subtle text-danger rounded-pill" id="stepRejectedCount">0</span>
                                 </div>
                             </div>
                         </div>
@@ -732,7 +727,17 @@
             const employment = (data && data.employment) || {};
             const name = data.name || data.fullName || data.username || data.email || "";
             const role = data.role || "-";
-            const position = data.position || employment.position || "-";
+            let position =
+                data.position_name ||
+                data.positionName ||
+                employment.position_name ||
+                employment.positionName ||
+                employment.position ||
+                data.position ||
+                "-";
+            if (positionsMap && position && positionsMap[position]) {
+                position = positionsMap[position];
+            }
             const photo = data.photo || `https://i.pravatar.cc/150?u=${id}`;
             return { id, photo, name, role, position };
         }
@@ -744,7 +749,7 @@
             const photo = basic.avatar_url || data.photo || "";
             const name = basic.full_name || scouting.full_name || data.full_name || "Tanpa Nama";
             const role = data.role_name || data.role || scouting.role_name || data.role_id || scouting.role_id || "-";
-            const position =
+            let position =
                 data.position ||
                 scouting.position ||
                 internship.position ||
@@ -752,6 +757,9 @@
                 data.positionName ||
                 (data.employment && data.employment.position) ||
                 "-";
+            if (positionsMap && position && positionsMap[position]) {
+                position = positionsMap[position];
+            }
             return { id, photo, name, role, position };
         }
 
@@ -1198,6 +1206,35 @@
         let rangeStart = startOfMonth;
         let rangeEnd = today;
 
+        let positionsMap = null;
+
+        async function loadPositionsMapOnce() {
+            if (positionsMap) return positionsMap;
+            positionsMap = {};
+            try {
+                let snap = await getDocs(collection(db, "position"));
+                if (snap.empty) {
+                    try {
+                        const fallbackSnap = await getDocs(collection(db, "positions"));
+                        snap = fallbackSnap;
+                    } catch (e) {
+                        console.warn("Fallback positions collection 'positions' not readable", e);
+                    }
+                }
+                if (!snap.empty) {
+                    snap.forEach(docSnap => {
+                        const data = docSnap.data() || {};
+                        const name = (data.name || "").toString().trim();
+                        if (!name) return;
+                        positionsMap[docSnap.id] = name;
+                    });
+                }
+            } catch (e) {
+                console.error("Failed to build positions map", e);
+            }
+            return positionsMap;
+        }
+
         function formatDate(date) {
             const options = { day: 'numeric', month: 'short', year: 'numeric' };
             return date.toLocaleDateString('id-ID', options);
@@ -1263,6 +1300,7 @@
             const ctx = setModalLoading("Head Count (Internship)", subtitle);
             if (!ctx) return;
             try {
+                await loadPositionsMapOnce();
                 const usersRef = collection(db, "users");
                 const q = query(usersRef, where("role", "in", ["Internship", "internship"]));
                 const snap = await getDocs(q);
@@ -1291,6 +1329,7 @@
             const ctx = setModalLoading("Applicants (Talents)", subtitle);
             if (!ctx) return;
             try {
+                await loadPositionsMapOnce();
                 const talentsRef = collection(db, "talents");
                 const snap = await getDocs(talentsRef);
                 const allowed = new Set(["internship", "mentor", "subteam", "employee", "superteam"]);
@@ -1321,6 +1360,7 @@
             const ctx = setModalLoading("On Leave (Internship)", subtitle);
             if (!ctx) return;
             try {
+                await loadPositionsMapOnce();
                 const usersRef = collection(db, "users");
                 const q = query(usersRef, where("role", "in", ["Internship", "internship"]));
                 const snap = await getDocs(q);
@@ -1380,6 +1420,7 @@
             const ctx = setModalLoading("Onboarding (Accepted Talents)", subtitle);
             if (!ctx) return;
             try {
+                await loadPositionsMapOnce();
                 const talentsRef = collection(db, "talents");
                 const snap = await getDocs(talentsRef);
                 const rows = [];
@@ -1411,6 +1452,7 @@
             const ctx = setModalLoading("Offboarding (Graduate Internship)", subtitle);
             if (!ctx) return;
             try {
+                await loadPositionsMapOnce();
                 const usersRef = collection(db, "users");
                 const q = query(usersRef, where("role", "in", ["Internship", "internship"]));
                 const snap = await getDocs(q);

@@ -159,12 +159,16 @@ export function renderSidebar(target) {
             }
 
             #logoutModal {
-                z-index: 5000 !important;
+                z-index: 5001 !important;
                 pointer-events: auto !important;
             }
 
             #logoutModal * {
                 pointer-events: auto !important;
+            }
+
+            .modal {
+                z-index: 5000 !important;
             }
 
             .modal-backdrop {

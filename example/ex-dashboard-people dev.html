@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col sticky top-0 h-screen">
+            <div class="p-6 border-b border-slate-50">
+                <div class="flex items-center gap-2 font-bold text-xl text-indigo-600">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>InternHub</span>
+                </div>
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <a href="#" class="flex items-center gap-3 p-3 bg-indigo-50 text-indigo-600 rounded-xl font-medium">
+                    <i data-lucide="home" class="w-5 h-5"></i> Dashboard
+                </a>
+                <a href="#" class="flex items-center gap-3 p-3 text-slate-500 hover:bg-slate-50 rounded-xl transition">
+                    <i data-lucide="calendar-check" class="w-5 h-5"></i> Presensi
+                </a>
+                <a href="#" class="flex items-center gap-3 p-3 text-slate-500 hover:bg-slate-50 rounded-xl transition">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i> KPI Assessment
+                </a>
+                <a href="#" class="flex items-center gap-3 p-3 text-slate-500 hover:bg-slate-50 rounded-xl transition">
+                    <i data-lucide="trophy" class="w-5 h-5"></i> Leaderboard
+                </a>
+                <a href="#" class="flex items-center gap-3 p-3 text-slate-500 hover:bg-slate-50 rounded-xl transition">
+                    <i data-lucide="book-open" class="w-5 h-5"></i> Training
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            <!-- Header -->
+            <header class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-2xl font-bold">Halo, Selamat Pagi! 👋</h1>
+                    <p class="text-slate-500 text-sm">Ringkasan performa, kehadiran, dan KPI divisi hari ini.</p>
+                </div>
+                <div class="flex gap-4">
+                    <button class="bg-white p-2 rounded-lg border border-slate-200 hover:shadow-sm">
+                        <i data-lucide="bell" class="w-5 h-5 text-slate-600"></i>
+                    </button>
+                    <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-semibold flex items-center gap-2 transition">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Input Data
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats Grid (Presensi + Absensi = 100%) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-emerald-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg"><i data-lucide="user-check"></i></div>
+                        <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full uppercase tracking-wider">Hadir</span>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium">Total Presensi</p>
+                    <h3 class="text-3xl font-black mt-1 text-emerald-600">94.8%</h3>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-rose-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-rose-50 text-rose-600 rounded-lg"><i data-lucide="user-x"></i></div>
+                        <span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded-full uppercase tracking-wider">Absen</span>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium">Total Absensi</p>
+                    <h3 class="text-3xl font-black mt-1 text-rose-600">5.2%</h3>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="smile"></i></div>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium">Satisfaction Score</p>
+                    <h3 class="text-2xl font-bold mt-1">4.8/5.0</h3>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-2 bg-purple-50 text-purple-600 rounded-lg"><i data-lucide="graduation-cap"></i></div>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium">Training Progress</p>
+                    <h3 class="text-2xl font-bold mt-1">72%</h3>
+                </div>
+            </div>
+
+            <!-- NEW SECTION: KPI ASSESSMENT PER DIVISION -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="font-bold text-lg flex items-center gap-2 text-slate-800">
+                        <i data-lucide="line-chart" class="w-5 h-5 text-indigo-600"></i> KPI Assessment per Division
+                    </h2>
+                    <span class="text-xs text-slate-400 font-medium tracking-wide italic">Berdasarkan pencapaian target mingguan</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Marketing -->
+                    <div class="space-y-3 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-slate-700 uppercase tracking-tighter">Marketing</span>
+                            <span class="text-sm font-black text-blue-600">82%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: 82%"></div>
+                        </div>
+                        <p class="text-[10px] text-slate-400">Target Lead Generation</p>
+                    </div>
+                    <!-- Branding -->
+                    <div class="space-y-3 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-slate-700 uppercase tracking-tighter">Branding</span>
+                            <span class="text-sm font-black text-pink-600">95%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            <div class="bg-pink-600 h-2 rounded-full" style="width: 95%"></div>
+                        </div>
+                        <p class="text-[10px] text-slate-400">Engagement Rate Target</p>
+                    </div>
+                    <!-- Product -->
+                    <div class="space-y-3 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-slate-700 uppercase tracking-tighter">Product</span>
+                            <span class="text-sm font-black text-amber-500">74%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            <div class="bg-amber-500 h-2 rounded-full" style="width: 74%"></div>
+                        </div>
+                        <p class="text-[10px] text-slate-400">Feature Delivery Target</p>
+                    </div>
+                    <!-- HR -->
+                    <div class="space-y-3 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-slate-700 uppercase tracking-tighter">HR</span>
+                            <span class="text-sm font-black text-emerald-500">88%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2">
+                            <div class="bg-emerald-500 h-2 rounded-full" style="width: 88%"></div>
+                        </div>
+                        <p class="text-[10px] text-slate-400">Employee Well-being Target</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Progress Detail -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-8">
+                <h2 class="font-bold text-lg mb-6 flex items-center gap-2">
+                    <i data-lucide="book-open-check" class="w-5 h-5 text-indigo-600"></i> Detail Perencanaan Training
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <div class="flex justify-between mb-2 text-sm font-medium">
+                            <span>Onboarding & Culture</span>
+                            <span class="text-indigo-600 font-bold">100%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2.5">
+                            <div class="bg-indigo-600 h-2.5 rounded-full" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2 text-sm font-medium">
+                            <span>Technical Skill: UI/UX System</span>
+                            <span class="text-indigo-600 font-bold">65%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2.5">
+                            <div class="bg-indigo-600 h-2.5 rounded-full" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-8">
+                <!-- Leaderboard -->
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <h2 class="font-bold text-lg flex items-center gap-2">
+                            <i data-lucide="award" class="text-indigo-600 w-5 h-5"></i> Leaderboard Gamification
+                        </h2>
+                        <div class="flex bg-slate-100 p-1 rounded-xl">
+                            <button onclick="switchTab('weekly')" id="btn-weekly" class="px-6 py-2 text-xs font-bold rounded-lg transition bg-white shadow-sm text-indigo-600">Weekly</button>
+                            <button onclick="switchTab('monthly')" id="btn-monthly" class="px-6 py-2 text-xs font-bold rounded-lg transition text-slate-500">Monthly</button>
+                        </div>
+                    </div>
+                    <div id="tab-weekly" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center gap-4 p-4 bg-indigo-50/30 border border-indigo-100 rounded-2xl">
+                            <span class="font-black text-2xl text-indigo-200 italic w-8 text-center">#1</span>
+                            <div class="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">DL</div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-slate-800 text-sm">Dewi Lestari</h4>
+                                <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">2,450 XP</p>
+                            </div>
+                            <i data-lucide="trending-up" class="text-green-500 w-4 h-4"></i>
+                        </div>
+                        <div class="flex items-center gap-4 p-4 border border-slate-100 rounded-2xl">
+                            <span class="font-black text-2xl text-slate-200 italic w-8 text-center">#2</span>
+                            <div class="w-12 h-12 rounded-full bg-slate-200"></div>
+                            <div class="flex-1 text-sm font-bold text-slate-700">Reza Rahardian</div>
+                            <p class="font-bold text-slate-500 text-xs">2,120 XP</p>
+                        </div>
+                    </div>
+                    <div id="tab-monthly" class="p-6 hidden">
+                        <div class="p-8 text-center text-slate-400 italic text-sm">Menampilkan data performa bulan ini...</div>
+                    </div>
+                </div>
+
+                <!-- Log Kehadiran -->
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-50 flex justify-between items-center">
+                        <h2 class="font-bold text-lg">Log Kehadiran Harian</h2>
+                        <button class="text-indigo-600 font-bold text-xs hover:underline uppercase tracking-tighter">View All Logs</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-widest">
+                                <tr>
+                                    <th class="px-6 py-4">Nama Intern</th>
+                                    <th class="px-6 py-4">Waktu</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4">Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm">
+                                <tr>
+                                    <td class="px-6 py-4 flex items-center gap-3 font-medium">
+                                        <div class="w-8 h-8 rounded-full bg-slate-200"></div>
+                                        Budi Santoso
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-500">08:02 AM</td>
+                                    <td class="px-6 py-4"><span class="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase">On-Time</span></td>
+                                    <td class="px-6 py-4 text-xs text-slate-400 italic">Office - Jakarta</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 flex items-center gap-3 font-medium text-rose-600">
+                                        <div class="w-8 h-8 rounded-full bg-rose-100"></div>
+                                        Andi Wijaya
+                                    </td>
+                                    <td class="px-6 py-4 text-slate-300">-- : --</td>
+                                    <td class="px-6 py-4"><span class="px-2 py-1 bg-rose-100 text-rose-700 rounded text-[10px] font-bold uppercase">Sakit</span></td>
+                                    <td class="px-6 py-4 text-xs text-indigo-600 underline">surat_dokter.pdf</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Survey -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm max-w-2xl">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-pink-50 text-pink-600 rounded-lg"><i data-lucide="heart"></i></div>
+                        <h2 class="font-bold text-lg">Satisfaction Survey</h2>
+                    </div>
+                    <div class="flex gap-4 mb-6">
+                        <button class="text-3xl grayscale hover:grayscale-0 transition">😢</button>
+                        <button class="text-3xl grayscale hover:grayscale-0 transition">😐</button>
+                        <button class="text-3xl hover:scale-125 transition">😊</button>
+                        <button class="text-3xl shadow-xl rounded-full p-2 bg-yellow-50">😍</button>
+                    </div>
+                    <textarea class="w-full text-sm p-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" placeholder="Apa yang bisa ditingkatkan hari ini?" rows="2"></textarea>
+                    <button class="px-8 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition">Submit Feedback</button>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function switchTab(type) {
+            const btnWeekly = document.getElementById('btn-weekly');
+            const btnMonthly = document.getElementById('btn-monthly');
+            const tabWeekly = document.getElementById('tab-weekly');
+            const tabMonthly = document.getElementById('tab-monthly');
+
+            if (type === 'weekly') {
+                tabWeekly.classList.remove('hidden');
+                tabMonthly.classList.add('hidden');
+                btnWeekly.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+                btnWeekly.classList.remove('text-slate-500');
+                btnMonthly.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+                btnMonthly.classList.add('text-slate-500');
+            } else {
+                tabMonthly.classList.remove('hidden');
+                tabWeekly.classList.add('hidden');
+                btnMonthly.classList.add('bg-white', 'text-indigo-600', 'shadow-sm');
+                btnMonthly.classList.remove('text-slate-500');
+                btnWeekly.classList.remove('bg-white', 'text-indigo-600', 'shadow-sm');
+                btnWeekly.classList.add('text-slate-500');
+            }
+        }
+    </script>
+</body>
+</html>
