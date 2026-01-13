@@ -215,7 +215,7 @@
                 <!-- Stats Cards -->
                 <div class="row g-4 mb-5">
                     <div class="col-xl-3 col-md-6">
-                        <div class="stats-card">
+                        <div class="stats-card" id="internshipCardTotal">
                             <div class="icon-shape bg-dark text-white"><i class="fas fa-users"></i></div>
                             <div class="d-flex justify-content-between align-items-end">
                                 <div>
@@ -229,7 +229,7 @@
                         </div>
                     </div>
                     <div class="col-xl-3 col-md-6">
-                        <div class="stats-card">
+                        <div class="stats-card" id="internshipCardActive">
                             <div class="icon-shape bg-success bg-opacity-10 text-success"><i class="fas fa-user-check"></i></div>
                             <div class="d-flex justify-content-between align-items-end">
                                 <div>
@@ -243,7 +243,7 @@
                         </div>
                     </div>
                     <div class="col-xl-3 col-md-6">
-                        <div class="stats-card">
+                        <div class="stats-card" id="internshipCardOnLeave">
                             <div class="icon-shape bg-danger bg-opacity-10 text-danger"><i class="fas fa-user-clock"></i></div>
                             <div class="d-flex justify-content-between align-items-end">
                                 <div>
@@ -257,7 +257,7 @@
                         </div>
                     </div>
                     <div class="col-xl-3 col-md-6">
-                        <div class="stats-card">
+                        <div class="stats-card" id="internshipCardLeft">
                             <div class="icon-shape bg-warning bg-opacity-10 text-primary"><i class="fas fa-door-open" style="color: #f7b12c;"></i></div>
                             <div class="d-flex justify-content-between align-items-end">
                                 <div>
@@ -596,6 +596,7 @@
         let internshipUsersAll = [];
         let internshipState = {
             search: "",
+            statusFilter: "",
             rowsPerPage: 10,
             page: 1
         };
@@ -805,6 +806,13 @@
                     );
                 });
             }
+            if (internshipState.statusFilter) {
+                const target = internshipState.statusFilter;
+                data = data.filter(u => {
+                    const info = getInternshipDisplayStatus(u);
+                    return info.label === target;
+                });
+            }
             return data;
         }
 
@@ -918,7 +926,7 @@
                     <td class="text-end pe-4">
                         <div class="d-flex justify-content-end gap-2">
                             <button class="btn-action shadow-sm internship-edit-btn" data-user-id="${u.id}"><i class="fas fa-edit"></i></button>
-                            <button class="btn-action shadow-sm text-danger"><i class="fas fa-trash-alt"></i></button>
+                            <button class="btn-action shadow-sm text-danger internship-delete-btn" data-user-id="${u.id}"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </td>
                 `;
@@ -1255,6 +1263,10 @@
             const addForm = document.getElementById("internshipAddForm");
             const addBtn = document.getElementById("internshipAddBtn");
             const table = document.querySelector(".internship-table");
+            const cardTotal = document.getElementById("internshipCardTotal");
+            const cardActive = document.getElementById("internshipCardActive");
+            const cardOnLeave = document.getElementById("internshipCardOnLeave");
+            const cardLeft = document.getElementById("internshipCardLeft");
 
             if (rowsSelect) {
                 rowsSelect.value = String(internshipState.rowsPerPage);
@@ -1273,6 +1285,37 @@
                     internshipState.search = searchInput.value || "";
                     internshipState.page = 1;
                     renderInternshipTable();
+                });
+            }
+
+            function setStatusFilter(value) {
+                internshipState.statusFilter = value || "";
+                internshipState.page = 1;
+                renderInternshipTable();
+            }
+
+            if (cardTotal) {
+                cardTotal.style.cursor = "pointer";
+                cardTotal.addEventListener("click", () => {
+                    setStatusFilter("");
+                });
+            }
+            if (cardActive) {
+                cardActive.style.cursor = "pointer";
+                cardActive.addEventListener("click", () => {
+                    setStatusFilter("Active");
+                });
+            }
+            if (cardOnLeave) {
+                cardOnLeave.style.cursor = "pointer";
+                cardOnLeave.addEventListener("click", () => {
+                    setStatusFilter("On Leave");
+                });
+            }
+            if (cardLeft) {
+                cardLeft.style.cursor = "pointer";
+                cardLeft.addEventListener("click", () => {
+                    setStatusFilter("Left");
                 });
             }
 
@@ -1313,12 +1356,28 @@
             }
 
             if (table) {
-                table.addEventListener("click", (e) => {
-                    const btn = e.target.closest(".internship-edit-btn");
-                    if (!btn) return;
-                    const userId = btn.getAttribute("data-user-id");
-                    if (userId) {
-                        openInternshipEditModal(userId);
+                table.addEventListener("click", async (e) => {
+                    const editBtn = e.target.closest(".internship-edit-btn");
+                    const deleteBtn = e.target.closest(".internship-delete-btn");
+                    if (editBtn) {
+                        const userId = editBtn.getAttribute("data-user-id");
+                        if (userId) {
+                            openInternshipEditModal(userId);
+                        }
+                        return;
+                    }
+                    if (deleteBtn) {
+                        const userId = deleteBtn.getAttribute("data-user-id");
+                        if (!userId) return;
+                        const ok = confirm("Hapus data intern ini dari Intern Management?");
+                        if (!ok) return;
+                        try {
+                            await deleteDoc(doc(db, "users", userId));
+                            await loadInternshipUsers();
+                        } catch (e) {
+                            console.error("Error deleting internship user", e);
+                            alert("Gagal menghapus data intern.");
+                        }
                     }
                 });
             }

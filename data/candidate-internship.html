@@ -2169,8 +2169,76 @@
             }
             if (talentId && normalized) {
                 updateInternshipStatus(talentId, normalized, actorName);
+                if (normalized === "accept" || normalized === "accepted") {
+                    const ok = confirm("Duplikasi data ke Intern Management dengan start=onboarding dan end=+3 bulan?");
+                    if (ok) {
+                        duplicateCandidateToInternUsers(talentId).catch(() => {});
+                    }
+                }
             }
         });
+
+        function addMonths(date, months) {
+            const d = new Date(date.getTime());
+            const day = d.getDate();
+            d.setMonth(d.getMonth() + months);
+            if (d.getDate() < day) {
+                d.setDate(0);
+            }
+            return d;
+        }
+
+        async function duplicateCandidateToInternUsers(talentId) {
+            try {
+                const ref = doc(db, "talents", talentId);
+                const snap = await getDoc(ref);
+                if (!snap.exists()) return;
+                const data = snap.data() || {};
+                const basic = data.basic_info || {};
+                const scouting = data.scouting_info || {};
+                const contact = data.contact_info || {};
+                const education = data.education || {};
+                const internship = data.internship || data.internship_info || {};
+                const employment = data.employment || {};
+                const name = basic.full_name || data.full_name || scouting.full_name || "";
+                const email = internship.email || contact.email || basic.email || "";
+                const phone = internship.whatsapp || contact.whatsapp || contact.phone || "";
+                const address = internship.address || contact.address || "";
+                const campus = internship.campus || education.campus || education.university || "";
+                const positionKey = internship.position || employment.position || "";
+                const department = data.department || employment.department || "";
+                const mode = internship.mode || "";
+                const socials = {};
+                if ((internship.instagram || "").trim()) socials.instagram = (internship.instagram || "").trim();
+                if ((internship.linkedin || "").trim()) socials.linkedin = (internship.linkedin || "").trim();
+                const now = new Date();
+                const onboardingDate = now;
+                const endDate = addMonths(onboardingDate, 3);
+                const payload = {
+                    name: name || "",
+                    role: "Internship",
+                    internshipStatus: "Active",
+                    internshipStartDate: onboardingDate,
+                    internshipEndDate: endDate,
+                    position: positionKey || "",
+                    department: department || "",
+                    mode: mode || "",
+                    address: address || "",
+                    campus: campus || "",
+                    phone: phone || "",
+                    email: email || ""
+                };
+                if (Object.keys(socials).length) {
+                    payload.socials = socials;
+                }
+                const usersRef = collection(db, "users");
+                await addDoc(usersRef, payload);
+                alert("Data berhasil diduplikasi ke Intern Management.");
+            } catch (e) {
+                console.error("Gagal menduplikasi ke Intern Management", e);
+                alert("Gagal menduplikasi data ke Intern Management.");
+            }
+        }
 
         onAuthStateChanged(auth, (user) => {
             if (!user) {

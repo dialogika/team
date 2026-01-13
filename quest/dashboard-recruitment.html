@@ -59,6 +59,15 @@
             border: 2px solid #fff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        #stepScreeningAvatars .candidate-photo,
+        #stepInterviewAvatars .candidate-photo,
+        #stepDecisionAvatars .candidate-photo,
+        #stepAcceptedAvatars .candidate-photo,
+        #stepRejectedAvatars .candidate-photo {
+            width: 26px;
+            height: 26px;
+            border-width: 1px;
+        }
 
         .interview-list-item {
             padding: 15px;
@@ -331,19 +340,39 @@
                         <div class="card p-4 h-100 shadow-sm">
                             <h5 class="fw-bold mb-4">Recruitment Step</h5>
                             <div class="recruitment-step-item">
-                                <span>Screening</span> <span class="badge bg-light text-dark rounded-pill" id="stepScreeningCount">0</span>
+                                <span>Screening</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="d-flex flex-wrap align-items-center gap-2" id="stepScreeningAvatars"></div>
+                                    <span class="badge bg-light text-dark rounded-pill" id="stepScreeningCount">0</span>
+                                </div>
                             </div>
                             <div class="recruitment-step-item">
-                                <span>Interview</span> <span class="badge bg-light text-dark rounded-pill" id="stepInterviewCount">0</span>
+                                <span>Interview</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="d-flex flex-wrap align-items-center gap-2" id="stepInterviewAvatars"></div>
+                                    <span class="badge bg-light text-dark rounded-pill" id="stepInterviewCount">0</span>
+                                </div>
                             </div>
                             <div class="recruitment-step-item">
-                                <span>Decision</span> <span class="badge bg-light text-dark rounded-pill" id="stepDecisionCount">0</span>
+                                <span>Decision</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="d-flex flex-wrap align-items-center gap-2" id="stepDecisionAvatars"></div>
+                                    <span class="badge bg-light text-dark rounded-pill" id="stepDecisionCount">0</span>
+                                </div>
                             </div>
                             <div class="recruitment-step-item">
-                                <span>Accepted</span> <span class="badge bg-success-subtle text-success rounded-pill" id="stepAcceptedCount">0</span>
+                                <span>Accepted</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="d-flex flex-wrap align-items-center gap-2" id="stepAcceptedAvatars"></div>
+                                    <span class="badge bg-success-subtle text-success rounded-pill" id="stepAcceptedCount">0</span>
+                                </div>
                             </div>
                             <div class="recruitment-step-item border-0">
-                                <span>Rejected</span> <span class="badge bg-danger-subtle text-danger rounded-pill" id="stepRejectedCount">0</span>
+                                <span>Rejected</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="d-flex flex-wrap align-items-center gap-2" id="stepRejectedAvatars"></div>
+                                    <span class="badge bg-danger-subtle text-danger rounded-pill" id="stepRejectedCount">0</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -848,6 +877,11 @@
                 const decisionEl = document.getElementById("stepDecisionCount");
                 const acceptedEl = document.getElementById("stepAcceptedCount");
                 const rejectedEl = document.getElementById("stepRejectedCount");
+                const screeningAvatarsEl = document.getElementById("stepScreeningAvatars");
+                const interviewAvatarsEl = document.getElementById("stepInterviewAvatars");
+                const decisionAvatarsEl = document.getElementById("stepDecisionAvatars");
+                const acceptedAvatarsEl = document.getElementById("stepAcceptedAvatars");
+                const rejectedAvatarsEl = document.getElementById("stepRejectedAvatars");
 
                 const items = Array.isArray(talentsItems) ? talentsItems : await fetchTalentsItems();
 
@@ -856,18 +890,36 @@
                 let decisionCount = 0;
                 let acceptedCount = 0;
                 let rejectedCount = 0;
+                const screeningItems = [];
+                const interviewItems = [];
+                const decisionItems = [];
+                const acceptedItems = [];
+                const rejectedItems = [];
 
                 items.forEach(item => {
                     const data = item.data || {};
                     const recruitment = data.recruitment_status || {};
                     const currentRaw = recruitment.current || "";
                     const current = normalizeStatus(currentRaw);
+                    const display = getTalentDisplay(data, item.id);
+                    const row = { id: item.id, name: display.name, avatarUrl: display.photo };
 
-                    if (current === "screening") screeningCount += 1;
-                    else if (current === "interview") interviewCount += 1;
-                    else if (current === "decision") decisionCount += 1;
-                    else if (current === "accepted" || current === "accept") acceptedCount += 1;
-                    else if (current === "rejected" || current === "reject") rejectedCount += 1;
+                    if (current === "screening") {
+                        screeningCount += 1;
+                        screeningItems.push(row);
+                    } else if (current === "interview") {
+                        interviewCount += 1;
+                        interviewItems.push(row);
+                    } else if (current === "decision") {
+                        decisionCount += 1;
+                        decisionItems.push(row);
+                    } else if (current === "accepted" || current === "accept") {
+                        acceptedCount += 1;
+                        acceptedItems.push(row);
+                    } else if (current === "rejected" || current === "reject") {
+                        rejectedCount += 1;
+                        rejectedItems.push(row);
+                    }
                 });
 
                 if (screeningEl) screeningEl.textContent = screeningCount.toString();
@@ -875,6 +927,12 @@
                 if (decisionEl) decisionEl.textContent = decisionCount.toString();
                 if (acceptedEl) acceptedEl.textContent = acceptedCount.toString();
                 if (rejectedEl) rejectedEl.textContent = rejectedCount.toString();
+
+                renderRadarAvatars(screeningAvatarsEl, screeningItems);
+                renderRadarAvatars(interviewAvatarsEl, interviewItems);
+                renderRadarAvatars(decisionAvatarsEl, decisionItems);
+                renderRadarAvatars(acceptedAvatarsEl, acceptedItems);
+                renderRadarAvatars(rejectedAvatarsEl, rejectedItems);
             } catch (error) {
                 console.error("Failed to load recruitment stats:", error);
             }
@@ -943,6 +1001,38 @@
                 tooltipTriggerList.forEach(el => {
                     bootstrap.Tooltip.getOrCreateInstance(el);
                 });
+            }
+        }
+
+        async function loadRecruitmentAvatars(talentsItems) {
+            try {
+                const container = document.getElementById("recruitmentStepAvatars");
+                if (!container) return;
+                container.innerHTML = "";
+                const items = Array.isArray(talentsItems) ? talentsItems : await fetchTalentsItems();
+                const rows = [];
+                items.forEach(item => {
+                    const data = item.data || {};
+                    const recruitment = data.recruitment_status || data.recruitment_system || {};
+                    const current = normalizeStatus(recruitment.current || "");
+                    if (current === "screening" || current === "interview" || current === "decision") {
+                        const display = getTalentDisplay(data, item.id);
+                        rows.push({
+                            id: item.id,
+                            name: display.name,
+                            avatarUrl: display.photo,
+                            createdAt: getTalentCreatedAtDate(data)
+                        });
+                    }
+                });
+                rows.sort((a, b) => {
+                    const at = a.createdAt instanceof Date && !isNaN(a.createdAt.getTime()) ? a.createdAt.getTime() : 0;
+                    const bt = b.createdAt instanceof Date && !isNaN(b.createdAt.getTime()) ? b.createdAt.getTime() : 0;
+                    return bt - at;
+                });
+                renderRadarAvatars(container, rows);
+            } catch (error) {
+                console.error("Failed to load recruitment avatars:", error);
             }
         }
 
@@ -1615,6 +1705,7 @@
             const talentsItems = await fetchTalentsItems();
             await loadApplicantsCount(startDate, endDate, talentsItems);
             loadRecruitmentStats(talentsItems);
+            loadRecruitmentAvatars(talentsItems);
             loadScoutingRadar(startDate, endDate, talentsItems);
             loadOnboardingCount(startDate, endDate, talentsItems);
             loadUpcomingInterviews(startDate, endDate, talentsItems);
