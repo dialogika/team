@@ -722,6 +722,35 @@
         const statusFilter = document.getElementById('candidateStatusFilter');
         const sortSelect = document.getElementById('candidateSortSelect');
 
+        function normalizeStatus(value) {
+            if (!value) return "";
+            return value.toString().trim().toLowerCase();
+        }
+
+        function mapToFilterStatus(status) {
+            const v = normalizeStatus(status);
+            if (v === "interview") return "interview";
+            if (v === "ojt" || v === "microteaching") return "microteaching";
+            if (v === "decision") return "decision";
+            if (v === "accepted" || v === "accept") return "accepted";
+            if (v === "rejected" || v === "reject") return "rejected";
+            if (v === "screening" || v === "contacted" || v === "replied" || v === "none" || v === "radar") return "screening";
+            return "";
+        }
+
+        function mapToSelectStatus(status) {
+            const v = normalizeStatus(status);
+            if (v === "radar" || v === "none" || v === "screening") return "none";
+            if (v === "contacted") return "contacted";
+            if (v === "replied" || v === "respond") return "replied";
+            if (v === "interview") return "interview";
+            if (v === "ojt" || v === "microteaching") return "ojt";
+            if (v === "decision") return "decision";
+            if (v === "rejected" || v === "reject") return "rejected";
+            if (v === "accepted" || v === "accept") return "accepted";
+            return "none";
+        }
+
         function applyCandidateFilters() {
             const term = (searchInput?.value || "").toLowerCase();
             const statusValue = statusFilter ? (statusFilter.value || "").toLowerCase() : "";
@@ -879,6 +908,15 @@
                 if (listSelect && listSelect !== select) {
                     listSelect.value = newStatus;
                 }
+                const mapped = mapToFilterStatus(newStatus);
+                const gridItem = document.querySelector('.candidate-item[data-talent-id="' + talentId + '"]');
+                const listRow = document.querySelector('.candidate-row[data-talent-id="' + talentId + '"]');
+                if (gridItem) gridItem.dataset.status = mapped;
+                if (listRow) listRow.dataset.status = mapped;
+                if (window.updateTalentStatus) {
+                    try { window.updateTalentStatus(talentId, newStatus, ""); } catch (e) {}
+                }
+                applyCandidateFilters();
             }
         });
     </script>
@@ -1157,37 +1195,38 @@
                         return;
                     }
                     const basic = data.basic_info || {};
-                    const scouting = data.scouting_info || {};
-                    const name = basic.full_name || scouting.full_name || "Tanpa Nama";
-                    const role = basic.current_role || scouting.role_name || "";
-                    const positionName = scouting.position_name || "";
-                    const avatarUrl = basic.avatar_url || null;
-                    const channelType = scouting.channel_type || "linkedin";
-                    const channelUrl = scouting.channel_url || "#";
-                    const assignedTo = Array.isArray(scouting.assigned_to) ? scouting.assigned_to.filter(Boolean) : [];
-                    let assignLabel = "";
-                    if (assignedTo.length > 0) {
-                        const names = assignedTo.map(uid => (assignUsersMap[uid]?.name || "User"));
-                        const shown = names.slice(0, 2);
-                        const extra = names.length - shown.length;
-                        assignLabel = extra > 0 ? (shown.join(', ') + ' +' + extra) : shown.join(', ');
-                    }
-                    const assignAvatarHtml = assignedTo.length > 0 ? buildAssignAvatarStack(assignedTo) : "";
-                    appendCandidateToUI({
-                        name,
-                        role,
-                        positionName,
-                        avatarUrl,
-                        channelType,
-                        channelUrl,
-                        assignLabel,
-                        assignAvatarHtml,
-                        talentId: docSnap.id
-                    });
-                    found += 1;
+                const scouting = data.scouting_info || {};
+                const name = basic.full_name || scouting.full_name || "Tanpa Nama";
+                const role = basic.current_role || scouting.role_name || "";
+                const positionName = scouting.position_name || "";
+                const avatarUrl = basic.avatar_url || null;
+                const channelType = scouting.channel_type || "linkedin";
+                const channelUrl = scouting.channel_url || "#";
+                const assignedTo = Array.isArray(scouting.assigned_to) ? scouting.assigned_to.filter(Boolean) : [];
+                let assignLabel = "";
+                if (assignedTo.length > 0) {
+                    const names = assignedTo.map(uid => (assignUsersMap[uid]?.name || "User"));
+                    const shown = names.slice(0, 2);
+                    const extra = names.length - shown.length;
+                    assignLabel = extra > 0 ? (shown.join(', ') + ' +' + extra) : shown.join(', ');
+                }
+                const assignAvatarHtml = assignedTo.length > 0 ? buildAssignAvatarStack(assignedTo) : "";
+                appendCandidateToUI({
+                    name,
+                    role,
+                    positionName,
+                    avatarUrl,
+                    channelType,
+                    channelUrl,
+                    assignLabel,
+                    assignAvatarHtml,
+                    talentId: docSnap.id,
+                    status: recruitment.current || "radar"
                 });
-                if (!found) {
-                    gridContainer.innerHTML =
+                found += 1;
+            });
+            if (!found) {
+                gridContainer.innerHTML =
                         '<div class="col-12 py-5 text-center text-muted small">Belum ada data kandidat scouting dengan status radar.</div>';
                     listTbody.innerHTML =
                         '<tr><td colspan="5" class="text-center text-muted small py-4">Belum ada data kandidat scouting dengan status radar.</td></tr>';
@@ -1315,6 +1354,18 @@
             const assignLabel = params.assignLabel ? escapeHtml(params.assignLabel) : "";
             const assignAvatarHtml = params.assignAvatarHtml || "";
             const talentId = params.talentId || "";
+            const currentStatus = params.status || "";
+            const filterStatus = mapToFilterStatus(currentStatus);
+            const selectValue = mapToSelectStatus(currentStatus);
+            let statusOptionsHtml = "";
+            statusOptionsHtml += '<option value="none"' + (selectValue === "none" ? ' selected' : '') + '>Radar</option>';
+            statusOptionsHtml += '<option value="contacted"' + (selectValue === "contacted" ? ' selected' : '') + '>Contacted</option>';
+            statusOptionsHtml += '<option value="replied"' + (selectValue === "replied" ? ' selected' : '') + '>Respond</option>';
+            statusOptionsHtml += '<option value="interview"' + (selectValue === "interview" ? ' selected' : '') + '>Interview</option>';
+            statusOptionsHtml += '<option value="ojt"' + (selectValue === "ojt" ? ' selected' : '') + '>On Job Test</option>';
+            statusOptionsHtml += '<option value="decision"' + (selectValue === "decision" ? ' selected' : '') + '>Decision</option>';
+            statusOptionsHtml += '<option value="rejected"' + (selectValue === "rejected" ? ' selected' : '') + '>Rejected</option>';
+            statusOptionsHtml += '<option value="accepted"' + (selectValue === "accepted" ? ' selected' : '') + '>Accepted</option>';
 
             const subtitleParts = [];
             if (role) subtitleParts.push(role);
@@ -1335,7 +1386,7 @@
                 : "";
 
             const gridHtml =
-                '<div class="col-12 col-md-6 col-lg-4 candidate-item" data-name="' + name + '" data-talent-id="' + talentId + '">' +
+                '<div class="col-12 col-md-6 col-lg-4 candidate-item" data-name="' + name + '" data-talent-id="' + talentId + '" data-status="' + filterStatus + '">' +
                     '<div class="candidate-card">' +
                         '<div class="img-wrapper">' +
                             '<img src="' + avatarUrl + '" class="candidate-img" alt="Kandidat">' +
@@ -1363,14 +1414,7 @@
                             '<div class="status-box">' +
                                 '<hr/>' +
                                 '<select class="form-select status-select status-waiting">' +
-                                    '<option value="none" selected>Radar</option>' +
-                                    '<option value="contacted">Contacted</option>' +
-                                    '<option value="replied">Respond</option>' +
-                                    '<option value="interview">Interview</option>' +
-                                    '<option value="ojt">On Job Test</option>' +
-                                    '<option value="decision">Decision</option>' +
-                                    '<option value="rejected">Rejected</option>' +
-                                    '<option value="accepted">Accepted</option>' +
+                                    statusOptionsHtml +
                                 '</select>' +
                             '</div>' +
                         '</div>' +
@@ -1378,7 +1422,7 @@
                 '</div>';
 
             const listHtml =
-                '<tr class="candidate-row" data-name="' + name + '" data-talent-id="' + talentId + '">' +
+                '<tr class="candidate-row" data-name="' + name + '" data-talent-id="' + talentId + '" data-status="' + filterStatus + '">' +
                     '<td class="ps-4">' +
                         '<div class="d-flex align-items-center">' +
                             '<img src="' + avatarUrl + '" class="list-img">' +
@@ -1395,14 +1439,7 @@
                     '</td>' +
                     '<td>' +
                         '<select class="form-select status-select status-waiting">' +
-                            '<option value="none" selected>Radar</option>' +
-                            '<option value="contacted">Contacted</option>' +
-                            '<option value="replied">Respond</option>' +
-                            '<option value="interview">Interview</option>' +
-                            '<option value="ojt">On Job Test</option>' +
-                            '<option value="decision">Decision</option>' +
-                            '<option value="rejected">Rejected</option>' +
-                            '<option value="accepted">Accepted</option>' +
+                            statusOptionsHtml +
                         '</select>' +
                     '</td>' +
                     '<td>' + (assignAvatarHtml || (assignLabel ? '<span class="assign-badge" data-bs-toggle="tooltip" title="' + assignLabel + '">' + assignLabel + '</span>' : '')) + '</td>' +
