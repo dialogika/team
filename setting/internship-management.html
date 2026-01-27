@@ -824,6 +824,11 @@
             let label = u.status || "-";
             let type = "success";
 
+            if (base === "inactive") {
+                label = "Inactive";
+                type = "danger";
+                return { label, type };
+            }
             if (base === "left") {
                 label = "Left";
                 type = "danger";
@@ -865,6 +870,24 @@
             if (!tbody || !paginationInfo || !prevBtn || !nextBtn) return;
 
             const filtered = getFilteredInternshipUsers();
+            const statusOrderPriority = (u) => {
+                const info = getInternshipDisplayStatus(u);
+                const v = (info.label || "").toLowerCase();
+                if (v === "active") return 0;
+                if (v === "on leave") return 1;
+                if (v === "graduate") return 2;
+                // push others (inactive, left, unknown) to bottom
+                return 3;
+            };
+            filtered.sort((a, b) => {
+                const pa = statusOrderPriority(a);
+                const pb = statusOrderPriority(b);
+                if (pa !== pb) return pa - pb;
+                // secondary: name ascending to keep rows tidy
+                const na = (a.name || "").toLowerCase();
+                const nb = (b.name || "").toLowerCase();
+                return na.localeCompare(nb, "id");
+            });
             const total = filtered.length;
             const perPage = internshipState.rowsPerPage;
             const totalPages = Math.max(1, Math.ceil(total / perPage));
