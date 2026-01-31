@@ -263,6 +263,183 @@
                 padding: 20px 10px;
             }
         }
+
+        .interview-tabs {
+            border-bottom: 2px solid #f1f1f1;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0.5rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+        }
+
+        .interview-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .interview-tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #636e72;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .interview-tab:hover {
+            color: #0B2B6A;
+        }
+
+        .interview-tab.active {
+            color: #0B2B6A;
+            border-bottom-color: #0B2B6A;
+            font-weight: 600;
+        }
+
+        .interview-photo-wrapper {
+            position: relative;
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+        }
+
+        .interview-actions {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            background: white;
+            border-radius: 8px;
+            padding: 0.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            margin-bottom: 0.25rem;
+            z-index: 10;
+        }
+        
+        /* Fix collision for first item: show below */
+        .interview-list-item:first-child .interview-actions {
+            bottom: auto;
+            top: 100%;
+            margin-bottom: 0;
+            margin-top: 0.25rem;
+        }
+
+        .interview-photo-wrapper:hover .interview-actions {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .interview-action-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .interview-action-btn.check-btn {
+            background-color: #22c55e;
+            color: white;
+        }
+
+        .interview-action-btn.check-btn:hover {
+            background-color: #16a34a;
+            transform: scale(1.1);
+        }
+
+        .interview-action-btn.cross-btn {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .interview-action-btn.cross-btn:hover {
+            background-color: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .hover-shadow:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08) !important;
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+
+        .interview-scroll-wrapper {
+            max-height: 220px; /* Approx height for 3 items */
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 5px; /* Space for scrollbar */
+        }
+
+        /* Call custom scrollbar for better UI */
+        .interview-scroll-wrapper::-webkit-scrollbar {
+            width: 4px;
+            display: block; /* Force show vertical scrollbar if content overflows */
+        }
+        
+        .interview-scroll-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .interview-scroll-wrapper::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+        
+        .interview-scroll-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        .interview-list-item.completed {
+            opacity: 0.6;
+            background-color: #f0fdf4;
+            border-left: 3px solid #22c55e;
+        }
+
+        .interview-list-item.cancelled {
+            opacity: 0.6;
+            background-color: #fef2f2;
+            border-left: 3px solid #ef4444;
+        }
+
+        .interview-status-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .interview-status-badge.completed {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .interview-status-badge.cancelled {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
     </style>
 </head>
 <body class="p-8">
@@ -375,6 +552,12 @@
                     <div class="col-md-4">
                         <div class="card p-4 h-100 shadow-sm">
                             <h5 class="fw-bold mb-4">Upcoming Interview</h5>
+                            <div class="interview-tabs">
+                                <button class="interview-tab active" data-role="all">Semua</button>
+                                <button class="interview-tab" data-role="mentor">Mentor</button>
+                                <button class="interview-tab" data-role="scouting">Scouting</button>
+                                <button class="interview-tab" data-role="intern">Intern</button>
+                            </div>
                             <div id="upcomingInterviewList"></div>
                         </div>
                     </div>
@@ -407,30 +590,44 @@
                     </div>
 
                     <div class="col-md-4">
-                        <div class="card p-4 h-100 shadow-sm">
-                            <h5 class="fw-bold mb-4">Scouting Radar</h5>
-                            <div class="d-flex flex-wrap gap-3" id="scoutingRadarList"></div>
-                            <p class="text-muted-custom mt-4 mb-0">Baru masuk radar scouting hari ini.</p>
+                        <div class="card p-4 h-100 shadow-sm border-danger border-opacity-25" style="background-color: #fff5f5;">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="fw-bold mb-0 text-danger">Overdue Interview</h5>
+                                <span class="badge bg-danger rounded-pill" id="overdueCountBadge">0</span>
+                            </div>
+                            <div class="d-flex flex-column gap-2 overflow-auto" style="max-height: 200px;" id="overdueInterviewList">
+                                <!-- Overdue items will be loaded here -->
+                            </div>
+                            <p class="text-muted-custom mt-auto pt-3 mb-0 small text-danger-emphasis">
+                                <i class="fas fa-exclamation-circle me-1"></i> Interview yang terlewat jadwal.
+                            </p>
                         </div>
                     </div>
                 </section>
 
                 <section class="row g-4 mb-5" style="margin-top: 10px;">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <div class="card p-4 h-100 shadow-sm">
+                            <h5 class="fw-bold mb-3">Scouting Radar</h5>
+                            <div class="d-flex flex-wrap gap-3" id="scoutingRadarList"></div>
+                            <p class="text-muted-custom mt-4 mb-0 small">Baru masuk radar scouting hari ini.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div class="card p-4 h-100 shadow-sm">
                             <h5 class="fw-bold mb-3">Internship Radar</h5>
                             <div class="d-flex flex-wrap gap-3" id="internshipRadarList"></div>
                             <p class="text-muted-custom mt-4 mb-0 small">Candidate internship yang terdaftar di sistem.</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card p-4 h-100 shadow-sm">
                             <h5 class="fw-bold mb-3">Mentor Radar</h5>
                             <div class="d-flex flex-wrap gap-3" id="mentorRadarList"></div>
                             <p class="text-muted-custom mt-4 mb-0 small">Candidate mentor yang terdaftar di sistem.</p>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="card p-4 h-100 shadow-sm">
                             <h5 class="fw-bold mb-3">Team Radar</h5>
                             <div class="d-flex flex-wrap gap-3" id="teamRadarList"></div>
@@ -497,6 +694,8 @@
             doc,
             getDoc,
             setDoc,
+            updateDoc,
+            arrayUnion,
             serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -1571,12 +1770,38 @@
             container.innerHTML = rows
                 .map(r => {
                     const photo = r.photo || `https://i.pravatar.cc/150?u=${r.id || r.name || "x"}`;
+                    const interviewStatus = r.interviewStatus || "";
+                    const itemClass = interviewStatus === "completed" ? "interview-list-item completed" : 
+                                     interviewStatus === "cancelled" ? "interview-list-item cancelled" : 
+                                     "interview-list-item";
+                    
+                    let statusBadge = "";
+                    if (interviewStatus === "completed") {
+                        statusBadge = `<span class="interview-status-badge completed">✓ Selesai</span>`;
+                    } else if (interviewStatus === "cancelled") {
+                        statusBadge = `<span class="interview-status-badge cancelled">✗ Dibatalkan</span>`;
+                    }
+                    
+                    const actionButtons = interviewStatus ? "" : `
+                        <div class="interview-actions">
+                            <button class="interview-action-btn check-btn" data-talent-id="${r.id}" data-action="completed" title="Tandai selesai">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="interview-action-btn cross-btn" data-talent-id="${r.id}" data-action="cancelled" title="Tandai dibatalkan">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    
                     return `
-                        <div class="interview-list-item">
+                        <div class="${itemClass}">
                             <div class="d-flex align-items-center gap-3">
-                                <img class="stats-modal-photo" src="${photo}" alt="">
-                                <div>
-                                    <div class="fw-bold">${r.firstName}${r.roleBadge}</div>
+                                <div class="interview-photo-wrapper">
+                                    <img class="stats-modal-photo" src="${photo}" alt="">
+                                    ${actionButtons}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">${r.firstName}${r.roleBadge}${statusBadge}</div>
                                     <div class="text-muted-custom small">${r.displayPosition} • ${formatLongDate(r.dateObj)}</div>
                                 </div>
                             </div>
@@ -1586,11 +1811,12 @@
                 .join("");
         }
 
-        async function loadUpcomingInterviews(startDate, endDate, talentsItems) {
+        // Global state for upcoming interviews pagination
+        let upcomingInterviewsData = [];
+        let upcomingInterviewsLimit = 5;
+
+        async function loadUpcomingInterviews(startDate, endDate, talentsItems, roleFilter = null) {
             try {
-                const container = document.getElementById("upcomingInterviewList");
-                if (!container) return;
-                container.innerHTML = "";
                 const items = Array.isArray(talentsItems) ? talentsItems : await fetchTalentsItems();
                 const { e } = normalizeRangeDates(startDate, endDate);
                 const min = e instanceof Date ? new Date(e.getFullYear(), e.getMonth(), e.getDate()) : new Date();
@@ -1599,12 +1825,25 @@
                     const data = item.data || {};
                     const recruitment = data.recruitment_status || data.recruitment_system || {};
                     if (normalizeStatus(recruitment.current || "") !== "interview") return;
+                    
+                    // Get role for filtering
+                    const roleLabel = getRoleLabelFromTalent(data);
+                    const roleLabelNormalized = normalizeCompact(roleLabel);
+                    
+                    // Apply role filter
+                    if (roleFilter && roleFilter !== "all") {
+                        if (roleFilter === "mentor" && roleLabelNormalized !== "mentor") return;
+                        if (roleFilter === "intern" && roleLabelNormalized !== "internship") return;
+                        if (roleFilter === "scouting") {
+                            // Scouting is anyone who is not intern or mentor
+                            if (roleLabelNormalized === "mentor" || roleLabelNormalized === "internship") return;
+                        }
+                    }
+                    
                     const interviewDate = getInterviewScheduleDate(data);
                     if (!(interviewDate instanceof Date) || isNaN(interviewDate.getTime())) return;
                     if (interviewDate < min) return;
                     const d = getTalentDisplay(data, item.id);
-                    const roleLabel = getRoleLabelFromTalent(data);
-                    const roleLabelNormalized = normalizeCompact(roleLabel);
                     
                     // Extract position from scouting_info to match scouting-candidate.html structure
                     const scouting = (data && data.scouting_info) || {};
@@ -1616,16 +1855,44 @@
                     let roleBadge = "";
                     
                     if (roleLabelNormalized === "internship") {
-                        displayPosition = positionFromScouting || "Internship";
+                        // Try to get specific internship position
+                        const internPosition = 
+                            d.position || 
+                            positionFromScouting || 
+                            data.position || 
+                            (data.internship_info && data.internship_info.position) ||
+                            (data.internship && data.internship.position) ||
+                            "Internship";
+                            
+                        displayPosition = internPosition !== "-" ? internPosition : "Internship";
                         roleBadge = `<span class="badge bg-primary-subtle text-primary fw-normal ms-2">Intern</span>`;
                     } else if (roleLabelNormalized === "mentor") {
                         // For mentor, try to get region/area from data
-                        const mentorRegion = data.region || data.area || basic.region || basic.area || scouting.region || scouting.area || positionFromScouting || "-";
-                        displayPosition = mentorRegion;
+                        // Prioritize region/area from basic_info or root data
+                        const location = 
+                            basic.region || basic.area || 
+                            data.region || data.area || 
+                            scouting.region || scouting.area || 
+                            data.domicile || basic.domicile ||
+                            "-";
+                        
+                        // Capitalize first letter of each word if it's not "-"
+                        displayPosition = location !== "-" 
+                            ? location.toString().replace(/\b\w/g, c => c.toUpperCase()) 
+                            : "-";
+                            
                         roleBadge = `<span class="badge bg-warning-subtle text-warning fw-normal ms-2">Mentor</span>`;
                     } else {
-                        roleBadge = getRoleBadgeHtml(roleLabel);
+                        // Check if it's scouting
+                        if (positionFromScouting) {
+                            roleBadge = `<span class="badge bg-info-subtle text-info fw-normal ms-2">Scouting</span>`;
+                        } else {
+                            roleBadge = getRoleBadgeHtml(roleLabel);
+                        }
                     }
+                    
+                    // Get interview status
+                    const interviewStatus = recruitment.interview_completed || "";
                     
                     list.push({
                         id: item.id,
@@ -1634,13 +1901,206 @@
                         roleLabel: roleLabel,
                         displayPosition: displayPosition,
                         roleBadge: roleBadge,
-                        dateObj: interviewDate
+                        dateObj: interviewDate,
+                        interviewStatus: interviewStatus
                     });
                 });
+                
                 list.sort((a, b) => a.dateObj - b.dateObj);
-                renderUpcomingInterviewList(container, list.slice(0, 6));
+                
+                // Store processed data and reset limit
+                upcomingInterviewsData = list;
+                upcomingInterviewsLimit = 5;
+                
+                renderUpcomingInterviewsPaginated();
+                
             } catch (error) {
                 console.error("Failed to load upcoming interviews:", error);
+            }
+        }
+
+        function renderUpcomingInterviewsPaginated() {
+            const container = document.getElementById("upcomingInterviewList");
+            if (!container) return;
+            
+            // Save scroll position if exists
+            let savedScrollTop = 0;
+            const existingWrapper = container.querySelector(".interview-scroll-wrapper");
+            if (existingWrapper) {
+                savedScrollTop = existingWrapper.scrollTop;
+            }
+            
+            container.innerHTML = ""; // Clear main container
+            
+            // Create scroll wrapper
+            const scrollWrapper = document.createElement("div");
+            scrollWrapper.className = "interview-scroll-wrapper";
+            
+            // Get currently visible items based on limit
+            const visibleItems = upcomingInterviewsData.slice(0, upcomingInterviewsLimit);
+            
+            if (!visibleItems.length) {
+                container.innerHTML = `<div class="text-muted-custom small">Belum ada upcoming interview.</div>`;
+                return;
+            }
+            
+            // Render items into the scroll wrapper
+            renderUpcomingInterviewList(scrollWrapper, visibleItems);
+            container.appendChild(scrollWrapper);
+            
+            // Restore scroll position
+            if (savedScrollTop > 0) {
+                scrollWrapper.scrollTop = savedScrollTop;
+            }
+            
+            // Check if we need a Load More button (if valid data exists beyond current limit)
+            if (upcomingInterviewsData.length > upcomingInterviewsLimit) {
+                const remaining = upcomingInterviewsData.length - upcomingInterviewsLimit;
+                const nextLoad = 5; // Load 5 more
+                
+                const btnContainer = document.createElement("div");
+                btnContainer.className = "text-center mt-3 mb-2";
+                
+                const btn = document.createElement("button");
+                btn.className = "btn btn-sm btn-light border text-muted fw-bold px-3 rounded-pill hover-shadow";
+                btn.innerHTML = `Load More <span class="badge bg-secondary ms-1 rounded-pill">${remaining > nextLoad ? nextLoad : remaining}</span>`;
+                btn.style.fontSize = "0.8rem";
+                
+                btn.onclick = () => {
+                    upcomingInterviewsLimit += nextLoad;
+                    renderUpcomingInterviewsPaginated();
+                };
+                
+                btnContainer.appendChild(btn);
+                container.appendChild(btnContainer);
+            }
+        }
+
+        async function markInterviewStatus(talentId, status) {
+            if (!talentId || !status) return;
+            
+            const statusText = status === "completed" ? "selesai" : "dibatalkan";
+            const confirmMessage = `Apakah Anda yakin ingin menandai interview ini sebagai ${statusText}?`;
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            try {
+                const ref = doc(db, "talents", talentId);
+                const nowIso = new Date().toISOString();
+                
+                const updateData = {
+                    "recruitment_status.interview_completed": status,
+                    "recruitment_status.interview_completed_at": nowIso
+                };
+                
+                // If completed, move to decision stage
+                if (status === "completed") {
+                    updateData["recruitment_status.current"] = "decision";
+                    updateData["recruitment_status.history"] = arrayUnion({
+                        status: "decision",
+                        date: nowIso
+                    });
+                    updateData.logs = arrayUnion({
+                        action: "interview_completed",
+                        from: "interview",
+                        to: "decision",
+                        by: currentUser ? (currentUser.email || currentUser.uid || null) : null,
+                        date: nowIso
+                    });
+                } else {
+                    // If cancelled, just mark it but keep in interview stage
+                    updateData.logs = arrayUnion({
+                        action: "interview_cancelled",
+                        by: currentUser ? (currentUser.email || currentUser.uid || null) : null,
+                        date: nowIso
+                    });
+                }
+                
+                await updateDoc(ref, updateData);
+                
+                // Refresh the dashboard to show updated data
+                await refreshDashboard(rangeStart, rangeEnd);
+                
+                const successMessage = status === "completed" 
+                    ? "Interview berhasil ditandai selesai dan kandidat dipindahkan ke tahap Decision."
+                    : "Interview berhasil ditandai dibatalkan.";
+                alert(successMessage);
+            } catch (e) {
+                console.error("Failed to mark interview status", e);
+                alert("Gagal mengupdate status interview. Silakan coba lagi.");
+            }
+        }
+
+        function initializeInterviewTabs() {
+            const tabs = document.querySelectorAll(".interview-tab");
+            const tabsContainer = document.querySelector(".interview-tabs");
+            if (!tabs.length || !tabsContainer) return;
+            
+            // Tab click handlers
+            tabs.forEach(tab => {
+                tab.addEventListener("click", async () => {
+                    // Update active state
+                    tabs.forEach(t => t.classList.remove("active"));
+                    tab.classList.add("active");
+                    
+                    // Get role filter
+                    const roleFilter = tab.dataset.role || "all";
+                    
+                    // Reload interviews with filter
+                    const talentsItems = await fetchTalentsItems();
+                    await loadUpcomingInterviews(rangeStart, rangeEnd, talentsItems, roleFilter);
+                });
+            });
+            
+            // Enable drag-to-slide functionality
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            tabsContainer.addEventListener('mousedown', (e) => {
+                isDown = true;
+                tabsContainer.style.cursor = 'grabbing';
+                startX = e.pageX - tabsContainer.offsetLeft;
+                scrollLeft = tabsContainer.scrollLeft;
+            });
+
+            tabsContainer.addEventListener('mouseleave', () => {
+                isDown = false;
+                tabsContainer.style.cursor = 'grab';
+            });
+
+            tabsContainer.addEventListener('mouseup', () => {
+                isDown = false;
+                tabsContainer.style.cursor = 'grab';
+            });
+
+            tabsContainer.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - tabsContainer.offsetLeft;
+                const walk = (x - startX) * 2; // Scroll speed
+                tabsContainer.scrollLeft = scrollLeft - walk;
+            });
+
+            // Set initial cursor
+            tabsContainer.style.cursor = 'grab';
+            
+            // Add event delegation for action buttons
+            const container = document.getElementById("upcomingInterviewList");
+            if (container) {
+                container.addEventListener("click", async (e) => {
+                    const actionBtn = e.target.closest(".interview-action-btn");
+                    if (!actionBtn) return;
+                    
+                    const talentId = actionBtn.dataset.talentId;
+                    const action = actionBtn.dataset.action;
+                    
+                    if (talentId && action) {
+                        await markInterviewStatus(talentId, action);
+                    }
+                });
             }
         }
 
@@ -1772,20 +2232,89 @@
             attachCardOpen("offboardingCard", openOffboardingModal);
         }
 
+        async function loadOverdueInterviews(talentsItems) {
+            try {
+                const container = document.getElementById("overdueInterviewList");
+                const badge = document.getElementById("overdueCountBadge");
+                if (!container) return;
+                
+                const items = Array.isArray(talentsItems) ? talentsItems : await fetchTalentsItems();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Start of today
+
+                const overdueList = [];
+
+                items.forEach(item => {
+                    const data = item.data || {};
+                    const recruitment = data.recruitment_status || data.recruitment_system || {};
+                    
+                    // Check if strictly in interview stage
+                    if (normalizeStatus(recruitment.current || "") !== "interview") return;
+                    
+                    // Check if already acted upon
+                    if (recruitment.interview_completed) return;
+                    
+                    const interviewDate = getInterviewScheduleDate(data);
+                    if (!(interviewDate instanceof Date) || isNaN(interviewDate.getTime())) return;
+                    
+                    // Check if date is before today
+                    if (interviewDate < today) {
+                        const d = getTalentDisplay(data, item.id);
+                        overdueList.push({
+                            id: item.id,
+                            name: getFirstName(d.name),
+                            photo: d.photo,
+                            date: interviewDate,
+                            displayPosition: d.position
+                        });
+                    }
+                });
+
+                if (badge) badge.textContent = overdueList.length.toString();
+
+                if (overdueList.length === 0) {
+                    container.innerHTML = `<div class="text-secondary small text-center py-4">Tidak ada interview overdue! 🎉</div>`;
+                    return;
+                }
+
+                container.innerHTML = overdueList.map(r => {
+                    const photo = r.photo || `https://i.pravatar.cc/150?u=${r.id}`;
+                    return `
+                        <div class="d-flex align-items-center gap-3 p-2 rounded bg-white border border-danger border-opacity-10">
+                            <img src="${photo}" class="rounded-circle border border-white" width="32" height="32" style="object-fit: cover;">
+                            <div class="flex-grow-1" style="line-height: 1.2;">
+                                <div class="fw-bold text-dark small">${r.name}</div>
+                                <div class="text-danger small" style="font-size: 0.75rem;">
+                                    Late: ${formatDate(r.date)}
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary py-0 px-2 small" onclick="document.querySelector('.interview-tab[data-role=all]').click(); document.getElementById('upcomingInterviewList').scrollIntoView({behavior: 'smooth'})">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join("");
+
+            } catch (error) {
+                console.error("Failed to load overdue interviews:", error);
+            }
+        }
+
         async function refreshDashboard(startDate, endDate) {
             fetchMaxHeadCount();
             await loadOnLeaveCount(startDate, endDate);
             const talentsItems = await fetchTalentsItems();
             await loadApplicantsCount(startDate, endDate, talentsItems);
             loadRecruitmentStats(talentsItems);
-            loadRecruitmentAvatars(talentsItems);
-            loadScoutingRadar(startDate, endDate, talentsItems);
+            loadScoutingRadar(startDate, endDate, talentsItems); // Still calling old scouting radar loader if it exists, need to verify
             loadOnboardingCount(startDate, endDate, talentsItems);
             loadUpcomingInterviews(startDate, endDate, talentsItems);
             loadPlatformJobposting(startDate, endDate, talentsItems);
             loadInternshipRadar(talentsItems);
             loadMentorRadar(talentsItems);
             loadTeamRadar(talentsItems);
+            loadOverdueInterviews(talentsItems); // NEW
+            initializeInterviewTabs();
         }
 
         flatpickr("#calendarPicker", {
