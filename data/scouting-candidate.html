@@ -560,20 +560,20 @@
                                                 <input type="text" class="form-control" placeholder="Nama Kandidat" id="candidateNameInput" style="border-radius: 75px;" required>
                                             </div>
                                             <div class="col-md-12">
-                                                <select class="form-select" id="candidatePositionSelect" style="border-radius: 75px;" required>
+                                                <select class="form-select" id="candidatePositionSelect" style="border-radius: 75px;">
                                                     <option value="">Memuat data posisi...</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <select class="form-select" id="candidateRoleInput" style="border-radius: 75px;" required>
+                                                    <select class="form-select" id="candidateRoleInput" style="border-radius: 75px;">
                                                         <option value="">Memuat data role...</option>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <select class="form-select" id="candidateChannelTypeSelect" style="border-radius: 75px;" required>
+                                                    <select class="form-select" id="candidateChannelTypeSelect" style="border-radius: 75px;">
                                                         <option value="">Pilih channel</option>
                                                         <option value="linkedin">LinkedIn</option>
                                                         <option value="facebook">Facebook</option>
@@ -607,6 +607,10 @@
                                                         <i class="fas fa-cloud-upload-alt photo-upload-icon"></i>
                                                         <div class="photo-upload-title">Upload Photo Candidate</div>
                                                         <div class="photo-upload-subtitle">Format PNG, JPG (Max. 5MB), disarankan 400x400 px</div>
+                                                    </div>
+                                                    <div id="photoUploadStatus" style="position:absolute;left:12px;bottom:12px;background:#ffffffcc;border:1px solid #e5e7eb;border-radius:999px;padding:6px 10px;display:flex;align-items:center;gap:8px;">
+                                                        <span id="photoStatusIcon" style="display:inline-block;width:14px;height:14px;border:2px solid #1e88e5;border-top-color:transparent;border-radius:50%;visibility:hidden;"></span>
+                                                        <span id="photoStatusText" style="font-size:12px;color:#374151;font-weight:600;">Belum ada foto</span>
                                                     </div>
                                                 </div>
                                                 <input type="file" class="form-control d-none" id="candidateImageUrlInput" accept="image/*">
@@ -1094,9 +1098,11 @@
             return newDocRef.id;
         }
 
-        async function uploadCandidateImage(file) {
+        async function uploadCandidateImage(fileOrBlob, originalName) {
+            const file = fileOrBlob;
             if (!file) return null;
-            const path = "talent-avatars/" + Date.now() + "-" + file.name;
+            const safeName = (originalName || "photo.jpg").replace(/[^\w.\-]/g, "_");
+            const path = "talent-avatars/" + Date.now() + "-" + safeName;
             const fileRef = storageRef(storage, path);
             await uploadBytes(fileRef, file);
             const url = await getDownloadURL(fileRef);
@@ -1651,6 +1657,35 @@
         const assignDisplay = document.getElementById('assignDisplay');
         const photoUploadBox = document.getElementById('candidatePhotoUpload');
         const photoInput = document.getElementById('candidateImageUrlInput');
+        let photoLoadingOverlay = null;
+        let pendingCompressedPhoto = null;
+        let pendingCompressedFileName = null;
+        const photoStatusEl = document.getElementById('photoStatusText');
+        const photoStatusIcon = document.getElementById('photoStatusIcon');
+        function showPhotoLoading(label) {}
+        function hidePhotoLoading() {}
+        function setPhotoState(state, text) {
+            if (!photoStatusEl || !photoStatusIcon) return;
+            photoStatusEl.textContent = text || '';
+            if (state === 'idle') {
+                photoStatusIcon.style.visibility = 'hidden';
+                photoStatusEl.style.color = '#374151';
+            } else if (state === 'processing' || state === 'uploading') {
+                photoStatusIcon.style.visibility = 'visible';
+                photoStatusIcon.style.animation = 'spin 0.8s linear infinite';
+                photoStatusEl.style.color = '#1e88e5';
+            } else if (state === 'ready') {
+                photoStatusIcon.style.visibility = 'hidden';
+                photoStatusEl.style.color = '#059669';
+            } else if (state === 'success') {
+                photoStatusIcon.style.visibility = 'hidden';
+                photoStatusEl.style.color = '#059669';
+            } else if (state === 'error') {
+                photoStatusIcon.style.visibility = 'hidden';
+                photoStatusEl.style.color = '#dc2626';
+            }
+        }
+        setPhotoState('idle', 'Belum ada foto');
 
         if (btnAddCandidate) {
             btnAddCandidate.addEventListener('click', () => {
@@ -1730,23 +1765,65 @@
                 photoInput.click();
             });
 
-            photoInput.addEventListener('change', () => {
+            async function compressImage(file, maxDim = 400, quality = 0.85) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let { width, height } = img;
+                        const scale = Math.min(1, maxDim / Math.max(width, height));
+                        width = Math.round(width * scale);
+                        height = Math.round(height * scale);
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            if (blob) resolve(blob);
+                            else reject(new Error('Failed to compress image'));
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = reject;
+                    const reader = new FileReader();
+                    reader.onload = () => { img.src = reader.result; };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            photoInput.addEventListener('change', async () => {
                 const file = photoInput.files && photoInput.files[0];
                 if (!file) return;
                 const maxSize = 5 * 1024 * 1024;
                 if (file.size > maxSize) {
                     alert('Ukuran file maksimal 5MB.');
                     photoInput.value = "";
+                    setPhotoState('error', 'Ukuran melebihi 5MB');
                     return;
                 }
-                const reader = new FileReader();
-                reader.onload = () => {
-                    photoUploadBox.style.backgroundImage = 'url(' + reader.result + ')';
+                try {
+                    setPhotoState('processing', 'Memproses foto...');
+                    const blob = await compressImage(file);
+                    pendingCompressedPhoto = blob;
+                    pendingCompressedFileName = (file.name || 'photo.jpg').replace(/[^\w.\-]/g, "_").replace(/\.\w+$/, ".jpg");
+                    const previewUrl = URL.createObjectURL(blob);
+                    photoUploadBox.style.backgroundImage = 'url(' + previewUrl + ')';
                     photoUploadBox.style.backgroundSize = 'cover';
                     photoUploadBox.style.backgroundPosition = 'center';
                     photoUploadBox.classList.add('has-photo');
-                };
-                reader.readAsDataURL(file);
+                    setTimeout(() => URL.revokeObjectURL(previewUrl), 30000);
+                    setPhotoState('ready', 'Foto siap disimpan');
+                } catch (err) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        photoUploadBox.style.backgroundImage = 'url(' + reader.result + ')';
+                        photoUploadBox.style.backgroundSize = 'cover';
+                        photoUploadBox.style.backgroundPosition = 'center';
+                        photoUploadBox.classList.add('has-photo');
+                        setPhotoState('ready', 'Foto siap disimpan');
+                    };
+                    reader.readAsDataURL(file);
+                }
             });
         }
 
@@ -1767,15 +1844,11 @@
                 const channelType = document.getElementById('candidateChannelTypeSelect').value || null;
                 const assignValue = document.getElementById('candidateAssignInput').value || "";
                 const assignUserIds = assignValue ? assignValue.split(',').filter(Boolean) : [];
+                const submitBtn = candidateAddForm.querySelector('button[type="submit"]');
 
                 let avatarUrl = currentAvatarUrl || null;
                 if (imageFile) {
-                    try {
-                        avatarUrl = await uploadCandidateImage(imageFile);
-                    } catch (uploadErr) {
-                        console.error(uploadErr);
-                        alert('Upload foto gagal. Data kandidat akan disimpan tanpa foto.');
-                    }
+                    avatarUrl = await uploadCandidateImage(imageFile);
                 }
 
                 const payload = {
@@ -1805,25 +1878,7 @@
                         await loadTalents();
                     } else {
                         const talentId = await createTalent(payload);
-                        let assignLabel = "";
-                        if (assignUserIds.length > 0) {
-                            const names = assignUserIds.map(uid => (assignUsersMap[uid]?.name || "User"));
-                            const shown = names.slice(0, 2);
-                            const extra = names.length - shown.length;
-                            assignLabel = extra > 0 ? (shown.join(', ') + ' +' + extra) : shown.join(', ');
-                        }
-                        const assignAvatarHtml = assignUserIds.length > 0 ? buildAssignAvatarStack(assignUserIds) : "";
-                        appendCandidateToUI({
-                            name,
-                            role,
-                            positionName,
-                            avatarUrl,
-                            channelType,
-                            channelUrl,
-                            assignLabel,
-                            assignAvatarHtml,
-                            talentId
-                        });
+                        await loadTalents();
                     }
                     candidateAddForm.reset();
                     const assignHiddenInput = document.getElementById('candidateAssignInput');
@@ -1862,11 +1917,16 @@
                     modalInstance.hide();
                     currentEditingTalentId = null;
                     currentAvatarUrl = null;
+                    pendingCompressedPhoto = null;
+                    pendingCompressedFileName = null;
                     const message = isEdit ? 'Data kandidat berhasil diperbarui.' : 'Data kandidat berhasil disimpan ke database.';
                     alert(message);
+                    if (submitBtn) {}
                 } catch (err) {
                     console.error(err);
                     alert('Gagal menyimpan data kandidat. Silakan coba lagi.');
+                    setPhotoState('error', 'Gagal menyimpan foto');
+                    if (submitBtn) {}
                 }
             });
         }
