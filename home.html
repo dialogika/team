@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - Team Dialogika</title>
-
+    
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <!-- Google Fonts: Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet" />
     <style>
         /* New Project Placeholder Card */
@@ -31,14 +29,12 @@
             cursor: pointer;
             text-decoration: none;
         }
-
         .btn-new-project-placeholder:hover {
             border-color: var(--dlg-blue);
             color: var(--dlg-blue);
             background-color: #eff6ff;
             transform: translateY(-5px);
         }
-
         .new-proj-icon {
             font-size: 2.5rem;
             margin-bottom: 10px;
@@ -49,43 +45,18 @@
         .modal-content {
             border-radius: 12px;
             border: none;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
-
-        .modal-header {
-            border-bottom: 1px solid #f3f4f6;
-            padding: 20px 30px;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .modal-title {
-            font-weight: 800;
-            color: #111;
-            font-size: 1.5rem;
-        }
-
-        .form-label {
-            font-weight: 700;
-            color: #374151;
-            margin-bottom: 8px;
+        .modal-header { border-bottom: 1px solid #f3f4f6; padding: 20px 30px; }
+        .modal-body { padding: 30px; }
+        .modal-title { font-weight: 800; color: #111; font-size: 1.5rem; }
+        
+        .form-label { font-weight: 700; color: #374151; margin-bottom: 8px; font-size: 0.95rem; }
+        .form-control, .form-select {
+            padding: 10px 15px; border-radius: 6px; border: 1px solid #d1d5db;
             font-size: 0.95rem;
         }
-
-        .form-control,
-        .form-select {
-            padding: 10px 15px;
-            border-radius: 6px;
-            border: 1px solid #d1d5db;
-            font-size: 0.95rem;
-        }
-
-        .form-control:focus {
-            border-color: var(--dlg-blue);
-            box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1);
-        }
+        .form-control:focus { border-color: var(--dlg-blue); box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1); }
 
         /* Rich Editor di Modal (Re-use style from List) */
         .modal-editor-box {
@@ -93,21 +64,12 @@
             border-radius: 6px;
             overflow: hidden;
         }
-
         .modal-editor-toolbar {
-            background: #fff;
-            border-bottom: 1px solid #f3f4f6;
-            padding: 5px 10px;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            background: #fff; border-bottom: 1px solid #f3f4f6; padding: 5px 10px;
+            display: flex; gap: 8px; flex-wrap: wrap;
         }
-
         .modal-editor-content {
-            min-height: 120px;
-            padding: 15px;
-            outline: none;
-            background: #fff;
+            min-height: 120px; padding: 15px; outline: none; background: #fff;
         }
 
         /* Toggle Switch */
@@ -119,13 +81,11 @@
         .project-card-actions i {
             cursor: pointer;
         }
-
         .project-card-actions .project-trash-icon {
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.15s ease;
         }
-
         .project-card:hover .project-card-actions .project-trash-icon {
             opacity: 1;
             pointer-events: auto;
@@ -136,34 +96,31 @@
             pointer-events: none;
             transition: opacity 0.15s ease;
         }
-
         .project-card:hover .project-card-actions-unpinned i {
             opacity: 1;
             pointer-events: auto;
         }
     </style>
 </head>
-
 <body>
 
     <div id="topbarContainer"></div>
-
+    
     <div class="dashboard-container">
-
+        
         <div id="sidebarContainer"></div>
 
         <!-- 3. MAIN CONTENT (Code-28 Rich Content) -->
         <main class="main-content">
-
+            
             <div class="mb-4">
                 <h4 id="welcomeMessage" class="fw-bold mb-0">Welcome!</h4>
-                <small class="text-muted">Here is your daily update.</small>
+                <small class="text-muted">Here is your daily update.</small>    
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="fw-bold text-muted text-uppercase small">Who is Online</h6>
-                <span id="onlineActiveBadge" class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">0
-                    Active</span>
+                <span id="onlineActiveBadge" class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">0 Active</span>
             </div>
             <div class="online-scroll-container mb-4" id="onlineUsersContainer"></div>
 
@@ -174,8 +131,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <h6 class="fw-bold mb-0 text-dark">New Opportunity!</h6>
                     </div>
-                    <p class="mb-0 small text-muted">Webinar collaboration with <strong>Kampus Merdeka</strong> is
-                        tentative but high priority.</p>
+                    <p class="mb-0 small text-muted">Webinar collaboration with <strong>Kampus Merdeka</strong> is tentative but high priority.</p>
                 </div>
                 <button class="btn btn-dlg-blue px-4 d-none d-sm-block rounded-pill">Details</button>
             </div>
@@ -183,15 +139,14 @@
             <!-- PINNED PROJECTS SECTION -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="fw-bold mb-0 text-dark">📌 Pinned Projects</h5>
-                <button class="btn btn-sm text-muted fw-bold" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#hiddenProjects">
+                <button class="btn btn-sm text-muted fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#hiddenProjects">
                     More Projects <i class="bi bi-chevron-down ms-1"></i>
                 </button>
             </div>
 
             <!-- CONTAINER PROJECT (Diisi oleh JS) -->
             <div class="row g-4 mb-2" id="pinnedProjectsContainer">
-
+                
                 <!-- Loading State (Sementara) -->
                 <div class="col-12 text-center py-5">
                     <div class="spinner-border text-primary" role="status">
@@ -207,7 +162,7 @@
                     <!-- Project yang tidak di-pin akan muncul disini -->
                 </div>
             </div>
-
+            
 
             <!-- APPS OVERVIEW -->
             <div class="mb-5">
@@ -303,19 +258,13 @@
                     <div class="card border-0 shadow-sm h-100 rounded-4">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="fw-bold mb-0 text-dark"><i
-                                        class="bi bi-exclamation-circle text-warning me-2"></i>Needs Approval</h6>
+                                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-exclamation-circle text-warning me-2"></i>Needs Approval</h6>
                                 <span class="badge bg-warning text-dark rounded-pill">3</span>
                             </div>
                             <div class="d-flex flex-column gap-3">
                                 <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <p class="fw-bold mb-0 small">Budget Proposal</p><small class="text-muted"
-                                            style="font-size:0.7rem">Sarah (Finance)</small>
-                                    </div>
-                                    <div class="d-flex gap-2"><button class="btn btn-sm bg-white border text-danger"><i
-                                                class="bi bi-x"></i></button><button class="btn btn-sm btn-dark"><i
-                                                class="bi bi-check"></i></button></div>
+                                    <div><p class="fw-bold mb-0 small">Budget Proposal</p><small class="text-muted" style="font-size:0.7rem">Sarah (Finance)</small></div>
+                                    <div class="d-flex gap-2"><button class="btn btn-sm bg-white border text-danger"><i class="bi bi-x"></i></button><button class="btn btn-sm btn-dark"><i class="bi bi-check"></i></button></div>
                                 </div>
                             </div>
                         </div>
@@ -326,15 +275,12 @@
                     <div class="card border-0 shadow-sm h-100 rounded-4">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="fw-bold mb-0 text-dark"><i
-                                        class="bi bi-check2-all text-success me-2"></i>Last Day Completed</h6>
+                                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-check2-all text-success me-2"></i>Last Day Completed</h6>
                             </div>
-                            <p class="text-muted small fst-italic mb-3 text-purple">"Great work yesterday! Keep the
-                                momentum going. 🚀"</p>
+                            <p class="text-muted small fst-italic mb-3 text-purple">"Great work yesterday! Keep the momentum going. 🚀"</p>
                             <div class="d-flex flex-column gap-2">
                                 <div class="d-flex align-items-center justify-content-between border-bottom pb-2">
-                                    <span class="text-muted small text-decoration-line-through">Meeting Report: Client
-                                        A</span>
+                                    <span class="text-muted small text-decoration-line-through">Meeting Report: Client A</span>
                                     <i class="bi bi-check-circle-fill text-success small"></i>
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between">
@@ -366,16 +312,14 @@
         <div class="bottom-nav">
             <a href="#" class="nav-item-mobile active"><i class="bi bi-house-door-fill"></i></a>
             <a href="#" class="nav-item-mobile"><i class="bi bi-search"></i></a>
-
+            
             <button class="nav-btn-plus" type="button" data-bs-toggle="offcanvas" data-bs-target="#actionSheet">
                 <i class="bi bi-plus-lg"></i>
             </button>
-
+            
             <a href="#" class="nav-item-mobile position-relative">
                 <i class="bi bi-bell"></i>
-                <span
-                    class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
-                    style="width:10px; height:10px; margin-left:-15px; margin-top:10px;"></span>
+                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width:10px; height:10px; margin-left:-15px; margin-top:10px;"></span>
             </a>
             <a href="#" class="nav-item-mobile"><i class="bi bi-person"></i></a>
         </div>
@@ -388,24 +332,18 @@
             <div class="offcanvas-body pt-4">
                 <h6 class="fw-bold mb-3 ps-2">Create New</h6>
                 <a href="#" class="action-option">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 me-3"
-                        style="width:40px; height:40px; background:#e0f2fe; color:#0284c7;"><i class="bi bi-sticky"></i>
-                    </div>
-                    <div><span class="d-block fw-bold small">Capture</span><small class="text-muted"
-                            style="font-size: 0.7rem;">Quick ideas & memos</small></div>
+                    <div class="d-flex align-items-center justify-content-center rounded-3 me-3" style="width:40px; height:40px; background:#e0f2fe; color:#0284c7;"><i class="bi bi-sticky"></i></div>
+                    <div><span class="d-block fw-bold small">Capture</span><small class="text-muted" style="font-size: 0.7rem;">Quick ideas & memos</small></div>
                 </a>
                 <a href="#" class="action-option">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 me-3"
-                        style="width:40px; height:40px; background:#f0fdf4; color:#16a34a;"><i
-                            class="bi bi-check2-square"></i></div>
-                    <div><span class="d-block fw-bold small">Reminder</span><small class="text-muted"
-                            style="font-size: 0.7rem;">Assign to yourself or team</small></div>
+                    <div class="d-flex align-items-center justify-content-center rounded-3 me-3" style="width:40px; height:40px; background:#f0fdf4; color:#16a34a;"><i class="bi bi-check2-square"></i></div>
+                    <div><span class="d-block fw-bold small">Reminder</span><small class="text-muted" style="font-size: 0.7rem;">Assign to yourself or team</small></div>
                 </a>
             </div>
         </div>
 
     </div>
-
+    
     <!-- --- MODAL: NEW PROJECT --- -->
     <div class="modal fade" id="newProjectModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -417,12 +355,11 @@
                 <div class="modal-body">
                     <!-- Di dalam Modal Body -->
                     <form id="createProjectForm"> <!-- Tambahkan ID pada form -->
-
+                        
                         <!-- Name -->
                         <div class="mb-4">
                             <label class="form-label">Name</label>
-                            <input type="text" id="inputProjectName" class="form-control form-control-lg"
-                                placeholder="e.g. Website Redesign">
+                            <input type="text" id="inputProjectName" class="form-control form-control-lg" placeholder="e.g. Website Redesign">
                         </div>
 
                         <div class="mb-4">
@@ -432,8 +369,7 @@
 
                         <!-- Description (Rich Editor) -->
                         <div class="mb-4">
-                            <label class="form-label">Description <span
-                                    class="text-muted fw-normal">(optional)</span></label>
+                            <label class="form-label">Description <span class="text-muted fw-normal">(optional)</span></label>
                             <div class="modal-editor-box">
                                 <div class="modal-editor-toolbar">
                                     <!-- Toolbar buttons... biarkan saja -->
@@ -441,8 +377,7 @@
                                     <button type="button" class="btn btn-sm btn-light border"><i>I</i></button>
                                 </div>
                                 <!-- Tambahkan ID: inputProjectDesc -->
-                                <div id="inputProjectDesc" class="modal-editor-content" contenteditable="true"
-                                    data-placeholder="Add extra details..."></div>
+                                <div id="inputProjectDesc" class="modal-editor-content" contenteditable="true" data-placeholder="Add extra details..."></div>
                             </div>
                         </div>
 
@@ -456,17 +391,15 @@
                         <!-- Footer Buttons -->
                         <div class="d-flex gap-3 pt-3 border-top">
                             <!-- Ubah type jadi button dan tambah onclick -->
-                            <button type="button" class="btn btn-dlg-blue rounded-pill px-4"
-                                onclick="saveProject()">Save changes</button>
-                            <button type="button" class="btn btn-light rounded-pill px-4 border"
-                                data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-dlg-blue rounded-pill px-4" onclick="saveProject()">Save changes</button>
+                            <button type="button" class="btn btn-light rounded-pill px-4 border" data-bs-dismiss="modal">Cancel</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0">
@@ -475,20 +408,17 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="mb-2">Apakah anda ingin mendelete Project <span id="deleteProjectName"
-                            class="fw-bold"></span> ini?</p>
+                    <p class="mb-2">Apakah anda ingin mendelete Project <span id="deleteProjectName" class="fw-bold"></span> ini?</p>
                     <input type="hidden" id="deleteProjectId">
                 </div>
                 <div class="modal-footer border-0 px-4 pb-4">
-                    <button type="button" class="btn btn-light rounded-pill px-4"
-                        data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger rounded-pill px-4"
-                        onclick="confirmDeleteProject()">Delete</button>
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmDeleteProject()">Delete</button>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Firebase SDK Modular -->
@@ -550,11 +480,11 @@
             if (user) {
                 currentUser = user;
                 const localData = JSON.parse(localStorage.getItem('userData'));
-
+                
                 document.getElementById('user-name-display').innerText = localData?.name || user.email;
                 document.getElementById('user-photo-display').src = localData?.photo || "https://i.pravatar.cc/300";
                 document.getElementById('user-role-display').innerText = localData?.position || "Staff";
-
+                
                 const welcomeMsg = document.getElementById('welcomeMessage');
                 if (welcomeMsg) {
                     const hour = new Date().getHours();
@@ -724,7 +654,7 @@
                         const s = stats[pid] || {};
                         totalAll += s.total || 0;
                     });
-
+                    
                     globalProjectTasksTotal = totalAll;
                     const projectCountEl = document.getElementById('projectTasksTotalCount');
                     if (projectCountEl) {
@@ -739,7 +669,7 @@
                     }
                 }, (error) => {
                     console.error("Firestore Tasks Listener Error:", error);
-
+                    
                     // Handle quota exceeded or other fatal errors
                     if (error.code === 'resource-exhausted') {
                         console.error("Firestore quota exceeded. Stopping listener.");
@@ -747,15 +677,15 @@
                     }
 
                     // Retry with exponential backoff if connection was aborted or unavailable
-                    const isRetryable = error.code === 'unavailable' ||
-                        error.code === 'cancelled' ||
-                        error.code === 'deadline-exceeded' ||
-                        error.message.toLowerCase().includes('abort') ||
-                        error.message.toLowerCase().includes('failed to get document');
+                    const isRetryable = error.code === 'unavailable' || 
+                                      error.code === 'cancelled' || 
+                                      error.code === 'deadline-exceeded' ||
+                                      error.message.toLowerCase().includes('abort') ||
+                                      error.message.toLowerCase().includes('failed to get document');
 
                     if (isRetryable) {
                         listenToTasksRetryCount++;
-                        const delay = Math.min(1000 * Math.pow(2, listenToTasksRetryCount), 30000);
+                        const delay = Math.min(1000 * Math.pow(2, listenToTasksRetryCount), 30000); 
                         console.log(`Attempting to reconnect tasks listener in ${delay}ms (attempt ${listenToTasksRetryCount})...`);
                         setTimeout(() => {
                             if (auth.currentUser) {
@@ -792,7 +722,7 @@
                 let localData = null;
                 try {
                     localData = JSON.parse(localStorage.getItem('userData') || 'null');
-                } catch (e) { }
+                } catch (e) {}
                 const uid = currentUser.uid;
                 const name = (localData && localData.name) || currentUser.displayName || currentUser.email || "User";
                 const photo = (localData && localData.photo) || currentUser.photoURL || "";
@@ -895,7 +825,7 @@
         function renderProjects(projects) {
             const pinnedContainer = document.getElementById('pinnedProjectsContainer');
             const otherContainer = document.getElementById('otherProjectsContainer');
-
+            
             cachedProjects = Array.isArray(projects) ? projects : [];
 
             pinnedContainer.innerHTML = '';
@@ -1159,5 +1089,4 @@
 
     </script>
 </body>
-
 </html>
