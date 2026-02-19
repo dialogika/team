@@ -1426,8 +1426,11 @@
                     // Keep first placeholder option
                     sel.innerHTML = '<option value="">— Pilih kode referral —</option>';
 
-                    let refs = [];
-                    try { refs = JSON.parse(localStorage.getItem(REF_STORAGE_KEY) || '[]'); } catch (e) { refs = []; }
+                    let refs = window.currentReferrals || []; // Use global data
+                    if (!refs.length) {
+                        try { refs = JSON.parse(localStorage.getItem('dlg_referrals') || '[]'); } catch (e) {}
+                    }
+                    // Fallback to localStorage 'dlg_referrals' if global is empty (e.g. strict reload)
 
                     if (!refs.length) {
                         sel.innerHTML += '<option disabled>Belum ada data referral</option>';
@@ -1465,10 +1468,18 @@
                     if (hint) hint.classList.remove('hidden');
                     if (saveBtn) saveBtn.disabled = false;
 
-                    // Load saved excluded keys for this ref code
-                    let allConfigs = {};
-                    try { allConfigs = JSON.parse(localStorage.getItem(RF_STORAGE_KEY) || '{}'); } catch (e) { allConfigs = {}; }
-                    const excluded = allConfigs[code] || [];
+                    // Load saved excluded keys for this ref code from Referral Object
+                    let excluded = [];
+                    const refs = window.currentReferrals || [];
+                    const ref = refs.find(r => r.code === code);
+                    if (ref && Array.isArray(ref.excludedFeatures)) {
+                        excluded = ref.excludedFeatures;
+                    }  else {
+                        // Fallback/Legacy: check localStorage
+                         let allConfigs = {};
+                         try { allConfigs = JSON.parse(localStorage.getItem(RF_STORAGE_KEY) || '{}'); } catch (e) { allConfigs = {}; }
+                         if(allConfigs[code]) excluded = allConfigs[code];
+                    }
 
                     // Build checklist
                     const container = document.getElementById('refFeatChecklist');
@@ -1517,7 +1528,7 @@
                 };
 
                 // Save config
-                window.saveRefFeatConfig = function () {
+                window.saveRefFeatConfig = async function () {
                     const code = document.getElementById('refFeatCodeSelect').value;
                     if (!code) return;
 
@@ -1527,24 +1538,67 @@
                         if (!cb.checked) excluded.push(cb.value);
                     });
 
-                    let allConfigs = {};
-                    try { allConfigs = JSON.parse(localStorage.getItem(RF_STORAGE_KEY) || '{}'); } catch (e) { allConfigs = {}; }
-                    allConfigs[code] = excluded;
-                    localStorage.setItem(RF_STORAGE_KEY, JSON.stringify(allConfigs));
+                    // 1. Update in memory (window.currentReferrals)
+                    if (!window.currentReferrals) window.currentReferrals = [];
+                    const refIndex = window.currentReferrals.findIndex(r => r.code === code);
 
-                    // Tampilkan notif
                     const btn = document.getElementById('refFeatSaveBtn');
                     const orig = btn.innerHTML;
-                    btn.innerHTML = '<i class="bx bx-check-circle mr-1"></i>Tersimpan!';
-                    btn.classList.add('bg-emerald-600');
-                    btn.classList.remove('bg-indigo-600');
-                    setTimeout(function () {
-                        btn.innerHTML = orig;
-                        btn.classList.remove('bg-emerald-600');
-                        btn.classList.add('bg-indigo-600');
-                    }, 2000);
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="bi bi-hourglass-split animate-spin"></i> Menyimpan...';
 
-                    renderSavedList();
+                    try {
+                         // We need to save the ENTIRE referrals list to Firestore because it's a single document
+                        let updatedReferrals = [...window.currentReferrals];
+
+                        if (refIndex >= 0) {
+                            updatedReferrals[refIndex].excludedFeatures = excluded;
+                            // Update timestamp? Maybe not strictly needed for just config change, but good practice
+                        } else {
+                            // Should not happen if selected from dropdown
+                            console.error("Referral not found in memory");
+                            return;
+                        }
+
+                        // Save to Firestore
+                        // We need access to saveReferralsToFirestore which is not globally exposed currently.
+                        // We can manually do it here or expose a helper.
+                        // Let's manually do it using window.dlgDb
+                        if (window.dlgDb && window.dlgDoc && window.dlgSetDoc) {
+                             const refDoc = window.dlgDoc(window.dlgDb, 'settings', 'referrals');
+                             await window.dlgSetDoc(refDoc, { referrals: updatedReferrals }, { merge: true });
+                        }
+
+                        // Also update localStorage for backup
+                        localStorage.setItem('dlg_invoice_referrals', JSON.stringify(updatedReferrals));
+                         // Legacy
+                        let allConfigs = {};
+                        try { allConfigs = JSON.parse(localStorage.getItem(RF_STORAGE_KEY) || '{}'); } catch (e) { allConfigs = {}; }
+                        allConfigs[code] = excluded;
+                        localStorage.setItem(RF_STORAGE_KEY, JSON.stringify(allConfigs));
+
+
+                         // Tampilkan notif
+                        btn.innerHTML = '<i class="bx bx-check-circle mr-1"></i>Tersimpan!';
+                        btn.classList.add('bg-emerald-600');
+                        btn.classList.remove('bg-indigo-600');
+                        setTimeout(function () {
+                            btn.innerHTML = orig;
+                            btn.classList.remove('bg-emerald-600');
+                            btn.classList.add('bg-indigo-600');
+                            btn.disabled = false;
+                        }, 2000);
+
+                        renderSavedList();
+
+                    } catch (e) {
+                        console.error("Failed to save feature config", e);
+                        btn.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Gagal!';
+                        setTimeout(() => {
+                             btn.innerHTML = orig;
+                             btn.disabled = false;
+                        }, 2000);
+                    }
                 };
 
                 // Reset config for selected referral
@@ -1565,16 +1619,23 @@
                     const container = document.getElementById('refFeatSavedList');
                     if (!container) return;
 
-                    let allConfigs = {};
-                    try { allConfigs = JSON.parse(localStorage.getItem(RF_STORAGE_KEY) || '{}'); } catch (e) { allConfigs = {}; }
+                    let refs = window.currentReferrals || [];
+                    const rfConfigs = {}; // map code -> excluded
+                    refs.forEach(r => {
+                         if(r.excludedFeatures && r.excludedFeatures.length) {
+                             rfConfigs[r.code] = r.excludedFeatures;
+                         }
+                    });
 
-                    const codes = Object.keys(allConfigs);
+                    // Merge with legacy if needed, or just use refs.
+                    // For now, let's prioritize refs.
+                    const codes = Object.keys(rfConfigs);
                     if (!codes.length) { container.innerHTML = ''; return; }
 
                     const feats = window.FIRST_CLASS_FEATURES_GLOBAL || [];
                     container.innerHTML = '<p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Konfigurasi Tersimpan</p>';
                     codes.forEach(function (code) {
-                        const excluded = allConfigs[code] || [];
+                        const excluded = rfConfigs[code] || [];
                         const activeCount = feats.length - excluded.length;
                         const div = document.createElement('div');
                         div.className = 'flex items-center justify-between px-3 py-2 bg-slate-50 rounded-xl border border-slate-100 mb-1.5';
@@ -1593,9 +1654,9 @@
 
                 // Apply a referral config to the feature zones (for preview)
                 window.applyRefConfig = function (code) {
-                    let allConfigs = {};
-                    try { allConfigs = JSON.parse(localStorage.getItem(RF_STORAGE_KEY) || '{}'); } catch (e) { allConfigs = {}; }
-                    const excluded = allConfigs[code] || [];
+                    const refs = window.currentReferrals || [];
+                    const ref = refs.find(r => r.code === code);
+                    const excluded = ref ? (ref.excludedFeatures || []) : [];
                     localStorage.setItem('dlg_excluded_features', JSON.stringify(excluded));
                     window.closeRefFeatDrawer();
                     // Re-render product details to reflect
@@ -1719,9 +1780,16 @@
                     updateProductSummary();
 
                     // 3. Features Configuration
-                    let allFeatConfigs = {};
-                    try { allFeatConfigs = JSON.parse(localStorage.getItem(RF_STORAGE_KEY) || '{}'); } catch (e) { allFeatConfigs = {}; }
-                    const excludedKeys = allFeatConfigs[item.code] || [];
+                    // Use item.excludedFeatures directly
+                    const excludedKeys = Array.isArray(item.excludedFeatures) ? item.excludedFeatures : [];
+                    // Fallback to legacy
+                     if (!excludedKeys.length) {
+                         let allFeatConfigs = {};
+                         try { allFeatConfigs = JSON.parse(localStorage.getItem(RF_STORAGE_KEY) || '{}'); } catch (e) { allFeatConfigs = {}; }
+                         if (allFeatConfigs[item.code]) {
+                             excludedKeys.push(...allFeatConfigs[item.code]);
+                         }
+                     }
                     populateCreationFeatureChecklist(excludedKeys);
                 };
 
@@ -2005,6 +2073,8 @@
                             if (!cb.checked) excludedKeys.push(cb.value);
                         });
 
+                        payload.excludedFeatures = excludedKeys; // Add to payload
+
                         // Save feature config to localStorage
                         let allFeatConfigs = {};
                         try { allFeatConfigs = JSON.parse(localStorage.getItem(RF_STORAGE_KEY) || '{}'); } catch (e) { allFeatConfigs = {}; }
@@ -2021,6 +2091,9 @@
 
                         // Also sync to localStorage for invoice-management compatibility
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                        
+                        // Update global state
+                        window.currentReferrals = updated;
 
                         const ok = await saveReferralsToFirestore(updated);
                         if (ok) {
@@ -2043,7 +2116,7 @@
         <!-- Referral List Logic -->
         <script>
             (function () {
-                let currentReferrals = [];
+                window.currentReferrals = []; // Expose globally
                 let currentInvoices = [];
                 let refFilterStatus = "all";
                 let refSearchKeyword = "";
@@ -2202,14 +2275,14 @@
                     const keyword = (refSearchKeyword || "").toLowerCase();
                     let visibleCount = 0;
 
-                    const sorted = [...currentReferrals].sort((a, b) => {
+                    const sorted = [...window.currentReferrals].sort((a, b) => {
                         const ta = a.createdAtMs || a.createdAt || 0;
                         const tb = b.createdAtMs || b.createdAt || 0;
                         return tb - ta;
                     });
 
                     sorted.forEach(function (r, idx) {
-                        const originalIdx = currentReferrals.indexOf(r);
+                        const originalIdx = window.currentReferrals.indexOf(r);
                         const ownerLabel = getReferralOwnerLabel(r);
                         const initials = getReferralInitials(r);
                         const functionLabel = getReferralFunctionLabel(r);
@@ -2332,19 +2405,19 @@
                     });
 
                     if (footer) {
-                        footer.textContent = `Referral Terdaftar: ${currentReferrals.length} • Ditampilkan: ${visibleCount}`;
+                        footer.textContent = `Referral Terdaftar: ${window.currentReferrals.length} • Ditampilkan: ${visibleCount}`;
                     }
                 }
 
                 document.addEventListener("DOMContentLoaded", function () {
-                    currentReferrals = loadReferrals();
+                    window.currentReferrals = loadReferrals();
                     renderReferrals();
 
                     setTimeout(async () => {
                         const refsFromFs = await loadReferralsFromFirestore();
                         if (Array.isArray(refsFromFs) && refsFromFs.length) {
-                            currentReferrals = refsFromFs;
-                            localStorage.setItem(STORAGE_KEY_REFERRALS, JSON.stringify(currentReferrals));
+                            window.currentReferrals = refsFromFs;
+                            localStorage.setItem(STORAGE_KEY_REFERRALS, JSON.stringify(window.currentReferrals));
                             renderReferrals();
                         }
                         await loadInvoicesFromFirestore();
@@ -2419,19 +2492,19 @@
 
                             const deleteBtn = target.closest(".delete-ref");
                             if (deleteBtn) {
-                                const idx = parseInt(deleteBtn.getAttribute("data-idx"));
-                                if (confirm("Hapus kode referral ini?")) {
-                                    currentReferrals.splice(idx, 1);
-                                    saveReferrals(currentReferrals);
-                                    renderReferrals();
-                                }
+                                    const idx = parseInt(deleteBtn.getAttribute("data-idx"));
+                                    if (confirm("Hapus kode referral ini?")) {
+                                        window.currentReferrals.splice(idx, 1);
+                                        saveReferrals(window.currentReferrals);
+                                        renderReferrals();
+                                    }
                                 return;
                             }
 
                             const editBtn = target.closest(".edit-ref");
                             if (editBtn) {
                                 const idx = parseInt(editBtn.getAttribute("data-idx"));
-                                const item = currentReferrals[idx];
+                                const item = window.currentReferrals[idx];
                                 if (item && window.openEditReferralModal) {
                                     const listModal = document.getElementById("referralListModal");
                                     if (listModal) listModal.classList.add("hidden");
