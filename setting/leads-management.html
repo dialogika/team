@@ -68,9 +68,189 @@
 
         <main class="main-content">
             <div class="mb-4">
-                <h4 class="fw-bold mb-0">Leads Management Settings</h4>
-                <small class="text-muted">Atur daftar Ads Channel dan Interest yang muncul di form Leads.</small>
+                <h4 class="fw-bold mb-0">Leads Management - Marketing Division</h4>
+                <small class="text-muted">Pantau performa leads harian, pipeline pembayaran, dan konfigurasi form.</small>
             </div>
+
+            <section class="mb-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div class="settings-card flex flex-col gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i data-lucide="users" class="w-4 h-4 text-indigo-600"></i>
+                        <small class="text-uppercase text-xs text-slate-400 fw-bold">Total Leads Hari Ini</small>
+                    </div>
+                    <h2 id="statLeadsToday" class="text-3xl font-extrabold tracking-tight text-slate-900">0</h2>
+                    <small class="text-slate-500">Semua leads baru yang masuk hari ini.</small>
+                </div>
+                <div class="settings-card flex flex-col gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i data-lucide="calendar-range" class="w-4 h-4 text-indigo-600"></i>
+                        <small class="text-uppercase text-xs text-slate-400 fw-bold">Total Leads Minggu Ini</small>
+                    </div>
+                    <h2 id="statLeadsThisWeek" class="text-3xl font-extrabold tracking-tight text-slate-900">0</h2>
+                    <small class="text-slate-500">Akumulasi leads dalam 7 hari terakhir.</small>
+                </div>
+                <div class="settings-card flex flex-col gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i data-lucide="mouse-pointer-click" class="w-4 h-4 text-indigo-600"></i>
+                        <small class="text-uppercase text-xs text-slate-400 fw-bold">Total Klik Next Payment</small>
+                    </div>
+                    <h2 id="statNextPaymentClicks" class="text-3xl font-extrabold tracking-tight text-slate-900">0</h2>
+                    <small class="text-slate-500">Jumlah invoice yang sudah masuk tahap Next Payment.</small>
+                </div>
+                <div class="settings-card flex flex-col gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i data-lucide="upload-cloud" class="w-4 h-4 text-emerald-600"></i>
+                        <small class="text-uppercase text-xs text-slate-400 fw-bold">Total Upload Bukti Transfer</small>
+                    </div>
+                    <h2 id="statProofUploaded" class="text-3xl font-extrabold tracking-tight text-slate-900">0</h2>
+                    <small class="text-slate-500">Invoice dengan bukti transfer yang sudah diupload.</small>
+                </div>
+                <div class="settings-card flex flex-col gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i data-lucide="badge-check" class="w-4 h-4 text-emerald-600"></i>
+                        <small class="text-uppercase text-xs text-slate-400 fw-bold">Total Verified Payment</small>
+                    </div>
+                    <h2 id="statVerifiedPayment" class="text-3xl font-extrabold tracking-tight text-slate-900">0</h2>
+                    <small class="text-slate-500">Pembayaran yang sudah diverifikasi finance.</small>
+                </div>
+                <div class="settings-card flex flex-col gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <i data-lucide="activity" class="w-4 h-4 text-sky-600"></i>
+                        <small class="text-uppercase text-xs text-slate-400 fw-bold">Conversion Rate Next → Verified</small>
+                    </div>
+                    <h2 id="statNextToVerifiedRate" class="text-3xl font-extrabold tracking-tight text-slate-900">0%</h2>
+                    <small class="text-slate-500">Perbandingan klik Next Payment vs pembayaran terverifikasi.</small>
+                </div>
+            </section>
+
+            <section class="card-elite rounded-[2rem] p-6 mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-indigo-600"></i>
+                            Leads Harian (Today)
+                        </h2>
+                        <p class="text-sm text-slate-500 mt-1">Daftar semua leads yang tercatat hari ini.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input id="filterDateDaily" type="date" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white">
+                        <input id="filterSearchDaily" type="text" placeholder="Cari nama / kota / program" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[180px]">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="text-[11px] text-slate-500">
+                            <tr>
+                                <th>Nama</th>
+                                <th>Kota</th>
+                                <th>Program</th>
+                                <th>Ads / Source</th>
+                                <th>Stage</th>
+                                <th>PIC</th>
+                                <th>WA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableDailyLeadsBody" class="text-xs">
+                            <tr>
+                                <td colspan="7" class="text-center text-slate-400 py-3">Memuat data leads...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card-elite rounded-[2rem] p-6 mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="credit-card" class="w-5 h-5 text-amber-600"></i>
+                            Next Payment Pipeline
+                        </h2>
+                        <p class="text-sm text-slate-500 mt-1">Invoice yang sudah masuk tahap Next Payment.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <select id="filterProgramNext" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[160px]">
+                            <option value="">Semua Program</option>
+                        </select>
+                        <select id="filterPicNext" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[140px]">
+                            <option value="">Semua PIC</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="text-[11px] text-slate-500">
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Nama</th>
+                                <th>Program</th>
+                                <th>Nominal</th>
+                                <th>Status</th>
+                                <th>PIC</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableNextPaymentBody" class="text-xs">
+                            <tr>
+                                <td colspan="7" class="text-center text-slate-400 py-3">Memuat data invoice...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card-elite rounded-[2rem] p-6 mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
+                            Payment Monitoring & Verified
+                        </h2>
+                        <p class="text-sm text-slate-500 mt-1">Pantau pembayaran yang sudah upload bukti & status verifikasi.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <select id="filterStatusPayment" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[160px]">
+                            <option value="">Semua Status</option>
+                            <option value="not_verified">Not Verified</option>
+                            <option value="legit">Legit</option>
+                            <option value="scam">Scam</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="text-[11px] text-slate-500">
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Nama</th>
+                                <th>Program</th>
+                                <th>Nominal</th>
+                                <th>Metode</th>
+                                <th>Status</th>
+                                <th>WA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablePaymentBody" class="text-xs">
+                            <tr>
+                                <td colspan="7" class="text-center text-slate-400 py-3">Memuat data pembayaran...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card-elite rounded-[2rem] p-6 mb-8">
+                <div class="flex flex-col gap-2">
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-sky-600"></i>
+                        Automation Trigger (Read Only)
+                    </h2>
+                    <p class="text-sm text-slate-500">
+                        Perpindahan data antar tabel di atas mengikuti status di Firestore:
+                        Leads → Next Payment → Upload Bukti → Verified Payment. Dashboard ini hanya membaca data secara real-time.
+                    </p>
+                </div>
+            </section>
 
             <section class="card-elite rounded-[2rem] p-8">
                 <div class="flex justify-between items-start mb-8">
@@ -213,10 +393,16 @@
             window.location.href = "/index.html";
         };
 
+        let analyticsInitialized = false;
+
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = "../index.html";
                 return;
+            }
+            if (!analyticsInitialized) {
+                analyticsInitialized = true;
+                initLeadsDashboard();
             }
         });
 
@@ -227,8 +413,83 @@
         const btnAddInterest = document.getElementById("btnAddInterest");
         const interestListEl = document.getElementById("interestList");
 
+        const statLeadsTodayEl = document.getElementById("statLeadsToday");
+        const statLeadsThisWeekEl = document.getElementById("statLeadsThisWeek");
+        const statNextPaymentClicksEl = document.getElementById("statNextPaymentClicks");
+        const statProofUploadedEl = document.getElementById("statProofUploaded");
+        const statVerifiedPaymentEl = document.getElementById("statVerifiedPayment");
+        const statNextToVerifiedRateEl = document.getElementById("statNextToVerifiedRate");
+
+        const tableDailyLeadsBody = document.getElementById("tableDailyLeadsBody");
+        const tableNextPaymentBody = document.getElementById("tableNextPaymentBody");
+        const tablePaymentBody = document.getElementById("tablePaymentBody");
+
+        const filterDateDaily = document.getElementById("filterDateDaily");
+        const filterSearchDaily = document.getElementById("filterSearchDaily");
+        const filterProgramNext = document.getElementById("filterProgramNext");
+        const filterPicNext = document.getElementById("filterPicNext");
+        const filterStatusPayment = document.getElementById("filterStatusPayment");
+
         let adsChannels = [];
         let interests = [];
+        let allLeads = [];
+        let allInvoices = [];
+        let usersMap = {};
+
+        function formatCurrencyId(value) {
+            const num = typeof value === "number" ? value : parseInt(value, 10) || 0;
+            return num.toLocaleString("id-ID");
+        }
+
+        function parseDateInputValue(value) {
+            if (!value) return null;
+            const parts = String(value).split("-");
+            if (parts.length !== 3) return null;
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const d = parseInt(parts[2], 10);
+            const date = new Date(y, m, d);
+            if (isNaN(date.getTime())) return null;
+            return date;
+        }
+
+        function normalizeDate(date) {
+            if (!(date instanceof Date)) return null;
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+
+        function getLeadCreatedDateFromData(data) {
+            if (data.created_at && typeof data.created_at.toDate === "function") {
+                return data.created_at.toDate();
+            }
+            const display = String(data.created_display || "").trim();
+            if (display) {
+                const parts = display.split(" ");
+                if (parts[0]) {
+                    const parsed = parseDateInputValue(parts[0]);
+                    if (parsed) return parsed;
+                }
+            }
+            const due = String(data.due_date || "").trim();
+            if (due) {
+                const parsedDue = parseDateInputValue(due);
+                if (parsedDue) return parsedDue;
+            }
+            return null;
+        }
+
+        function formatWhatsAppLink(number) {
+            if (!number) return "#";
+            let num = String(number).trim();
+            if (num.startsWith("0")) {
+                num = "+62" + num.substring(1);
+            }
+            if (num.startsWith("+")) {
+                num = num.substring(1);
+            }
+            num = num.replace(/[^0-9]/g, "");
+            return "https://wa.me/" + num;
+        }
 
         async function loadAdsChannels() {
             try {
@@ -449,6 +710,441 @@
                 await loadInterests();
             } catch (e) {
                 console.error("Gagal menghapus interest", e);
+            }
+        }
+
+        async function loadUsersForPic() {
+            try {
+                const snap = await getDocs(collection(db, "users"));
+                const map = {};
+                snap.forEach((docSnap) => {
+                    const d = docSnap.data() || {};
+                    const id = docSnap.id;
+                    const name = d.name || d.displayName || d.email || id;
+                    map[id] = name;
+                });
+                usersMap = map;
+            } catch (e) {
+                usersMap = {};
+            }
+        }
+
+        async function loadLeadsAnalytics() {
+            try {
+                const snap = await getDocs(collection(db, "leads"));
+                const leads = [];
+                snap.forEach((docSnap) => {
+                    const d = docSnap.data() || {};
+                    const createdDate = getLeadCreatedDateFromData(d);
+                    leads.push({
+                        id: docSnap.id,
+                        name: d.name || "",
+                        city: d.city || "",
+                        interest_program: d.interest_program || "",
+                        ads_channel: d.ads_channel || "",
+                        whatsapp: d.whatsapp || "",
+                        stage: d.stage || "LEADS",
+                        createdDate: createdDate,
+                        assigned_ids: Array.isArray(d.assigned_ids) ? d.assigned_ids : []
+                    });
+                });
+                allLeads = leads;
+            } catch (e) {
+                allLeads = [];
+            }
+        }
+
+        function mapVerificationStatusLabel(status) {
+            const key = String(status || "").toLowerCase();
+            if (key === "legit") return "Legit";
+            if (key === "scam") return "Scam";
+            if (key === "not_verified") return "Not Verified";
+            return "-";
+        }
+
+        async function loadInvoicesAnalytics() {
+            try {
+                const snap = await getDocs(collection(db, "invoices"));
+                const invoices = [];
+                snap.forEach((docSnap) => {
+                    const d = docSnap.data() || {};
+                    invoices.push({
+                        id: docSnap.id,
+                        invoiceNumber: d.invoiceNumber || docSnap.id,
+                        leadName: d.leadName || "",
+                        productName: d.productName || d.className || "",
+                        paidAmount: typeof d.paidAmount === "number" ? d.paidAmount : 0,
+                        finalBasePrice: typeof d.finalBasePrice === "number" ? d.finalBasePrice : (typeof d.basePrice === "number" ? d.basePrice : 0),
+                        createdAtMs: typeof d.createdAtMs === "number" ? d.createdAtMs : 0,
+                        paidAtMs: typeof d.paidAtMs === "number" ? d.paidAtMs : 0,
+                        paymentType: d.paymentType || "",
+                        paymentMethod: d.paymentMethod || "",
+                        bankName: d.bankName || "",
+                        transferProofUrl: d.transferProofUrl || "",
+                        verificationStatus: d.verificationStatus || "",
+                        enrollmentWhatsapp: d.enrollmentWhatsapp || ""
+                    });
+                });
+                allInvoices = invoices;
+            } catch (e) {
+                allInvoices = [];
+            }
+        }
+
+        function isInvoiceNextPayment(inv) {
+            const base = inv.finalBasePrice || 0;
+            const paid = inv.paidAmount || 0;
+            const typeKey = String(inv.paymentType || "").toLowerCase();
+            if (!base) return false;
+            if (typeKey === "dp") {
+                return paid > 0 && paid < base;
+            }
+            return false;
+        }
+
+        function getTodayDateOnly() {
+            const now = new Date();
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        }
+
+        function updateDashboardSummary() {
+            const today = getTodayDateOnly();
+            let leadsToday = 0;
+            let leadsThisWeek = 0;
+            const oneDayMs = 24 * 60 * 60 * 1000;
+            const weekStart = new Date(today.getTime() - 6 * oneDayMs);
+
+            (allLeads || []).forEach((lead) => {
+                if (!lead.createdDate) return;
+                const d = normalizeDate(lead.createdDate);
+                if (!d) return;
+                if (d.getTime() === today.getTime()) {
+                    leadsToday += 1;
+                }
+                if (d >= weekStart && d <= today) {
+                    leadsThisWeek += 1;
+                }
+            });
+
+            const invoices = Array.isArray(allInvoices) ? allInvoices : [];
+            let nextPaymentCount = 0;
+            let proofUploadedCount = 0;
+            let verifiedCount = 0;
+
+            invoices.forEach((inv) => {
+                if (isInvoiceNextPayment(inv)) {
+                    nextPaymentCount += 1;
+                }
+                if (inv.transferProofUrl) {
+                    proofUploadedCount += 1;
+                }
+                const key = String(inv.verificationStatus || "").toLowerCase();
+                if (key === "legit") {
+                    verifiedCount += 1;
+                }
+            });
+
+            const conversionRate = nextPaymentCount ? Math.round((verifiedCount * 100) / nextPaymentCount) : 0;
+
+            if (statLeadsTodayEl) statLeadsTodayEl.textContent = String(leadsToday);
+            if (statLeadsThisWeekEl) statLeadsThisWeekEl.textContent = String(leadsThisWeek);
+            if (statNextPaymentClicksEl) statNextPaymentClicksEl.textContent = String(nextPaymentCount);
+            if (statProofUploadedEl) statProofUploadedEl.textContent = String(proofUploadedCount);
+            if (statVerifiedPaymentEl) statVerifiedPaymentEl.textContent = String(verifiedCount);
+            if (statNextToVerifiedRateEl) statNextToVerifiedRateEl.textContent = conversionRate + "%";
+        }
+
+        function renderDailyLeadsTable() {
+            if (!tableDailyLeadsBody) return;
+            tableDailyLeadsBody.innerHTML = "";
+            const leads = Array.isArray(allLeads) ? allLeads.slice() : [];
+            if (!leads.length) {
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+                td.colSpan = 7;
+                td.className = "text-center text-slate-400 py-3";
+                td.textContent = "Belum ada data leads.";
+                tr.appendChild(td);
+                tableDailyLeadsBody.appendChild(tr);
+                return;
+            }
+            const baseDate = filterDateDaily && filterDateDaily.value ? parseDateInputValue(filterDateDaily.value) : getTodayDateOnly();
+            const normalizedBase = normalizeDate(baseDate || getTodayDateOnly());
+            const term = filterSearchDaily && filterSearchDaily.value ? String(filterSearchDaily.value).toLowerCase().trim() : "";
+
+            let rows = leads.filter((lead) => {
+                if (!lead.createdDate) return false;
+                const d = normalizeDate(lead.createdDate);
+                if (!d || d.getTime() !== normalizedBase.getTime()) return false;
+                if (!term) return true;
+                const name = String(lead.name || "").toLowerCase();
+                const city = String(lead.city || "").toLowerCase();
+                const program = String(lead.interest_program || "").toLowerCase();
+                const ads = String(lead.ads_channel || "").toLowerCase();
+                return name.includes(term) || city.includes(term) || program.includes(term) || ads.includes(term);
+            });
+
+            if (!rows.length) {
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+                td.colSpan = 7;
+                td.className = "text-center text-slate-400 py-3";
+                td.textContent = "Belum ada leads untuk tanggal ini.";
+                tr.appendChild(td);
+                tableDailyLeadsBody.appendChild(tr);
+                return;
+            }
+
+            rows.forEach((lead) => {
+                const tr = document.createElement("tr");
+
+                const tdName = document.createElement("td");
+                tdName.textContent = lead.name || "-";
+
+                const tdCity = document.createElement("td");
+                tdCity.textContent = lead.city || "-";
+
+                const tdProgram = document.createElement("td");
+                tdProgram.textContent = lead.interest_program || "-";
+
+                const tdAds = document.createElement("td");
+                tdAds.textContent = lead.ads_channel || "-";
+
+                const tdStage = document.createElement("td");
+                tdStage.textContent = lead.stage || "LEADS";
+
+                const tdPic = document.createElement("td");
+                if (Array.isArray(lead.assigned_ids) && lead.assigned_ids.length && usersMap) {
+                    const names = lead.assigned_ids.map((id) => usersMap[id]).filter(Boolean);
+                    tdPic.textContent = names.length ? names.join(", ") : "-";
+                } else {
+                    tdPic.textContent = "-";
+                }
+
+                const tdWa = document.createElement("td");
+                if (lead.whatsapp) {
+                    const a = document.createElement("a");
+                    a.href = formatWhatsAppLink(lead.whatsapp);
+                    a.target = "_blank";
+                    a.rel = "noopener noreferrer";
+                    a.className = "btn btn-sm btn-success";
+                    a.textContent = "WhatsApp";
+                    tdWa.appendChild(a);
+                } else {
+                    tdWa.textContent = "-";
+                }
+
+                tr.appendChild(tdName);
+                tr.appendChild(tdCity);
+                tr.appendChild(tdProgram);
+                tr.appendChild(tdAds);
+                tr.appendChild(tdStage);
+                tr.appendChild(tdPic);
+                tr.appendChild(tdWa);
+
+                tableDailyLeadsBody.appendChild(tr);
+            });
+        }
+
+        function populateProgramFilterOptions() {
+            if (!filterProgramNext) return;
+            const invoices = Array.isArray(allInvoices) ? allInvoices : [];
+            const set = new Set();
+            invoices.forEach((inv) => {
+                const name = String(inv.productName || "").trim();
+                if (name) set.add(name);
+            });
+            filterProgramNext.innerHTML = "";
+            const baseOpt = document.createElement("option");
+            baseOpt.value = "";
+            baseOpt.textContent = "Semua Program";
+            filterProgramNext.appendChild(baseOpt);
+            Array.from(set).sort().forEach((name) => {
+                const opt = document.createElement("option");
+                opt.value = name;
+                opt.textContent = name;
+                filterProgramNext.appendChild(opt);
+            });
+        }
+
+        function renderNextPaymentTable() {
+            if (!tableNextPaymentBody) return;
+            tableNextPaymentBody.innerHTML = "";
+            const invoices = Array.isArray(allInvoices) ? allInvoices.filter((inv) => isInvoiceNextPayment(inv)) : [];
+            if (!invoices.length) {
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+                td.colSpan = 7;
+                td.className = "text-center text-slate-400 py-3";
+                td.textContent = "Belum ada invoice di tahap Next Payment.";
+                tr.appendChild(td);
+                tableNextPaymentBody.appendChild(tr);
+                return;
+            }
+
+            const programFilter = filterProgramNext ? String(filterProgramNext.value || "") : "";
+
+            let rows = invoices;
+            if (programFilter) {
+                rows = rows.filter((inv) => String(inv.productName || "") === programFilter);
+            }
+
+            rows.forEach((inv) => {
+                const tr = document.createElement("tr");
+
+                const tdInvoice = document.createElement("td");
+                tdInvoice.textContent = inv.invoiceNumber || inv.id;
+
+                const tdName = document.createElement("td");
+                tdName.textContent = inv.leadName || "-";
+
+                const tdProgram = document.createElement("td");
+                tdProgram.textContent = inv.productName || "-";
+
+                const tdNominal = document.createElement("td");
+                const base = inv.finalBasePrice || 0;
+                const paid = inv.paidAmount || 0;
+                const remaining = base > paid ? base - paid : 0;
+                tdNominal.textContent = "Rp " + formatCurrencyId(remaining);
+
+                const tdStatus = document.createElement("td");
+                const typeKey = String(inv.paymentType || "").toLowerCase();
+                if (typeKey === "dp") {
+                    tdStatus.textContent = remaining > 0 ? "Next Payment" : "Lunas";
+                } else {
+                    tdStatus.textContent = "DP / Next";
+                }
+
+                const tdPic = document.createElement("td");
+                tdPic.textContent = "-";
+
+                const tdAction = document.createElement("td");
+                const btnInvoice = document.createElement("a");
+                btnInvoice.href = "/invoice.html?invoiceId=" + encodeURIComponent(inv.id);
+                btnInvoice.target = "_blank";
+                btnInvoice.rel = "noopener noreferrer";
+                btnInvoice.className = "btn btn-sm btn-primary";
+                btnInvoice.textContent = "Invoice";
+                tdAction.appendChild(btnInvoice);
+
+                tr.appendChild(tdInvoice);
+                tr.appendChild(tdName);
+                tr.appendChild(tdProgram);
+                tr.appendChild(tdNominal);
+                tr.appendChild(tdStatus);
+                tr.appendChild(tdPic);
+                tr.appendChild(tdAction);
+
+                tableNextPaymentBody.appendChild(tr);
+            });
+        }
+
+        function renderPaymentTable() {
+            if (!tablePaymentBody) return;
+            tablePaymentBody.innerHTML = "";
+            const invoices = Array.isArray(allInvoices) ? allInvoices.filter((inv) => inv.transferProofUrl) : [];
+            if (!invoices.length) {
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+                td.colSpan = 7;
+                td.className = "text-center text-slate-400 py-3";
+                td.textContent = "Belum ada pembayaran dengan bukti transfer.";
+                tr.appendChild(td);
+                tablePaymentBody.appendChild(tr);
+                return;
+            }
+
+            const statusFilter = filterStatusPayment ? String(filterStatusPayment.value || "") : "";
+            let rows = invoices;
+            if (statusFilter) {
+                rows = rows.filter((inv) => String(inv.verificationStatus || "").toLowerCase() === statusFilter);
+            }
+
+            rows.forEach((inv) => {
+                const tr = document.createElement("tr");
+
+                const tdInvoice = document.createElement("td");
+                tdInvoice.textContent = inv.invoiceNumber || inv.id;
+
+                const tdName = document.createElement("td");
+                tdName.textContent = inv.leadName || "-";
+
+                const tdProgram = document.createElement("td");
+                tdProgram.textContent = inv.productName || "-";
+
+                const tdNominal = document.createElement("td");
+                const amount = inv.paidAmount || inv.finalBasePrice || 0;
+                tdNominal.textContent = "Rp " + formatCurrencyId(amount);
+
+                const tdMethod = document.createElement("td");
+                const methodParts = [];
+                if (inv.paymentMethod) methodParts.push(inv.paymentMethod);
+                if (inv.bankName) methodParts.push(inv.bankName);
+                tdMethod.textContent = methodParts.join(" • ") || "-";
+
+                const tdStatus = document.createElement("td");
+                tdStatus.textContent = mapVerificationStatusLabel(inv.verificationStatus);
+
+                const tdWa = document.createElement("td");
+                const number = inv.enrollmentWhatsapp || "";
+                if (number) {
+                    const a = document.createElement("a");
+                    a.href = formatWhatsAppLink(number);
+                    a.target = "_blank";
+                    a.rel = "noopener noreferrer";
+                    a.className = "btn btn-sm btn-success";
+                    a.textContent = "WhatsApp";
+                    tdWa.appendChild(a);
+                } else {
+                    tdWa.textContent = "-";
+                }
+
+                tr.appendChild(tdInvoice);
+                tr.appendChild(tdName);
+                tr.appendChild(tdProgram);
+                tr.appendChild(tdNominal);
+                tr.appendChild(tdMethod);
+                tr.appendChild(tdStatus);
+                tr.appendChild(tdWa);
+
+                tablePaymentBody.appendChild(tr);
+            });
+        }
+
+        async function initLeadsDashboard() {
+            try {
+                await Promise.all([
+                    loadUsersForPic(),
+                    loadLeadsAnalytics(),
+                    loadInvoicesAnalytics()
+                ]);
+            } catch (e) {
+            }
+            updateDashboardSummary();
+            populateProgramFilterOptions();
+            renderDailyLeadsTable();
+            renderNextPaymentTable();
+            renderPaymentTable();
+
+            if (filterDateDaily) {
+                filterDateDaily.addEventListener("change", () => {
+                    renderDailyLeadsTable();
+                });
+            }
+            if (filterSearchDaily) {
+                filterSearchDaily.addEventListener("input", () => {
+                    renderDailyLeadsTable();
+                });
+            }
+            if (filterProgramNext) {
+                filterProgramNext.addEventListener("change", () => {
+                    renderNextPaymentTable();
+                });
+            }
+            if (filterStatusPayment) {
+                filterStatusPayment.addEventListener("change", () => {
+                    renderPaymentTable();
+                });
             }
         }
 
