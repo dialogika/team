@@ -784,16 +784,24 @@
                 snap.forEach(docSnap => {
                     const d = docSnap.data();
                     if (d.name) {
-                        const key = String(d.name).trim().toLowerCase();
-                        cat[key] = {
+                        let key = String(d.name).trim().toLowerCase();
+                        // Normalize the key by removing common suffixes
+                        key = key.replace(/\s+(online|offline|kids|class)$/i, "").trim();
+                        // Also store original lowercase just in case
+                        const originalKey = String(d.name).trim().toLowerCase();
+                        
+                        const entry = {
                             id: docSnap.id,
                             name: d.name,
                             base_price: typeof d.basePrice === "number" ? d.basePrice : 0
                         };
+                        
+                        cat[key] = entry;
+                        cat[originalKey] = entry;
                     }
                 });
                 productCatalog = cat;
-                console.log("Loaded products:", productCatalog);
+                console.log("Loaded products mapped keys:", Object.keys(productCatalog));
             } catch (err) {
                 console.error("Error loading products:", err);
             }
@@ -1034,11 +1042,23 @@
                 /* Harga Asli column - fetch from product catalog based on program name */
                 const tdHargaAsli = document.createElement("td");
                 let originalPrice = 0;
-                const progKey = String(lead.interest_program || "").trim().toLowerCase();
                 
-                if (productCatalog[progKey] && productCatalog[progKey].base_price > 0) {
+                // Coba ambil dari invoice productName dulu (lebih akurat untuk paid/next payment)
+                // Jika tidak ada invoice, ambil dari lead.interest_program
+                const rawProgramName = (inv && inv.productName) ? inv.productName : (lead.interest_program || "");
+                let progKey = String(rawProgramName).trim().toLowerCase();
+                let cleanProgKey = progKey.replace(/\s+(online|offline|kids|class)$/i, "").trim();
+                
+                // Debug log
+                // console.log("Checking price for:", progKey, "or clean:", cleanProgKey);
+                
+                // Cari di productCatalog yang sudah di-load dari koleksi 'products'
+                if (productCatalog[cleanProgKey] && productCatalog[cleanProgKey].base_price > 0) {
+                    originalPrice = productCatalog[cleanProgKey].base_price;
+                } else if (productCatalog[progKey] && productCatalog[progKey].base_price > 0) {
                     originalPrice = productCatalog[progKey].base_price;
                 } else if (inv && typeof inv.basePrice === "number" && inv.basePrice > 0) {
+                    // Fallback jika tidak ketemu di katalog, gunakan basePrice bawaan dari invoice (sebelum diskon)
                     originalPrice = inv.basePrice;
                 }
 
