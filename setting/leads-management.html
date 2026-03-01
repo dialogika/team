@@ -147,6 +147,9 @@
                         <select id="filterProgramNext" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[160px]">
                             <option value="">Semua Program</option>
                         </select>
+                        <button id="btnOpenManualAdd" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm">
+                            <i data-lucide="plus" class="w-4 h-4 inline-block mr-1"></i> Add
+                        </button>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -309,7 +312,9 @@
             getDoc,
             getDocs,
             setDoc,
-            deleteDoc
+            deleteDoc,
+            addDoc,
+            serverTimestamp
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -941,11 +946,24 @@
             baseOpt.value = "";
             baseOpt.textContent = "Semua Program";
             filterProgramNext.appendChild(baseOpt);
+            
+            const manualAddProgram = document.getElementById("manualAddProgram");
+            if (manualAddProgram) {
+                manualAddProgram.innerHTML = '<option value="">Pilih Program...</option>';
+            }
+
             Array.from(allPrograms).sort().forEach((name) => {
                 const opt = document.createElement("option");
                 opt.value = name;
                 opt.textContent = name;
                 filterProgramNext.appendChild(opt);
+                
+                if (manualAddProgram) {
+                    const optAdd = document.createElement("option");
+                    optAdd.value = name;
+                    optAdd.textContent = name;
+                    manualAddProgram.appendChild(optAdd);
+                }
             });
         }
 
@@ -1035,6 +1053,8 @@
                     const paid = inv.paidAmount || 0;
                     const remaining = base > paid ? base - paid : 0;
                     tdNominal.textContent = "Rp " + formatCurrencyId(remaining > 0 ? remaining : base);
+                } else if (lead.nominal && typeof lead.nominal === "number" && lead.nominal > 0) {
+                    tdNominal.textContent = "Rp " + formatCurrencyId(lead.nominal);
                 } else {
                     tdNominal.textContent = "-";
                 }
@@ -1274,6 +1294,83 @@
                     renderNextPaymentTable();
                 });
             }
+
+            // Logic Manual Add Next Payment Pipeline
+            const btnOpenManualAdd = document.getElementById("btnOpenManualAdd");
+            const manualAddModal = document.getElementById("manualAddModal");
+            const btnCloseManualAdd = document.getElementById("btnCloseManualAdd");
+            const btnCancelManualAdd = document.getElementById("btnCancelManualAdd");
+            const formManualAdd = document.getElementById("formManualAdd");
+
+            function closeManualAddModal() {
+                if (manualAddModal) manualAddModal.classList.add("hidden");
+                if (formManualAdd) formManualAdd.reset();
+            }
+
+            if (btnOpenManualAdd && manualAddModal) {
+                btnOpenManualAdd.addEventListener("click", () => {
+                    manualAddModal.classList.remove("hidden");
+                    const dateInput = document.getElementById("manualAddBatch");
+                    if (dateInput) {
+                        const sd = normalizeDate(getSelectedDate());
+                        const yy = sd.getFullYear();
+                        const mm = String(sd.getMonth() + 1).padStart(2, '0');
+                        const dd = String(sd.getDate()).padStart(2, '0');
+                        dateInput.value = `${yy}-${mm}-${dd}`;
+                    }
+                });
+            }
+
+            if (btnCloseManualAdd) btnCloseManualAdd.addEventListener("click", closeManualAddModal);
+            if (btnCancelManualAdd) btnCancelManualAdd.addEventListener("click", closeManualAddModal);
+
+            if (formManualAdd) {
+                formManualAdd.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    
+                    const btnSave = document.getElementById("btnSaveManualAdd");
+                    const originalText = btnSave.textContent;
+                    btnSave.textContent = "Menyimpan...";
+                    btnSave.disabled = true;
+
+                    const nameInput = document.getElementById("manualAddName");
+                    const programInput = document.getElementById("manualAddProgram");
+                    const batchInput = document.getElementById("manualAddBatch");
+                    const stageInput = document.getElementById("manualAddStage");
+                    const nominalInput = document.getElementById("manualAddNominal");
+
+                    const newLead = {
+                        name: nameInput.value.trim(),
+                        interest_program: programInput.value,
+                        due_date: batchInput.value, // Used as createdDate implicitly for sorting
+                        stage: stageInput.value,
+                        nominal: nominalInput.value ? parseInt(nominalInput.value, 10) : 0,
+                        created_at: serverTimestamp(),
+                        source: 'manual_add_next_payment'
+                    };
+
+                    try {
+                        const leadsRef = collection(db, "leads");
+                        await addDoc(leadsRef, newLead);
+                        
+                        closeManualAddModal();
+                        
+                        // Reload data
+                        await loadLeadsAnalytics();
+                        renderNextPaymentTable();
+                        updateDashboardSummary();
+                        
+                        alert("Berhasil menambahkan pipeline secara manual");
+                    } catch (err) {
+                        console.error("Gagal menyimpan data manual", err);
+                        alert("Gagal menyimpan data: " + err.message);
+                    } finally {
+                        btnSave.textContent = originalText;
+                        btnSave.disabled = false;
+                    }
+                });
+            }
+
         }
 
         if (btnAddAdsChannel) {
@@ -1307,5 +1404,55 @@
 
         loadAdsChannels().then(loadInterests);
     </script>
+    
+    <!-- Modal Form Add Manual Next Payment -->
+    <div id="manualAddModal" class="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-600"></i>
+                    Add Manual Pipeline
+                </h3>
+                <button type="button" id="btnCloseManualAdd" class="text-slate-400 hover:text-slate-600 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <form id="formManualAdd" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nama Leads <span class="text-rose-500">*</span></label>
+                        <input type="text" id="manualAddName" required placeholder="Masukkan nama" class="w-full text-sm rounded-xl px-3 py-2 border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Program <span class="text-rose-500">*</span></label>
+                        <!-- Akan diisi otomatis oleh function populateProgramFilterOptions() -->
+                        <select id="manualAddProgram" required class="w-full text-sm rounded-xl px-3 py-2 border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            <option value="">Memuat program...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Batch Program / Jadwal <span class="text-rose-500">*</span></label>
+                        <input type="date" id="manualAddBatch" required class="w-full text-sm rounded-xl px-3 py-2 border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Stage <span class="text-rose-500">*</span></label>
+                        <select id="manualAddStage" required class="w-full text-sm rounded-xl px-3 py-2 border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            <option value="NEXT PAYMENT">Next Payment</option>
+                            <option value="PAID">Paid</option>
+                            <option value="VERIFIED">Verified</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nominal (Rp)</label>
+                        <input type="number" id="manualAddNominal" placeholder="0" class="w-full text-sm rounded-xl px-3 py-2 border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                    <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                        <button type="button" id="btnCancelManualAdd" class="px-4 py-2 font-bold text-xs rounded-xl text-slate-600 bg-slate-100 hover:bg-slate-200 transition">Batal</button>
+                        <button type="submit" id="btnSaveManualAdd" class="px-5 py-2 font-bold text-xs rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
