@@ -180,6 +180,41 @@
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
                         <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="upload-cloud" class="w-5 h-5 text-emerald-600"></i>
+                            Upload Bukti Transfer
+                        </h2>
+                        <p class="text-sm text-slate-500 mt-1">Invoice yang sudah upload bukti transfer pada tanggal terpilih.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <input id="filterSearchUpload" type="text" placeholder="Cari nama / program" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[180px]">
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="text-[11px] text-slate-500">
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Nama</th>
+                                <th>Program</th>
+                                <th>Nominal</th>
+                                <th>Metode</th>
+                                <th>Bukti</th>
+                                <th>WA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableUploadProofBody" class="text-xs">
+                            <tr>
+                                <td colspan="7" class="text-center text-slate-400 py-3">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card-elite rounded-[2rem] p-6 mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
                             <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
                             Payment Monitoring & Verified
                         </h2>
@@ -398,12 +433,14 @@
         const statNextToVerifiedRateEl = document.getElementById("statNextToVerifiedRate");
 
         const tableNextPaymentBody = document.getElementById("tableNextPaymentBody");
+        const tableUploadProofBody = document.getElementById("tableUploadProofBody");
         const tablePaymentBody = document.getElementById("tablePaymentBody");
 
         const globalDateFilter = document.getElementById("globalDateFilter");
         const btnDateToday = document.getElementById("btnDateToday");
         const globalDateLabel = document.getElementById("globalDateLabel");
         const filterSearchDaily = document.getElementById("filterSearchDaily");
+        const filterSearchUpload = document.getElementById("filterSearchUpload");
         const filterProgramNext = document.getElementById("filterProgramNext");
         const filterPicNext = document.getElementById("filterPicNext");
         const filterStatusPayment = document.getElementById("filterStatusPayment");
@@ -447,6 +484,7 @@
             updateGlobalDateLabel();
             updateDashboardSummary();
             renderNextPaymentTable();
+            renderUploadProofTable();
             renderPaymentTable();
         }
 
@@ -1048,6 +1086,100 @@
             });
         }
 
+        function renderUploadProofTable() {
+            if (!tableUploadProofBody) return;
+            tableUploadProofBody.innerHTML = "";
+            const selectedDate = normalizeDate(getSelectedDate());
+            const term = filterSearchUpload && filterSearchUpload.value ? String(filterSearchUpload.value).toLowerCase().trim() : "";
+
+            const invoices = Array.isArray(allInvoices) ? allInvoices.filter((inv) => {
+                if (!inv.transferProofUrl) return false;
+                const invDate = getInvoicePaidDate(inv) || getInvoiceDate(inv);
+                if (!invDate || invDate.getTime() !== selectedDate.getTime()) return false;
+                if (!term) return true;
+                const name = String(inv.leadName || "").toLowerCase();
+                const program = String(inv.productName || "").toLowerCase();
+                return name.includes(term) || program.includes(term);
+            }) : [];
+
+            if (!invoices.length) {
+                const tr = document.createElement("tr");
+                const td = document.createElement("td");
+                td.colSpan = 7;
+                td.className = "text-center text-slate-400 py-3";
+                td.textContent = "Belum ada bukti transfer untuk tanggal ini.";
+                tr.appendChild(td);
+                tableUploadProofBody.appendChild(tr);
+                return;
+            }
+
+            invoices.forEach((inv) => {
+                const tr = document.createElement("tr");
+
+                const tdInvoice = document.createElement("td");
+                const invoiceLink = document.createElement("a");
+                invoiceLink.href = "/invoice.html?invoiceId=" + encodeURIComponent(inv.id);
+                invoiceLink.target = "_blank";
+                invoiceLink.rel = "noopener noreferrer";
+                invoiceLink.className = "text-indigo-600 hover:underline font-semibold";
+                invoiceLink.textContent = inv.invoiceNumber || inv.id;
+                tdInvoice.appendChild(invoiceLink);
+
+                const tdName = document.createElement("td");
+                tdName.textContent = inv.leadName || "-";
+
+                const tdProgram = document.createElement("td");
+                tdProgram.textContent = inv.productName || "-";
+
+                const tdNominal = document.createElement("td");
+                const amount = inv.paidAmount || inv.finalBasePrice || 0;
+                tdNominal.textContent = "Rp " + formatCurrencyId(amount);
+
+                const tdMethod = document.createElement("td");
+                const methodParts = [];
+                if (inv.paymentMethod) methodParts.push(inv.paymentMethod);
+                if (inv.bankName) methodParts.push(inv.bankName);
+                tdMethod.textContent = methodParts.join(" • ") || "-";
+
+                const tdProof = document.createElement("td");
+                const proofLink = document.createElement("a");
+                proofLink.href = inv.transferProofUrl;
+                proofLink.target = "_blank";
+                proofLink.rel = "noopener noreferrer";
+                proofLink.className = "btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1";
+                proofLink.innerHTML = '<i data-lucide="image" class="w-3 h-3"></i> Lihat';
+                tdProof.appendChild(proofLink);
+
+                const tdWa = document.createElement("td");
+                const number = inv.enrollmentWhatsapp || "";
+                if (number) {
+                    const a = document.createElement("a");
+                    a.href = formatWhatsAppLink(number);
+                    a.target = "_blank";
+                    a.rel = "noopener noreferrer";
+                    a.className = "btn btn-sm btn-success";
+                    a.textContent = "WA";
+                    tdWa.appendChild(a);
+                } else {
+                    tdWa.textContent = "-";
+                }
+
+                tr.appendChild(tdInvoice);
+                tr.appendChild(tdName);
+                tr.appendChild(tdProgram);
+                tr.appendChild(tdNominal);
+                tr.appendChild(tdMethod);
+                tr.appendChild(tdProof);
+                tr.appendChild(tdWa);
+
+                tableUploadProofBody.appendChild(tr);
+            });
+
+            if (window.lucide && typeof window.lucide.createIcons === "function") {
+                window.lucide.createIcons();
+            }
+        }
+
         function renderPaymentTable() {
             if (!tablePaymentBody) return;
             tablePaymentBody.innerHTML = "";
@@ -1139,6 +1271,7 @@
             updateDashboardSummary();
             populateProgramFilterOptions();
             renderNextPaymentTable();
+            renderUploadProofTable();
             renderPaymentTable();
 
             if (globalDateFilter) {
@@ -1153,6 +1286,11 @@
             if (filterSearchDaily) {
                 filterSearchDaily.addEventListener("input", () => {
                     renderNextPaymentTable();
+                });
+            }
+            if (filterSearchUpload) {
+                filterSearchUpload.addEventListener("input", () => {
+                    renderUploadProofTable();
                 });
             }
             if (filterProgramNext) {
