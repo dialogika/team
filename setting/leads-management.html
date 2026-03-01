@@ -137,47 +137,13 @@
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                     <div>
                         <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-indigo-600"></i>
-                            Leads Harian
-                        </h2>
-                        <p id="leadsHarianSubtitle" class="text-sm text-slate-500 mt-1">Daftar semua leads yang tercatat pada tanggal terpilih.</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-3">
-                        <input id="filterSearchDaily" type="text" placeholder="Cari nama / kota / program" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[180px]">
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle">
-                        <thead class="text-[11px] text-slate-500">
-                            <tr>
-                                <th>Nama</th>
-                                <th>Kota</th>
-                                <th>Program</th>
-                                <th>Ads / Source</th>
-                                <th>Stage</th>
-                                <th>PIC</th>
-                                <th>WA</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableDailyLeadsBody" class="text-xs">
-                            <tr>
-                                <td colspan="7" class="text-center text-slate-400 py-3">Memuat data leads...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section class="card-elite rounded-[2rem] p-6 mb-6">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
                             <i data-lucide="credit-card" class="w-5 h-5 text-amber-600"></i>
                             Next Payment Pipeline
                         </h2>
-                        <p class="text-sm text-slate-500 mt-1">Invoice yang sudah masuk tahap Next Payment.</p>
+                        <p class="text-sm text-slate-500 mt-1">Semua leads dan invoice pada tanggal terpilih.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3">
+                        <input id="filterSearchDaily" type="text" placeholder="Cari nama / kota / program" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[180px]">
                         <select id="filterProgramNext" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[160px]">
                             <option value="">Semua Program</option>
                         </select>
@@ -190,18 +156,20 @@
                     <table class="table table-sm align-middle">
                         <thead class="text-[11px] text-slate-500">
                             <tr>
-                                <th>Invoice</th>
                                 <th>Nama</th>
+                                <th>Kota</th>
                                 <th>Program</th>
+                                <th>Ads / Source</th>
+                                <th>Stage</th>
+                                <th>Invoice</th>
                                 <th>Nominal</th>
-                                <th>Status</th>
                                 <th>PIC</th>
-                                <th>Aksi</th>
+                                <th>WA</th>
                             </tr>
                         </thead>
                         <tbody id="tableNextPaymentBody" class="text-xs">
                             <tr>
-                                <td colspan="7" class="text-center text-slate-400 py-3">Memuat data invoice...</td>
+                                <td colspan="9" class="text-center text-slate-400 py-3">Memuat data...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -429,7 +397,6 @@
         const statVerifiedPaymentEl = document.getElementById("statVerifiedPayment");
         const statNextToVerifiedRateEl = document.getElementById("statNextToVerifiedRate");
 
-        const tableDailyLeadsBody = document.getElementById("tableDailyLeadsBody");
         const tableNextPaymentBody = document.getElementById("tableNextPaymentBody");
         const tablePaymentBody = document.getElementById("tablePaymentBody");
 
@@ -479,7 +446,6 @@
         function onGlobalDateChange() {
             updateGlobalDateLabel();
             updateDashboardSummary();
-            renderDailyLeadsTable();
             renderNextPaymentTable();
             renderPaymentTable();
         }
@@ -925,28 +891,44 @@
             if (statNextToVerifiedRateEl) statNextToVerifiedRateEl.textContent = conversionRate + "%";
         }
 
-        function renderDailyLeadsTable() {
-            if (!tableDailyLeadsBody) return;
-            tableDailyLeadsBody.innerHTML = "";
-            const leads = Array.isArray(allLeads) ? allLeads.slice() : [];
-            if (!leads.length) {
-                const tr = document.createElement("tr");
-                const td = document.createElement("td");
-                td.colSpan = 7;
-                td.className = "text-center text-slate-400 py-3";
-                td.textContent = "Belum ada data leads.";
-                tr.appendChild(td);
-                tableDailyLeadsBody.appendChild(tr);
-                return;
-            }
-            const baseDate = getSelectedDate();
-            const normalizedBase = normalizeDate(baseDate);
-            const term = filterSearchDaily && filterSearchDaily.value ? String(filterSearchDaily.value).toLowerCase().trim() : "";
+        function populateProgramFilterOptions() {
+            if (!filterProgramNext) return;
+            const allPrograms = new Set();
+            (allLeads || []).forEach((lead) => {
+                const name = String(lead.interest_program || "").trim();
+                if (name) allPrograms.add(name);
+            });
+            (allInvoices || []).forEach((inv) => {
+                const name = String(inv.productName || "").trim();
+                if (name) allPrograms.add(name);
+            });
+            filterProgramNext.innerHTML = "";
+            const baseOpt = document.createElement("option");
+            baseOpt.value = "";
+            baseOpt.textContent = "Semua Program";
+            filterProgramNext.appendChild(baseOpt);
+            Array.from(allPrograms).sort().forEach((name) => {
+                const opt = document.createElement("option");
+                opt.value = name;
+                opt.textContent = name;
+                filterProgramNext.appendChild(opt);
+            });
+        }
 
-            let rows = leads.filter((lead) => {
+        function renderNextPaymentTable() {
+            if (!tableNextPaymentBody) return;
+            tableNextPaymentBody.innerHTML = "";
+            const selectedDate = normalizeDate(getSelectedDate());
+            const term = filterSearchDaily && filterSearchDaily.value ? String(filterSearchDaily.value).toLowerCase().trim() : "";
+            const programFilter = filterProgramNext ? String(filterProgramNext.value || "") : "";
+
+            /* --- Build leads rows for selected date --- */
+            const leads = Array.isArray(allLeads) ? allLeads.slice() : [];
+            let filteredLeads = leads.filter((lead) => {
                 if (!lead.createdDate) return false;
                 const d = normalizeDate(lead.createdDate);
-                if (!d || d.getTime() !== normalizedBase.getTime()) return false;
+                if (!d || d.getTime() !== selectedDate.getTime()) return false;
+                if (programFilter && String(lead.interest_program || "") !== programFilter) return false;
                 if (!term) return true;
                 const name = String(lead.name || "").toLowerCase();
                 const city = String(lead.city || "").toLowerCase();
@@ -955,18 +937,28 @@
                 return name.includes(term) || city.includes(term) || program.includes(term) || ads.includes(term);
             });
 
-            if (!rows.length) {
+            /* --- Build invoices map by leadName for enrichment --- */
+            const invoiceByLead = {};
+            (allInvoices || []).forEach((inv) => {
+                const key = String(inv.leadName || "").trim().toLowerCase();
+                if (key) {
+                    if (!invoiceByLead[key]) invoiceByLead[key] = [];
+                    invoiceByLead[key].push(inv);
+                }
+            });
+
+            if (!filteredLeads.length) {
                 const tr = document.createElement("tr");
                 const td = document.createElement("td");
-                td.colSpan = 7;
+                td.colSpan = 9;
                 td.className = "text-center text-slate-400 py-3";
                 td.textContent = "Belum ada leads untuk tanggal ini.";
                 tr.appendChild(td);
-                tableDailyLeadsBody.appendChild(tr);
+                tableNextPaymentBody.appendChild(tr);
                 return;
             }
 
-            rows.forEach((lead) => {
+            filteredLeads.forEach((lead) => {
                 const tr = document.createElement("tr");
 
                 const tdName = document.createElement("td");
@@ -982,7 +974,44 @@
                 tdAds.textContent = lead.ads_channel || "-";
 
                 const tdStage = document.createElement("td");
-                tdStage.textContent = lead.stage || "LEADS";
+                const stage = lead.stage || "LEADS";
+                const stageBadge = document.createElement("span");
+                const stageKey = stage.toLowerCase();
+                let badgeClass = "bg-slate-100 text-slate-600";
+                if (stageKey === "leads") badgeClass = "bg-blue-100 text-blue-700";
+                else if (stageKey === "next_payment" || stageKey === "next payment") badgeClass = "bg-amber-100 text-amber-700";
+                else if (stageKey === "paid" || stageKey === "verified") badgeClass = "bg-emerald-100 text-emerald-700";
+                stageBadge.className = "px-2 py-0.5 rounded-md text-[10px] font-bold " + badgeClass;
+                stageBadge.textContent = stage;
+                tdStage.appendChild(stageBadge);
+
+                /* Invoice info */
+                const leadKey = String(lead.name || "").trim().toLowerCase();
+                const matchedInvoices = invoiceByLead[leadKey] || [];
+                const inv = matchedInvoices.length ? matchedInvoices[0] : null;
+
+                const tdInvoice = document.createElement("td");
+                if (inv) {
+                    const a = document.createElement("a");
+                    a.href = "/invoice.html?invoiceId=" + encodeURIComponent(inv.id);
+                    a.target = "_blank";
+                    a.rel = "noopener noreferrer";
+                    a.className = "text-indigo-600 hover:underline font-semibold";
+                    a.textContent = inv.invoiceNumber || inv.id;
+                    tdInvoice.appendChild(a);
+                } else {
+                    tdInvoice.textContent = "-";
+                }
+
+                const tdNominal = document.createElement("td");
+                if (inv) {
+                    const base = inv.finalBasePrice || 0;
+                    const paid = inv.paidAmount || 0;
+                    const remaining = base > paid ? base - paid : 0;
+                    tdNominal.textContent = "Rp " + formatCurrencyId(remaining > 0 ? remaining : base);
+                } else {
+                    tdNominal.textContent = "-";
+                }
 
                 const tdPic = document.createElement("td");
                 if (Array.isArray(lead.assigned_ids) && lead.assigned_ids.length && usersMap) {
@@ -999,7 +1028,7 @@
                     a.target = "_blank";
                     a.rel = "noopener noreferrer";
                     a.className = "btn btn-sm btn-success";
-                    a.textContent = "WhatsApp";
+                    a.textContent = "WA";
                     tdWa.appendChild(a);
                 } else {
                     tdWa.textContent = "-";
@@ -1010,106 +1039,10 @@
                 tr.appendChild(tdProgram);
                 tr.appendChild(tdAds);
                 tr.appendChild(tdStage);
+                tr.appendChild(tdInvoice);
+                tr.appendChild(tdNominal);
                 tr.appendChild(tdPic);
                 tr.appendChild(tdWa);
-
-                tableDailyLeadsBody.appendChild(tr);
-            });
-        }
-
-        function populateProgramFilterOptions() {
-            if (!filterProgramNext) return;
-            const invoices = Array.isArray(allInvoices) ? allInvoices : [];
-            const set = new Set();
-            invoices.forEach((inv) => {
-                const name = String(inv.productName || "").trim();
-                if (name) set.add(name);
-            });
-            filterProgramNext.innerHTML = "";
-            const baseOpt = document.createElement("option");
-            baseOpt.value = "";
-            baseOpt.textContent = "Semua Program";
-            filterProgramNext.appendChild(baseOpt);
-            Array.from(set).sort().forEach((name) => {
-                const opt = document.createElement("option");
-                opt.value = name;
-                opt.textContent = name;
-                filterProgramNext.appendChild(opt);
-            });
-        }
-
-        function renderNextPaymentTable() {
-            if (!tableNextPaymentBody) return;
-            tableNextPaymentBody.innerHTML = "";
-            const selectedDate = normalizeDate(getSelectedDate());
-            const invoices = Array.isArray(allInvoices) ? allInvoices.filter((inv) => {
-                if (!isInvoiceNextPayment(inv)) return false;
-                const invDate = getInvoiceDate(inv);
-                return invDate && invDate.getTime() === selectedDate.getTime();
-            }) : [];
-            if (!invoices.length) {
-                const tr = document.createElement("tr");
-                const td = document.createElement("td");
-                td.colSpan = 7;
-                td.className = "text-center text-slate-400 py-3";
-                td.textContent = "Belum ada invoice di tahap Next Payment untuk tanggal ini.";
-                tr.appendChild(td);
-                tableNextPaymentBody.appendChild(tr);
-                return;
-            }
-
-            const programFilter = filterProgramNext ? String(filterProgramNext.value || "") : "";
-
-            let rows = invoices;
-            if (programFilter) {
-                rows = rows.filter((inv) => String(inv.productName || "") === programFilter);
-            }
-
-            rows.forEach((inv) => {
-                const tr = document.createElement("tr");
-
-                const tdInvoice = document.createElement("td");
-                tdInvoice.textContent = inv.invoiceNumber || inv.id;
-
-                const tdName = document.createElement("td");
-                tdName.textContent = inv.leadName || "-";
-
-                const tdProgram = document.createElement("td");
-                tdProgram.textContent = inv.productName || "-";
-
-                const tdNominal = document.createElement("td");
-                const base = inv.finalBasePrice || 0;
-                const paid = inv.paidAmount || 0;
-                const remaining = base > paid ? base - paid : 0;
-                tdNominal.textContent = "Rp " + formatCurrencyId(remaining);
-
-                const tdStatus = document.createElement("td");
-                const typeKey = String(inv.paymentType || "").toLowerCase();
-                if (typeKey === "dp") {
-                    tdStatus.textContent = remaining > 0 ? "Next Payment" : "Lunas";
-                } else {
-                    tdStatus.textContent = "DP / Next";
-                }
-
-                const tdPic = document.createElement("td");
-                tdPic.textContent = "-";
-
-                const tdAction = document.createElement("td");
-                const btnInvoice = document.createElement("a");
-                btnInvoice.href = "/invoice.html?invoiceId=" + encodeURIComponent(inv.id);
-                btnInvoice.target = "_blank";
-                btnInvoice.rel = "noopener noreferrer";
-                btnInvoice.className = "btn btn-sm btn-primary";
-                btnInvoice.textContent = "Invoice";
-                tdAction.appendChild(btnInvoice);
-
-                tr.appendChild(tdInvoice);
-                tr.appendChild(tdName);
-                tr.appendChild(tdProgram);
-                tr.appendChild(tdNominal);
-                tr.appendChild(tdStatus);
-                tr.appendChild(tdPic);
-                tr.appendChild(tdAction);
 
                 tableNextPaymentBody.appendChild(tr);
             });
@@ -1205,7 +1138,6 @@
             }
             updateDashboardSummary();
             populateProgramFilterOptions();
-            renderDailyLeadsTable();
             renderNextPaymentTable();
             renderPaymentTable();
 
@@ -1220,7 +1152,7 @@
             }
             if (filterSearchDaily) {
                 filterSearchDaily.addEventListener("input", () => {
-                    renderDailyLeadsTable();
+                    renderNextPaymentTable();
                 });
             }
             if (filterProgramNext) {
