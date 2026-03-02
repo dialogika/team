@@ -267,6 +267,16 @@
                                             >
                                         </div>
                                         <div class="col-span-2 md:col-span-1">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Down Payment (IDR)</label>
+                                            <input
+                                                type="text"
+                                                v-model="formattedDp"
+                                                inputmode="numeric"
+                                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-indigo-600"
+                                                placeholder="e.g. 500.000"
+                                            >
+                                        </div>
+                                        <div class="col-span-2 md:col-span-1">
                                             <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Session Count</label>
                                             <input type="number" v-model="form.total_sessions" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold">
                                         </div>
@@ -734,6 +744,7 @@
                                 curriculum,
                                 specifications: Array.isArray(d.specifications) ? d.specifications : [],
                                 outcomes: Array.isArray(d.targetOutcomes) ? d.targetOutcomes : [],
+                                dp: d.downPayment || 0,
                                 status: d.status || "active",
                                 createdAt: d.createdAt || null,
                                 updatedAt: d.updatedAt || null
@@ -809,6 +820,22 @@
                     }
                 });
 
+                const formattedDp = computed({
+                    get() {
+                        const raw = Number(form.value.dp || 0);
+                        if (!raw) return '';
+                        return new Intl.NumberFormat('id-ID').format(raw);
+                    },
+                    set(val) {
+                        if (typeof val !== 'string') {
+                            form.value.dp = 0;
+                            return;
+                        }
+                        const digits = val.replace(/[^\d]/g, '');
+                        form.value.dp = digits ? parseInt(digits, 10) : 0;
+                    }
+                });
+
                 const syncDescriptionEditorFromForm = () => {
                     if (!descriptionEditor.value) return;
                     descriptionEditor.value.innerHTML = form.value.description || '';
@@ -840,6 +867,7 @@
                         curriculum: [],
                         specifications: [],
                         outcomes: [],
+                        dp: 0,
                         status: 'active'
                     };
                     showForm.value = true;
@@ -855,6 +883,7 @@
                     if (!Array.isArray(form.value.features)) form.value.features = [];
                     if (!Array.isArray(form.value.outcomes)) form.value.outcomes = [];
                     if (!Array.isArray(form.value.specifications)) form.value.specifications = [];
+                    if (!form.value.dp) form.value.dp = 0;
                     if (!form.value.type) form.value.type = 'Online';
                     showForm.value = true;
                     nextTick(() => {
@@ -944,6 +973,7 @@
                         materials: normalizedCurriculum,
                         specifications: Array.isArray(form.value.specifications) ? form.value.specifications : [],
                         targetOutcomes: Array.isArray(form.value.outcomes) ? form.value.outcomes : [],
+                        downPayment: Number(form.value.dp) || 0,
                         status: form.value.status || "active",
                         updatedAt: window.serverTimestamp ? window.serverTimestamp() : null
                     };
@@ -1031,6 +1061,7 @@
                     truncateText,
                     formatNumber,
                     formattedBasePrice,
+                    formattedDp,
                     descriptionEditor,
                     onDescriptionInput,
                     formatDescription,
