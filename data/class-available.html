@@ -281,6 +281,13 @@
                                         <label class="form-label">Start Date</label>
                                         <input type="datetime-local" class="form-control" x-model="editBatchStartDate">
                                     </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Down Payment (IDR)</label>
+                                        <input type="text" class="form-control text-primary fw-bold" 
+                                            :value="formatCurrency(editBatchDp)"
+                                            @input="editBatchDp = parseCurrency($event.target.value)"
+                                            placeholder="e.g. 500.000">
+                                    </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -364,6 +371,13 @@
                                     <div class="col-md-6">
                                         <label class="form-label">Start Date</label>
                                         <input type="datetime-local" class="form-control" x-model="newBatchStartDate">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Down Payment (IDR)</label>
+                                        <input type="text" class="form-control text-primary fw-bold" 
+                                            :value="formatCurrency(newBatchDp)"
+                                            @input="newBatchDp = parseCurrency($event.target.value)"
+                                            placeholder="e.g. 500.000">
                                     </div>
                                 </div>
                             </div>
@@ -471,6 +485,8 @@
                 editBatchMentor: "",
                 editBatchStartDate: "",
                 editBatchLocation: "",
+                newBatchDp: 0,
+                editBatchDp: 0,
                 classes: [],
                 products: [],
                 async init() {
@@ -515,7 +531,8 @@
                                 mentor_name: d.mentor_name || "Unknown",
                                 product_id: d.productId || d.product_id || null,
                                 product_name: d.productName || d.product_name || null,
-                                location: d.location || ""
+                                location: d.location || "",
+                                down_payment: Number(d.down_payment || 0)
                             });
                         });
                         this.classes = items;
@@ -563,6 +580,15 @@
                         console.error("Gagal memuat products untuk dropdown batch:", e);
                         this.products = [];
                     }
+                },
+                formatCurrency(val) {
+                    if (!val && val !== 0) return "";
+                    return new Intl.NumberFormat('id-ID').format(val);
+                },
+                parseCurrency(val) {
+                    if (!val) return 0;
+                    const digits = val.replace(/[^\d]/g, '');
+                    return digits ? parseInt(digits, 10) : 0;
                 },
                 formatDate(dateStr) {
                     if (!dateStr || dateStr === 'Flexible') return dateStr;
@@ -663,6 +689,7 @@
                     this.editBatchMentor = item.mentor_name || "";
                     this.editBatchStartDate = item.start_date && item.start_date !== "Flexible" ? item.start_date : "";
                     this.editBatchLocation = item.location || "";
+                    this.editBatchDp = Number(item.down_payment || 0);
 
                     const modalEl = document.getElementById("editCapacityModal");
                     if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
@@ -679,6 +706,7 @@
                     const mentor = (this.editBatchMentor || "").trim();
                     const startDate = (this.editBatchStartDate || "").trim() || "Flexible";
                     const location = (this.editBatchLocation || "").trim();
+                    const downPayment = Number(this.editBatchDp) || 0;
 
                     if (!name || maxSeat <= 0) {
                         alert("Nama class dan Max Seat wajib diisi.");
@@ -703,6 +731,7 @@
                     this.selectedBatch.product_id = productId;
                     this.selectedBatch.product_name = productRef ? productRef.name : null;
                     this.selectedBatch.location = location;
+                    this.selectedBatch.down_payment = downPayment;
 
                     if (this.selectedBatch.docId && window.db && window.doc && window.updateDoc) {
                         try {
@@ -717,7 +746,8 @@
                                     mentor_name: this.selectedBatch.mentor_name,
                                     productId: this.selectedBatch.product_id,
                                     productName: this.selectedBatch.product_name,
-                                    location: this.selectedBatch.location || ""
+                                    location: this.selectedBatch.location || "",
+                                    down_payment: this.selectedBatch.down_payment || 0
                                 }
                             );
                         } catch (e) {
@@ -741,6 +771,7 @@
                     this.editBatchMentor = "";
                     this.editBatchStartDate = "";
                     this.editBatchLocation = "";
+                    this.editBatchDp = 0;
                     this.selectedBatch = null;
                 },
                 async addBatch() {
@@ -751,6 +782,7 @@
                     const mentor = (this.newBatchMentor || "").trim();
                     const startDate = (this.newBatchStartDate || "").trim() || "Flexible";
                     const location = (this.newBatchLocation || "").trim();
+                    const downPayment = Number(this.newBatchDp) || 0;
 
                     if (!name || maxSeat <= 0) {
                         alert("Nama class dan Max Seat wajib diisi.");
@@ -778,7 +810,8 @@
                         mentor_name: mentor || "Unknown",
                         product_id: productId,
                         product_name: productRef ? productRef.name : null,
-                        location
+                        location,
+                        down_payment: downPayment
                     };
 
                     this.classes.push(newItem);
@@ -797,6 +830,7 @@
                                     productId: newItem.product_id,
                                     productName: newItem.product_name,
                                     location: newItem.location || "",
+                                    down_payment: newItem.down_payment || 0,
                                     created_at: new Date()
                                 }
                             );
@@ -815,6 +849,7 @@
                     this.newBatchMentor = "";
                     this.newBatchStartDate = "";
                     this.newBatchLocation = "";
+                    this.newBatchDp = 0;
 
                     const modalEl = document.getElementById("addBatchModal");
                     if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
