@@ -56,6 +56,21 @@
             border: 1px solid #f1f5f9;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
         }
+        .swipe-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            cursor: grab;
+        }
+        .swipe-scroll:active {
+            cursor: grabbing;
+        }
+        .next-payment-scroll table {
+            min-width: 900px;
+        }
+        .upload-proof-scroll table {
+            min-width: 1100px;
+        }
     </style>
 </head>
 <body>
@@ -152,25 +167,21 @@
                         </button>
                     </div>
                 </div>
-                <div class="table-responsive">
+                <div class="table-responsive swipe-scroll next-payment-scroll">
                     <table class="table table-sm align-middle">
                         <thead class="text-[11px] text-slate-500">
                             <tr>
                                 <th>Nama</th>
                                 <th>Program</th>
                                 <th>Stage</th>
-                                <th>Invoice</th>
-                                <th>Nominal</th>
-                                <th>Harga Asli</th>
                                 <th>Kode Referral</th>
-                                <th>Jadwal</th>
                                 <th>WA</th>
-                                <th>Detail</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tableNextPaymentBody" class="text-xs">
                             <tr>
-                                <td colspan="10" class="text-center text-slate-400 py-3">Memuat data...</td>
+                                <td colspan="6" class="text-center text-slate-400 py-3">Memuat data...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -190,22 +201,25 @@
                         <input id="filterSearchUpload" type="text" placeholder="Cari nama / program" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[180px]">
                     </div>
                 </div>
-                <div class="table-responsive">
+                <div class="table-responsive swipe-scroll upload-proof-scroll">
                     <table class="table table-sm align-middle">
                         <thead class="text-[11px] text-slate-500">
                             <tr>
-                                <th>Invoice</th>
                                 <th>Nama</th>
                                 <th>Program</th>
+                                <th>Batch Program</th>
+                                <th>Jadwal</th>
                                 <th>Nominal</th>
+                                <th>Harga Asli</th>
                                 <th>Metode</th>
-                                <th>Bukti</th>
                                 <th>WA</th>
+                                <th>Detail</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="tableUploadProofBody" class="text-xs">
                             <tr>
-                                <td colspan="7" class="text-center text-slate-400 py-3">Memuat data...</td>
+                                <td colspan="10" class="text-center text-slate-400 py-3">Memuat data...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -782,6 +796,22 @@
             return "-";
         }
 
+        function resolveOriginalPrice(programName, inv) {
+            let originalPrice = 0;
+            const rawProgramName = (inv && inv.productName) ? inv.productName : (programName || "");
+            let progKey = String(rawProgramName).trim().toLowerCase();
+            let cleanProgKey = progKey.replace(/\s+(online|offline|kids|class)$/i, "").trim();
+
+            if (productCatalog[cleanProgKey] && productCatalog[cleanProgKey].base_price > 0) {
+                originalPrice = productCatalog[cleanProgKey].base_price;
+            } else if (productCatalog[progKey] && productCatalog[progKey].base_price > 0) {
+                originalPrice = productCatalog[progKey].base_price;
+            } else if (inv && typeof inv.basePrice === "number" && inv.basePrice > 0) {
+                originalPrice = inv.basePrice;
+            }
+            return originalPrice;
+        }
+
         async function loadProductCatalog() {
             try {
                 const snap = await getDocs(collection(db, "products"));
@@ -833,6 +863,13 @@
                         transferProofUrl: d.transferProofUrl || "",
                         verificationStatus: d.verificationStatus || "",
                         enrollmentWhatsapp: d.enrollmentWhatsapp || "",
+                        className: d.className || "",
+                        batchLabel: d.batchLabel || "",
+                        batchSchedule: d.batchSchedule || "",
+                        classSchedule: d.classSchedule || "",
+                        schedule: d.schedule || "",
+                        sessionSchedule: d.sessionSchedule || "",
+                        classMeta: d.classMeta || "",
                         basePrice: typeof d.basePrice === "number" ? d.basePrice : 0
                     });
                 });
@@ -967,6 +1004,75 @@
             });
         }
 
+        function formatPhoneDisplay(number) {
+            if (!number) return "-";
+            const raw = String(number).trim();
+            if (!raw) return "-";
+            let num = raw.replace(/[^0-9+]/g, "");
+            if (num.startsWith("+62")) return "0" + num.substring(3);
+            if (num.startsWith("62")) return "0" + num.substring(2);
+            return num;
+        }
+
+        function resolveInvoiceWhatsapp(inv) {
+            const fromInvoice = String(
+                inv.enrollmentWhatsapp ||
+                inv.whatsapp ||
+                inv.leadWhatsapp ||
+                inv.phone ||
+                ""
+            ).trim();
+            if (fromInvoice) return fromInvoice;
+
+            const leadNameKey = String(inv.leadName || "").trim().toLowerCase();
+            if (!leadNameKey) return "";
+            const matchedLead = (allLeads || []).find((lead) => {
+                return String(lead.name || "").trim().toLowerCase() === leadNameKey;
+            });
+            return matchedLead && matchedLead.whatsapp ? String(matchedLead.whatsapp).trim() : "";
+        }
+
+        function resolveInvoiceBatchProgram(inv) {
+            const batch = String(inv.batchLabel || "").trim();
+            if (batch) return batch;
+            const className = String(inv.className || "").trim();
+            if (className) return className;
+            return "-";
+        }
+
+        function resolveInvoiceScheduleFromBatch(inv) {
+            const fromApi = String(
+                inv.batchSchedule ||
+                inv.classSchedule ||
+                inv.schedule ||
+                inv.sessionSchedule ||
+                ""
+            ).trim();
+            if (fromApi) return fromApi;
+
+            const batchRaw = String(inv.batchLabel || "").trim();
+            if (!batchRaw) return "-";
+
+            const separators = [" - ", " – ", " — ", " | ", " • "];
+            for (let i = 0; i < separators.length; i += 1) {
+                const sep = separators[i];
+                if (batchRaw.includes(sep)) {
+                    const parts = batchRaw.split(sep).map((s) => String(s).trim()).filter(Boolean);
+                    if (parts.length > 1) {
+                        return parts.slice(1).join(" - ");
+                    }
+                }
+            }
+            const classMetaRaw = String(inv.classMeta || "").trim();
+            if (classMetaRaw.includes("•")) {
+                const parts = classMetaRaw.split("•").map((s) => String(s).trim()).filter(Boolean);
+                if (parts.length > 2) {
+                    return parts.slice(2).join(" • ");
+                }
+            }
+            return "-";
+        }
+
         function renderNextPaymentTable() {
             if (!tableNextPaymentBody) return;
             tableNextPaymentBody.innerHTML = "";
@@ -1000,7 +1106,7 @@
             if (!filteredLeads.length) {
                 const tr = document.createElement("tr");
                 const td = document.createElement("td");
-                td.colSpan = 10;
+                td.colSpan = 6;
                 td.className = "text-center text-slate-400 py-3";
                 td.textContent = "Belum ada leads untuk tanggal ini.";
                 tr.appendChild(td);
@@ -1034,72 +1140,6 @@
                 const matchedInvoices = invoiceByLead[leadKey] || [];
                 const inv = matchedInvoices.length ? matchedInvoices[0] : null;
 
-                const tdInvoice = document.createElement("td");
-                if (inv) {
-                    const a = document.createElement("a");
-                    a.href = "/invoice.html?invoiceId=" + encodeURIComponent(inv.id);
-                    a.target = "_blank";
-                    a.rel = "noopener noreferrer";
-                    a.className = "text-indigo-600 hover:underline font-semibold";
-                    a.textContent = inv.invoiceNumber || inv.id;
-                    tdInvoice.appendChild(a);
-                } else {
-                    tdInvoice.textContent = "-";
-                }
-
-                const tdNominal = document.createElement("td");
-                if (inv) {
-                    const base = inv.finalBasePrice || 0;
-                    const paid = inv.paidAmount || 0;
-                    const remaining = base > paid ? base - paid : 0;
-                    tdNominal.textContent = "Rp " + formatCurrencyId(remaining > 0 ? remaining : base);
-                } else if (lead.nominal && typeof lead.nominal === "number" && lead.nominal > 0) {
-                    tdNominal.textContent = "Rp " + formatCurrencyId(lead.nominal);
-                } else {
-                    tdNominal.textContent = "-";
-                }
-
-                /* Harga Asli column - fetch from product catalog based on program name */
-                const tdHargaAsli = document.createElement("td");
-                let originalPrice = 0;
-                
-                // Coba ambil dari invoice productName dulu (lebih akurat untuk paid/next payment)
-                // Jika tidak ada invoice, ambil dari lead.interest_program
-                const rawProgramName = (inv && inv.productName) ? inv.productName : (lead.interest_program || "");
-                let progKey = String(rawProgramName).trim().toLowerCase();
-                let cleanProgKey = progKey.replace(/\s+(online|offline|kids|class)$/i, "").trim();
-                
-                // Debug log
-                // console.log("Checking price for:", progKey, "or clean:", cleanProgKey);
-                
-                // Cari di productCatalog yang sudah di-load dari koleksi 'products'
-                if (productCatalog[cleanProgKey] && productCatalog[cleanProgKey].base_price > 0) {
-                    originalPrice = productCatalog[cleanProgKey].base_price;
-                } else if (productCatalog[progKey] && productCatalog[progKey].base_price > 0) {
-                    originalPrice = productCatalog[progKey].base_price;
-                } else if (inv && typeof inv.basePrice === "number" && inv.basePrice > 0) {
-                    // Fallback jika tidak ketemu di katalog, gunakan basePrice bawaan dari invoice (sebelum diskon)
-                    originalPrice = inv.basePrice;
-                }
-
-                if (originalPrice > 0) {
-                    tdHargaAsli.textContent = "Rp " + formatCurrencyId(originalPrice);
-                } else {
-                    tdHargaAsli.textContent = "-";
-                }
-
-                /* Jadwal column - show due_date from lead or invoice */
-                const tdJadwal = document.createElement("td");
-                if (lead.createdDate) {
-                    const cd = lead.createdDate;
-                    const dd = String(cd.getDate()).padStart(2, '0');
-                    const mm = String(cd.getMonth() + 1).padStart(2, '0');
-                    const yy = cd.getFullYear();
-                    tdJadwal.textContent = dd + '/' + mm + '/' + yy;
-                } else {
-                    tdJadwal.textContent = "-";
-                }
-
                 const tdWa = document.createElement("td");
                 if (lead.whatsapp) {
                     const a = document.createElement("a");
@@ -1113,21 +1153,6 @@
                     tdWa.textContent = "-";
                 }
 
-                /* Detail column */
-                const tdDetail = document.createElement("td");
-                if (inv) {
-                    const btnDetail = document.createElement("a");
-                    btnDetail.href = "/invoice.html?invoiceId=" + encodeURIComponent(inv.id);
-                    btnDetail.target = "_blank";
-                    btnDetail.rel = "noopener noreferrer";
-                    btnDetail.className = "btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1";
-                    btnDetail.innerHTML = '<i data-lucide="external-link" class="w-3 h-3"></i> Detail';
-                    tdDetail.appendChild(btnDetail);
-                } else {
-                    tdDetail.textContent = "-";
-                }
-
-                /* Kode Referral column - check lead first (from first-class.html API), then invoice */
                 const tdReferral = document.createElement("td");
                 const refCode = lead.referral_code || (inv && inv.referralCode) || "";
                 if (refCode && String(refCode).trim() !== "") {
@@ -1139,16 +1164,34 @@
                     tdReferral.textContent = "-";
                 }
 
+                const tdActions = document.createElement("td");
+                tdActions.className = "text-nowrap";
+
+                const editBtn = document.createElement("button");
+                editBtn.type = "button";
+                editBtn.className = "btn btn-sm btn-outline-primary me-1";
+                editBtn.innerHTML = '<i class="bi bi-pencil-square"></i>';
+                editBtn.addEventListener("click", async () => {
+                    await handleEditLead(lead.id);
+                });
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.type = "button";
+                deleteBtn.className = "btn btn-sm btn-outline-danger";
+                deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
+                deleteBtn.addEventListener("click", async () => {
+                    await handleDeleteLead(lead.id);
+                });
+
+                tdActions.appendChild(editBtn);
+                tdActions.appendChild(deleteBtn);
+
                 tr.appendChild(tdName);
                 tr.appendChild(tdProgram);
                 tr.appendChild(tdStage);
-                tr.appendChild(tdInvoice);
-                tr.appendChild(tdNominal);
-                tr.appendChild(tdHargaAsli);
                 tr.appendChild(tdReferral);
-                tr.appendChild(tdJadwal);
                 tr.appendChild(tdWa);
-                tr.appendChild(tdDetail);
+                tr.appendChild(tdActions);
 
                 tableNextPaymentBody.appendChild(tr);
             });
@@ -1171,13 +1214,15 @@
                 if (!term) return true;
                 const name = String(inv.leadName || "").toLowerCase();
                 const program = String(inv.productName || "").toLowerCase();
-                return name.includes(term) || program.includes(term);
+                const batchProgram = String(inv.batchLabel || inv.className || "").toLowerCase();
+                const schedule = String(resolveInvoiceScheduleFromBatch(inv) || "").toLowerCase();
+                return name.includes(term) || program.includes(term) || batchProgram.includes(term) || schedule.includes(term);
             }) : [];
 
             if (!invoices.length) {
                 const tr = document.createElement("tr");
                 const td = document.createElement("td");
-                td.colSpan = 7;
+                td.colSpan = 10;
                 td.className = "text-center text-slate-400 py-3";
                 td.textContent = "Belum ada bukti transfer untuk tanggal ini.";
                 tr.appendChild(td);
@@ -1188,24 +1233,25 @@
             invoices.forEach((inv) => {
                 const tr = document.createElement("tr");
 
-                const tdInvoice = document.createElement("td");
-                const invoiceLink = document.createElement("a");
-                invoiceLink.href = "/invoice.html?invoiceId=" + encodeURIComponent(inv.id);
-                invoiceLink.target = "_blank";
-                invoiceLink.rel = "noopener noreferrer";
-                invoiceLink.className = "text-indigo-600 hover:underline font-semibold";
-                invoiceLink.textContent = inv.invoiceNumber || inv.id;
-                tdInvoice.appendChild(invoiceLink);
-
                 const tdName = document.createElement("td");
                 tdName.textContent = inv.leadName || "-";
 
                 const tdProgram = document.createElement("td");
                 tdProgram.textContent = inv.productName || "-";
 
+                const tdBatchProgram = document.createElement("td");
+                tdBatchProgram.textContent = resolveInvoiceBatchProgram(inv);
+
+                const tdJadwal = document.createElement("td");
+                tdJadwal.textContent = resolveInvoiceScheduleFromBatch(inv);
+
                 const tdNominal = document.createElement("td");
                 const amount = inv.paidAmount || inv.finalBasePrice || 0;
                 tdNominal.textContent = "Rp " + formatCurrencyId(amount);
+
+                const tdHargaAsli = document.createElement("td");
+                const originalPrice = resolveOriginalPrice(inv.productName || "", inv);
+                tdHargaAsli.textContent = originalPrice > 0 ? ("Rp " + formatCurrencyId(originalPrice)) : "-";
 
                 const tdMethod = document.createElement("td");
                 const methodParts = [];
@@ -1213,42 +1259,189 @@
                 if (inv.bankName) methodParts.push(inv.bankName);
                 tdMethod.textContent = methodParts.join(" • ") || "-";
 
-                const tdProof = document.createElement("td");
-                const proofLink = document.createElement("a");
-                proofLink.href = inv.transferProofUrl;
-                proofLink.target = "_blank";
-                proofLink.rel = "noopener noreferrer";
-                proofLink.className = "btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1";
-                proofLink.innerHTML = '<i data-lucide="image" class="w-3 h-3"></i> Lihat';
-                tdProof.appendChild(proofLink);
-
                 const tdWa = document.createElement("td");
-                const number = inv.enrollmentWhatsapp || "";
+                const number = resolveInvoiceWhatsapp(inv);
                 if (number) {
-                    const a = document.createElement("a");
-                    a.href = formatWhatsAppLink(number);
-                    a.target = "_blank";
-                    a.rel = "noopener noreferrer";
-                    a.className = "btn btn-sm btn-success";
-                    a.textContent = "WA";
-                    tdWa.appendChild(a);
+                    tdWa.textContent = formatPhoneDisplay(number);
                 } else {
                     tdWa.textContent = "-";
                 }
 
-                tr.appendChild(tdInvoice);
+                const tdDetail = document.createElement("td");
+                const invoiceLink = document.createElement("a");
+                invoiceLink.href = "/invoice.html?invoiceId=" + encodeURIComponent(inv.id);
+                invoiceLink.target = "_blank";
+                invoiceLink.rel = "noopener noreferrer";
+                invoiceLink.className = "btn btn-sm btn-outline-primary";
+                invoiceLink.textContent = "Detail";
+                tdDetail.appendChild(invoiceLink);
+
+                const tdActions = document.createElement("td");
+                tdActions.className = "text-nowrap";
+
+                const editBtn = document.createElement("button");
+                editBtn.type = "button";
+                editBtn.className = "btn btn-sm btn-outline-primary me-1";
+                editBtn.innerHTML = '<i class="bi bi-pencil-square"></i>';
+                editBtn.addEventListener("click", async () => {
+                    await handleEditInvoice(inv.id);
+                });
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.type = "button";
+                deleteBtn.className = "btn btn-sm btn-outline-danger";
+                deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
+                deleteBtn.addEventListener("click", async () => {
+                    await handleDeleteInvoice(inv.id);
+                });
+
+                tdActions.appendChild(editBtn);
+                tdActions.appendChild(deleteBtn);
+
                 tr.appendChild(tdName);
                 tr.appendChild(tdProgram);
+                tr.appendChild(tdBatchProgram);
+                tr.appendChild(tdJadwal);
                 tr.appendChild(tdNominal);
+                tr.appendChild(tdHargaAsli);
                 tr.appendChild(tdMethod);
-                tr.appendChild(tdProof);
                 tr.appendChild(tdWa);
+                tr.appendChild(tdDetail);
+                tr.appendChild(tdActions);
 
                 tableUploadProofBody.appendChild(tr);
             });
 
             if (window.lucide && typeof window.lucide.createIcons === "function") {
                 window.lucide.createIcons();
+            }
+        }
+
+        async function refreshLeadsAndTables() {
+            await loadLeadsAnalytics();
+            await loadInvoicesAnalytics();
+            updateDashboardSummary();
+            populateProgramFilterOptions();
+            renderNextPaymentTable();
+            renderUploadProofTable();
+        }
+
+        function enableSwipeScroll() {
+            const containers = document.querySelectorAll(".swipe-scroll");
+            containers.forEach((container) => {
+                let isDown = false;
+                let startX = 0;
+                let scrollLeft = 0;
+
+                container.addEventListener("mousedown", (e) => {
+                    isDown = true;
+                    startX = e.pageX - container.offsetLeft;
+                    scrollLeft = container.scrollLeft;
+                });
+
+                container.addEventListener("mouseleave", () => {
+                    isDown = false;
+                });
+
+                container.addEventListener("mouseup", () => {
+                    isDown = false;
+                });
+
+                container.addEventListener("mousemove", (e) => {
+                    if (!isDown) return;
+                    e.preventDefault();
+                    const x = e.pageX - container.offsetLeft;
+                    const walk = x - startX;
+                    container.scrollLeft = scrollLeft - walk;
+                });
+            });
+        }
+
+        async function handleEditLead(leadId) {
+            const target = (allLeads || []).find((lead) => lead.id === leadId);
+            if (!target) return;
+
+            const name = window.prompt("Edit nama lead", target.name || "");
+            if (name === null) return;
+            const city = window.prompt("Edit kota", target.city || "");
+            if (city === null) return;
+            const program = window.prompt("Edit program", target.interest_program || "");
+            if (program === null) return;
+            const stage = window.prompt("Edit stage", target.stage || "LEADS");
+            if (stage === null) return;
+            const whatsapp = window.prompt("Edit nomor WhatsApp", target.whatsapp || "");
+            if (whatsapp === null) return;
+
+            try {
+                await setDoc(doc(db, "leads", leadId), {
+                    name: String(name || "").trim(),
+                    city: String(city || "").trim(),
+                    interest_program: String(program || "").trim(),
+                    stage: String(stage || "").trim(),
+                    whatsapp: String(whatsapp || "").trim()
+                }, { merge: true });
+                await refreshLeadsAndTables();
+            } catch (e) {
+                window.alert("Gagal mengedit data lead.");
+            }
+        }
+
+        async function handleDeleteLead(leadId) {
+            if (!leadId) return;
+            const ok = window.confirm("Hapus lead ini?");
+            if (!ok) return;
+            try {
+                await deleteDoc(doc(db, "leads", leadId));
+                await refreshLeadsAndTables();
+            } catch (e) {
+                window.alert("Gagal menghapus lead.");
+            }
+        }
+
+        async function handleEditInvoice(invoiceId) {
+            const target = (allInvoices || []).find((inv) => inv.id === invoiceId);
+            if (!target) return;
+
+            const leadName = window.prompt("Edit nama lead", target.leadName || "");
+            if (leadName === null) return;
+            const productName = window.prompt("Edit program", target.productName || "");
+            if (productName === null) return;
+            const paidAmountInput = window.prompt("Edit nominal dibayar", String(target.paidAmount || 0));
+            if (paidAmountInput === null) return;
+            const finalPriceInput = window.prompt("Edit harga deal", String(target.finalBasePrice || 0));
+            if (finalPriceInput === null) return;
+            const paymentMethod = window.prompt("Edit metode pembayaran", target.paymentMethod || "");
+            if (paymentMethod === null) return;
+            const bankName = window.prompt("Edit nama bank", target.bankName || "");
+            if (bankName === null) return;
+
+            const paidAmount = parseInt(String(paidAmountInput || "0"), 10) || 0;
+            const finalBasePrice = parseInt(String(finalPriceInput || "0"), 10) || 0;
+
+            try {
+                await setDoc(doc(db, "invoices", invoiceId), {
+                    leadName: String(leadName || "").trim(),
+                    productName: String(productName || "").trim(),
+                    paidAmount,
+                    finalBasePrice,
+                    paymentMethod: String(paymentMethod || "").trim(),
+                    bankName: String(bankName || "").trim()
+                }, { merge: true });
+                await refreshLeadsAndTables();
+            } catch (e) {
+                window.alert("Gagal mengedit invoice.");
+            }
+        }
+
+        async function handleDeleteInvoice(invoiceId) {
+            if (!invoiceId) return;
+            const ok = window.confirm("Hapus invoice ini?");
+            if (!ok) return;
+            try {
+                await deleteDoc(doc(db, "invoices", invoiceId));
+                await refreshLeadsAndTables();
+            } catch (e) {
+                window.alert("Gagal menghapus invoice.");
             }
         }
 
@@ -1269,6 +1462,7 @@
             populateProgramFilterOptions();
             renderNextPaymentTable();
             renderUploadProofTable();
+            enableSwipeScroll();
 
             if (globalDateFilter) {
                 globalDateFilter.addEventListener("change", onGlobalDateChange);
