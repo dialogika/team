@@ -310,6 +310,30 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Detail Invoice Modal -->
+            <div class="modal fade" id="invoiceDetailModal" tabindex="-1" aria-labelledby="invoiceDetailModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content" style="border-radius: 20px; overflow: hidden;">
+                        <div class="modal-header" style="background: linear-gradient(135deg, #0b2b6a 0%, #1e40af 100%); padding: 24px 30px; border: none;">
+                            <h5 class="modal-title text-white fw-bold d-flex align-items-center gap-2" id="invoiceDetailModalLabel">
+                                <i data-lucide="file-text" class="w-5 h-5"></i>
+                                Detail Invoice
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" style="padding: 30px;">
+                            <div id="invoiceDetailContent">
+                                <p class="text-center text-slate-400">Memuat data...</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="border-top: 1px solid #f1f5f9; padding: 16px 30px;">
+                            <button type="button" class="btn btn-sm btn-secondary rounded-xl px-4" data-bs-dismiss="modal">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -1201,13 +1225,143 @@
             }
         }
 
+        function escapeHtml(value) {
+            return String(value || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function formatDateTimeMs(ms) {
+            if (!ms || typeof ms !== "number" || ms <= 0) return "-";
+            const date = new Date(ms);
+            if (isNaN(date.getTime())) return "-";
+            return date.toLocaleString("id-ID");
+        }
+
+        function formatAssignedPic(lead) {
+            const ids = Array.isArray(lead && lead.assigned_ids) ? lead.assigned_ids : [];
+            if (!ids.length) return "-";
+            const names = ids.map((id) => usersMap[id] || id).filter(Boolean);
+            return names.length ? names.join(", ") : "-";
+        }
+
+        function renderInvoiceDetailModalContent(invData, leadData) {
+            const phoneNumber = resolveInvoiceWhatsapp(invData);
+            const scheduleText = resolveInvoiceScheduleFromBatch(invData);
+            const batchText = resolveInvoiceBatchProgram(invData);
+            const dealAmount = invData.paidAmount || invData.finalBasePrice || 0;
+            const basePrice = resolveOriginalPrice(invData.productName || "", invData);
+            const proofUrl = String(invData.transferProofUrl || "").trim();
+            const invoiceNumber = invData.invoiceNumber || invData.id || "-";
+            const userName = (leadData && leadData.name) || invData.leadName || "-";
+            const userProgram = (leadData && leadData.interest_program) || invData.productName || "-";
+            const userCity = (leadData && leadData.city) || "-";
+            const userStage = (leadData && leadData.stage) || "-";
+            const userReferral = (leadData && leadData.referral_code) || "-";
+            const userAds = (leadData && leadData.ads_channel) || "-";
+            const userWhatsapp = phoneNumber || "-";
+            const picNames = formatAssignedPic(leadData || {});
+            const proofHtml = proofUrl
+                ? '<a href="' + escapeHtml(proofUrl) + '" target="_blank" rel="noopener noreferrer" class="text-blue-600">Lihat Bukti</a>'
+                : "-";
+
+            const userRows = [
+                { label: "Nama User", value: userName },
+                { label: "WhatsApp", value: userWhatsapp },
+                { label: "Kota", value: userCity },
+                { label: "Program User", value: userProgram },
+                { label: "Stage", value: userStage },
+                { label: "Referral", value: userReferral },
+                { label: "Ads Channel", value: userAds },
+                { label: "PIC", value: picNames }
+            ];
+
+            const invoiceRows = [
+                { label: "Invoice", value: invoiceNumber },
+                { label: "Program Invoice", value: invData.productName || "-" },
+                { label: "Batch Program", value: batchText },
+                { label: "Jadwal", value: scheduleText },
+                { label: "Payment Type", value: invData.paymentType || "-" },
+                { label: "Metode", value: invData.paymentMethod || "-" },
+                { label: "Bank", value: invData.bankName || "-" },
+                { label: "Status Verifikasi", value: mapVerificationStatusLabel(invData.verificationStatus) },
+                { label: "Nominal Bayar", value: dealAmount > 0 ? ("Rp " + formatCurrencyId(dealAmount)) : "-" },
+                { label: "Harga Asli", value: basePrice > 0 ? ("Rp " + formatCurrencyId(basePrice)) : "-" },
+                { label: "Dibuat", value: formatDateTimeMs(invData.createdAtMs) },
+                { label: "Dibayar", value: formatDateTimeMs(invData.paidAtMs) },
+                { label: "Bukti Transfer", value: proofHtml, isHtml: true }
+            ];
+
+            const renderRows = (rows) => {
+                return rows.map((row) => {
+                    const displayValue = row.isHtml ? String(row.value || "-") : escapeHtml(row.value);
+                    return '<tr>' +
+                        '<td class="py-2 pe-3 text-slate-500 font-semibold align-top" style="width: 140px;">' + escapeHtml(row.label) + "</td>" +
+                        '<td class="py-2 text-slate-800">' + displayValue + "</td>" +
+                    "</tr>";
+                }).join("");
+            };
+
+            return '' +
+                '<div class="row g-3">' +
+                    '<div class="col-12 col-lg-6">' +
+                        '<div class="rounded-3xl border border-slate-200 bg-white p-4 h-100">' +
+                            '<div class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-3">Data User</div>' +
+                            '<div class="table-responsive"><table class="table table-borderless mb-0 text-sm">' + renderRows(userRows) + "</table></div>" +
+                        "</div>" +
+                    "</div>" +
+                    '<div class="col-12 col-lg-6">' +
+                        '<div class="rounded-3xl border border-slate-200 bg-white p-4 h-100">' +
+                            '<div class="text-xs uppercase tracking-wider text-slate-400 font-bold mb-3">Data Invoice</div>' +
+                            '<div class="table-responsive"><table class="table table-borderless mb-0 text-sm">' + renderRows(invoiceRows) + "</table></div>" +
+                        "</div>" +
+                    "</div>" +
+                "</div>";
+        }
+
+        async function showInvoiceDetailModal(inv, leadFromTable) {
+            const modalEl = document.getElementById("invoiceDetailModal");
+            const contentEl = document.getElementById("invoiceDetailContent");
+            if (!modalEl || !contentEl || !inv) return;
+
+            contentEl.innerHTML = '<p class="text-center text-slate-400 py-4">Memuat data dari API...</p>';
+
+            try {
+                const modalInstance = window.bootstrap && window.bootstrap.Modal
+                    ? window.bootstrap.Modal.getOrCreateInstance(modalEl)
+                    : null;
+                if (modalInstance) modalInstance.show();
+
+                let latestInvoiceData = Object.assign({}, inv);
+                if (inv.id) {
+                    const invoiceRef = doc(db, "invoices", inv.id);
+                    const invoiceSnap = await getDoc(invoiceRef);
+                    if (invoiceSnap.exists()) {
+                        latestInvoiceData = Object.assign({}, latestInvoiceData, invoiceSnap.data() || {}, { id: inv.id });
+                    }
+                }
+
+                const leadNameKey = String(latestInvoiceData.leadName || "").trim().toLowerCase();
+                const leadData = (allLeads || []).find((lead) => {
+                    return String(lead.name || "").trim().toLowerCase() === leadNameKey;
+                }) || leadFromTable || null;
+
+                contentEl.innerHTML = renderInvoiceDetailModalContent(latestInvoiceData, leadData);
+            } catch (e) {
+                contentEl.innerHTML = '<p class="text-center text-rose-500 py-4">Gagal memuat detail invoice dari API.</p>';
+            }
+        }
+
         function renderUploadProofTable() {
             if (!tableUploadProofBody) return;
             tableUploadProofBody.innerHTML = "";
             const selectedDate = normalizeDate(getSelectedDate());
             const term = filterSearchUpload && filterSearchUpload.value ? String(filterSearchUpload.value).toLowerCase().trim() : "";
 
-            const invoices = Array.isArray(allInvoices) ? allInvoices.filter((inv) => {
+            const rawInvoices = Array.isArray(allInvoices) ? allInvoices.filter((inv) => {
                 if (!inv.transferProofUrl) return false;
                 const invDate = getInvoicePaidDate(inv) || getInvoiceDate(inv);
                 if (!invDate || invDate.getTime() !== selectedDate.getTime()) return false;
@@ -1218,6 +1372,35 @@
                 const schedule = String(resolveInvoiceScheduleFromBatch(inv) || "").toLowerCase();
                 return name.includes(term) || program.includes(term) || batchProgram.includes(term) || schedule.includes(term);
             }) : [];
+
+            /* --- Deduplicate: group by leadName + productName, merge into single row --- */
+            const groupedMap = {};
+            rawInvoices.forEach((inv) => {
+                const key = (String(inv.leadName || "").trim().toLowerCase()) + "||" + (String(inv.productName || "").trim().toLowerCase());
+                if (!groupedMap[key]) {
+                    groupedMap[key] = Object.assign({}, inv);
+                } else {
+                    const existing = groupedMap[key];
+                    // Pick the higher paidAmount (accumulate total paid)
+                    existing.paidAmount = (existing.paidAmount || 0) + (inv.paidAmount || 0);
+                    // Keep best available fields (prefer non-empty values)
+                    if (!existing.batchLabel && inv.batchLabel) existing.batchLabel = inv.batchLabel;
+                    if (!existing.className && inv.className) existing.className = inv.className;
+                    if (!existing.batchSchedule && inv.batchSchedule) existing.batchSchedule = inv.batchSchedule;
+                    if (!existing.classSchedule && inv.classSchedule) existing.classSchedule = inv.classSchedule;
+                    if (!existing.schedule && inv.schedule) existing.schedule = inv.schedule;
+                    if (!existing.sessionSchedule && inv.sessionSchedule) existing.sessionSchedule = inv.sessionSchedule;
+                    if (!existing.classMeta && inv.classMeta) existing.classMeta = inv.classMeta;
+                    if (!existing.paymentMethod && inv.paymentMethod) existing.paymentMethod = inv.paymentMethod;
+                    if (!existing.bankName && inv.bankName) existing.bankName = inv.bankName;
+                    if (!existing.enrollmentWhatsapp && inv.enrollmentWhatsapp) existing.enrollmentWhatsapp = inv.enrollmentWhatsapp;
+                    if (!existing.transferProofUrl && inv.transferProofUrl) existing.transferProofUrl = inv.transferProofUrl;
+                    // Keep highest finalBasePrice / basePrice
+                    if ((inv.finalBasePrice || 0) > (existing.finalBasePrice || 0)) existing.finalBasePrice = inv.finalBasePrice;
+                    if ((inv.basePrice || 0) > (existing.basePrice || 0)) existing.basePrice = inv.basePrice;
+                }
+            });
+            const invoices = Object.values(groupedMap);
 
             if (!invoices.length) {
                 const tr = document.createElement("tr");
@@ -1237,7 +1420,10 @@
                 tdName.textContent = inv.leadName || "-";
 
                 const tdProgram = document.createElement("td");
-                tdProgram.textContent = inv.productName || "-";
+                /* Resolve program name from leads API (interest_program) to match Next Payment Pipeline */
+                const leadNameKey = String(inv.leadName || "").trim().toLowerCase();
+                const matchedLead = (allLeads || []).find((lead) => String(lead.name || "").trim().toLowerCase() === leadNameKey);
+                tdProgram.textContent = (matchedLead && matchedLead.interest_program) ? matchedLead.interest_program : (inv.productName || "-");
 
                 const tdBatchProgram = document.createElement("td");
                 tdBatchProgram.textContent = resolveInvoiceBatchProgram(inv);
@@ -1268,13 +1454,14 @@
                 }
 
                 const tdDetail = document.createElement("td");
-                const invoiceLink = document.createElement("a");
-                invoiceLink.href = "/invoice.html?invoiceId=" + encodeURIComponent(inv.id);
-                invoiceLink.target = "_blank";
-                invoiceLink.rel = "noopener noreferrer";
-                invoiceLink.className = "btn btn-sm btn-outline-primary";
-                invoiceLink.textContent = "Detail";
-                tdDetail.appendChild(invoiceLink);
+                const detailBtn = document.createElement("button");
+                detailBtn.type = "button";
+                detailBtn.className = "btn btn-sm btn-outline-primary";
+                detailBtn.textContent = "Detail";
+                detailBtn.addEventListener("click", async () => {
+                    await showInvoiceDetailModal(inv, matchedLead);
+                });
+                tdDetail.appendChild(detailBtn);
 
                 const tdActions = document.createElement("td");
                 tdActions.className = "text-nowrap";
