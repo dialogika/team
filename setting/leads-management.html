@@ -803,7 +803,16 @@
                         stage: d.stage || "LEADS",
                         referral_code: d.referral_code || "",
                         createdDate: createdDate,
-                        assigned_ids: Array.isArray(d.assigned_ids) ? d.assigned_ids : []
+                        assigned_ids: Array.isArray(d.assigned_ids) ? d.assigned_ids : [],
+                        certificate_name: d.peserta_name || d.certificate_name || d.nama_sertifikat || "",
+                        email: d.peserta_email || d.email || "",
+                        instagram: d.peserta_ig || d.instagram || d.ig || "",
+                        job: d.peserta_job || d.job || d.pekerjaan || "",
+                        age: d.peserta_age || d.age || d.usia || "",
+                        gender: d.peserta_gender || d.gender || d.jenis_kelamin || "",
+                        marital_status: d.peserta_marital_status || d.marital_status || d.status_menikah || "",
+                        city: d.peserta_city || d.city || "",
+                        additional_info: d.notes_info || d.additional_info || d.informasi_tambahan || d.catatan || ""
                     });
                 });
                 allLeads = leads;
@@ -1258,25 +1267,43 @@
             const invoiceNumber = invData.invoiceNumber || invData.id || "-";
             const userName = (leadData && leadData.name) || invData.leadName || "-";
             const userProgram = (leadData && leadData.interest_program) || invData.productName || "-";
-            const userCity = (leadData && leadData.city) || "-";
             const userStage = (leadData && leadData.stage) || "-";
             const userReferral = (leadData && leadData.referral_code) || "-";
             const userAds = (leadData && leadData.ads_channel) || "-";
             const userWhatsapp = phoneNumber || "-";
             const picNames = formatAssignedPic(leadData || {});
+            
+            const userCertificateName = (leadData && (leadData.peserta_name || leadData.certificate_name)) || invData.pesertaName || invData.peserta_name || invData.certificate_name || invData.nama_sertifikat || "-";
+            const userEmail = (leadData && (leadData.peserta_email || leadData.email)) || invData.pesertaEmail || invData.peserta_email || invData.email || "-";
+            const userInstagram = (leadData && (leadData.peserta_ig || leadData.instagram)) || invData.pesertaIg || invData.peserta_ig || invData.instagram || invData.ig || "-";
+            const userJob = (leadData && (leadData.peserta_job || leadData.job)) || invData.pesertaJob || invData.peserta_job || invData.job || invData.pekerjaan || "-";
+            const userAge = (leadData && (leadData.peserta_age || leadData.age)) || invData.pesertaAge || invData.peserta_age || invData.age || invData.usia || "-";
+            const userGender = (leadData && (leadData.peserta_gender || leadData.gender)) || invData.pesertaGender || invData.peserta_gender || invData.gender || invData.jenis_kelamin || "-";
+            const userCity = (leadData && (leadData.peserta_city || leadData.city)) || invData.pesertaCity || invData.peserta_city || invData.city || "-";
+            const userMaritalStatus = (leadData && (leadData.peserta_marital_status || leadData.marital_status)) || invData.pesertaMaritalStatus || invData.peserta_marital_status || invData.marital_status || invData.status_menikah || "-";
+            const userAdditionalInfo = (leadData && (leadData.notes_info || leadData.additional_info)) || invData.notesInfo || invData.notes_info || invData.additional_info || invData.informasi_tambahan || invData.catatan || "-";
+
             const proofHtml = proofUrl
                 ? '<a href="' + escapeHtml(proofUrl) + '" target="_blank" rel="noopener noreferrer" class="text-blue-600">Lihat Bukti</a>'
                 : "-";
 
             const userRows = [
                 { label: "Nama User", value: userName },
+                { label: "Nama untuk Sertifikat", value: userCertificateName },
                 { label: "WhatsApp", value: userWhatsapp },
-                { label: "Kota", value: userCity },
+                { label: "Email", value: userEmail },
+                { label: "Instagram", value: userInstagram },
+                { label: "Pekerjaan", value: userJob },
+                { label: "Usia", value: userAge },
+                { label: "Gender", value: userGender },
+                { label: "Kota Domisili", value: userCity },
+                { label: "Status Menikah", value: userMaritalStatus },
                 { label: "Program User", value: userProgram },
                 { label: "Stage", value: userStage },
                 { label: "Referral", value: userReferral },
                 { label: "Ads Channel", value: userAds },
-                { label: "PIC", value: picNames }
+                { label: "PIC", value: picNames },
+                { label: "Informasi Tambahan", value: userAdditionalInfo }
             ];
 
             const invoiceRows = [
