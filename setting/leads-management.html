@@ -1336,6 +1336,8 @@
                 if (modalInstance) modalInstance.show();
 
                 let latestInvoiceData = Object.assign({}, inv);
+                const groupedBasePrice = inv.basePrice || 0;
+                const groupedFinalBasePrice = inv.finalBasePrice || 0;
                 if (inv.id) {
                     const invoiceRef = doc(db, "invoices", inv.id);
                     const invoiceSnap = await getDoc(invoiceRef);
@@ -1343,6 +1345,9 @@
                         latestInvoiceData = Object.assign({}, latestInvoiceData, invoiceSnap.data() || {}, { id: inv.id });
                     }
                 }
+                // Preserve grouped basePrice / finalBasePrice if higher (match table values)
+                if (groupedBasePrice > (latestInvoiceData.basePrice || 0)) latestInvoiceData.basePrice = groupedBasePrice;
+                if (groupedFinalBasePrice > (latestInvoiceData.finalBasePrice || 0)) latestInvoiceData.finalBasePrice = groupedFinalBasePrice;
 
                 const leadNameKey = String(latestInvoiceData.leadName || "").trim().toLowerCase();
                 const leadData = (allLeads || []).find((lead) => {
@@ -1378,11 +1383,12 @@
             rawInvoices.forEach((inv) => {
                 const key = (String(inv.leadName || "").trim().toLowerCase()) + "||" + (String(inv.productName || "").trim().toLowerCase());
                 if (!groupedMap[key]) {
-                    groupedMap[key] = Object.assign({}, inv);
+                    groupedMap[key] = Object.assign({}, inv, { _groupedIds: [inv.id] });
                 } else {
                     const existing = groupedMap[key];
-                    // Pick the higher paidAmount (accumulate total paid)
-                    existing.paidAmount = (existing.paidAmount || 0) + (inv.paidAmount || 0);
+                    existing._groupedIds.push(inv.id);
+                    // Keep the higher paidAmount (not accumulated, to match modal detail)
+                    if ((inv.paidAmount || 0) > (existing.paidAmount || 0)) existing.paidAmount = inv.paidAmount;
                     // Keep best available fields (prefer non-empty values)
                     if (!existing.batchLabel && inv.batchLabel) existing.batchLabel = inv.batchLabel;
                     if (!existing.className && inv.className) existing.className = inv.className;
@@ -1433,7 +1439,7 @@
 
                 const tdNominal = document.createElement("td");
                 const amount = inv.paidAmount || inv.finalBasePrice || 0;
-                tdNominal.textContent = "Rp " + formatCurrencyId(amount);
+                tdNominal.textContent = amount > 0 ? ("Rp " + formatCurrencyId(amount)) : "-";
 
                 const tdHargaAsli = document.createElement("td");
                 const originalPrice = resolveOriginalPrice(inv.productName || "", inv);
@@ -1479,7 +1485,7 @@
                 deleteBtn.className = "btn btn-sm btn-outline-danger";
                 deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
                 deleteBtn.addEventListener("click", async () => {
-                    await handleDeleteInvoice(inv.id);
+                    await handleDeleteInvoice(inv._groupedIds || [inv.id]);
                 });
 
                 tdActions.appendChild(editBtn);
@@ -1620,12 +1626,13 @@
             }
         }
 
-        async function handleDeleteInvoice(invoiceId) {
-            if (!invoiceId) return;
+        async function handleDeleteInvoice(invoiceIds) {
+            const ids = Array.isArray(invoiceIds) ? invoiceIds : [invoiceIds];
+            if (!ids.length) return;
             const ok = window.confirm("Hapus invoice ini?");
             if (!ok) return;
             try {
-                await deleteDoc(doc(db, "invoices", invoiceId));
+                await Promise.all(ids.map((id) => deleteDoc(doc(db, "invoices", id))));
                 await refreshLeadsAndTables();
             } catch (e) {
                 window.alert("Gagal menghapus invoice.");
