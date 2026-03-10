@@ -90,10 +90,14 @@
             <div class="mb-4 flex flex-wrap items-center gap-3 bg-white border border-slate-200 rounded-2xl px-5 py-3 shadow-sm">
                 <div class="flex items-center gap-2">
                     <i data-lucide="calendar" class="w-5 h-5 text-indigo-600"></i>
-                    <span class="text-sm font-bold text-slate-700">Pilih Tanggal:</span>
+                    <span class="text-sm font-bold text-slate-700">Range Tanggal:</span>
                 </div>
-                <input id="globalDateFilter" type="date" class="input-focus text-sm rounded-xl px-4 py-2 border border-slate-200 bg-white font-semibold">
-                <button id="btnDateToday" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-sm transition">Hari Ini</button>
+                <div class="flex items-center gap-2">
+                    <input id="globalStartDateFilter" type="date" class="input-focus text-sm rounded-xl px-4 py-2 border border-slate-200 bg-white font-semibold">
+                    <span class="text-slate-400 text-xs">s/d</span>
+                    <input id="globalEndDateFilter" type="date" class="input-focus text-sm rounded-xl px-4 py-2 border border-slate-200 bg-white font-semibold">
+                </div>
+                <button id="btnDate1Month" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-sm transition">1 Bulan Terakhir</button>
                 <span id="globalDateLabel" class="text-xs text-slate-500 ml-2"></span>
             </div>
 
@@ -104,7 +108,7 @@
                         <small class="text-uppercase text-xs text-slate-400 fw-bold">Total Leads Tanggal Ini</small>
                     </div>
                     <h2 id="statLeadsToday" class="text-3xl font-extrabold tracking-tight text-slate-900">0</h2>
-                    <small class="text-slate-500">Semua leads baru pada tanggal terpilih.</small>
+                    <small class="text-slate-500">Semua leads baru pada range tanggal terpilih.</small>
                 </div>
                 <div class="settings-card flex flex-col gap-2">
                     <div class="d-flex align-items-center gap-2">
@@ -155,7 +159,7 @@
                             <i data-lucide="credit-card" class="w-5 h-5 text-amber-600"></i>
                             Next Payment Pipeline
                         </h2>
-                        <p class="text-sm text-slate-500 mt-1">Semua leads dan invoice pada tanggal terpilih.</p>
+                        <p class="text-sm text-slate-500 mt-1">Semua leads dan invoice pada range tanggal terpilih.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3">
                         <input id="filterSearchDaily" type="text" placeholder="Cari nama / program" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[180px]">
@@ -195,7 +199,7 @@
                             <i data-lucide="upload-cloud" class="w-5 h-5 text-emerald-600"></i>
                             Upload Bukti Transfer
                         </h2>
-                        <p class="text-sm text-slate-500 mt-1">Invoice yang sudah upload bukti transfer pada tanggal terpilih.</p>
+                        <p class="text-sm text-slate-500 mt-1">Invoice yang sudah upload bukti transfer pada range tanggal terpilih.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-3">
                         <input id="filterSearchUpload" type="text" placeholder="Cari nama / program" class="input-focus text-xs rounded-xl px-3 py-2 border border-slate-200 bg-white min-w-[180px]">
@@ -438,19 +442,46 @@
         const tableNextPaymentBody = document.getElementById("tableNextPaymentBody");
         const tableUploadProofBody = document.getElementById("tableUploadProofBody");
 
-        const globalDateFilter = document.getElementById("globalDateFilter");
-        const btnDateToday = document.getElementById("btnDateToday");
+        const globalStartDateFilter = document.getElementById("globalStartDateFilter");
+        const globalEndDateFilter = document.getElementById("globalEndDateFilter");
+        const btnDate1Month = document.getElementById("btnDate1Month");
         const globalDateLabel = document.getElementById("globalDateLabel");
         const filterSearchDaily = document.getElementById("filterSearchDaily");
         const filterSearchUpload = document.getElementById("filterSearchUpload");
         const filterProgramNext = document.getElementById("filterProgramNext");
 
-        function getSelectedDate() {
-            if (globalDateFilter && globalDateFilter.value) {
-                const d = parseDateInputValue(globalDateFilter.value);
-                if (d) return d;
+        function getSelectedDateRange() {
+            let start = null;
+            let end = null;
+            
+            if (globalStartDateFilter && globalStartDateFilter.value) {
+                start = parseDateInputValue(globalStartDateFilter.value);
             }
-            return getTodayDateOnly();
+            if (globalEndDateFilter && globalEndDateFilter.value) {
+                end = parseDateInputValue(globalEndDateFilter.value);
+            }
+            
+            // Fallback if empty
+            if (!start || !end) {
+                const range = getDefault1MonthRange();
+                if (!start) start = range.start;
+                if (!end) end = range.end;
+            }
+            
+            return {
+                start: normalizeDate(start),
+                end: normalizeDate(end)
+            };
+        }
+
+        function getDefault1MonthRange() {
+            const end = new Date();
+            const start = new Date();
+            start.setMonth(start.getMonth() - 1);
+            return {
+                start: normalizeDate(start),
+                end: normalizeDate(end)
+            };
         }
 
         function formatDateIndonesian(date) {
@@ -459,24 +490,35 @@
             return days[date.getDay()] + ', ' + date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
         }
 
-        function setGlobalDateToToday() {
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            if (globalDateFilter) globalDateFilter.value = yyyy + '-' + mm + '-' + dd;
+        function setGlobalDateTo1Month() {
+            const range = getDefault1MonthRange();
+            
+            const formatDate = (d) => {
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                return yyyy + '-' + mm + '-' + dd;
+            };
+
+            if (globalStartDateFilter) globalStartDateFilter.value = formatDate(range.start);
+            if (globalEndDateFilter) globalEndDateFilter.value = formatDate(range.end);
+            
             updateGlobalDateLabel();
         }
 
         function updateGlobalDateLabel() {
             if (!globalDateLabel) return;
-            const d = getSelectedDate();
+            const range = getSelectedDateRange();
+            const startLabel = formatDateIndonesian(range.start);
+            const endLabel = formatDateIndonesian(range.end);
+            
             const today = getTodayDateOnly();
-            const label = formatDateIndonesian(d);
-            if (d.getTime() === today.getTime()) {
-                globalDateLabel.textContent = label + ' (Hari Ini)';
+            const isTodayEnd = range.end.getTime() === today.getTime();
+            
+            if (range.start.getTime() === range.end.getTime()) {
+                globalDateLabel.textContent = startLabel + (isTodayEnd ? ' (Hari Ini)' : '');
             } else {
-                globalDateLabel.textContent = label;
+                globalDateLabel.textContent = startLabel + ' - ' + endLabel + (isTodayEnd ? ' (Sampai Hari Ini)' : '');
             }
         }
 
@@ -943,25 +985,29 @@
         }
 
         function updateDashboardSummary() {
-            const selectedDate = normalizeDate(getSelectedDate());
+            const range = getSelectedDateRange();
+            const startMs = range.start.getTime();
+            const endMs = range.end.getTime();
+
             let leadsSelected = 0;
             let leadsThisWeek = 0;
             let referralUsedCount = 0;
             const oneDayMs = 24 * 60 * 60 * 1000;
-            const weekStart = new Date(selectedDate.getTime() - 6 * oneDayMs);
+            const weekStart = new Date(range.end.getTime() - 6 * oneDayMs);
 
             (allLeads || []).forEach((lead) => {
                 if (!lead.createdDate) return;
                 const d = normalizeDate(lead.createdDate);
                 if (!d) return;
-                if (d.getTime() === selectedDate.getTime()) {
+                const dMs = d.getTime();
+                if (dMs >= startMs && dMs <= endMs) {
                     leadsSelected += 1;
                     // Count referral code usage from leads (set in first-class.html)
                     if (lead.referral_code && String(lead.referral_code).trim() !== "") {
                         referralUsedCount += 1;
                     }
                 }
-                if (d >= weekStart && d <= selectedDate) {
+                if (d >= weekStart && d <= range.end) {
                     leadsThisWeek += 1;
                 }
             });
@@ -972,9 +1018,11 @@
 
             invoices.forEach((inv) => {
                 const invDate = getInvoiceDate(inv);
-                const matchDate = invDate && invDate.getTime() === selectedDate.getTime();
+                if (!invDate) return;
+                const invMs = invDate.getTime();
+                const matchRange = invMs >= startMs && invMs <= endMs;
 
-                if (inv.transferProofUrl && matchDate) {
+                if (inv.transferProofUrl && matchRange) {
                     proofUploadedCount += 1;
                 }
             });
@@ -984,8 +1032,9 @@
                 if (!lead.createdDate) return;
                 const d = normalizeDate(lead.createdDate);
                 if (!d) return;
+                const dMs = d.getTime();
                 const stageKey = String(lead.stage || "").toLowerCase();
-                if (d.getTime() === selectedDate.getTime() && stageKey === "verified") {
+                if (dMs >= startMs && dMs <= endMs && stageKey === "verified") {
                     verifiedCount += 1;
                 }
             });
@@ -1109,7 +1158,9 @@
         function renderNextPaymentTable() {
             if (!tableNextPaymentBody) return;
             tableNextPaymentBody.innerHTML = "";
-            const selectedDate = normalizeDate(getSelectedDate());
+            const range = getSelectedDateRange();
+            const startMs = range.start.getTime();
+            const endMs = range.end.getTime();
             const term = filterSearchDaily && filterSearchDaily.value ? String(filterSearchDaily.value).toLowerCase().trim() : "";
             const programFilter = filterProgramNext ? String(filterProgramNext.value || "") : "";
 
@@ -1118,7 +1169,9 @@
             let filteredLeads = leads.filter((lead) => {
                 if (!lead.createdDate) return false;
                 const d = normalizeDate(lead.createdDate);
-                if (!d || d.getTime() !== selectedDate.getTime()) return false;
+                if (!d) return false;
+                const dMs = d.getTime();
+                if (dMs < startMs || dMs > endMs) return false;
                 if (programFilter && String(lead.interest_program || "") !== programFilter) return false;
                 if (!term) return true;
                 const name = String(lead.name || "").toLowerCase();
@@ -1141,7 +1194,7 @@
                 const td = document.createElement("td");
                 td.colSpan = 6;
                 td.className = "text-center text-slate-400 py-3";
-                td.textContent = "Belum ada leads untuk tanggal ini.";
+                td.textContent = "Belum ada leads untuk range tanggal ini.";
                 tr.appendChild(td);
                 tableNextPaymentBody.appendChild(tr);
                 return;
@@ -1390,13 +1443,17 @@
         function renderUploadProofTable() {
             if (!tableUploadProofBody) return;
             tableUploadProofBody.innerHTML = "";
-            const selectedDate = normalizeDate(getSelectedDate());
+            const range = getSelectedDateRange();
+            const startMs = range.start.getTime();
+            const endMs = range.end.getTime();
             const term = filterSearchUpload && filterSearchUpload.value ? String(filterSearchUpload.value).toLowerCase().trim() : "";
 
             const rawInvoices = Array.isArray(allInvoices) ? allInvoices.filter((inv) => {
                 if (!inv.transferProofUrl) return false;
                 const invDate = getInvoicePaidDate(inv) || getInvoiceDate(inv);
-                if (!invDate || invDate.getTime() !== selectedDate.getTime()) return false;
+                if (!invDate) return false;
+                const invMs = invDate.getTime();
+                if (invMs < startMs || invMs > endMs) return false;
                 if (!term) return true;
                 const name = String(inv.leadName || "").toLowerCase();
                 const program = String(inv.productName || "").toLowerCase();
@@ -1440,7 +1497,7 @@
                 const td = document.createElement("td");
                 td.colSpan = 10;
                 td.className = "text-center text-slate-400 py-3";
-                td.textContent = "Belum ada bukti transfer untuk tanggal ini.";
+                td.textContent = "Belum ada bukti transfer untuk range tanggal ini.";
                 tr.appendChild(td);
                 tableUploadProofBody.appendChild(tr);
                 return;
@@ -1668,7 +1725,7 @@
 
 
         async function initLeadsDashboard() {
-            setGlobalDateToToday();
+            setGlobalDateTo1Month();
 
             try {
                 await Promise.all([
@@ -1685,12 +1742,15 @@
             renderUploadProofTable();
             enableSwipeScroll();
 
-            if (globalDateFilter) {
-                globalDateFilter.addEventListener("change", onGlobalDateChange);
+            if (globalStartDateFilter) {
+                globalStartDateFilter.addEventListener("change", onGlobalDateChange);
             }
-            if (btnDateToday) {
-                btnDateToday.addEventListener("click", () => {
-                    setGlobalDateToToday();
+            if (globalEndDateFilter) {
+                globalEndDateFilter.addEventListener("change", onGlobalDateChange);
+            }
+            if (btnDate1Month) {
+                btnDate1Month.addEventListener("click", () => {
+                    setGlobalDateTo1Month();
                     onGlobalDateChange();
                 });
             }
@@ -1727,7 +1787,7 @@
                     manualAddModal.classList.remove("hidden");
                     const dateInput = document.getElementById("manualAddBatch");
                     if (dateInput) {
-                        const sd = normalizeDate(getSelectedDate());
+                        const sd = getSelectedDateRange().start;
                         const yy = sd.getFullYear();
                         const mm = String(sd.getMonth() + 1).padStart(2, '0');
                         const dd = String(sd.getDate()).padStart(2, '0');
