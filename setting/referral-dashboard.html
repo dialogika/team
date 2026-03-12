@@ -1774,6 +1774,24 @@
                     if (document.getElementById("rdRefFunctionType")) document.getElementById("rdRefFunctionType").dispatchEvent(new Event('change'));
                     if (document.getElementById("rdRefHolderType")) document.getElementById("rdRefHolderType").dispatchEvent(new Event('change'));
 
+                    const rawPercent = item.discountPercent ?? item.discountPercentage ?? item.discontPercentage ?? item.discontPercent;
+                    const rawAmount = item.discountAmount ?? item.discontAmount;
+                    const percentField = document.getElementById("rdRefDiscountPercent");
+                    const amountField = document.getElementById("rdRefDiscountAmount");
+                    if (percentField) {
+                        percentField.value = rawPercent !== undefined && rawPercent !== null ? rawPercent : "";
+                    }
+                    if (amountField) {
+                        if (rawAmount !== undefined && rawAmount !== null && rawAmount !== "") {
+                            const numericAmount = typeof rawAmount === "number" ? rawAmount : parseInt(String(rawAmount).replace(/\D/g, ''), 10);
+                            amountField.value = Number.isFinite(numericAmount)
+                                ? new Intl.NumberFormat('id-ID').format(numericAmount)
+                                : "";
+                        } else {
+                            amountField.value = "";
+                        }
+                    }
+
                     // 2. Products
                     selectedProducts = Array.isArray(item.products) ? [...item.products] : [];
                     populateProductCheckboxes();
