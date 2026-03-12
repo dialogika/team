@@ -2519,13 +2519,34 @@
                 // === SYSTEM DEFAULT POPUP CHECK ===
                 function checkSystemDefaultPopup() {
                     const refs = window.currentReferrals || [];
-                    // Filter referrals with holderType 'system' or undefined (default is system)
-                    const systemDefaults = refs.filter(r => {
+                    // Filter referrals with holderType 'system' or undefined
+                    const systemRefs = refs.filter(r => {
                         const type = (r.holderType || 'system').toLowerCase();
                         return type === 'system';
                     });
 
-                    if (systemDefaults.length <= 1) return; // No issue
+                    // Track conflicts: productId -> [list of referral objects]
+                    const productConflict = {};
+                    systemRefs.forEach(r => {
+                        const products = Array.isArray(r.products) ? r.products : [];
+                        products.forEach(pid => {
+                            if (!productConflict[pid]) productConflict[pid] = [];
+                            productConflict[pid].push(r);
+                        });
+                    });
+
+                    // Identify which referrals are involved in any product conflict
+                    const conflictingRefsSet = new Set();
+                    Object.keys(productConflict).forEach(pid => {
+                        if (productConflict[pid].length > 1) {
+                            productConflict[pid].forEach(r => conflictingRefsSet.add(r));
+                        }
+                    });
+
+                    // If no products have more than one system referral, we are good
+                    if (conflictingRefsSet.size === 0) return;
+
+                    const systemDefaults = Array.from(conflictingRefsSet);
 
                     // Populate the popup
                     const listContainer = document.getElementById('sysDefaultCodeList');
