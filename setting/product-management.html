@@ -245,6 +245,11 @@
                                     <div class="flex items-center gap-3 border-b border-slate-50 pb-4">
                                         <div class="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center font-bold text-xs">01</div>
                                         <h3 class="font-bold text-slate-800 uppercase text-xs tracking-widest">Core Specifications</h3>
+                                        <div class="ml-auto text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                            Public URL
+                                            <a v-if="publicProductUrl" :href="publicProductUrl" target="_blank" class="ml-2 mono text-slate-700 normal-case tracking-normal hover:text-indigo-600">{{ publicProductUrl }}</a>
+                                            <span v-else class="ml-2 mono text-slate-300 normal-case tracking-normal">Belum tersedia</span>
+                                        </div>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-6">
@@ -793,6 +798,19 @@
 
                 const formatNumber = (val) => new Intl.NumberFormat('id-ID').format(val);
 
+                const publicUrlMap = {
+                    fk_lvl1: "https://dialogika.co/program/first-kids.html",
+                    kp_lvl1: "https://dialogika.co/program/kids-play.html",
+                    bp_lvl1: "https://dialogika.co/program/basic-class.html",
+                    fc_lvl1: "https://dialogika.co/program/first-class.html"
+                };
+
+                const publicProductUrl = computed(() => {
+                    const id = String(form.value.product_id || '').trim().toLowerCase();
+                    if (!id) return '';
+                    return publicUrlMap[id] || '';
+                });
+
                 const formattedBasePrice = computed({
                     get() {
                         const raw = Number(form.value.base_price || 0);
@@ -1031,6 +1049,7 @@
                     truncateText,
                     formatNumber,
                     formattedBasePrice,
+                    publicProductUrl,
                     descriptionEditor,
                     onDescriptionInput,
                     formatDescription,
