@@ -539,7 +539,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
@@ -590,6 +590,52 @@
         let selectedMentorIds = new Set();
         let currentDetailMentorId = null;
         let currentAssignMentorId = null;
+
+        async function loadMentorsFromFirestore() {
+            try {
+                const snap = await getDocs(collection(db, "mentor"));
+                const mentors = [];
+                snap.forEach((docSnap) => {
+                    const d = docSnap.data() || {};
+                    const mentor = {
+                        id: docSnap.id,
+                        fullName: d.fullName || d.nama_lengkap || "",
+                        nickName: d.nickName || d.nama_panggilan || "",
+                        rating: typeof d.rating === "number" ? d.rating : typeof d.avgRating === "number" ? d.avgRating : 0,
+                        teaching: d.teaching || d.teachingType || d.teaching_type || "",
+                        type: d.type || d.deliveryType || d.mode || "",
+                        activeClasses: typeof d.activeClasses === "number" ? d.activeClasses : typeof d.active_class === "number" ? d.active_class : 0,
+                        totalClasses: typeof d.totalClasses === "number" ? d.totalClasses : typeof d.total_class === "number" ? d.total_class : 0,
+                        location: d.location || d.city || "",
+                        status: (d.status || "active").toLowerCase(),
+                        contractEnd: d.contractEnd || d.contract_end || null,
+                        contractDurationMonths: typeof d.contractDurationMonths === "number" ? d.contractDurationMonths : typeof d.contract_duration_months === "number" ? d.contract_duration_months : null,
+                        lastActiveDays: typeof d.lastActiveDays === "number" ? d.lastActiveDays : typeof d.last_active_days === "number" ? d.last_active_days : null,
+                        completionRate: typeof d.completionRate === "number" ? d.completionRate : typeof d.completion_rate === "number" ? d.completion_rate : 0,
+                        attendanceRate: typeof d.attendanceRate === "number" ? d.attendanceRate : typeof d.attendance_rate === "number" ? d.attendance_rate : 0,
+                        complaintCount: typeof d.complaintCount === "number" ? d.complaintCount : typeof d.complaints === "number" ? d.complaints : 0,
+                        avgFeedback: typeof d.avgFeedback === "number" ? d.avgFeedback : typeof d.avg_feedback === "number" ? d.avg_feedback : (typeof d.rating === "number" ? d.rating : 0),
+                        totalEarning: typeof d.totalEarning === "number" ? d.totalEarning : typeof d.total_earning === "number" ? d.total_earning : 0,
+                        pendingPayment: typeof d.pendingPayment === "number" ? d.pendingPayment : typeof d.pending_payment === "number" ? d.pending_payment : 0,
+                        feeOnline: typeof d.feeOnline === "number" ? d.feeOnline : typeof d.fee_online === "number" ? d.fee_online : 0,
+                        feeOffline: typeof d.feeOffline === "number" ? d.feeOffline : typeof d.fee_offline === "number" ? d.fee_offline : 0,
+                        isNew: Boolean(d.isNew || d.new_flag || false),
+                        availability: Array.isArray(d.availability) ? d.availability : [],
+                        classHistory: Array.isArray(d.classHistory) ? d.classHistory : [],
+                        contractNotes: d.contractNotes || d.contract_notes || ""
+                    };
+                    mentors.push(mentor);
+                });
+                mentorsState = mentors;
+                populateLocationFilter(mentorsState);
+                updateAll();
+            } catch (e) {
+                console.error("Failed to load mentors from Firestore (collection: mentor)", e);
+                mentorsState = [];
+                populateLocationFilter(mentorsState);
+                updateAll();
+            }
+        }
 
         function formatCurrency(value) {
             return "Rp " + (value || 0).toLocaleString("id-ID");
@@ -1539,7 +1585,7 @@
                 });
             });
 
-            updateAll();
+            loadMentorsFromFirestore();
         });
     </script>
 </body>
