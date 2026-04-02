@@ -50,20 +50,35 @@
             inset: 0;
             background: rgba(15,23,42,0.45);
             display: none;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
-            z-index: 40;
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 84px 16px 24px;
         }
         .modal-backdrop-custom.open {
             display: flex;
         }
         .modal-card {
-            max-height: 90vh;
+            width: 100%;
+            max-height: calc(100vh - 108px);
             overflow: hidden;
         }
         .modal-body-scroll {
-            max-height: calc(90vh - 120px);
+            max-height: calc(100vh - 260px);
             overflow-y: auto;
+        }
+        @media (max-width: 768px) {
+            .modal-backdrop-custom {
+                padding-top: 72px;
+                padding-bottom: 16px;
+            }
+            .modal-card {
+                max-height: calc(100vh - 88px);
+            }
+            .modal-body-scroll {
+                max-height: calc(100vh - 220px);
+            }
         }
         .tab-pill {
             padding: 8px 14px;
@@ -98,6 +113,10 @@
                     </p>
                 </div>
                 <div class="flex gap-3">
+                    <button id="btnAddMentor" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Add New Mentor
+                    </button>
                     <button id="btnBulkAssign" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100">
                         <i data-lucide="user-plus" class="w-4 h-4"></i>
                         Assign Massal
@@ -259,6 +278,7 @@
                                             <span class="inline-flex items-center gap-1">Nama Mentor<i data-lucide="chevrons-up-down" class="w-3 h-3"></i></span>
                                         </th>
                                         <th class="px-4 py-3">Nick</th>
+                                        <th class="px-4 py-3 text-center">WhatsApp</th>
                                         <th data-sort="rating" class="px-4 py-3 cursor-pointer select-none text-center">
                                             <span class="inline-flex items-center gap-1 justify-center">Rating<i data-lucide="chevrons-up-down" class="w-3 h-3"></i></span>
                                         </th>
@@ -534,12 +554,99 @@
         </div>
     </div>
 
+    <div id="addMentorModal" class="modal-backdrop-custom">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl modal-card">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i>
+                    Add New Mentor
+                </h3>
+                <button id="btnCloseAddMentor" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="px-6 py-4 modal-body-scroll">
+                <div id="addMentorError" class="hidden mb-3 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Lengkap *</label>
+                        <input id="addMentorFullName" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contoh: Annisa Pradana">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Panggilan</label>
+                        <input id="addMentorNickName" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contoh: Nisa">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">WhatsApp</label>
+                        <input id="addMentorWhatsapp" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="16" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="62812xxxxxxx">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Location</label>
+                        <input id="addMentorLocation" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Jakarta">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Rating</label>
+                        <input id="addMentorRating" type="number" min="0" max="5" step="0.1" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="4.8">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Teaching</label>
+                        <select id="addMentorTeaching" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="Dewasa">Dewasa</option>
+                            <option value="Anak">Anak</option>
+                            <option value="Both" selected>Both</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Type</label>
+                        <select id="addMentorType" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="Online" selected>Online</option>
+                            <option value="Offline">Offline</option>
+                            <option value="Both">Both</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status</label>
+                        <select id="addMentorStatus" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="active" selected>Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="on_leave">On Leave</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Contract End</label>
+                        <input id="addMentorContractEnd" type="date" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fee Online</label>
+                        <input id="addMentorFeeOnline" type="number" min="0" step="1000" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="50000">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fee Offline</label>
+                        <input id="addMentorFeeOffline" type="number" min="0" step="1000" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="75000">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Contract Notes</label>
+                        <textarea id="addMentorContractNotes" rows="3" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Opsional, misal klausul kontrak atau catatan onboarding."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+                <button id="btnAddMentorCancel" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200">
+                    Batal
+                </button>
+                <button id="btnAddMentorSave" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700">
+                    Simpan Mentor
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
@@ -590,6 +697,42 @@
         let selectedMentorIds = new Set();
         let currentDetailMentorId = null;
         let currentAssignMentorId = null;
+        let isSavingNewMentor = false;
+
+        function parseNumberish(value) {
+            if (typeof value === "number" && Number.isFinite(value)) return value;
+            if (typeof value === "string") {
+                const normalized = value.trim().replace(",", ".");
+                if (!normalized) return null;
+                const n = Number(normalized);
+                if (Number.isFinite(n)) return n;
+            }
+            return null;
+        }
+
+        function parseIntegerish(value) {
+            const n = parseNumberish(value);
+            return n === null ? null : Math.trunc(n);
+        }
+
+        function sanitizePhoneNumber(value) {
+            return String(value || "").replace(/\D/g, "");
+        }
+
+        function buildWhatsappLink(value) {
+            const digits = sanitizePhoneNumber(value);
+            return digits ? ("https://wa.me/" + digits) : "";
+        }
+
+        function extractWhatsappNumber(value) {
+            const raw = String(value || "").trim();
+            if (!raw) return "";
+            if (raw.indexOf("wa.me/") !== -1) {
+                const lastPart = raw.split("wa.me/")[1] || "";
+                return sanitizePhoneNumber(lastPart);
+            }
+            return sanitizePhoneNumber(raw);
+        }
 
         async function loadMentorsFromFirestore() {
             try {
@@ -597,32 +740,35 @@
                 const mentors = [];
                 snap.forEach((docSnap) => {
                     const d = docSnap.data() || {};
+                    const ratingValue = parseNumberish(d.rating);
+                    const avgRatingValue = parseNumberish(d.avgRating);
                     const mentor = {
                         id: docSnap.id,
                         fullName: d.fullName || d.nama_lengkap || "",
                         nickName: d.nickName || d.nama_panggilan || "",
-                        rating: typeof d.rating === "number" ? d.rating : typeof d.avgRating === "number" ? d.avgRating : 0,
+                        whatsapp: d.whatsapp || d.phone || d.no_wa || "",
+                        whatsappNumber: extractWhatsappNumber(d.whatsapp || d.phone || d.no_wa || ""),
+                        rating: ratingValue !== null ? ratingValue : (avgRatingValue !== null ? avgRatingValue : 0),
                         teaching: d.teaching || d.teachingType || d.teaching_type || "",
                         type: d.type || d.deliveryType || d.mode || "",
-                        activeClasses: typeof d.activeClasses === "number" ? d.activeClasses : typeof d.active_class === "number" ? d.active_class : 0,
-                        totalClasses: typeof d.totalClasses === "number" ? d.totalClasses : typeof d.total_class === "number" ? d.total_class : 0,
+                        activeClasses: parseIntegerish(d.activeClasses) !== null ? parseIntegerish(d.activeClasses) : (parseIntegerish(d.active_class) !== null ? parseIntegerish(d.active_class) : 0),
+                        totalClasses: parseIntegerish(d.totalClasses) !== null ? parseIntegerish(d.totalClasses) : (parseIntegerish(d.total_class) !== null ? parseIntegerish(d.total_class) : 0),
                         location: d.location || d.city || "",
                         status: (d.status || "active").toLowerCase(),
                         contractEnd: d.contractEnd || d.contract_end || null,
-                        contractDurationMonths: typeof d.contractDurationMonths === "number" ? d.contractDurationMonths : typeof d.contract_duration_months === "number" ? d.contract_duration_months : null,
-                        lastActiveDays: typeof d.lastActiveDays === "number" ? d.lastActiveDays : typeof d.last_active_days === "number" ? d.last_active_days : null,
-                        completionRate: typeof d.completionRate === "number" ? d.completionRate : typeof d.completion_rate === "number" ? d.completion_rate : 0,
-                        attendanceRate: typeof d.attendanceRate === "number" ? d.attendanceRate : typeof d.attendance_rate === "number" ? d.attendance_rate : 0,
-                        complaintCount: typeof d.complaintCount === "number" ? d.complaintCount : typeof d.complaints === "number" ? d.complaints : 0,
-                        avgFeedback: typeof d.avgFeedback === "number" ? d.avgFeedback : typeof d.avg_feedback === "number" ? d.avg_feedback : (typeof d.rating === "number" ? d.rating : 0),
-                        totalEarning: typeof d.totalEarning === "number" ? d.totalEarning : typeof d.total_earning === "number" ? d.total_earning : 0,
-                        pendingPayment: typeof d.pendingPayment === "number" ? d.pendingPayment : typeof d.pending_payment === "number" ? d.pending_payment : 0,
-                        feeOnline: typeof d.feeOnline === "number" ? d.feeOnline : typeof d.fee_online === "number" ? d.fee_online : 0,
-                        feeOffline: typeof d.feeOffline === "number" ? d.feeOffline : typeof d.fee_offline === "number" ? d.fee_offline : 0,
-                        isNew: Boolean(d.isNew || d.new_flag || false),
+                        contractDurationMonths: parseIntegerish(d.contractDurationMonths) !== null ? parseIntegerish(d.contractDurationMonths) : (parseIntegerish(d.contract_duration_months) !== null ? parseIntegerish(d.contract_duration_months) : null),
+                        lastActiveDays: parseIntegerish(d.lastActiveDays) !== null ? parseIntegerish(d.lastActiveDays) : (parseIntegerish(d.last_active_days) !== null ? parseIntegerish(d.last_active_days) : null),
+                        completionRate: parseNumberish(d.completionRate) !== null ? parseNumberish(d.completionRate) : (parseNumberish(d.completion_rate) !== null ? parseNumberish(d.completion_rate) : 0),
+                        attendanceRate: parseNumberish(d.attendanceRate) !== null ? parseNumberish(d.attendanceRate) : (parseNumberish(d.attendance_rate) !== null ? parseNumberish(d.attendance_rate) : 0),
+                        complaintCount: parseIntegerish(d.complaintCount) !== null ? parseIntegerish(d.complaintCount) : (parseIntegerish(d.complaints) !== null ? parseIntegerish(d.complaints) : 0),
+                        avgFeedback: parseNumberish(d.avgFeedback) !== null ? parseNumberish(d.avgFeedback) : (parseNumberish(d.avg_feedback) !== null ? parseNumberish(d.avg_feedback) : (ratingValue !== null ? ratingValue : 0)),
+                        totalEarning: parseNumberish(d.totalEarning) !== null ? parseNumberish(d.totalEarning) : (parseNumberish(d.total_earning) !== null ? parseNumberish(d.total_earning) : 0),
+                        pendingPayment: parseNumberish(d.pendingPayment) !== null ? parseNumberish(d.pendingPayment) : (parseNumberish(d.pending_payment) !== null ? parseNumberish(d.pending_payment) : 0),
+                        feeOnline: parseNumberish(d.feeOnline) !== null ? parseNumberish(d.feeOnline) : (parseNumberish(d.fee_online) !== null ? parseNumberish(d.fee_online) : 0),
+                        feeOffline: parseNumberish(d.feeOffline) !== null ? parseNumberish(d.feeOffline) : (parseNumberish(d.fee_offline) !== null ? parseNumberish(d.fee_offline) : 0),
                         availability: Array.isArray(d.availability) ? d.availability : [],
                         classHistory: Array.isArray(d.classHistory) ? d.classHistory : [],
-                        contractNotes: d.contractNotes || d.contract_notes || ""
+                        contractNotes: d.contractNotes || d.contract_notes || d.catatan_khusus || ""
                     };
                     mentors.push(mentor);
                 });
@@ -836,12 +982,6 @@
                     b.textContent = "Top Mentor";
                     badgeRow.appendChild(b);
                 }
-                if (m.isNew) {
-                    const b = document.createElement("span");
-                    b.className = "badge-tag bg-sky-50 text-sky-700";
-                    b.textContent = "New Mentor";
-                    badgeRow.appendChild(b);
-                }
                 if (isRiskMentor(m)) {
                     const b = document.createElement("span");
                     b.className = "badge-tag bg-rose-50 text-rose-600";
@@ -857,6 +997,23 @@
                 const tdNick = document.createElement("td");
                 tdNick.className = "px-4 py-3 text-xs text-slate-500";
                 tdNick.textContent = m.nickName || "-";
+
+                const tdWhatsapp = document.createElement("td");
+                tdWhatsapp.className = "px-4 py-3 text-center text-xs";
+                const waRaw = m.whatsapp || "";
+                const waNumber = m.whatsappNumber || extractWhatsappNumber(waRaw);
+                const waLink = waRaw.indexOf("http") === 0 ? waRaw : buildWhatsappLink(waRaw);
+                if (waLink) {
+                    const a = document.createElement("a");
+                    a.href = waLink;
+                    a.target = "_blank";
+                    a.className = "text-emerald-600 hover:text-emerald-700 underline decoration-dotted";
+                    a.textContent = waNumber || waLink;
+                    tdWhatsapp.appendChild(a);
+                } else {
+                    tdWhatsapp.classList.add("text-slate-400");
+                    tdWhatsapp.textContent = "-";
+                }
 
                 const tdRating = document.createElement("td");
                 tdRating.className = "px-4 py-3 text-center";
@@ -952,6 +1109,7 @@
                 tr.appendChild(tdCheck);
                 tr.appendChild(tdName);
                 tr.appendChild(tdNick);
+                tr.appendChild(tdWhatsapp);
                 tr.appendChild(tdRating);
                 tr.appendChild(tdTeaching);
                 tr.appendChild(tdType);
@@ -1149,12 +1307,6 @@
                     b.textContent = "Top Mentor";
                     badges.appendChild(b);
                 }
-                if (mentor.isNew) {
-                    const b = document.createElement("span");
-                    b.className = "badge-tag bg-sky-50 text-sky-700";
-                    b.textContent = "New Mentor";
-                    badges.appendChild(b);
-                }
                 if (isRiskMentor(mentor)) {
                     const b = document.createElement("span");
                     b.className = "badge-tag bg-rose-50 text-rose-600";
@@ -1166,9 +1318,17 @@
             if (fullNameValue) fullNameValue.textContent = mentor.fullName || "-";
             if (nickName) nickName.textContent = mentor.nickName || "-";
             if (whatsapp) {
-                const wa = mentor.whatsapp || "";
-                if (wa) {
-                    whatsapp.innerHTML = '<a href="https://wa.me/' + wa + '" target="_blank" class="underline decoration-dotted">' + wa + "</a>";
+                const waRaw = mentor.whatsapp || "";
+                const waNumber = mentor.whatsappNumber || extractWhatsappNumber(waRaw);
+                const waLink = waRaw.indexOf("http") === 0 ? waRaw : buildWhatsappLink(waRaw);
+                if (waLink) {
+                    whatsapp.innerHTML = "";
+                    const a = document.createElement("a");
+                    a.href = waLink;
+                    a.target = "_blank";
+                    a.className = "underline decoration-dotted";
+                    a.textContent = waNumber || waLink;
+                    whatsapp.appendChild(a);
                 } else {
                     whatsapp.textContent = "-";
                 }
@@ -1310,6 +1470,203 @@
             if (modal) modal.classList.remove("open");
         }
 
+        function parseNumberInput(value, fallback) {
+            const parsed = parseNumberish(value);
+            return parsed === null ? fallback : parsed;
+        }
+
+        function setAddMentorError(message) {
+            const err = document.getElementById("addMentorError");
+            if (!err) return;
+            if (!message) {
+                err.textContent = "";
+                err.classList.add("hidden");
+                return;
+            }
+            err.textContent = message;
+            err.classList.remove("hidden");
+        }
+
+        function resetAddMentorForm() {
+            const fullNameInput = document.getElementById("addMentorFullName");
+            const nickNameInput = document.getElementById("addMentorNickName");
+            const whatsappInput = document.getElementById("addMentorWhatsapp");
+            const locationInput = document.getElementById("addMentorLocation");
+            const ratingInput = document.getElementById("addMentorRating");
+            const teachingSelect = document.getElementById("addMentorTeaching");
+            const typeSelect = document.getElementById("addMentorType");
+            const statusSelect = document.getElementById("addMentorStatus");
+            const contractEndInput = document.getElementById("addMentorContractEnd");
+            const feeOnlineInput = document.getElementById("addMentorFeeOnline");
+            const feeOfflineInput = document.getElementById("addMentorFeeOffline");
+            const notesInput = document.getElementById("addMentorContractNotes");
+            const saveBtn = document.getElementById("btnAddMentorSave");
+
+            if (fullNameInput) fullNameInput.value = "";
+            if (nickNameInput) nickNameInput.value = "";
+            if (whatsappInput) whatsappInput.value = "";
+            if (locationInput) locationInput.value = "";
+            if (ratingInput) ratingInput.value = "";
+            if (teachingSelect) teachingSelect.value = "Both";
+            if (typeSelect) typeSelect.value = "Online";
+            if (statusSelect) statusSelect.value = "active";
+            if (contractEndInput) contractEndInput.value = "";
+            if (feeOnlineInput) feeOnlineInput.value = "";
+            if (feeOfflineInput) feeOfflineInput.value = "";
+            if (notesInput) notesInput.value = "";
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = "Simpan Mentor";
+            }
+            setAddMentorError("");
+        }
+
+        function openAddMentorModal() {
+            const modal = document.getElementById("addMentorModal");
+            if (!modal) return;
+            resetAddMentorForm();
+            modal.classList.add("open");
+            const fullNameInput = document.getElementById("addMentorFullName");
+            if (fullNameInput) fullNameInput.focus();
+        }
+
+        function closeAddMentorModal() {
+            const modal = document.getElementById("addMentorModal");
+            if (modal) modal.classList.remove("open");
+        }
+
+        async function saveNewMentor() {
+            if (isSavingNewMentor) return;
+
+            const fullNameInput = document.getElementById("addMentorFullName");
+            const nickNameInput = document.getElementById("addMentorNickName");
+            const whatsappInput = document.getElementById("addMentorWhatsapp");
+            const locationInput = document.getElementById("addMentorLocation");
+            const ratingInput = document.getElementById("addMentorRating");
+            const teachingSelect = document.getElementById("addMentorTeaching");
+            const typeSelect = document.getElementById("addMentorType");
+            const statusSelect = document.getElementById("addMentorStatus");
+            const contractEndInput = document.getElementById("addMentorContractEnd");
+            const feeOnlineInput = document.getElementById("addMentorFeeOnline");
+            const feeOfflineInput = document.getElementById("addMentorFeeOffline");
+            const notesInput = document.getElementById("addMentorContractNotes");
+            const saveBtn = document.getElementById("btnAddMentorSave");
+
+            if (!fullNameInput || !saveBtn) return;
+
+            const fullName = fullNameInput.value.trim();
+            if (!fullName) {
+                setAddMentorError("Nama lengkap wajib diisi.");
+                fullNameInput.focus();
+                return;
+            }
+            if (fullName.indexOf("/") !== -1) {
+                setAddMentorError("Nama lengkap tidak boleh mengandung karakter '/'.");
+                fullNameInput.focus();
+                return;
+            }
+
+            const mentorDocId = fullName.replace(/\s+/g, " ").trim();
+
+            const nickName = nickNameInput ? nickNameInput.value.trim() : "";
+            const whatsappRaw = whatsappInput ? whatsappInput.value.trim() : "";
+            const whatsappNumber = sanitizePhoneNumber(whatsappRaw);
+            const location = locationInput ? locationInput.value.trim() : "";
+            const ratingRaw = ratingInput ? parseNumberInput(ratingInput.value, 0) : 0;
+            const rating = Math.min(5, Math.max(0, ratingRaw));
+            const teaching = teachingSelect ? teachingSelect.value : "Both";
+            const type = typeSelect ? typeSelect.value : "Online";
+            const status = statusSelect ? statusSelect.value : "active";
+            const contractEnd = contractEndInput ? contractEndInput.value : "";
+            const feeOnline = feeOnlineInput ? Math.max(0, parseNumberInput(feeOnlineInput.value, 0)) : 0;
+            const feeOffline = feeOfflineInput ? Math.max(0, parseNumberInput(feeOfflineInput.value, 0)) : 0;
+            const contractNotes = notesInput ? notesInput.value.trim() : "";
+            const ratingString = rating.toFixed(1);
+            const scoreString = computeScore({
+                rating: rating,
+                completionRate: 0,
+                attendanceRate: 0,
+                complaintCount: 0
+            }).toFixed(2);
+
+            if (whatsappRaw && !whatsappNumber) {
+                setAddMentorError("WhatsApp hanya boleh berisi angka.");
+                if (whatsappInput) whatsappInput.focus();
+                return;
+            }
+            if (whatsappInput) whatsappInput.value = whatsappNumber;
+
+            const whatsappLink = buildWhatsappLink(whatsappNumber);
+
+            const payload = {
+                nama_lengkap: fullName,
+                nama_panggilan: nickName || fullName.split(" ")[0] || "",
+                whatsapp: whatsappLink,
+                whatsapp_number: whatsappNumber,
+                location: location,
+                rating: ratingString,
+                teaching: teaching,
+                type: type,
+                active_class: 0,
+                total_class: 0,
+                status: status,
+                contract_end: contractEnd || "",
+                catatan_khusus: contractNotes,
+                Bank: "",
+                nomor_rekening: "",
+                Score: scoreString,
+                fullName: fullName,
+                nickName: nickName || fullName.split(" ")[0] || "",
+                ratingNumeric: Number(ratingString),
+                activeClasses: 0,
+                totalClasses: 0,
+                contractEnd: contractEnd || null,
+                contractDurationMonths: null,
+                lastActiveDays: 0,
+                completionRate: 0,
+                attendanceRate: 0,
+                complaintCount: 0,
+                avgFeedback: Number(ratingString),
+                totalEarning: 0,
+                pendingPayment: 0,
+                feeOnline: feeOnline,
+                feeOffline: feeOffline,
+                availability: [],
+                classHistory: [],
+                contractNotes: contractNotes,
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                isSavingNewMentor = true;
+                saveBtn.disabled = true;
+                saveBtn.textContent = "Menyimpan...";
+                setAddMentorError("");
+
+                const mentorRef = doc(db, "mentor", mentorDocId);
+                const existingMentorDoc = await getDoc(mentorRef);
+                if (existingMentorDoc.exists()) {
+                    const shouldOverwrite = confirm("Data mentor dengan nama ini sudah ada. Lanjutkan untuk overwrite data?");
+                    if (!shouldOverwrite) {
+                        return;
+                    }
+                }
+
+                await setDoc(mentorRef, payload);
+                closeAddMentorModal();
+                resetAddMentorForm();
+                await loadMentorsFromFirestore();
+                alert("Mentor baru berhasil ditambahkan.");
+            } catch (e) {
+                console.error("Failed to add mentor to Firestore (collection: mentor)", e);
+                setAddMentorError("Gagal menyimpan mentor. Cek koneksi atau izin Firestore, lalu coba lagi.");
+            } finally {
+                isSavingNewMentor = false;
+                saveBtn.disabled = false;
+                saveBtn.textContent = "Simpan Mentor";
+            }
+        }
+
         function handleAssignConfirm() {
             const select = document.getElementById("assignClassSelect");
             const note = document.getElementById("assignNote");
@@ -1407,6 +1764,7 @@
             const filterPanel = document.getElementById("filterPanel");
             const sortLabel = document.getElementById("sortLabel");
             const checkAll = document.getElementById("checkAllMentor");
+            const btnAddMentor = document.getElementById("btnAddMentor");
             const btnBulkAssign = document.getElementById("btnBulkAssign");
             const btnBulkStatus = document.getElementById("btnBulkStatus");
             const btnExportMenu = document.getElementById("btnExportMenu");
@@ -1418,7 +1776,20 @@
             const btnCloseAssign = document.getElementById("btnCloseAssign");
             const btnAssignCancel = document.getElementById("btnAssignCancel");
             const btnAssignConfirm = document.getElementById("btnAssignConfirm");
+            const btnCloseAddMentor = document.getElementById("btnCloseAddMentor");
+            const btnAddMentorCancel = document.getElementById("btnAddMentorCancel");
+            const btnAddMentorSave = document.getElementById("btnAddMentorSave");
+            const addMentorWhatsapp = document.getElementById("addMentorWhatsapp");
             const detailTabs = document.querySelectorAll("#detailTabList button[data-tab]");
+
+            if (addMentorWhatsapp) {
+                addMentorWhatsapp.addEventListener("input", () => {
+                    const cleaned = sanitizePhoneNumber(addMentorWhatsapp.value);
+                    if (addMentorWhatsapp.value !== cleaned) {
+                        addMentorWhatsapp.value = cleaned;
+                    }
+                });
+            }
 
             if (searchInput) {
                 searchInput.addEventListener("input", () => {
@@ -1526,6 +1897,10 @@
                 });
             }
 
+            if (btnAddMentor) {
+                btnAddMentor.addEventListener("click", () => openAddMentorModal());
+            }
+
             if (btnExportMenu && exportDropdown) {
                 btnExportMenu.addEventListener("click", () => {
                     if (exportDropdown.classList.contains("hidden")) exportDropdown.classList.remove("hidden");
@@ -1575,6 +1950,16 @@
             }
             if (btnAssignConfirm) {
                 btnAssignConfirm.addEventListener("click", () => handleAssignConfirm());
+            }
+
+            if (btnCloseAddMentor) btnCloseAddMentor.addEventListener("click", () => closeAddMentorModal());
+            if (btnAddMentorCancel) btnAddMentorCancel.addEventListener("click", () => closeAddMentorModal());
+            if (btnAddMentorSave) btnAddMentorSave.addEventListener("click", () => saveNewMentor());
+            const addMentorModal = document.getElementById("addMentorModal");
+            if (addMentorModal) {
+                addMentorModal.addEventListener("click", (e) => {
+                    if (e.target === addMentorModal) closeAddMentorModal();
+                });
             }
 
             detailTabs.forEach(btn => {
