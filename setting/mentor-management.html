@@ -559,7 +559,7 @@
             <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                 <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
                     <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i>
-                    Add New Mentor
+                    <span id="addMentorModalTitle">Add New Mentor</span>
                 </h3>
                 <button id="btnCloseAddMentor" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
                     <i data-lucide="x" class="w-4 h-4"></i>
@@ -646,7 +646,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
@@ -698,6 +698,7 @@
         let currentDetailMentorId = null;
         let currentAssignMentorId = null;
         let isSavingNewMentor = false;
+        let editingMentorDocId = null;
 
         function parseNumberish(value) {
             if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -722,6 +723,18 @@
         function buildWhatsappLink(value) {
             const digits = sanitizePhoneNumber(value);
             return digits ? ("https://wa.me/" + digits) : "";
+        }
+
+        function formatDateForInput(value) {
+            const raw = String(value || "").trim();
+            if (!raw) return "";
+            if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+            const d = new Date(raw);
+            if (isNaN(d.getTime())) return "";
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            return y + "-" + m + "-" + day;
         }
 
         function extractWhatsappNumber(value) {
@@ -1098,11 +1111,16 @@
                 detailBtn.className = "px-3 py-1 rounded-xl text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200";
                 detailBtn.textContent = "Detail";
                 detailBtn.addEventListener("click", () => openDetailModal(m.id));
+                const editBtn = document.createElement("button");
+                editBtn.className = "px-3 py-1 rounded-xl text-[11px] font-semibold bg-amber-50 text-amber-700 hover:bg-amber-100";
+                editBtn.textContent = "Edit";
+                editBtn.addEventListener("click", () => openEditMentorModal(m.id));
                 const assignBtn = document.createElement("button");
                 assignBtn.className = "px-3 py-1 rounded-xl text-[11px] font-semibold bg-emerald-600 text-white hover:bg-emerald-700";
                 assignBtn.textContent = "Assign";
                 assignBtn.addEventListener("click", () => openAssignModal(m.id));
                 actionWrap.appendChild(detailBtn);
+                actionWrap.appendChild(editBtn);
                 actionWrap.appendChild(assignBtn);
                 tdAction.appendChild(actionWrap);
 
@@ -1487,6 +1505,13 @@
             err.classList.remove("hidden");
         }
 
+        function updateMentorModalMode(isEditMode) {
+            const title = document.getElementById("addMentorModalTitle");
+            const saveBtn = document.getElementById("btnAddMentorSave");
+            if (title) title.textContent = isEditMode ? "Edit Mentor" : "Add New Mentor";
+            if (saveBtn) saveBtn.textContent = isEditMode ? "Simpan Perubahan" : "Simpan Mentor";
+        }
+
         function resetAddMentorForm() {
             const fullNameInput = document.getElementById("addMentorFullName");
             const nickNameInput = document.getElementById("addMentorNickName");
@@ -1502,6 +1527,8 @@
             const notesInput = document.getElementById("addMentorContractNotes");
             const saveBtn = document.getElementById("btnAddMentorSave");
 
+            editingMentorDocId = null;
+
             if (fullNameInput) fullNameInput.value = "";
             if (nickNameInput) nickNameInput.value = "";
             if (whatsappInput) whatsappInput.value = "";
@@ -1516,8 +1543,8 @@
             if (notesInput) notesInput.value = "";
             if (saveBtn) {
                 saveBtn.disabled = false;
-                saveBtn.textContent = "Simpan Mentor";
             }
+            updateMentorModalMode(false);
             setAddMentorError("");
         }
 
@@ -1525,18 +1552,62 @@
             const modal = document.getElementById("addMentorModal");
             if (!modal) return;
             resetAddMentorForm();
+            updateMentorModalMode(false);
             modal.classList.add("open");
             const fullNameInput = document.getElementById("addMentorFullName");
+            if (fullNameInput) fullNameInput.focus();
+        }
+
+        function openEditMentorModal(mentorId) {
+            const mentor = mentorsState.find(m => m.id === mentorId);
+            const modal = document.getElementById("addMentorModal");
+            if (!mentor || !modal) return;
+
+            const fullNameInput = document.getElementById("addMentorFullName");
+            const nickNameInput = document.getElementById("addMentorNickName");
+            const whatsappInput = document.getElementById("addMentorWhatsapp");
+            const locationInput = document.getElementById("addMentorLocation");
+            const ratingInput = document.getElementById("addMentorRating");
+            const teachingSelect = document.getElementById("addMentorTeaching");
+            const typeSelect = document.getElementById("addMentorType");
+            const statusSelect = document.getElementById("addMentorStatus");
+            const contractEndInput = document.getElementById("addMentorContractEnd");
+            const feeOnlineInput = document.getElementById("addMentorFeeOnline");
+            const feeOfflineInput = document.getElementById("addMentorFeeOffline");
+            const notesInput = document.getElementById("addMentorContractNotes");
+
+            editingMentorDocId = mentor.id;
+
+            if (fullNameInput) fullNameInput.value = mentor.fullName || "";
+            if (nickNameInput) nickNameInput.value = mentor.nickName || "";
+            if (whatsappInput) whatsappInput.value = mentor.whatsappNumber || extractWhatsappNumber(mentor.whatsapp || "");
+            if (locationInput) locationInput.value = mentor.location || "";
+            if (ratingInput) ratingInput.value = (mentor.rating || 0).toFixed(1);
+            if (teachingSelect) teachingSelect.value = mentor.teaching || "Both";
+            if (typeSelect) typeSelect.value = mentor.type || "Online";
+            if (statusSelect) statusSelect.value = mentor.status || "active";
+            if (contractEndInput) contractEndInput.value = formatDateForInput(mentor.contractEnd);
+            if (feeOnlineInput) feeOnlineInput.value = String(mentor.feeOnline || 0);
+            if (feeOfflineInput) feeOfflineInput.value = String(mentor.feeOffline || 0);
+            if (notesInput) notesInput.value = mentor.contractNotes || "";
+
+            updateMentorModalMode(true);
+            setAddMentorError("");
+            modal.classList.add("open");
             if (fullNameInput) fullNameInput.focus();
         }
 
         function closeAddMentorModal() {
             const modal = document.getElementById("addMentorModal");
             if (modal) modal.classList.remove("open");
+            editingMentorDocId = null;
+            updateMentorModalMode(false);
         }
 
         async function saveNewMentor() {
             if (isSavingNewMentor) return;
+
+            const isEditMode = Boolean(editingMentorDocId);
 
             const fullNameInput = document.getElementById("addMentorFullName");
             const nickNameInput = document.getElementById("addMentorNickName");
@@ -1645,25 +1716,44 @@
 
                 const mentorRef = doc(db, "mentor", mentorDocId);
                 const existingMentorDoc = await getDoc(mentorRef);
-                if (existingMentorDoc.exists()) {
-                    const shouldOverwrite = confirm("Data mentor dengan nama ini sudah ada. Lanjutkan untuk overwrite data?");
-                    if (!shouldOverwrite) {
-                        return;
+                if (isEditMode) {
+                    const isChangingDocId = editingMentorDocId !== mentorDocId;
+                    if (isChangingDocId && existingMentorDoc.exists()) {
+                        const shouldOverwrite = confirm("Nama mentor ini sudah dipakai dokumen lain. Lanjutkan untuk overwrite data dokumen tersebut?");
+                        if (!shouldOverwrite) {
+                            return;
+                        }
                     }
-                }
 
-                await setDoc(mentorRef, payload);
-                closeAddMentorModal();
-                resetAddMentorForm();
-                await loadMentorsFromFirestore();
-                alert("Mentor baru berhasil ditambahkan.");
+                    await setDoc(mentorRef, Object.assign({}, payload, { updatedAt: serverTimestamp() }));
+                    if (isChangingDocId) {
+                        await deleteDoc(doc(db, "mentor", editingMentorDocId));
+                    }
+                    closeAddMentorModal();
+                    resetAddMentorForm();
+                    await loadMentorsFromFirestore();
+                    alert("Data mentor berhasil diperbarui.");
+                } else {
+                    if (existingMentorDoc.exists()) {
+                        const shouldOverwrite = confirm("Data mentor dengan nama ini sudah ada. Lanjutkan untuk overwrite data?");
+                        if (!shouldOverwrite) {
+                            return;
+                        }
+                    }
+
+                    await setDoc(mentorRef, payload);
+                    closeAddMentorModal();
+                    resetAddMentorForm();
+                    await loadMentorsFromFirestore();
+                    alert("Mentor baru berhasil ditambahkan.");
+                }
             } catch (e) {
                 console.error("Failed to add mentor to Firestore (collection: mentor)", e);
                 setAddMentorError("Gagal menyimpan mentor. Cek koneksi atau izin Firestore, lalu coba lagi.");
             } finally {
                 isSavingNewMentor = false;
                 saveBtn.disabled = false;
-                saveBtn.textContent = "Simpan Mentor";
+                updateMentorModalMode(Boolean(editingMentorDocId));
             }
         }
 
