@@ -628,6 +628,16 @@
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Contract Notes</label>
                         <textarea id="addMentorContractNotes" rows="3" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Opsional, misal klausul kontrak atau catatan onboarding."></textarea>
                     </div>
+                    <div class="md:col-span-2">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase">Availability</label>
+                            <button id="btnAddAvailabilitySlot" type="button" class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg px-2.5 py-1">
+                                + Tambah Slot
+                            </button>
+                        </div>
+                        <div id="addMentorAvailabilitySlots" class="space-y-2"></div>
+                        <p class="mt-2 text-[11px] text-slate-400">Opsional. Anda bisa menambahkan beberapa slot di hari yang sama.</p>
+                    </div>
                 </div>
             </div>
             <div class="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
@@ -699,6 +709,7 @@
         let currentAssignMentorId = null;
         let isSavingNewMentor = false;
         let editingMentorDocId = null;
+        const AVAILABILITY_DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
         function parseNumberish(value) {
             if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -735,6 +746,180 @@
             const m = String(d.getMonth() + 1).padStart(2, "0");
             const day = String(d.getDate()).padStart(2, "0");
             return y + "-" + m + "-" + day;
+        }
+
+        function normalizeAvailabilityDay(value) {
+            const raw = String(value || "").trim();
+            if (!raw) return "";
+
+            const normalized = raw.toLowerCase();
+            const dayAlias = {
+                senin: "Senin",
+                monday: "Senin",
+                selasa: "Selasa",
+                tuesday: "Selasa",
+                rabu: "Rabu",
+                wednesday: "Rabu",
+                kamis: "Kamis",
+                thursday: "Kamis",
+                jumat: "Jumat",
+                friday: "Jumat",
+                sabtu: "Sabtu",
+                saturday: "Sabtu",
+                minggu: "Minggu",
+                sunday: "Minggu"
+            };
+
+            if (dayAlias[normalized]) return dayAlias[normalized];
+            return AVAILABILITY_DAYS.find(day => day.toLowerCase() === normalized) || "";
+        }
+
+        function normalizeClockTime(value) {
+            const raw = String(value || "").trim().replace(".", ":");
+            if (!raw) return "";
+            const match = raw.match(/^(\d{1,2}):(\d{2})$/);
+            if (!match) return "";
+            const hour = Number(match[1]);
+            const minute = Number(match[2]);
+            if (!Number.isInteger(hour) || !Number.isInteger(minute)) return "";
+            if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return "";
+            return String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+        }
+
+        function parseAvailabilityTimeRange(value) {
+            const raw = String(value || "").trim();
+            if (!raw) return { start: "", end: "" };
+            const parts = raw.split("-");
+            if (parts.length < 2) return { start: "", end: "" };
+            const start = normalizeClockTime(parts[0]);
+            const end = normalizeClockTime(parts.slice(1).join("-"));
+            return { start: start, end: end };
+        }
+
+        function normalizeAvailabilityItem(item) {
+            if (!item || typeof item !== "object") return null;
+            const day = normalizeAvailabilityDay(item.day || item.hari || "");
+            const timeRaw = item.time || item.jam || "";
+            const parsedTime = parseAvailabilityTimeRange(timeRaw);
+            const start = normalizeClockTime(item.start || item.mulai || parsedTime.start || "");
+            const end = normalizeClockTime(item.end || item.selesai || parsedTime.end || "");
+            if (!day || !start || !end || start >= end) return null;
+            return {
+                day: day,
+                time: start + " - " + end
+            };
+        }
+
+        function normalizeAvailabilityList(value) {
+            if (!Array.isArray(value)) return [];
+            return value
+                .map(normalizeAvailabilityItem)
+                .filter(Boolean);
+        }
+
+        function clearAvailabilitySlots() {
+            const slotsContainer = document.getElementById("addMentorAvailabilitySlots");
+            if (slotsContainer) slotsContainer.innerHTML = "";
+        }
+
+        function addAvailabilitySlot(dayValue, startValue, endValue) {
+            const slotsContainer = document.getElementById("addMentorAvailabilitySlots");
+            if (!slotsContainer) return;
+
+            const row = document.createElement("div");
+            row.className = "grid grid-cols-1 sm:grid-cols-12 gap-2 items-center";
+            row.setAttribute("data-availability-slot", "1");
+
+            const select = document.createElement("select");
+            select.className = "sm:col-span-4 w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500";
+            select.setAttribute("data-role", "day");
+
+            const emptyOption = document.createElement("option");
+            emptyOption.value = "";
+            emptyOption.textContent = "Pilih hari";
+            select.appendChild(emptyOption);
+
+            AVAILABILITY_DAYS.forEach(day => {
+                const option = document.createElement("option");
+                option.value = day;
+                option.textContent = day;
+                select.appendChild(option);
+            });
+
+            const start = document.createElement("input");
+            start.type = "time";
+            start.className = "sm:col-span-3 w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500";
+            start.setAttribute("data-role", "start");
+
+            const end = document.createElement("input");
+            end.type = "time";
+            end.className = "sm:col-span-3 w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500";
+            end.setAttribute("data-role", "end");
+
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "sm:col-span-2 w-full text-[11px] font-semibold rounded-xl px-3 py-2 bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100";
+            removeBtn.textContent = "Hapus";
+            removeBtn.addEventListener("click", () => {
+                row.remove();
+            });
+
+            select.value = normalizeAvailabilityDay(dayValue || "");
+            start.value = normalizeClockTime(startValue || "");
+            end.value = normalizeClockTime(endValue || "");
+
+            row.appendChild(select);
+            row.appendChild(start);
+            row.appendChild(end);
+            row.appendChild(removeBtn);
+            slotsContainer.appendChild(row);
+        }
+
+        function renderAvailabilitySlots(availabilityList) {
+            clearAvailabilitySlots();
+            const normalized = normalizeAvailabilityList(availabilityList);
+            if (!normalized.length) {
+                addAvailabilitySlot("", "", "");
+                return;
+            }
+            normalized.forEach(item => {
+                const parsed = parseAvailabilityTimeRange(item.time || "");
+                addAvailabilitySlot(item.day, parsed.start, parsed.end);
+            });
+        }
+
+        function collectAvailabilityFromForm() {
+            const slotsContainer = document.getElementById("addMentorAvailabilitySlots");
+            if (!slotsContainer) {
+                return { list: [], hasPartial: false, hasInvalidRange: false };
+            }
+
+            const rows = slotsContainer.querySelectorAll("[data-availability-slot]");
+            const list = [];
+            let hasPartial = false;
+            let hasInvalidRange = false;
+
+            rows.forEach(row => {
+                const day = normalizeAvailabilityDay((row.querySelector('[data-role="day"]') || {}).value || "");
+                const start = normalizeClockTime((row.querySelector('[data-role="start"]') || {}).value || "");
+                const end = normalizeClockTime((row.querySelector('[data-role="end"]') || {}).value || "");
+
+                if (!day && !start && !end) return;
+                if (!day || !start || !end) {
+                    hasPartial = true;
+                    return;
+                }
+                if (start >= end) {
+                    hasInvalidRange = true;
+                    return;
+                }
+                list.push({
+                    day: day,
+                    time: start + " - " + end
+                });
+            });
+
+            return { list: list, hasPartial: hasPartial, hasInvalidRange: hasInvalidRange };
         }
 
         function extractWhatsappNumber(value) {
@@ -779,7 +964,7 @@
                         pendingPayment: parseNumberish(d.pendingPayment) !== null ? parseNumberish(d.pendingPayment) : (parseNumberish(d.pending_payment) !== null ? parseNumberish(d.pending_payment) : 0),
                         feeOnline: parseNumberish(d.feeOnline) !== null ? parseNumberish(d.feeOnline) : (parseNumberish(d.fee_online) !== null ? parseNumberish(d.fee_online) : 0),
                         feeOffline: parseNumberish(d.feeOffline) !== null ? parseNumberish(d.feeOffline) : (parseNumberish(d.fee_offline) !== null ? parseNumberish(d.fee_offline) : 0),
-                        availability: Array.isArray(d.availability) ? d.availability : [],
+                        availability: normalizeAvailabilityList(Array.isArray(d.availability) ? d.availability : (Array.isArray(d.ketersediaan) ? d.ketersediaan : [])),
                         classHistory: Array.isArray(d.classHistory) ? d.classHistory : [],
                         contractNotes: d.contractNotes || d.contract_notes || d.catatan_khusus || ""
                     };
@@ -1357,8 +1542,9 @@
                 status.appendChild(getStatusBadge(mentor.status || ""));
             }
             if (availability) {
-                if (Array.isArray(mentor.availability) && mentor.availability.length) {
-                    availability.innerHTML = mentor.availability.map(a => "<div>" + a.day + " • " + a.time + "</div>").join("");
+                const availabilityItems = normalizeAvailabilityList(mentor.availability);
+                if (availabilityItems.length) {
+                    availability.innerHTML = availabilityItems.map(a => "<div>" + a.day + " • " + a.time + "</div>").join("");
                 } else {
                     availability.textContent = "Belum ada jadwal availability tersimpan.";
                 }
@@ -1541,6 +1727,7 @@
             if (feeOnlineInput) feeOnlineInput.value = "";
             if (feeOfflineInput) feeOfflineInput.value = "";
             if (notesInput) notesInput.value = "";
+            renderAvailabilitySlots([]);
             if (saveBtn) {
                 saveBtn.disabled = false;
             }
@@ -1590,6 +1777,7 @@
             if (feeOnlineInput) feeOnlineInput.value = String(mentor.feeOnline || 0);
             if (feeOfflineInput) feeOfflineInput.value = String(mentor.feeOffline || 0);
             if (notesInput) notesInput.value = mentor.contractNotes || "";
+            renderAvailabilitySlots(Array.isArray(mentor.availability) ? mentor.availability : []);
 
             updateMentorModalMode(true);
             setAddMentorError("");
@@ -1668,6 +1856,15 @@
             if (whatsappInput) whatsappInput.value = whatsappNumber;
 
             const whatsappLink = buildWhatsappLink(whatsappNumber);
+            const availabilityResult = collectAvailabilityFromForm();
+            if (availabilityResult.hasPartial) {
+                setAddMentorError("Setiap slot availability harus berisi hari, jam mulai, dan jam selesai.");
+                return;
+            }
+            if (availabilityResult.hasInvalidRange) {
+                setAddMentorError("Jam selesai harus lebih besar dari jam mulai pada availability.");
+                return;
+            }
 
             const payload = {
                 nama_lengkap: fullName,
@@ -1702,7 +1899,7 @@
                 pendingPayment: 0,
                 feeOnline: feeOnline,
                 feeOffline: feeOffline,
-                availability: [],
+                availability: availabilityResult.list,
                 classHistory: [],
                 contractNotes: contractNotes,
                 createdAt: serverTimestamp()
@@ -1869,6 +2066,7 @@
             const btnCloseAddMentor = document.getElementById("btnCloseAddMentor");
             const btnAddMentorCancel = document.getElementById("btnAddMentorCancel");
             const btnAddMentorSave = document.getElementById("btnAddMentorSave");
+            const btnAddAvailabilitySlot = document.getElementById("btnAddAvailabilitySlot");
             const addMentorWhatsapp = document.getElementById("addMentorWhatsapp");
             const detailTabs = document.querySelectorAll("#detailTabList button[data-tab]");
 
@@ -1878,6 +2076,12 @@
                     if (addMentorWhatsapp.value !== cleaned) {
                         addMentorWhatsapp.value = cleaned;
                     }
+                });
+            }
+
+            if (btnAddAvailabilitySlot) {
+                btnAddAvailabilitySlot.addEventListener("click", () => {
+                    addAvailabilitySlot("", "", "");
                 });
             }
 
