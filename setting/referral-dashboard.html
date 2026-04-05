@@ -855,6 +855,8 @@
             window.collection = collection;
             window.getDocs = getDocs;
             window.dlgDb = db;
+            window.dlgCollection = collection;
+            window.dlgGetDocs = getDocs;
             window.dlgDoc = doc;
             window.dlgGetDoc = getDoc;
             window.dlgSetDoc = setDoc;
@@ -1404,7 +1406,8 @@
         <script>
             (function () {
                 const RF_STORAGE_KEY = 'dlg_referral_feat_config'; // { [refCode]: [excludedKeys] }
-                const REF_STORAGE_KEY = 'dlg_referrals';
+                const REF_STORAGE_KEY = 'dlg_invoice_referrals';
+                const REF_STORAGE_KEY_LEGACY = 'dlg_referrals';
 
                 // Expose opener to global scope for button onclick
                 window.openRefFeatDrawer = function () {
@@ -1428,9 +1431,18 @@
 
                     let refs = window.currentReferrals || []; // Use global data
                     if (!refs.length) {
-                        try { refs = JSON.parse(localStorage.getItem('dlg_referrals') || '[]'); } catch (e) {}
+                        try {
+                            const rawPrimary = localStorage.getItem(REF_STORAGE_KEY);
+                            const rawLegacy = localStorage.getItem(REF_STORAGE_KEY_LEGACY);
+                            refs = JSON.parse(rawPrimary || rawLegacy || '[]');
+                            if (!rawPrimary && rawLegacy && Array.isArray(refs)) {
+                                localStorage.setItem(REF_STORAGE_KEY, JSON.stringify(refs));
+                            }
+                        } catch (e) {
+                            refs = [];
+                        }
                     }
-                    // Fallback to localStorage 'dlg_referrals' if global is empty (e.g. strict reload)
+                    // Fallback to localStorage key if global is empty (e.g. strict reload)
 
                     if (!refs.length) {
                         sel.innerHTML += '<option disabled>Belum ada data referral</option>';
@@ -1569,8 +1581,9 @@
                              await window.dlgSetDoc(refDoc, { referrals: updatedReferrals }, { merge: true });
                         }
 
-                        // Also update localStorage for backup
-                        localStorage.setItem('dlg_invoice_referrals', JSON.stringify(updatedReferrals));
+                        // Also update localStorage for backup and legacy compatibility
+                        localStorage.setItem(REF_STORAGE_KEY, JSON.stringify(updatedReferrals));
+                        localStorage.setItem(REF_STORAGE_KEY_LEGACY, JSON.stringify(updatedReferrals));
                          // Legacy
                         let allConfigs = {};
                         try { allConfigs = JSON.parse(localStorage.getItem(RF_STORAGE_KEY) || '{}'); } catch (e) { allConfigs = {}; }
@@ -1675,6 +1688,7 @@
         <script>
             (function () {
                 const STORAGE_KEY = 'dlg_referrals';
+                const STORAGE_KEY_LIST = 'dlg_invoice_referrals';
 
                 const modal = document.getElementById('referralModal');
                 const btnOpen = document.getElementById('btnOpenReferralModal');
@@ -1749,11 +1763,10 @@
                 let selectedProducts = [];
 
                 function openModal() {
-                    if (modal) {
-                        modal.classList.remove('hidden');
-                        populateProductCheckboxes();
-                        populateCreationFeatureChecklist();
-                    }
+                    if (!modal) return;
+                    modal.classList.remove('hidden');
+                    populateProductCheckboxes();
+                    populateCreationFeatureChecklist();
                 }
 
                 // Expose for Editing
@@ -2107,8 +2120,9 @@
                             updated = [...existing, payload];
                         }
 
-                        // Also sync to localStorage for invoice-management compatibility
+                        // Sync both storage keys to keep list + legacy modules consistent
                         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                        localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(updated));
                         
                         // Update global state
                         window.currentReferrals = updated;
@@ -2139,16 +2153,41 @@
                 let refFilterStatus = "all";
                 let refSearchKeyword = "";
                 const STORAGE_KEY_REFERRALS = "dlg_invoice_referrals";
+                const STORAGE_KEY_REFERRALS_LEGACY = "dlg_referrals";
+
+                function persistReferralStorage(referrals) {
+                    const serialized = JSON.stringify(Array.isArray(referrals) ? referrals : []);
+                    localStorage.setItem(STORAGE_KEY_REFERRALS, serialized);
+                    localStorage.setItem(STORAGE_KEY_REFERRALS_LEGACY, serialized);
+                }
+
+                function hydrateFirestoreAliases() {
+                    if (!window.dlgCollection && window.collection) {
+                        window.dlgCollection = window.collection;
+                    }
+                    if (!window.dlgGetDocs && window.getDocs) {
+                        window.dlgGetDocs = window.getDocs;
+                    }
+
+                    return !!(
+                        window.dlgDb &&
+                        window.dlgCollection &&
+                        window.dlgGetDocs &&
+                        window.dlgDoc &&
+                        window.dlgGetDoc &&
+                        window.dlgSetDoc
+                    );
+                }
 
                 // Helper to wait for Firestore
                 async function waitForFirestore() {
-                    if (window.dlgDb && window.dlgCollection && window.dlgGetDocs) return true;
+                    if (hydrateFirestoreAliases()) return true;
                     let attempts = 0;
-                    while (!(window.dlgDb && window.dlgCollection && window.dlgGetDocs) && attempts < 50) {
+                    while (!hydrateFirestoreAliases() && attempts < 50) {
                         await new Promise(resolve => setTimeout(resolve, 200));
                         attempts++;
                     }
-                    return !!(window.dlgDb);
+                    return hydrateFirestoreAliases();
                 }
 
                 function getReferralOwnerLabel(r) {
@@ -2263,24 +2302,37 @@
 
                 function loadReferrals() {
                     try {
-                        const raw = localStorage.getItem(STORAGE_KEY_REFERRALS);
-                        const parsed = raw ? JSON.parse(raw) : [];
-                        return Array.isArray(parsed) ? parsed : [];
+                        const rawPrimary = localStorage.getItem(STORAGE_KEY_REFERRALS);
+                        const rawLegacy = localStorage.getItem(STORAGE_KEY_REFERRALS_LEGACY);
+
+                        const parsedPrimary = rawPrimary ? JSON.parse(rawPrimary) : null;
+                        if (Array.isArray(parsedPrimary)) return parsedPrimary;
+
+                        const parsedLegacy = rawLegacy ? JSON.parse(rawLegacy) : [];
+                        if (Array.isArray(parsedLegacy)) {
+                            if (!rawPrimary) {
+                                persistReferralStorage(parsedLegacy);
+                            }
+                            return parsedLegacy;
+                        }
+
+                        return [];
                     } catch (e) {
                         return [];
                     }
                 }
 
                 async function saveReferrals(referrals) {
-                    localStorage.setItem(STORAGE_KEY_REFERRALS, JSON.stringify(referrals));
+                    persistReferralStorage(referrals);
                     const ready = await waitForFirestore();
-                    if (ready) {
-                        try {
-                            const ref = window.dlgDoc(window.dlgDb, "settings", "referrals");
-                            await window.dlgSetDoc(ref, { referrals: referrals }, { merge: true });
-                        } catch (e) {
-                            console.error("Error syncing referrals:", e);
-                        }
+                    if (!ready) return false;
+                    try {
+                        const ref = window.dlgDoc(window.dlgDb, "settings", "referrals");
+                        await window.dlgSetDoc(ref, { referrals: referrals }, { merge: true });
+                        return true;
+                    } catch (e) {
+                        console.error("Error syncing referrals:", e);
+                        return false;
                     }
                 }
 
@@ -2433,9 +2485,9 @@
 
                     setTimeout(async () => {
                         const refsFromFs = await loadReferralsFromFirestore();
-                        if (Array.isArray(refsFromFs) && refsFromFs.length) {
+                        if (Array.isArray(refsFromFs)) {
                             window.currentReferrals = refsFromFs;
-                            localStorage.setItem(STORAGE_KEY_REFERRALS, JSON.stringify(window.currentReferrals));
+                            persistReferralStorage(window.currentReferrals);
                             renderReferrals();
                         }
                         await loadInvoicesFromFirestore();
@@ -2498,7 +2550,7 @@
 
                     const tbody = document.getElementById("refTableBody");
                     if (tbody) {
-                        tbody.addEventListener("click", function (e) {
+                        tbody.addEventListener("click", async function (e) {
                             const target = e.target;
 
                             const toggleBtn = target.closest(".toggle-ref-history");
@@ -2514,7 +2566,7 @@
                                     const idx = parseInt(deleteBtn.getAttribute("data-idx"));
                                     if (confirm("Hapus kode referral ini?")) {
                                         window.currentReferrals.splice(idx, 1);
-                                        saveReferrals(window.currentReferrals);
+                                        await saveReferrals(window.currentReferrals);
                                         renderReferrals();
                                     }
                                 return;
