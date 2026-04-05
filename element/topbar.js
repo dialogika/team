@@ -12,7 +12,7 @@ export function renderTopBar(target) {
             </div>
         </div>
         <div class="logo-center">
-            <img src="https://www.dialogika.co/assets/img/logo.webp" alt="Dialogika Logo" style="height:35px;">
+            <a href="../home.html"><img src="https://www.dialogika.co/assets/img/logo.webp" alt="Dialogika Logo" style="height:35px;"></a>
         </div>
         <div class="d-flex align-items-center gap-3">
             <div class="text-end d-none d-lg-block lh-1">
