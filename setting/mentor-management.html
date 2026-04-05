@@ -1841,12 +1841,7 @@
             const feeOffline = feeOfflineInput ? Math.max(0, parseNumberInput(feeOfflineInput.value, 0)) : 0;
             const contractNotes = notesInput ? notesInput.value.trim() : "";
             const ratingString = rating.toFixed(1);
-            const scoreString = computeScore({
-                rating: rating,
-                completionRate: 0,
-                attendanceRate: 0,
-                complaintCount: 0
-            }).toFixed(2);
+            const existingMentor = isEditMode ? mentorsState.find(m => m.id === editingMentorDocId) : null;
 
             if (whatsappRaw && !whatsappNumber) {
                 setAddMentorError("WhatsApp hanya boleh berisi angka.");
@@ -1867,42 +1862,30 @@
             }
 
             const payload = {
-                nama_lengkap: fullName,
-                nama_panggilan: nickName || fullName.split(" ")[0] || "",
-                whatsapp: whatsappLink,
-                whatsapp_number: whatsappNumber,
-                location: location,
-                rating: ratingString,
-                teaching: teaching,
-                type: type,
-                active_class: 0,
-                total_class: 0,
-                status: status,
-                contract_end: contractEnd || "",
-                catatan_khusus: contractNotes,
-                Bank: "",
-                nomor_rekening: "",
-                Score: scoreString,
                 fullName: fullName,
                 nickName: nickName || fullName.split(" ")[0] || "",
-                ratingNumeric: Number(ratingString),
-                activeClasses: 0,
-                totalClasses: 0,
+                whatsapp: whatsappLink,
+                location: location,
+                rating: Number(ratingString),
+                teaching: teaching,
+                type: type,
+                activeClasses: existingMentor ? (existingMentor.activeClasses || 0) : 0,
+                totalClasses: existingMentor ? (existingMentor.totalClasses || 0) : 0,
+                status: status,
                 contractEnd: contractEnd || null,
-                contractDurationMonths: null,
-                lastActiveDays: 0,
-                completionRate: 0,
-                attendanceRate: 0,
-                complaintCount: 0,
-                avgFeedback: Number(ratingString),
-                totalEarning: 0,
-                pendingPayment: 0,
+                contractDurationMonths: existingMentor && existingMentor.contractDurationMonths !== null ? existingMentor.contractDurationMonths : null,
+                lastActiveDays: existingMentor ? (existingMentor.lastActiveDays || 0) : 0,
+                completionRate: existingMentor ? (existingMentor.completionRate || 0) : 0,
+                attendanceRate: existingMentor ? (existingMentor.attendanceRate || 0) : 0,
+                complaintCount: existingMentor ? (existingMentor.complaintCount || 0) : 0,
+                avgFeedback: existingMentor ? (existingMentor.avgFeedback || Number(ratingString)) : Number(ratingString),
+                totalEarning: existingMentor ? (existingMentor.totalEarning || 0) : 0,
+                pendingPayment: existingMentor ? (existingMentor.pendingPayment || 0) : 0,
                 feeOnline: feeOnline,
                 feeOffline: feeOffline,
                 availability: availabilityResult.list,
-                classHistory: [],
-                contractNotes: contractNotes,
-                createdAt: serverTimestamp()
+                classHistory: existingMentor && Array.isArray(existingMentor.classHistory) ? existingMentor.classHistory : [],
+                contractNotes: contractNotes
             };
 
             try {
@@ -1915,6 +1898,8 @@
                 const existingMentorDoc = await getDoc(mentorRef);
                 if (isEditMode) {
                     const isChangingDocId = editingMentorDocId !== mentorDocId;
+                    const sourceMentorDoc = await getDoc(doc(db, "mentor", editingMentorDocId));
+                    const sourceCreatedAt = sourceMentorDoc.exists() ? sourceMentorDoc.data().createdAt : null;
                     if (isChangingDocId && existingMentorDoc.exists()) {
                         const shouldOverwrite = confirm("Nama mentor ini sudah dipakai dokumen lain. Lanjutkan untuk overwrite data dokumen tersebut?");
                         if (!shouldOverwrite) {
@@ -1922,7 +1907,10 @@
                         }
                     }
 
-                    await setDoc(mentorRef, Object.assign({}, payload, { updatedAt: serverTimestamp() }));
+                    await setDoc(mentorRef, Object.assign({}, payload, {
+                        createdAt: sourceCreatedAt || serverTimestamp(),
+                        updatedAt: serverTimestamp()
+                    }));
                     if (isChangingDocId) {
                         await deleteDoc(doc(db, "mentor", editingMentorDocId));
                     }
@@ -1938,7 +1926,7 @@
                         }
                     }
 
-                    await setDoc(mentorRef, payload);
+                    await setDoc(mentorRef, Object.assign({}, payload, { createdAt: serverTimestamp() }));
                     closeAddMentorModal();
                     resetAddMentorForm();
                     await loadMentorsFromFirestore();
