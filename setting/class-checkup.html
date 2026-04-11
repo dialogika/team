@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-Up Class - Team Dialogika</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .cal-header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+        .cal-nav { display:flex; align-items:center; gap:8px; }
+        .cal-nav button { padding:6px 14px; border-radius:12px; font-size:11px; font-weight:700; border:1px solid #e2e8f0; background:#fff; color:#334155; cursor:pointer; transition:all .15s; }
+        .cal-nav button:hover { background:#f1f5f9; }
+        .cal-nav .cal-month-label { font-size:14px; font-weight:800; color:#0f172a; min-width:140px; text-align:center; }
+        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:#e2e8f0; border-radius:16px; overflow:hidden; }
+        .cal-day-header { background:#f8fafc; padding:8px 4px; text-align:center; font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.08em; }
+        .cal-cell { background:#fff; min-height:120px; padding:6px; position:relative; vertical-align:top; transition:background-color .12s; }
+        .cal-cell.other-month { background:#f8fafc; }
+        .cal-cell.today { box-shadow:inset 0 0 0 2px #38bdf8; }
+        .cal-cell.drag-over { background:#ecfeff; box-shadow:inset 0 0 0 2px #0ea5e9; }
+        .cal-date-num { font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px; }
+        .cal-cell.other-month .cal-date-num { color:#cbd5e1; }
+        .cal-card { padding:6px 8px; border-radius:10px; margin-bottom:4px; cursor:grab; transition:transform .12s,box-shadow .12s; border-left:3px solid transparent; user-select:none; }
+        .cal-card:active { cursor:grabbing; }
+        .cal-card:hover { transform:translateY(-1px); box-shadow:0 2px 8px rgba(0,0,0,.1); }
+        .cal-card-soon { background:#f5f5f5; border-left-color:#9ca3af; }
+        .cal-card-running { background:#ecfdf3; border-left-color:#22c55e; }
+        .cal-card-reminder { background:#fefce8; border-left-color:#f59e0b; }
+        .cal-card-stall { background:#fef2f2; border-left-color:#ef4444; }
+        .cal-card-graduate { background:#eff6ff; border-left-color:#3b82f6; }
+        .cal-card-complete { background:#1e293b; border-left-color:#475569; color:#e2e8f0; }
+        .cal-card-title { font-size:10px; font-weight:700; color:inherit; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .cal-card-meta { font-size:9px; color:#64748b; margin-top:2px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+        .cal-card-complete .cal-card-meta { color:#94a3b8; }
+        .cal-type-badge { font-size:8px; font-weight:700; padding:1px 5px; border-radius:6px; background:rgba(0,0,0,.06); }
+        .status-pill { padding:4px 10px; border-radius:999px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:6px; }
+        .status-soon { background:#f5f5f5; color:#4b5563; }
+        .status-running { background:#ecfdf3; color:#15803d; }
+        .status-reminder { background:#fefce8; color:#b45309; }
+        .status-stall { background:#fef2f2; color:#b91c1c; }
+        .status-graduate { background:#eff6ff; color:#1d4ed8; }
+        .status-complete { background:#020617; color:#e5e7eb; }
+        .modal-backdrop-custom { position:fixed; inset:0; background:rgba(15,23,42,.45); display:none; align-items:center; justify-content:center; z-index:2000; padding:20px; }
+        .modal-backdrop-custom.open { display:flex; }
+        .modal-card { width:100%; max-width:680px; max-height:calc(100vh - 40px); overflow:auto; }
+        @media(max-width:768px){ .cal-grid{min-width:760px;} .cal-cell{min-height:90px;} }
+    </style>
+</head>
+<body class="p-8 bg-slate-50">
+    <div id="topbarContainer"></div>
+    <div class="dashboard-container">
+        <div id="sidebarContainer"></div>
+        <main class="main-content">
+            <div class="flex justify-between items-start mb-8">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="calendar-check-2" class="w-6 h-6 text-indigo-600"></i>
+                        Check-Up Class
+                    </h1>
+                    <p class="text-sm text-slate-500 mt-1">Kalender operasional kelas. Drag & drop kartu kelas untuk mengubah tanggal start.</p>
+                </div>
+                <a href="./class-management.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Kembali ke Class Management
+                </a>
+            </div>
+
+            <section class="bg-white rounded-3xl border border-slate-100 p-5 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="relative">
+                        <input id="searchClass" type="text" placeholder="Cari kelas..." class="pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full bg-slate-50">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                    </div>
+                    <div>
+                        <select id="filterStatus" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Semua Status</option>
+                            <option value="Soon">Soon</option>
+                            <option value="Running">Running</option>
+                            <option value="Reminder">Reminder</option>
+                            <option value="Stall">Stall</option>
+                            <option value="Graduate">Graduate</option>
+                            <option value="Complete">Complete</option>
+                        </select>
+                    </div>
+                    <div class="text-xs text-slate-500 font-semibold flex items-center md:justify-end">
+                        <span id="calClassCount">0 kelas</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-3xl border border-slate-100 p-5">
+                <div class="cal-header">
+                    <div class="cal-nav">
+                        <button id="calToday">Today</button>
+                        <button id="calPrev"><i data-lucide="chevron-left" class="w-3 h-3 inline"></i></button>
+                        <span class="cal-month-label" id="calMonthLabel">-</span>
+                        <button id="calNext"><i data-lucide="chevron-right" class="w-3 h-3 inline"></i></button>
+                    </div>
+                    <span class="text-[11px] text-slate-400">Tarik kartu kelas ke tanggal lain untuk reschedule start date</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <div class="cal-grid" id="calGrid"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="classDetailModal" class="modal-backdrop-custom">
+        <div class="modal-card bg-white rounded-3xl border border-slate-100 shadow-2xl">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <div class="text-base font-bold text-slate-900">Detail Kelas</div>
+                    <div id="detailSubtitle" class="text-[11px] text-slate-500"></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btnSaveDetailEdit" class="px-3 py-1.5 rounded-xl text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-700">Simpan</button>
+                    <button id="btnCloseDetail" class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Class Name</div>
+                    <input id="editClassName" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Status</div>
+                    <select id="editStatus" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                        <option value="Soon">Soon</option>
+                        <option value="Running">Running</option>
+                        <option value="Reminder">Reminder</option>
+                        <option value="Stall">Stall</option>
+                        <option value="Graduate">Graduate</option>
+                        <option value="Complete">Complete</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Start Date</div>
+                    <input id="editStartDate" type="date" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Lokasi</div>
+                    <input id="editLocation" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Type</div>
+                    <select id="editType" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                        <option value="Online">Online</option>
+                        <option value="Offline">Offline</option>
+                        <option value="Hybrid">Hybrid</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Mentor</div>
+                    <input id="editMentors" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50" placeholder="Pisahkan dengan koma">
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Meeting Done</div>
+                    <input id="editMeetingDone" type="number" min="0" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Meeting Total</div>
+                    <input id="editMeetingTotal" type="number" min="0" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                </div>
+                <div class="md:col-span-2">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Comment</div>
+                    <textarea id="editComment" rows="4" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 resize-y"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="hidden fixed top-6 right-6 z-[9999] px-4 py-2 rounded-xl text-xs font-bold shadow-lg"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { renderTopBar } from "../element/topbar.js";
+        import { renderSidebar } from "../element/sidebar.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com",
+            projectId: "pre-dialogika",
+            storageBucket: "pre-dialogika.firebasestorage.app",
+            messagingSenderId: "343771410480",
+            appId: "1:343771410480:web:32881c9868522090237df5",
+            measurementId: "G-SXN811P3N0"
+        };
+
+        const topbarTarget = document.getElementById("topbarContainer");
+        if (topbarTarget) renderTopBar(topbarTarget);
+        const sidebarTarget = document.getElementById("sidebarContainer");
+        if (sidebarTarget) renderSidebar(sidebarTarget);
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+        let classesState = [];
+        let calYear = new Date().getFullYear();
+        let calMonth = new Date().getMonth();
+        let dragClassId = null;
+        let lastDropAt = 0;
+        let currentDetailClassId = null;
+
+        const currentFilters = { search: "", status: "" };
+
+        function showToast(message, type) {
+            const toast = document.getElementById("toast");
+            if (!toast) return;
+            toast.textContent = message;
+            toast.className = "fixed top-6 right-6 z-[9999] px-4 py-2 rounded-xl text-xs font-bold shadow-lg";
+            if (type === "error") {
+                toast.classList.add("bg-rose-600", "text-white");
+            } else {
+                toast.classList.add("bg-emerald-600", "text-white");
+            }
+            toast.classList.remove("hidden");
+            setTimeout(() => toast.classList.add("hidden"), 2500);
+        }
+
+        function deriveStatusFromAvailability(d) {
+            const raw = d && (d.status || d.class_status);
+            if (raw) {
+                const lower = String(raw).toLowerCase();
+                if (lower === "soon") return "Soon";
+                if (lower === "running") return "Running";
+                if (lower === "reminder") return "Reminder";
+                if (lower === "stall") return "Stall";
+                if (lower === "graduate") return "Graduate";
+                if (lower === "complete") return "Complete";
+            }
+            const startRaw = d && (d.start_date || d.startDate);
+            if (!startRaw || startRaw === "Flexible") return "Soon";
+            const start = new Date(startRaw);
+            if (isNaN(start.getTime())) return "Soon";
+            const now = new Date();
+            if (start.getTime() > now.getTime()) return "Soon";
+            return "Running";
+        }
+
+        function toDateString(raw) {
+            if (!raw) return "";
+            let v = raw;
+            if (v && typeof v === "object" && typeof v.toDate === "function") v = v.toDate();
+            const d = new Date(v);
+            if (isNaN(d.getTime())) return "";
+            return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+        }
+
+        function mapAvailabilityDocToClass(docSnap) {
+            const d = docSnap.data() || {};
+            const mentorName = d.mentor_name || "";
+            const mentors = [];
+            if (typeof mentorName === "string" && mentorName.trim() !== "") {
+                mentorName.split(",").forEach(part => {
+                    const name = part.trim();
+                    if (name) mentors.push({ name });
+                });
+            }
+            if (Array.isArray(d.mentors)) {
+                d.mentors.forEach(m => {
+                    if (!m) return;
+                    if (typeof m === "string" && m.trim()) mentors.push({ name: m.trim() });
+                    else if (m.name) mentors.push({ name: String(m.name) });
+                });
+            }
+            return {
+                id: d.id || docSnap.id,
+                docId: docSnap.id,
+                name: d.name || d.class_name || "Unnamed Class",
+                status: deriveStatusFromAvailability(d),
+                startDate: toDateString(d.start_date || d.startDate),
+                location: d.location || "",
+                type: d.type || "Offline",
+                meetingDone: typeof d.meeting_done === "number" ? d.meeting_done : 0,
+                meetingTotal: typeof d.meeting_total === "number" ? d.meeting_total : 0,
+                comment: d.comment || "",
+                mentors
+            };
+        }
+
+        function getCalCardClass(status) {
+            const map = {
+                Soon: "cal-card-soon",
+                Running: "cal-card-running",
+                Reminder: "cal-card-reminder",
+                Stall: "cal-card-stall",
+                Graduate: "cal-card-graduate",
+                Complete: "cal-card-complete"
+            };
+            return map[status] || "cal-card-soon";
+        }
+
+        function getStatusClass(status) {
+            if (status === "Soon") return "status-pill status-soon";
+            if (status === "Running") return "status-pill status-running";
+            if (status === "Reminder") return "status-pill status-reminder";
+            if (status === "Stall") return "status-pill status-stall";
+            if (status === "Graduate") return "status-pill status-graduate";
+            if (status === "Complete") return "status-pill status-complete";
+            return "status-pill status-soon";
+        }
+
+        function openDetailModal(classId) {
+            const modal = document.getElementById("classDetailModal");
+            if (!modal) return;
+            const c = classesState.find(item => item.id === classId);
+            if (!c) return;
+            currentDetailClassId = c.id;
+            const subEl = document.getElementById("detailSubtitle");
+            const nameEl = document.getElementById("editClassName");
+            const statusEl = document.getElementById("editStatus");
+            const startEl = document.getElementById("editStartDate");
+            const locationEl = document.getElementById("editLocation");
+            const typeEl = document.getElementById("editType");
+            const mentorsEl = document.getElementById("editMentors");
+            const meetingDoneEl = document.getElementById("editMeetingDone");
+            const meetingTotalEl = document.getElementById("editMeetingTotal");
+            const commentEl = document.getElementById("editComment");
+            if (subEl) subEl.textContent = "ID: " + (c.id || "-");
+            if (nameEl) nameEl.value = c.name || "";
+            if (statusEl) statusEl.value = c.status || "Soon";
+            if (startEl) startEl.value = c.startDate || "";
+            if (locationEl) locationEl.value = c.location || "";
+            if (typeEl) typeEl.value = c.type || "Offline";
+            if (mentorsEl) mentorsEl.value = Array.isArray(c.mentors) && c.mentors.length ? c.mentors.map(m => m.name).join(", ") : "";
+            if (meetingDoneEl) meetingDoneEl.value = String(c.meetingDone || 0);
+            if (meetingTotalEl) meetingTotalEl.value = String(c.meetingTotal || 0);
+            if (commentEl) commentEl.value = c.comment || "";
+            modal.classList.add("open");
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function closeDetailModal() {
+            const modal = document.getElementById("classDetailModal");
+            if (!modal) return;
+            modal.classList.remove("open");
+            currentDetailClassId = null;
+        }
+
+        function parseMentorNames(raw) {
+            if (!raw) return [];
+            return String(raw)
+                .split(",")
+                .map(name => name.trim())
+                .filter(Boolean)
+                .map(name => ({
+                    name,
+                    initials: name.split(" ").filter(Boolean).map(n => n[0]).join("").toUpperCase().slice(0, 2)
+                }));
+        }
+
+        async function saveDetailChanges() {
+            if (!currentDetailClassId) return;
+            const idx = classesState.findIndex(c => c.id === currentDetailClassId);
+            if (idx < 0) return;
+            const selected = classesState[idx];
+            const btnSave = document.getElementById("btnSaveDetailEdit");
+            const name = (document.getElementById("editClassName")?.value || "").trim();
+            if (!name) {
+                showToast("Nama kelas wajib diisi", "error");
+                return;
+            }
+            const status = (document.getElementById("editStatus")?.value || "Soon").trim();
+            const startDate = (document.getElementById("editStartDate")?.value || "").trim();
+            const location = (document.getElementById("editLocation")?.value || "").trim();
+            const type = (document.getElementById("editType")?.value || "Offline").trim();
+            const mentorsInput = (document.getElementById("editMentors")?.value || "").trim();
+            const mentors = parseMentorNames(mentorsInput);
+            const meetingDone = parseInt(document.getElementById("editMeetingDone")?.value || "0", 10) || 0;
+            const meetingTotal = parseInt(document.getElementById("editMeetingTotal")?.value || "0", 10) || 0;
+            const comment = (document.getElementById("editComment")?.value || "").trim();
+            if (btnSave) {
+                btnSave.disabled = true;
+                btnSave.textContent = "Menyimpan...";
+            }
+            try {
+                await updateDoc(doc(db, "class_availability", selected.docId), {
+                    name,
+                    class_name: name,
+                    status,
+                    class_status: status,
+                    start_date: startDate,
+                    startDate: startDate,
+                    location,
+                    type,
+                    mentors,
+                    mentor_name: mentors.map(m => m.name).join(", "),
+                    meeting_done: meetingDone,
+                    meeting_total: meetingTotal,
+                    comment,
+                    updatedAt: serverTimestamp()
+                });
+                classesState[idx] = {
+                    ...selected,
+                    name,
+                    status,
+                    startDate,
+                    location,
+                    type,
+                    mentors,
+                    meetingDone,
+                    meetingTotal,
+                    comment
+                };
+                renderCalendar(applyFilters());
+                openDetailModal(selected.id);
+                showToast("Detail kelas berhasil diperbarui", "success");
+            } catch (e) {
+                showToast("Gagal menyimpan detail kelas", "error");
+            } finally {
+                if (btnSave) {
+                    btnSave.disabled = false;
+                    btnSave.textContent = "Simpan";
+                }
+            }
+        }
+
+        function applyFilters() {
+            let list = classesState.slice();
+            if (currentFilters.search) {
+                const q = currentFilters.search.toLowerCase();
+                list = list.filter(c => (c.name || "").toLowerCase().includes(q) || (c.location || "").toLowerCase().includes(q));
+            }
+            if (currentFilters.status) {
+                list = list.filter(c => (c.status || "") === currentFilters.status);
+            }
+            return list;
+        }
+
+        async function persistDateChange(c, dateStr) {
+            if (!c || !c.docId) return;
+            await updateDoc(doc(db, "class_availability", c.docId), {
+                start_date: dateStr,
+                startDate: dateStr,
+                updatedAt: serverTimestamp()
+            });
+        }
+
+        async function moveClassToDate(classId, targetDate) {
+            const idx = classesState.findIndex(c => c.id === classId);
+            if (idx < 0) return;
+            const selected = classesState[idx];
+            const prevDate = selected.startDate || "-";
+            classesState[idx] = { ...selected, startDate: targetDate };
+            renderCalendar(applyFilters());
+            try {
+                await persistDateChange(classesState[idx], targetDate);
+                showToast((selected.name || "Class") + " dipindah dari " + prevDate + " ke " + targetDate, "success");
+            } catch (e) {
+                classesState[idx] = { ...selected, startDate: prevDate === "-" ? "" : prevDate };
+                renderCalendar(applyFilters());
+                showToast("Gagal mengubah tanggal class", "error");
+            }
+        }
+
+        function renderCalendar(list) {
+            const grid = document.getElementById("calGrid");
+            const label = document.getElementById("calMonthLabel");
+            const countEl = document.getElementById("calClassCount");
+            if (!grid) return;
+            grid.innerHTML = "";
+            if (label) label.textContent = MONTH_NAMES[calMonth] + " " + calYear;
+
+            DAY_NAMES.forEach(d => {
+                const h = document.createElement("div");
+                h.className = "cal-day-header";
+                h.textContent = d.substring(0, 3);
+                grid.appendChild(h);
+            });
+
+            const firstDay = new Date(calYear, calMonth, 1).getDay();
+            const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+            const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
+            const today = new Date();
+            const todayStr = today.getFullYear() + "-" + String(today.getMonth()+1).padStart(2,"0") + "-" + String(today.getDate()).padStart(2,"0");
+            const classByDate = {};
+            let calCount = 0;
+
+            list.forEach(c => {
+                if (!c.startDate) return;
+                if (!classByDate[c.startDate]) classByDate[c.startDate] = [];
+                classByDate[c.startDate].push(c);
+            });
+
+            for (let i = 0; i < firstDay; i++) {
+                const d = prevMonthDays - firstDay + 1 + i;
+                const cell = document.createElement("div");
+                cell.className = "cal-cell other-month";
+                const num = document.createElement("div");
+                num.className = "cal-date-num";
+                num.textContent = d;
+                cell.appendChild(num);
+                grid.appendChild(cell);
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = calYear + "-" + String(calMonth + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+                const cell = document.createElement("div");
+                cell.className = "cal-cell" + (dateStr === todayStr ? " today" : "");
+                cell.dataset.date = dateStr;
+                const num = document.createElement("div");
+                num.className = "cal-date-num";
+                num.textContent = d;
+                cell.appendChild(num);
+
+                cell.addEventListener("dragover", (e) => {
+                    e.preventDefault();
+                    cell.classList.add("drag-over");
+                });
+                cell.addEventListener("dragleave", () => {
+                    cell.classList.remove("drag-over");
+                });
+                cell.addEventListener("drop", async (e) => {
+                    e.preventDefault();
+                    cell.classList.remove("drag-over");
+                    if (!dragClassId) return;
+                    await moveClassToDate(dragClassId, dateStr);
+                    lastDropAt = Date.now();
+                    dragClassId = null;
+                });
+
+                const classes = classByDate[dateStr] || [];
+                calCount += classes.length;
+                classes.forEach(c => {
+                    const card = document.createElement("div");
+                    card.className = "cal-card " + getCalCardClass(c.status);
+                    card.draggable = true;
+                    card.dataset.classId = c.id;
+                    card.title = "Drag untuk pindahkan tanggal start";
+                    card.addEventListener("dragstart", () => {
+                        dragClassId = c.id;
+                    });
+                    card.addEventListener("dragend", () => {
+                        dragClassId = null;
+                    });
+                    card.addEventListener("click", () => {
+                        if (Date.now() - lastDropAt < 250) return;
+                        openDetailModal(c.id);
+                    });
+
+                    const title = document.createElement("div");
+                    title.className = "cal-card-title";
+                    title.textContent = c.name || "-";
+                    const meta = document.createElement("div");
+                    meta.className = "cal-card-meta";
+                    meta.innerHTML = "<span>M:" + (c.meetingDone || 0) + "</span>";
+                    if (c.mentors && c.mentors.length) meta.innerHTML += "<span>• " + c.mentors[0].name + "</span>";
+                    if (c.type) meta.innerHTML += "<span class='cal-type-badge'>" + c.type + "</span>";
+                    card.appendChild(title);
+                    card.appendChild(meta);
+                    cell.appendChild(card);
+                });
+                grid.appendChild(cell);
+            }
+
+            const totalCells = firstDay + daysInMonth;
+            const remaining = (7 - (totalCells % 7)) % 7;
+            for (let i = 1; i <= remaining; i++) {
+                const cell = document.createElement("div");
+                cell.className = "cal-cell other-month";
+                const num = document.createElement("div");
+                num.className = "cal-date-num";
+                num.textContent = i;
+                cell.appendChild(num);
+                grid.appendChild(cell);
+            }
+
+            if (countEl) countEl.textContent = calCount + " kelas";
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function bindControls() {
+            const searchInput = document.getElementById("searchClass");
+            const statusInput = document.getElementById("filterStatus");
+            const calPrev = document.getElementById("calPrev");
+            const calNext = document.getElementById("calNext");
+            const calTodayBtn = document.getElementById("calToday");
+            const btnCloseDetail = document.getElementById("btnCloseDetail");
+            const btnSaveDetailEdit = document.getElementById("btnSaveDetailEdit");
+            const detailModal = document.getElementById("classDetailModal");
+
+            if (searchInput) {
+                searchInput.addEventListener("input", (e) => {
+                    currentFilters.search = (e.target.value || "").trim();
+                    renderCalendar(applyFilters());
+                });
+            }
+            if (statusInput) {
+                statusInput.addEventListener("change", (e) => {
+                    currentFilters.status = e.target.value || "";
+                    renderCalendar(applyFilters());
+                });
+            }
+            if (calPrev) {
+                calPrev.addEventListener("click", () => {
+                    calMonth -= 1;
+                    if (calMonth < 0) {
+                        calMonth = 11;
+                        calYear -= 1;
+                    }
+                    renderCalendar(applyFilters());
+                });
+            }
+            if (calNext) {
+                calNext.addEventListener("click", () => {
+                    calMonth += 1;
+                    if (calMonth > 11) {
+                        calMonth = 0;
+                        calYear += 1;
+                    }
+                    renderCalendar(applyFilters());
+                });
+            }
+            if (calTodayBtn) {
+                calTodayBtn.addEventListener("click", () => {
+                    const now = new Date();
+                    calYear = now.getFullYear();
+                    calMonth = now.getMonth();
+                    renderCalendar(applyFilters());
+                });
+            }
+            if (btnCloseDetail) {
+                btnCloseDetail.addEventListener("click", () => closeDetailModal());
+            }
+            if (btnSaveDetailEdit) {
+                btnSaveDetailEdit.addEventListener("click", () => saveDetailChanges());
+            }
+            if (detailModal) {
+                detailModal.addEventListener("click", (e) => {
+                    if (e.target === detailModal) closeDetailModal();
+                });
+            }
+        }
+
+        async function loadClassesFromFirestore() {
+            const snap = await getDocs(collection(db, "class_availability"));
+            const loaded = [];
+            snap.forEach((docSnap) => {
+                loaded.push(mapAvailabilityDocToClass(docSnap));
+            });
+            classesState = loaded;
+            renderCalendar(applyFilters());
+        }
+
+        bindControls();
+        loadClassesFromFirestore().catch(() => {
+            showToast("Gagal memuat data class", "error");
+        });
+        if (window.lucide) window.lucide.createIcons();
+    </script>
+</body>
+</html>
