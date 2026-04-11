@@ -110,13 +110,41 @@
                         <span class="cal-month-label" id="calMonthLabel">-</span>
                         <button id="calNext"><i data-lucide="chevron-right" class="w-3 h-3 inline"></i></button>
                     </div>
-                    <span class="text-[11px] text-slate-400">Tarik kartu kelas ke tanggal lain untuk reschedule start date</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-slate-400">Tarik kartu kelas ke tanggal lain untuk reschedule start date</span>
+                        <div class="relative">
+                            <button id="btnCalMore" class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50">
+                                <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                            </button>
+                            <div id="calMoreMenu" class="hidden absolute right-0 mt-1 w-40 bg-white rounded-xl shadow-lg border border-slate-100 text-[11px] text-slate-700 z-50">
+                                <button id="btnViewAllScheduleLogs" class="w-full text-left px-3 py-2 hover:bg-slate-50">Lihat Log Schedule</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div style="overflow-x:auto;">
                     <div class="cal-grid" id="calGrid"></div>
                 </div>
             </section>
         </main>
+    </div>
+
+    <div id="scheduleLogsModal" class="modal-backdrop-custom">
+        <div class="modal-card bg-white rounded-3xl border border-slate-100 shadow-2xl max-w-3xl mx-auto">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <div class="text-base font-bold text-slate-900">Schedule Logs</div>
+                    <div class="text-[11px] text-slate-500">Riwayat seluruh perubahan jadwal kelas</div>
+                </div>
+                <button id="btnCloseScheduleLogs" class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="px-6 py-4 text-xs">
+                <div id="scheduleLogsSummary" class="text-[11px] text-slate-500 mb-2"></div>
+                <div id="scheduleLogsList" class="border border-slate-200 rounded-xl bg-slate-50 max-h-[420px] overflow-y-auto px-3 py-2 text-[11px] text-slate-700"></div>
+            </div>
+        </div>
     </div>
 
     <div id="classDetailModal" class="modal-backdrop-custom">
@@ -217,7 +245,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
@@ -293,6 +321,125 @@
             const d = new Date(v);
             if (isNaN(d.getTime())) return "";
             return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+        }
+
+        function getCurrentUserAuditInfo() {
+            let data = null;
+            try {
+                const raw = localStorage.getItem("userData");
+                if (raw) data = JSON.parse(raw);
+            } catch (e) {}
+            const name = data && (data.name || data.fullName || data.email || "");
+            const email = data && data.email;
+            const uid = data && (data.uid || data.id || null);
+            return {
+                userId: uid || email || null,
+                userName: name || "Unknown User",
+                userEmail: email || null,
+                raw: data || null
+            };
+        }
+
+        async function logScheduleChange(classData, prevDate, newDate, source) {
+            if (!classData || !classData.docId) return;
+            const user = getCurrentUserAuditInfo();
+            const payload = {
+                classDocId: classData.docId,
+                classId: classData.id || null,
+                className: classData.name || "",
+                previousDate: prevDate || "",
+                newDate: newDate || "",
+                location: classData.location || "",
+                type: classData.type || "",
+                status: classData.status || "",
+                changedById: user.userId || null,
+                changedByName: user.userName || "",
+                changedByEmail: user.userEmail || null,
+                source: source || "unknown",
+                changedAt: serverTimestamp()
+            };
+            try {
+                await addDoc(collection(db, "schedule_logs"), payload);
+            } catch (e) {}
+        }
+
+        function formatLogTimestamp(ts) {
+            if (!ts || typeof ts.toDate !== "function") return "";
+            const d = ts.toDate();
+            if (isNaN(d.getTime())) return "";
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            const day = String(d.getDate()).padStart(2, "0");
+            const hh = String(d.getHours()).padStart(2, "0");
+            const mm = String(d.getMinutes()).padStart(2, "0");
+            return y + "-" + m + "-" + day + " " + hh + ":" + mm;
+        }
+
+        async function loadAllScheduleLogs() {
+            const listEl = document.getElementById("scheduleLogsList");
+            const summaryEl = document.getElementById("scheduleLogsSummary");
+            if (!listEl) return;
+            listEl.innerHTML = "<div class=\"text-[11px] text-slate-400\">Memuat semua log schedule...</div>";
+            if (summaryEl) summaryEl.textContent = "";
+            try {
+                const snap = await getDocs(collection(db, "schedule_logs"));
+                const items = [];
+                snap.forEach((docSnap) => {
+                    const d = docSnap.data() || {};
+                    items.push({ id: docSnap.id, data: d });
+                });
+                items.sort((a, b) => {
+                    const ta = a.data.changedAt && typeof a.data.changedAt.toDate === "function" ? a.data.changedAt.toDate().getTime() : 0;
+                    const tb = b.data.changedAt && typeof b.data.changedAt.toDate === "function" ? b.data.changedAt.toDate().getTime() : 0;
+                    return tb - ta;
+                });
+                if (!items.length) {
+                    listEl.innerHTML = "<div class=\"text-[11px] text-slate-400\">Belum ada log schedule.</div>";
+                    if (summaryEl) summaryEl.textContent = "0 log";
+                    return;
+                }
+                const parts = [];
+                items.forEach((item) => {
+                    const d = item.data;
+                    const className = d.className || "(Tanpa nama)";
+                    const prev = d.previousDate || "-";
+                    const next = d.newDate || "-";
+                    const by = d.changedByName || d.changedByEmail || d.changedById || "Unknown";
+                    const timeStr = d.changedAt ? formatLogTimestamp(d.changedAt) : "";
+                    let sourceLabel = "Perubahan";
+                    if (d.source === "calendar_drag") sourceLabel = "Kalender";
+                    else if (d.source === "detail_modal") sourceLabel = "Detail";
+                    parts.push(
+                        "<div class=\"py-1.5 border-b border-slate-200 last:border-b-0\">" +
+                        "<div class=\"font-semibold text-[11px] text-slate-800\">" + className + "</div>" +
+                        "<div class=\"text-[11px] text-slate-700\">" + prev + " → " + next + "</div>" +
+                        "<div class=\"text-[10px] text-slate-500\">" + by +
+                        (sourceLabel ? " • " + sourceLabel : "") +
+                        (timeStr ? " • " + timeStr : "") +
+                        "</div>" +
+                        "</div>"
+                    );
+                });
+                listEl.innerHTML = parts.join("");
+                if (summaryEl) summaryEl.textContent = items.length + " log";
+            } catch (e) {
+                listEl.innerHTML = "<div class=\"text-[11px] text-rose-500\">Gagal memuat log schedule.</div>";
+                if (summaryEl) summaryEl.textContent = "";
+            }
+        }
+
+        function openScheduleLogsModal() {
+            const modal = document.getElementById("scheduleLogsModal");
+            if (!modal) return;
+            modal.classList.add("open");
+            loadAllScheduleLogs();
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        function closeScheduleLogsModal() {
+            const modal = document.getElementById("scheduleLogsModal");
+            if (!modal) return;
+            modal.classList.remove("open");
         }
 
         function mapAvailabilityDocToClass(docSnap) {
@@ -623,6 +770,7 @@
                 btnSave.textContent = "Menyimpan...";
             }
             try {
+                const prevDate = selected.startDate || "";
                 await updateDoc(doc(db, "class_availability", selected.docId), {
                     name,
                     class_name: name,
@@ -670,6 +818,9 @@
                     meetingTotal,
                     comment
                 };
+                if (startDate && startDate !== prevDate) {
+                    await logScheduleChange(classesState[idx], prevDate, startDate, "detail_modal");
+                }
                 renderCalendar(applyFilters());
                 openDetailModal(selected.id);
                 setDetailEditMode(false);
@@ -714,6 +865,7 @@
             renderCalendar(applyFilters());
             try {
                 await persistDateChange(classesState[idx], targetDate);
+                await logScheduleChange(classesState[idx], prevDate, targetDate, "calendar_drag");
                 showToast((selected.name || "Class") + " dipindah dari " + prevDate + " ke " + targetDate, "success");
             } catch (e) {
                 classesState[idx] = { ...selected, startDate: prevDate === "-" ? "" : prevDate };
@@ -910,6 +1062,11 @@
             const detailModal = document.getElementById("classDetailModal");
             const editWaGroupLink = document.getElementById("editWaGroupLink");
             const editVideoClassLink = document.getElementById("editVideoClassLink");
+            const btnCalMore = document.getElementById("btnCalMore");
+            const calMoreMenu = document.getElementById("calMoreMenu");
+            const btnViewAllScheduleLogs = document.getElementById("btnViewAllScheduleLogs");
+            const scheduleLogsModal = document.getElementById("scheduleLogsModal");
+            const btnCloseScheduleLogs = document.getElementById("btnCloseScheduleLogs");
 
             if (searchInput) {
                 searchInput.addEventListener("input", (e) => {
@@ -975,6 +1132,42 @@
             if (detailModal) {
                 detailModal.addEventListener("click", (e) => {
                     if (e.target === detailModal) closeDetailModal();
+                });
+            }
+            if (btnCalMore && calMoreMenu) {
+                btnCalMore.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const isHidden = calMoreMenu.classList.contains("hidden");
+                    if (isHidden) {
+                        calMoreMenu.classList.remove("hidden");
+                    } else {
+                        calMoreMenu.classList.add("hidden");
+                    }
+                });
+                document.addEventListener("click", (e) => {
+                    if (!calMoreMenu.classList.contains("hidden") && !btnCalMore.contains(e.target)) {
+                        calMoreMenu.classList.add("hidden");
+                    }
+                });
+            }
+            if (btnViewAllScheduleLogs) {
+                btnViewAllScheduleLogs.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    if (calMoreMenu) calMoreMenu.classList.add("hidden");
+                    openScheduleLogsModal();
+                });
+            }
+            if (scheduleLogsModal) {
+                scheduleLogsModal.addEventListener("click", (e) => {
+                    if (e.target === scheduleLogsModal) {
+                        closeScheduleLogsModal();
+                    }
+                });
+            }
+            if (btnCloseScheduleLogs) {
+                btnCloseScheduleLogs.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    closeScheduleLogsModal();
                 });
             }
         }
