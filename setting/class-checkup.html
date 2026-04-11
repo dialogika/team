@@ -19,24 +19,33 @@
         .cal-nav .cal-month-label { font-size:14px; font-weight:800; color:#0f172a; min-width:140px; text-align:center; }
         .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:#e2e8f0; border-radius:16px; overflow:hidden; }
         .cal-day-header { background:#f8fafc; padding:8px 4px; text-align:center; font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.08em; }
-        .cal-cell { background:#fff; min-height:120px; padding:6px; position:relative; vertical-align:top; transition:background-color .12s; }
+        .cal-cell { background:#fff; min-height:220px; padding:8px; position:relative; vertical-align:top; transition:background-color .12s; }
         .cal-cell.other-month { background:#f8fafc; }
         .cal-cell.today { box-shadow:inset 0 0 0 2px #38bdf8; }
         .cal-cell.drag-over { background:#ecfeff; box-shadow:inset 0 0 0 2px #0ea5e9; }
         .cal-date-num { font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px; }
         .cal-cell.other-month .cal-date-num { color:#cbd5e1; }
-        .cal-card { padding:6px 8px; border-radius:10px; margin-bottom:4px; cursor:grab; transition:transform .12s,box-shadow .12s; border-left:3px solid transparent; user-select:none; }
+        .cal-card { padding:8px 10px; border-radius:12px; margin-bottom:6px; cursor:grab; transition:transform .12s,box-shadow .12s; border-left:3px solid transparent; user-select:none; }
         .cal-card:active { cursor:grabbing; }
         .cal-card:hover { transform:translateY(-1px); box-shadow:0 2px 8px rgba(0,0,0,.1); }
-        .cal-card-soon { background:#f5f5f5; border-left-color:#9ca3af; }
-        .cal-card-running { background:#ecfdf3; border-left-color:#22c55e; }
-        .cal-card-reminder { background:#fefce8; border-left-color:#f59e0b; }
+        .cal-card-soon { background:#fee2e2; border-left-color:#ef4444; }
+        .cal-card-running { background:#e0f2fe; border-left-color:#38bdf8; }
+        .cal-card-reminder { background:#f3e8ff; border-left-color:#a855f7; }
         .cal-card-stall { background:#fef2f2; border-left-color:#ef4444; }
-        .cal-card-graduate { background:#eff6ff; border-left-color:#3b82f6; }
-        .cal-card-complete { background:#1e293b; border-left-color:#475569; color:#e2e8f0; }
-        .cal-card-title { font-size:10px; font-weight:700; color:inherit; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .cal-card-meta { font-size:9px; color:#64748b; margin-top:2px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
-        .cal-card-complete .cal-card-meta { color:#94a3b8; }
+        .cal-card-graduate { background:#ffedd5; border-left-color:#c2410c; color:#9a3412; }
+        .cal-card-complete { background:#dcfce7; border-left-color:#16a34a; color:#14532d; }
+        .cal-card-title { font-size:12px; font-weight:700; color:inherit; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
+        .cal-card-time { font-size:11px; color:#334155; font-weight:700; margin-top:2px; }
+        .cal-card-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:5px; }
+        .cal-card-label { font-size:10px; font-weight:700; color:#334155; opacity:.9; }
+        .cal-card-value { font-size:11px; font-weight:800; color:#0f172a; }
+        .cal-mentor-chip { max-width:85px; padding:2px 8px; border-radius:8px; font-size:11px; font-weight:800; color:#0f172a; background:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .cal-supervisor-avatar { width:24px; height:24px; border-radius:999px; overflow:hidden; border:1px solid rgba(15,23,42,.12); background:#0f172a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; flex-shrink:0; }
+        .cal-supervisor-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+        .cal-type-pill { font-size:11px; font-weight:800; padding:2px 8px; border-radius:8px; color:#fff; }
+        .cal-type-online { background:#0284c7; }
+        .cal-type-offline { background:#16a34a; }
+        .cal-type-hybrid { background:#7c3aed; }
         .cal-type-badge { font-size:8px; font-weight:700; padding:1px 5px; border-radius:6px; background:rgba(0,0,0,.06); }
         .status-pill { padding:4px 10px; border-radius:999px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:6px; }
         .status-soon { background:#f5f5f5; color:#4b5563; }
@@ -48,7 +57,7 @@
         .modal-backdrop-custom { position:fixed; inset:0; background:rgba(15,23,42,.45); display:none; align-items:center; justify-content:center; z-index:2000; padding:20px; }
         .modal-backdrop-custom.open { display:flex; }
         .modal-card { width:100%; max-width:680px; max-height:calc(100vh - 40px); overflow:auto; }
-        @media(max-width:768px){ .cal-grid{min-width:760px;} .cal-cell{min-height:90px;} }
+        @media(max-width:768px){ .cal-grid{min-width:880px;} .cal-cell{min-height:180px;} }
     </style>
 </head>
 <body class="p-8 bg-slate-50">
@@ -118,7 +127,10 @@
                     <div id="detailSubtitle" class="text-[11px] text-slate-500"></div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="btnSaveDetailEdit" class="px-3 py-1.5 rounded-xl text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-700">Simpan</button>
+                    <a id="btnOpenDetailPage" href="./class-detail.html" class="px-3 py-1.5 rounded-xl text-[11px] font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Halaman Detail</a>
+                    <button id="btnEnableDetailEdit" class="px-3 py-1.5 rounded-xl text-[11px] font-bold text-white bg-amber-500 hover:bg-amber-600">Aktifkan Edit</button>
+                    <button id="btnCancelDetailEdit" class="hidden px-3 py-1.5 rounded-xl text-[11px] font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Batal</button>
+                    <button id="btnSaveDetailEdit" class="hidden px-3 py-1.5 rounded-xl text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-700">Simpan</button>
                     <button id="btnCloseDetail" class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
@@ -149,6 +161,10 @@
                     <input id="editLocation" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
                 </div>
                 <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Jam Kelas</div>
+                    <input id="editStartTime" type="time" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                </div>
+                <div>
                     <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Type</div>
                     <select id="editType" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
                         <option value="Online">Online</option>
@@ -158,7 +174,25 @@
                 </div>
                 <div>
                     <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Mentor</div>
-                    <input id="editMentors" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50" placeholder="Pisahkan dengan koma">
+                    <select id="editMentorName" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                        <option value="">Pilih mentor</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Supervisor</div>
+                    <select id="editSupervisorUser" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                        <option value="">Pilih supervisor</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">WA Group</div>
+                    <input id="editWaGroupLink" type="url" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50" placeholder="https://chat.whatsapp.com/...">
+                    <a id="viewWaGroupLink" href="#" target="_blank" rel="noopener" class="block mt-1 text-[11px] font-semibold text-indigo-600 break-all"></a>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Video Class</div>
+                    <input id="editVideoClassLink" type="url" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50" placeholder="https://meet.google.com/... atau rekaman">
+                    <a id="viewVideoClassLink" href="#" target="_blank" rel="noopener" class="block mt-1 text-[11px] font-semibold text-indigo-600 break-all"></a>
                 </div>
                 <div>
                     <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Meeting Done</div>
@@ -212,6 +246,9 @@
         let dragClassId = null;
         let lastDropAt = 0;
         let currentDetailClassId = null;
+        let detailEditEnabled = false;
+        let usersState = [];
+        let mentorsState = [];
 
         const currentFilters = { search: "", status: "" };
 
@@ -275,17 +312,35 @@
                     else if (m.name) mentors.push({ name: String(m.name) });
                 });
             }
+            const picRaw = d.pic;
+            const supervisorName = (picRaw && typeof picRaw === "object" && picRaw.name)
+                ? String(picRaw.name)
+                : (typeof picRaw === "string" ? picRaw : "");
+            const supervisorUid = (picRaw && typeof picRaw === "object" && picRaw.uid)
+                ? String(picRaw.uid)
+                : (d.pic_uid || d.picUid || d.supervisor_uid || d.supervisorUid || "");
+            const supervisorPhoto = (picRaw && typeof picRaw === "object" && (picRaw.photo || picRaw.photoUrl || picRaw.avatar || picRaw.image))
+                ? (picRaw.photo || picRaw.photoUrl || picRaw.avatar || picRaw.image)
+                : (d.pic_photo || d.picPhoto || d.supervisor_photo || d.supervisorPhoto || "");
             return {
                 id: d.id || docSnap.id,
                 docId: docSnap.id,
                 name: d.name || d.class_name || "Unnamed Class",
                 status: deriveStatusFromAvailability(d),
                 startDate: toDateString(d.start_date || d.startDate),
+                startTime: d.start_time || d.startTime || d.class_time || d.classTime || d.time || d.jam || "",
                 location: d.location || "",
                 type: d.type || "Offline",
                 meetingDone: typeof d.meeting_done === "number" ? d.meeting_done : 0,
                 meetingTotal: typeof d.meeting_total === "number" ? d.meeting_total : 0,
+                groupLink: d.group_link || d.groupLink || "",
+                videoClassLink: d.video_class || d.videoClass || d.video_class_link || d.videoClassLink || "",
                 comment: d.comment || "",
+                supervisor: {
+                    uid: supervisorUid,
+                    name: supervisorName,
+                    photo: supervisorPhoto
+                },
                 mentors
             };
         }
@@ -302,14 +357,175 @@
             return map[status] || "cal-card-soon";
         }
 
-        function getStatusClass(status) {
-            if (status === "Soon") return "status-pill status-soon";
-            if (status === "Running") return "status-pill status-running";
-            if (status === "Reminder") return "status-pill status-reminder";
-            if (status === "Stall") return "status-pill status-stall";
-            if (status === "Graduate") return "status-pill status-graduate";
-            if (status === "Complete") return "status-pill status-complete";
-            return "status-pill status-soon";
+        function updateLinkPreview(anchorId, value) {
+            const anchor = document.getElementById(anchorId);
+            if (!anchor) return;
+            const raw = (value || "").trim();
+            if (!raw) {
+                anchor.textContent = "-";
+                anchor.href = "#";
+                return;
+            }
+            anchor.textContent = raw;
+            anchor.href = raw;
+        }
+
+        function getFirstName(fullName) {
+            if (!fullName) return "-";
+            return String(fullName).trim().split(/\s+/)[0] || "-";
+        }
+
+        function getInitials(fullName) {
+            if (!fullName) return "S";
+            const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
+            if (!parts.length) return "S";
+            return parts.slice(0, 2).map(p => p[0]).join("").toUpperCase();
+        }
+
+        function getTypePillClass(type) {
+            const v = String(type || "").toLowerCase();
+            if (v === "online") return "cal-type-pill cal-type-online";
+            if (v === "hybrid") return "cal-type-pill cal-type-hybrid";
+            return "cal-type-pill cal-type-offline";
+        }
+
+        function mapUserDocToOption(docSnap) {
+            const d = docSnap.data() || {};
+            const uid = d.uid || docSnap.id;
+            const name = d.name || d.displayName || d.nickname || d.email || uid;
+            const photo = d.photo || d.photoURL || d.avatar_url || d.avatar || "";
+            return { uid, name, photo };
+        }
+
+        async function loadUsersForSupervisorDropdown() {
+            try {
+                const snap = await getDocs(collection(db, "users"));
+                usersState = [];
+                snap.forEach((docSnap) => {
+                    usersState.push(mapUserDocToOption(docSnap));
+                });
+            } catch (e) {
+                usersState = [];
+            }
+        }
+
+        function mapMentorDocToOption(docSnap) {
+            const d = docSnap.data() || {};
+            const id = docSnap.id;
+            const name = d.fullName || d.nama_lengkap || d.name || d.displayName || id;
+            return { id, name };
+        }
+
+        async function loadMentorsForDropdown() {
+            try {
+                const snap = await getDocs(collection(db, "mentor"));
+                mentorsState = [];
+                snap.forEach((docSnap) => {
+                    mentorsState.push(mapMentorDocToOption(docSnap));
+                });
+            } catch (e) {
+                mentorsState = [];
+            }
+        }
+
+        function renderMentorOptions(selectedName) {
+            const select = document.getElementById("editMentorName");
+            if (!select) return;
+            select.innerHTML = "";
+            const emptyOption = document.createElement("option");
+            emptyOption.value = "";
+            emptyOption.textContent = "Pilih mentor";
+            select.appendChild(emptyOption);
+            mentorsState.forEach((m) => {
+                const opt = document.createElement("option");
+                opt.value = m.name;
+                opt.textContent = m.name;
+                select.appendChild(opt);
+            });
+            if (selectedName) {
+                const found = mentorsState.some(m => m.name === selectedName);
+                if (!found) {
+                    const opt = document.createElement("option");
+                    opt.value = selectedName;
+                    opt.textContent = selectedName;
+                    select.appendChild(opt);
+                }
+                select.value = selectedName;
+            }
+        }
+
+        function renderSupervisorOptions(selectedSupervisor) {
+            const select = document.getElementById("editSupervisorUser");
+            if (!select) return;
+            const prevVal = select.value;
+            select.innerHTML = "";
+            const emptyOption = document.createElement("option");
+            emptyOption.value = "";
+            emptyOption.textContent = "Pilih supervisor";
+            select.appendChild(emptyOption);
+            usersState.forEach((u) => {
+                const opt = document.createElement("option");
+                opt.value = u.uid;
+                opt.textContent = u.name;
+                select.appendChild(opt);
+            });
+            if (selectedSupervisor && selectedSupervisor.uid) {
+                const found = usersState.some(u => u.uid === selectedSupervisor.uid);
+                if (!found && selectedSupervisor.name) {
+                    const opt = document.createElement("option");
+                    opt.value = selectedSupervisor.uid;
+                    opt.textContent = selectedSupervisor.name;
+                    select.appendChild(opt);
+                }
+                select.value = selectedSupervisor.uid;
+                return;
+            }
+            if (selectedSupervisor && selectedSupervisor.name) {
+                const manualVal = "name:" + selectedSupervisor.name;
+                const opt = document.createElement("option");
+                opt.value = manualVal;
+                opt.textContent = selectedSupervisor.name;
+                select.appendChild(opt);
+                select.value = manualVal;
+                return;
+            }
+            select.value = prevVal || "";
+        }
+
+        function setDetailEditMode(enabled) {
+            detailEditEnabled = enabled;
+            const inputIds = [
+                "editClassName",
+                "editStatus",
+                "editStartDate",
+                "editStartTime",
+                "editLocation",
+                "editType",
+                "editMentorName",
+                "editSupervisorUser",
+                "editWaGroupLink",
+                "editVideoClassLink",
+                "editMeetingDone",
+                "editMeetingTotal",
+                "editComment"
+            ];
+            inputIds.forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = !enabled;
+            });
+            const btnEnable = document.getElementById("btnEnableDetailEdit");
+            const btnCancel = document.getElementById("btnCancelDetailEdit");
+            const btnSave = document.getElementById("btnSaveDetailEdit");
+            if (btnEnable) btnEnable.classList.toggle("hidden", enabled);
+            if (btnCancel) btnCancel.classList.toggle("hidden", !enabled);
+            if (btnSave) btnSave.classList.toggle("hidden", !enabled);
+        }
+
+        function setDetailPageLink(c) {
+            const btn = document.getElementById("btnOpenDetailPage");
+            if (!btn) return;
+            const docId = c && c.docId ? c.docId : "";
+            btn.href = "./class-detail.html?docId=" + encodeURIComponent(docId);
         }
 
         function openDetailModal(classId) {
@@ -322,9 +538,9 @@
             const nameEl = document.getElementById("editClassName");
             const statusEl = document.getElementById("editStatus");
             const startEl = document.getElementById("editStartDate");
+            const startTimeEl = document.getElementById("editStartTime");
             const locationEl = document.getElementById("editLocation");
             const typeEl = document.getElementById("editType");
-            const mentorsEl = document.getElementById("editMentors");
             const meetingDoneEl = document.getElementById("editMeetingDone");
             const meetingTotalEl = document.getElementById("editMeetingTotal");
             const commentEl = document.getElementById("editComment");
@@ -332,12 +548,23 @@
             if (nameEl) nameEl.value = c.name || "";
             if (statusEl) statusEl.value = c.status || "Soon";
             if (startEl) startEl.value = c.startDate || "";
+            if (startTimeEl) startTimeEl.value = c.startTime || "";
             if (locationEl) locationEl.value = c.location || "";
             if (typeEl) typeEl.value = c.type || "Offline";
-            if (mentorsEl) mentorsEl.value = Array.isArray(c.mentors) && c.mentors.length ? c.mentors.map(m => m.name).join(", ") : "";
+            const selectedMentorName = Array.isArray(c.mentors) && c.mentors.length ? c.mentors[0].name : "";
+            renderMentorOptions(selectedMentorName);
             if (meetingDoneEl) meetingDoneEl.value = String(c.meetingDone || 0);
             if (meetingTotalEl) meetingTotalEl.value = String(c.meetingTotal || 0);
             if (commentEl) commentEl.value = c.comment || "";
+            const waGroupEl = document.getElementById("editWaGroupLink");
+            const videoClassEl = document.getElementById("editVideoClassLink");
+            if (waGroupEl) waGroupEl.value = c.groupLink || "";
+            if (videoClassEl) videoClassEl.value = c.videoClassLink || "";
+            renderSupervisorOptions(c.supervisor || null);
+            updateLinkPreview("viewWaGroupLink", c.groupLink || "");
+            updateLinkPreview("viewVideoClassLink", c.videoClassLink || "");
+            setDetailPageLink(c);
+            setDetailEditMode(false);
             modal.classList.add("open");
             if (window.lucide) window.lucide.createIcons();
         }
@@ -349,16 +576,13 @@
             currentDetailClassId = null;
         }
 
-        function parseMentorNames(raw) {
+        function buildMentorArrayFromName(name) {
+            const raw = (name || "").trim();
             if (!raw) return [];
-            return String(raw)
-                .split(",")
-                .map(name => name.trim())
-                .filter(Boolean)
-                .map(name => ({
-                    name,
-                    initials: name.split(" ").filter(Boolean).map(n => n[0]).join("").toUpperCase().slice(0, 2)
-                }));
+            return [{
+                name: raw,
+                initials: raw.split(" ").filter(Boolean).map(n => n[0]).join("").toUpperCase().slice(0, 2)
+            }];
         }
 
         async function saveDetailChanges() {
@@ -374,10 +598,23 @@
             }
             const status = (document.getElementById("editStatus")?.value || "Soon").trim();
             const startDate = (document.getElementById("editStartDate")?.value || "").trim();
+            const startTime = (document.getElementById("editStartTime")?.value || "").trim();
             const location = (document.getElementById("editLocation")?.value || "").trim();
             const type = (document.getElementById("editType")?.value || "Offline").trim();
-            const mentorsInput = (document.getElementById("editMentors")?.value || "").trim();
-            const mentors = parseMentorNames(mentorsInput);
+            const mentorName = (document.getElementById("editMentorName")?.value || "").trim();
+            const mentors = buildMentorArrayFromName(mentorName);
+            const supervisorSelectValue = (document.getElementById("editSupervisorUser")?.value || "").trim();
+            let supervisor = { uid: "", name: "", photo: "" };
+            if (supervisorSelectValue.startsWith("name:")) {
+                supervisor = { uid: "", name: supervisorSelectValue.slice(5), photo: "" };
+            } else if (supervisorSelectValue) {
+                const selectedUser = usersState.find(u => u.uid === supervisorSelectValue);
+                if (selectedUser) {
+                    supervisor = { uid: selectedUser.uid, name: selectedUser.name, photo: selectedUser.photo || "" };
+                }
+            }
+            const waGroupLink = (document.getElementById("editWaGroupLink")?.value || "").trim();
+            const videoClassLink = (document.getElementById("editVideoClassLink")?.value || "").trim();
             const meetingDone = parseInt(document.getElementById("editMeetingDone")?.value || "0", 10) || 0;
             const meetingTotal = parseInt(document.getElementById("editMeetingTotal")?.value || "0", 10) || 0;
             const comment = (document.getElementById("editComment")?.value || "").trim();
@@ -393,10 +630,25 @@
                     class_status: status,
                     start_date: startDate,
                     startDate: startDate,
+                    start_time: startTime,
+                    startTime: startTime,
+                    class_time: startTime,
+                    classTime: startTime,
+                    time: startTime,
+                    jam: startTime,
                     location,
                     type,
                     mentors,
-                    mentor_name: mentors.map(m => m.name).join(", "),
+                    mentor_name: mentorName,
+                    pic: supervisor.name || "",
+                    pic_uid: supervisor.uid || "",
+                    picUid: supervisor.uid || "",
+                    pic_photo: supervisor.photo || "",
+                    picPhoto: supervisor.photo || "",
+                    group_link: waGroupLink,
+                    groupLink: waGroupLink,
+                    video_class: videoClassLink,
+                    videoClass: videoClassLink,
                     meeting_done: meetingDone,
                     meeting_total: meetingTotal,
                     comment,
@@ -407,15 +659,20 @@
                     name,
                     status,
                     startDate,
+                    startTime,
                     location,
                     type,
                     mentors,
+                    supervisor,
+                    groupLink: waGroupLink,
+                    videoClassLink: videoClassLink,
                     meetingDone,
                     meetingTotal,
                     comment
                 };
                 renderCalendar(applyFilters());
                 openDetailModal(selected.id);
+                setDetailEditMode(false);
                 showToast("Detail kelas berhasil diperbarui", "success");
             } catch (e) {
                 showToast("Gagal menyimpan detail kelas", "error");
@@ -553,13 +810,72 @@
                     const title = document.createElement("div");
                     title.className = "cal-card-title";
                     title.textContent = c.name || "-";
-                    const meta = document.createElement("div");
-                    meta.className = "cal-card-meta";
-                    meta.innerHTML = "<span>M:" + (c.meetingDone || 0) + "</span>";
-                    if (c.mentors && c.mentors.length) meta.innerHTML += "<span>• " + c.mentors[0].name + "</span>";
-                    if (c.type) meta.innerHTML += "<span class='cal-type-badge'>" + c.type + "</span>";
+                    const time = document.createElement("div");
+                    time.className = "cal-card-time";
+                    time.textContent = c.startTime ? String(c.startTime) : "-";
+
+                    const rowMeeting = document.createElement("div");
+                    rowMeeting.className = "cal-card-row";
+                    const meetingLabel = document.createElement("span");
+                    meetingLabel.className = "cal-card-label";
+                    meetingLabel.textContent = "Meeting:";
+                    const meetingVal = document.createElement("span");
+                    meetingVal.className = "cal-card-value";
+                    meetingVal.textContent = String(c.meetingDone || 0) + "/" + String(c.meetingTotal || 0);
+                    rowMeeting.appendChild(meetingLabel);
+                    rowMeeting.appendChild(meetingVal);
+
+                    const rowMentor = document.createElement("div");
+                    rowMentor.className = "cal-card-row";
+                    const mentorLabel = document.createElement("span");
+                    mentorLabel.className = "cal-card-label";
+                    mentorLabel.textContent = "Mentor:";
+                    const mentorChip = document.createElement("span");
+                    mentorChip.className = "cal-mentor-chip";
+                    const mentorFullName = c.mentors && c.mentors.length ? c.mentors[0].name : "-";
+                    mentorChip.textContent = getFirstName(mentorFullName);
+                    mentorChip.title = mentorFullName || "-";
+                    rowMentor.appendChild(mentorLabel);
+                    rowMentor.appendChild(mentorChip);
+
+                    const rowSupervisor = document.createElement("div");
+                    rowSupervisor.className = "cal-card-row";
+                    const supervisorLabel = document.createElement("span");
+                    supervisorLabel.className = "cal-card-label";
+                    supervisorLabel.textContent = "Supervisor:";
+                    const supervisorAvatar = document.createElement("span");
+                    supervisorAvatar.className = "cal-supervisor-avatar";
+                    const supName = c.supervisor && c.supervisor.name ? c.supervisor.name : "-";
+                    const supPhoto = c.supervisor && c.supervisor.photo ? c.supervisor.photo : "";
+                    supervisorAvatar.title = supName;
+                    if (supPhoto) {
+                        const img = document.createElement("img");
+                        img.src = supPhoto;
+                        img.alt = supName;
+                        supervisorAvatar.appendChild(img);
+                    } else {
+                        supervisorAvatar.textContent = getInitials(supName);
+                    }
+                    rowSupervisor.appendChild(supervisorLabel);
+                    rowSupervisor.appendChild(supervisorAvatar);
+
+                    const rowType = document.createElement("div");
+                    rowType.className = "cal-card-row";
+                    const typeLabel = document.createElement("span");
+                    typeLabel.className = "cal-card-label";
+                    typeLabel.textContent = "Type Class:";
+                    const typePill = document.createElement("span");
+                    typePill.className = getTypePillClass(c.type || "Offline");
+                    typePill.textContent = c.type || "Offline";
+                    rowType.appendChild(typeLabel);
+                    rowType.appendChild(typePill);
+
                     card.appendChild(title);
-                    card.appendChild(meta);
+                    card.appendChild(time);
+                    card.appendChild(rowMeeting);
+                    card.appendChild(rowMentor);
+                    card.appendChild(rowSupervisor);
+                    card.appendChild(rowType);
                     cell.appendChild(card);
                 });
                 grid.appendChild(cell);
@@ -588,8 +904,12 @@
             const calNext = document.getElementById("calNext");
             const calTodayBtn = document.getElementById("calToday");
             const btnCloseDetail = document.getElementById("btnCloseDetail");
+            const btnEnableDetailEdit = document.getElementById("btnEnableDetailEdit");
+            const btnCancelDetailEdit = document.getElementById("btnCancelDetailEdit");
             const btnSaveDetailEdit = document.getElementById("btnSaveDetailEdit");
             const detailModal = document.getElementById("classDetailModal");
+            const editWaGroupLink = document.getElementById("editWaGroupLink");
+            const editVideoClassLink = document.getElementById("editVideoClassLink");
 
             if (searchInput) {
                 searchInput.addEventListener("input", (e) => {
@@ -634,8 +954,23 @@
             if (btnCloseDetail) {
                 btnCloseDetail.addEventListener("click", () => closeDetailModal());
             }
+            if (btnEnableDetailEdit) {
+                btnEnableDetailEdit.addEventListener("click", () => setDetailEditMode(true));
+            }
+            if (btnCancelDetailEdit) {
+                btnCancelDetailEdit.addEventListener("click", () => {
+                    if (!currentDetailClassId) return;
+                    openDetailModal(currentDetailClassId);
+                });
+            }
             if (btnSaveDetailEdit) {
                 btnSaveDetailEdit.addEventListener("click", () => saveDetailChanges());
+            }
+            if (editWaGroupLink) {
+                editWaGroupLink.addEventListener("input", () => updateLinkPreview("viewWaGroupLink", editWaGroupLink.value));
+            }
+            if (editVideoClassLink) {
+                editVideoClassLink.addEventListener("input", () => updateLinkPreview("viewVideoClassLink", editVideoClassLink.value));
             }
             if (detailModal) {
                 detailModal.addEventListener("click", (e) => {
@@ -645,6 +980,8 @@
         }
 
         async function loadClassesFromFirestore() {
+            await loadUsersForSupervisorDropdown();
+            await loadMentorsForDropdown();
             const snap = await getDocs(collection(db, "class_availability"));
             const loaded = [];
             snap.forEach((docSnap) => {
