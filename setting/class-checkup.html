@@ -17,8 +17,8 @@
         .cal-nav button { padding:6px 14px; border-radius:12px; font-size:11px; font-weight:700; border:1px solid #e2e8f0; background:#fff; color:#334155; cursor:pointer; transition:all .15s; }
         .cal-nav button:hover { background:#f1f5f9; }
         .cal-nav .cal-month-label { font-size:14px; font-weight:800; color:#0f172a; min-width:140px; text-align:center; }
-        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:#e2e8f0; border-radius:16px; overflow:hidden; }
-        .cal-day-header { background:#f8fafc; padding:8px 4px; text-align:center; font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.08em; }
+        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:#e2e8f0; border-radius:16px; overflow:visible; }
+        .cal-day-header { background:#f8fafc; padding:8px 4px; text-align:center; font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.08em; position:sticky; top:0; z-index:10; }
         .cal-cell { background:#fff; min-height:220px; padding:8px; position:relative; vertical-align:top; transition:background-color .12s; }
         .cal-cell.other-month { background:#f8fafc; }
         .cal-cell.today { box-shadow:inset 0 0 0 2px #38bdf8; }
@@ -57,6 +57,7 @@
         .modal-backdrop-custom { position:fixed; inset:0; background:rgba(15,23,42,.45); display:none; align-items:center; justify-content:center; z-index:2000; padding:20px; }
         .modal-backdrop-custom.open { display:flex; }
         .modal-card { width:100%; max-width:680px; max-height:calc(100vh - 40px); overflow:auto; }
+        .cal-scroll-wrapper { overflow-x:auto; overflow-y:auto; max-height:600px; border-radius:16px; }
         @media(max-width:768px){ .cal-grid{min-width:880px;} .cal-cell{min-height:180px;} }
     </style>
 </head>
@@ -122,7 +123,7 @@
                         </div>
                     </div>
                 </div>
-                <div style="overflow-x:auto;">
+                <div class="cal-scroll-wrapper">
                     <div class="cal-grid" id="calGrid"></div>
                 </div>
             </section>
