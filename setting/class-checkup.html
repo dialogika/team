@@ -439,9 +439,119 @@
             };
         }
 
-        async function logScheduleChange(classData, prevDate, newDate, source) {
+        function escapeHtml(value) {
+            return String(value || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function normalizeAuditCompareValue(value) {
+            if (value === null || value === undefined) return null;
+            if (typeof value === "string") return value.trim();
+            if (typeof value === "number" || typeof value === "boolean") return value;
+            if (Array.isArray(value)) {
+                return value
+                    .map((item) => normalizeAuditCompareValue(item))
+                    .filter((item) => item !== null && item !== "")
+                    .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+            }
+            if (typeof value === "object") {
+                if ("uid" in value || "name" in value || "photo" in value) {
+                    return {
+                        uid: String(value.uid || ""),
+                        name: String(value.name || ""),
+                        photo: String(value.photo || "")
+                    };
+                }
+                if ("url" in value || "title" in value || "type" in value) {
+                    return {
+                        url: String(value.url || ""),
+                        title: String(value.title || ""),
+                        type: String(value.type || "")
+                    };
+                }
+                const out = {};
+                Object.keys(value).sort().forEach((key) => {
+                    out[key] = normalizeAuditCompareValue(value[key]);
+                });
+                return out;
+            }
+            return String(value);
+        }
+
+        function formatAuditDisplayValue(value) {
+            if (value === null || value === undefined) return "-";
+            if (typeof value === "string") {
+                const v = value.trim();
+                return v || "-";
+            }
+            if (typeof value === "number" || typeof value === "boolean") return String(value);
+            if (Array.isArray(value)) {
+                const parts = value.map((item) => {
+                    if (item === null || item === undefined) return "";
+                    if (typeof item === "string") return item.trim();
+                    if (typeof item === "number" || typeof item === "boolean") return String(item);
+                    if (typeof item === "object") {
+                        if ("name" in item && item.name) return String(item.name).trim();
+                        if ("title" in item && item.title && "url" in item && item.url) return String(item.title).trim() + " (" + String(item.url).trim() + ")";
+                        if ("url" in item && item.url) return String(item.url).trim();
+                        if ("uid" in item && item.uid) return String(item.uid).trim();
+                        return JSON.stringify(item);
+                    }
+                    return String(item);
+                }).filter(Boolean);
+                return parts.length ? parts.join(", ") : "-";
+            }
+            if (typeof value === "object") {
+                if ("name" in value && value.name) return String(value.name).trim();
+                if ("title" in value && value.title && "url" in value && value.url) return String(value.title).trim() + " (" + String(value.url).trim() + ")";
+                if ("url" in value && value.url) return String(value.url).trim();
+                return JSON.stringify(value);
+            }
+            return String(value);
+        }
+
+        function buildClassChangeEntries(prevData, nextData) {
+            const fields = [
+                { key: "name", label: "Nama Kelas" },
+                { key: "status", label: "Status" },
+                { key: "startDate", label: "Tanggal Mulai" },
+                { key: "startTime", label: "Jam Mulai" },
+                { key: "location", label: "Lokasi" },
+                { key: "type", label: "Tipe Kelas" },
+                { key: "mentorName", label: "Mentor" },
+                { key: "supervisors", label: "Supervisor" },
+                { key: "admins", label: "Admin" },
+                { key: "treasurers", label: "Treasurer" },
+                { key: "classLinks", label: "Class Links" },
+                { key: "meetingDone", label: "Meeting Done" },
+                { key: "meetingTotal", label: "Meeting Total" },
+                { key: "comment", label: "Komentar" }
+            ];
+            const changes = [];
+            fields.forEach((field) => {
+                const beforeRaw = prevData ? prevData[field.key] : undefined;
+                const afterRaw = nextData ? nextData[field.key] : undefined;
+                const before = normalizeAuditCompareValue(beforeRaw);
+                const after = normalizeAuditCompareValue(afterRaw);
+                if (JSON.stringify(before) === JSON.stringify(after)) return;
+                changes.push({
+                    field: field.key,
+                    label: field.label,
+                    from: formatAuditDisplayValue(beforeRaw),
+                    to: formatAuditDisplayValue(afterRaw)
+                });
+            });
+            return changes;
+        }
+
+        async function logScheduleChange(classData, prevDate, newDate, source, changes) {
             if (!classData || !classData.docId) return;
             const user = getCurrentUserAuditInfo();
+            const safeChanges = Array.isArray(changes) ? changes.filter((item) => item && item.field) : [];
             const payload = {
                 classDocId: classData.docId,
                 classId: classData.id || null,
@@ -455,6 +565,8 @@
                 changedByName: user.userName || "",
                 changedByEmail: user.userEmail || null,
                 source: source || "unknown",
+                changeType: safeChanges.length ? "field_update" : "date_change",
+                changes: safeChanges,
                 changedAt: serverTimestamp()
             };
             try {
@@ -508,11 +620,20 @@
                     let sourceLabel = "Perubahan";
                     if (d.source === "calendar_drag") sourceLabel = "Kalender";
                     else if (d.source === "detail_modal") sourceLabel = "Detail";
+                    const changeRows = Array.isArray(d.changes) ? d.changes : [];
+                    const detailHtml = changeRows.length
+                        ? "<div class=\"text-[11px] text-slate-700\">" + changeRows.map((change) => {
+                            const label = escapeHtml(change.label || change.field || "Field");
+                            const from = escapeHtml(change.from || "-");
+                            const to = escapeHtml(change.to || "-");
+                            return "<div>" + label + ": " + from + " → " + to + "</div>";
+                        }).join("") + "</div>"
+                        : "<div class=\"text-[11px] text-slate-700\">" + escapeHtml(prev) + " → " + escapeHtml(next) + "</div>";
                     parts.push(
                         "<div class=\"py-1.5 border-b border-slate-200 last:border-b-0\">" +
-                        "<div class=\"font-semibold text-[11px] text-slate-800\">" + className + "</div>" +
-                        "<div class=\"text-[11px] text-slate-700\">" + prev + " → " + next + "</div>" +
-                        "<div class=\"text-[10px] text-slate-500\">" + by +
+                        "<div class=\"font-semibold text-[11px] text-slate-800\">" + escapeHtml(className) + "</div>" +
+                        detailHtml +
+                        "<div class=\"text-[10px] text-slate-500\">" + escapeHtml(by) +
                         (sourceLabel ? " • " + sourceLabel : "") +
                         (timeStr ? " • " + timeStr : "") +
                         "</div>" +
@@ -1277,6 +1398,39 @@
                 btnSave.disabled = true;
                 btnSave.textContent = "Menyimpan...";
             }
+            const nextClassData = {
+                name,
+                status,
+                startDate,
+                startTime,
+                location,
+                type,
+                mentorName,
+                supervisors,
+                admins,
+                treasurers,
+                classLinks,
+                meetingDone,
+                meetingTotal,
+                comment
+            };
+            const previousClassData = {
+                name: selected.name,
+                status: selected.status,
+                startDate: selected.startDate,
+                startTime: selected.startTime,
+                location: selected.location,
+                type: selected.type,
+                mentorName: Array.isArray(selected.mentors) && selected.mentors.length ? selected.mentors[0].name : "",
+                supervisors: selected.supervisors || [],
+                admins: selected.admins || [],
+                treasurers: selected.treasurers || [],
+                classLinks: selected.classLinks || [],
+                meetingDone: selected.meetingDone,
+                meetingTotal: selected.meetingTotal,
+                comment: selected.comment || ""
+            };
+            const changeEntries = buildClassChangeEntries(previousClassData, nextClassData);
             try {
                 const prevDate = selected.startDate || "";
                 await updateDoc(doc(db, "class_availability", selected.docId), {
@@ -1338,8 +1492,8 @@
                     meetingTotal,
                     comment
                 };
-                if (startDate && startDate !== prevDate) {
-                    await logScheduleChange(classesState[idx], prevDate, startDate, "detail_modal");
+                if (changeEntries.length) {
+                    await logScheduleChange(classesState[idx], prevDate, startDate, "detail_modal", changeEntries);
                 }
                 renderCalendar(applyFilters());
                 openDetailModal(selected.id);
