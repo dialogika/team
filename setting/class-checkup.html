@@ -17,6 +17,11 @@
         .cal-nav button { padding:6px 14px; border-radius:12px; font-size:11px; font-weight:700; border:1px solid #e2e8f0; background:#fff; color:#334155; cursor:pointer; transition:all .15s; }
         .cal-nav button:hover { background:#f1f5f9; }
         .cal-nav .cal-month-label { font-size:14px; font-weight:800; color:#0f172a; min-width:140px; text-align:center; }
+        .cal-period-toggle { display:inline-flex; gap:4px; background:transparent; border:none; }
+        .cal-period-btn { padding:6px 10px; font-size:11px; font-weight:800; color:#64748b; border:1px solid #e2e8f0; border-radius:12px; background:#fff; cursor:pointer; transition:all .15s; }
+        .cal-period-btn:hover { background:#f8fafc; color:#334155; }
+        .cal-period-btn.active { background:#0f172a; color:#f8fafc; border-color:#0f172a; }
+        .cal-period-btn.active:hover { background:#1e293b; border-color:#1e293b; color:#ffffff; }
         .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:#e2e8f0; border-radius:16px; overflow:visible; }
         .cal-day-header { background:#f8fafc; padding:8px 4px; text-align:center; font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.08em; position:sticky; top:0; z-index:10; }
         .cal-cell { background:#fff; min-height:220px; padding:8px; position:relative; vertical-align:top; transition:background-color .12s; }
@@ -107,6 +112,11 @@
                 <div class="cal-header">
                     <div class="cal-nav">
                         <button id="calToday">Today</button>
+                        <div class="cal-period-toggle">
+                            <button id="btnPeriodDay" class="cal-period-btn">Day</button>
+                            <button id="btnPeriodWeek" class="cal-period-btn">Week</button>
+                            <button id="btnPeriodMonth" class="cal-period-btn active">Month</button>
+                        </div>
                         <button id="calPrev"><i data-lucide="chevron-left" class="w-3 h-3 inline"></i></button>
                         <span class="cal-month-label" id="calMonthLabel">-</span>
                         <button id="calNext"><i data-lucide="chevron-right" class="w-3 h-3 inline"></i></button>
@@ -272,6 +282,8 @@
         let classesState = [];
         let calYear = new Date().getFullYear();
         let calMonth = new Date().getMonth();
+        let calDay = new Date().getDate();
+        let calViewMode = "month";
         let dragClassId = null;
         let lastDropAt = 0;
         let currentDetailClassId = null;
@@ -280,6 +292,33 @@
         let mentorsState = [];
 
         const currentFilters = { search: "", status: "" };
+
+        function toDateKey(dateObj) {
+            return dateObj.getFullYear() + "-" + String(dateObj.getMonth() + 1).padStart(2, "0") + "-" + String(dateObj.getDate()).padStart(2, "0");
+        }
+
+        function formatHumanDate(dateObj) {
+            return dateObj.toLocaleDateString("id-ID", { weekday: "short", day: "2-digit", month: "short", year: "numeric" });
+        }
+
+        function formatRangeDate(dateObj) {
+            return dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+        }
+
+        function getCurrentCursorDate() {
+            return new Date(calYear, calMonth, calDay);
+        }
+
+        function setPeriodMode(mode) {
+            calViewMode = mode;
+            const btnDay = document.getElementById("btnPeriodDay");
+            const btnWeek = document.getElementById("btnPeriodWeek");
+            const btnMonth = document.getElementById("btnPeriodMonth");
+            if (btnDay) btnDay.classList.toggle("active", mode === "day");
+            if (btnWeek) btnWeek.classList.toggle("active", mode === "week");
+            if (btnMonth) btnMonth.classList.toggle("active", mode === "month");
+            renderCalendar(applyFilters());
+        }
 
         function showToast(message, type) {
             const toast = document.getElementById("toast");
@@ -881,20 +920,9 @@
             const countEl = document.getElementById("calClassCount");
             if (!grid) return;
             grid.innerHTML = "";
-            if (label) label.textContent = MONTH_NAMES[calMonth] + " " + calYear;
 
-            DAY_NAMES.forEach(d => {
-                const h = document.createElement("div");
-                h.className = "cal-day-header";
-                h.textContent = d.substring(0, 3);
-                grid.appendChild(h);
-            });
-
-            const firstDay = new Date(calYear, calMonth, 1).getDay();
-            const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-            const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
             const today = new Date();
-            const todayStr = today.getFullYear() + "-" + String(today.getMonth()+1).padStart(2,"0") + "-" + String(today.getDate()).padStart(2,"0");
+            const todayStr = toDateKey(today);
             const classByDate = {};
             let calCount = 0;
 
@@ -904,25 +932,103 @@
                 classByDate[c.startDate].push(c);
             });
 
-            for (let i = 0; i < firstDay; i++) {
-                const d = prevMonthDays - firstDay + 1 + i;
-                const cell = document.createElement("div");
-                cell.className = "cal-cell other-month";
-                const num = document.createElement("div");
-                num.className = "cal-date-num";
-                num.textContent = d;
-                cell.appendChild(num);
-                grid.appendChild(cell);
+            function appendCard(cell, c) {
+                const card = document.createElement("div");
+                card.className = "cal-card " + getCalCardClass(c.status);
+                card.draggable = true;
+                card.dataset.classId = c.id;
+                card.title = "Drag untuk pindahkan tanggal start";
+                card.addEventListener("dragstart", () => {
+                    dragClassId = c.id;
+                });
+                card.addEventListener("dragend", () => {
+                    dragClassId = null;
+                });
+                card.addEventListener("click", () => {
+                    if (Date.now() - lastDropAt < 250) return;
+                    openDetailModal(c.id);
+                });
+
+                const title = document.createElement("div");
+                title.className = "cal-card-title";
+                title.textContent = c.name || "-";
+                const time = document.createElement("div");
+                time.className = "cal-card-time";
+                time.textContent = c.startTime ? String(c.startTime) : "-";
+
+                const rowMeeting = document.createElement("div");
+                rowMeeting.className = "cal-card-row";
+                const meetingLabel = document.createElement("span");
+                meetingLabel.className = "cal-card-label";
+                meetingLabel.textContent = "Meeting:";
+                const meetingVal = document.createElement("span");
+                meetingVal.className = "cal-card-value";
+                meetingVal.textContent = String(c.meetingDone || 0) + "/" + String(c.meetingTotal || 0);
+                rowMeeting.appendChild(meetingLabel);
+                rowMeeting.appendChild(meetingVal);
+
+                const rowMentor = document.createElement("div");
+                rowMentor.className = "cal-card-row";
+                const mentorLabel = document.createElement("span");
+                mentorLabel.className = "cal-card-label";
+                mentorLabel.textContent = "Mentor:";
+                const mentorChip = document.createElement("span");
+                mentorChip.className = "cal-mentor-chip";
+                const mentorFullName = c.mentors && c.mentors.length ? c.mentors[0].name : "-";
+                mentorChip.textContent = getFirstName(mentorFullName);
+                mentorChip.title = mentorFullName || "-";
+                rowMentor.appendChild(mentorLabel);
+                rowMentor.appendChild(mentorChip);
+
+                const rowSupervisor = document.createElement("div");
+                rowSupervisor.className = "cal-card-row";
+                const supervisorLabel = document.createElement("span");
+                supervisorLabel.className = "cal-card-label";
+                supervisorLabel.textContent = "Supervisor:";
+                const supervisorAvatar = document.createElement("span");
+                supervisorAvatar.className = "cal-supervisor-avatar";
+                const supName = c.supervisor && c.supervisor.name ? c.supervisor.name : "-";
+                const supPhoto = c.supervisor && c.supervisor.photo ? c.supervisor.photo : "";
+                supervisorAvatar.title = supName;
+                if (supPhoto) {
+                    const img = document.createElement("img");
+                    img.src = supPhoto;
+                    img.alt = supName;
+                    supervisorAvatar.appendChild(img);
+                } else {
+                    supervisorAvatar.textContent = getInitials(supName);
+                }
+                rowSupervisor.appendChild(supervisorLabel);
+                rowSupervisor.appendChild(supervisorAvatar);
+
+                const rowType = document.createElement("div");
+                rowType.className = "cal-card-row";
+                const typeLabel = document.createElement("span");
+                typeLabel.className = "cal-card-label";
+                typeLabel.textContent = "Type Class:";
+                const typePill = document.createElement("span");
+                typePill.className = getTypePillClass(c.type || "Offline");
+                typePill.textContent = c.type || "Offline";
+                rowType.appendChild(typeLabel);
+                rowType.appendChild(typePill);
+
+                card.appendChild(title);
+                card.appendChild(time);
+                card.appendChild(rowMeeting);
+                card.appendChild(rowMentor);
+                card.appendChild(rowSupervisor);
+                card.appendChild(rowType);
+                cell.appendChild(card);
             }
 
-            for (let d = 1; d <= daysInMonth; d++) {
-                const dateStr = calYear + "-" + String(calMonth + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+            function createDateCell(dateObj, isOtherMonth) {
+                const dateStr = toDateKey(dateObj);
                 const cell = document.createElement("div");
-                cell.className = "cal-cell" + (dateStr === todayStr ? " today" : "");
+                cell.className = "cal-cell" + (dateStr === todayStr ? " today" : "") + (isOtherMonth ? " other-month" : "");
                 cell.dataset.date = dateStr;
                 const num = document.createElement("div");
                 num.className = "cal-date-num";
-                num.textContent = d;
+                num.textContent = dateObj.getDate();
                 cell.appendChild(num);
 
                 cell.addEventListener("dragover", (e) => {
@@ -943,107 +1049,65 @@
 
                 const classes = classByDate[dateStr] || [];
                 calCount += classes.length;
-                classes.forEach(c => {
-                    const card = document.createElement("div");
-                    card.className = "cal-card " + getCalCardClass(c.status);
-                    card.draggable = true;
-                    card.dataset.classId = c.id;
-                    card.title = "Drag untuk pindahkan tanggal start";
-                    card.addEventListener("dragstart", () => {
-                        dragClassId = c.id;
-                    });
-                    card.addEventListener("dragend", () => {
-                        dragClassId = null;
-                    });
-                    card.addEventListener("click", () => {
-                        if (Date.now() - lastDropAt < 250) return;
-                        openDetailModal(c.id);
-                    });
-
-                    const title = document.createElement("div");
-                    title.className = "cal-card-title";
-                    title.textContent = c.name || "-";
-                    const time = document.createElement("div");
-                    time.className = "cal-card-time";
-                    time.textContent = c.startTime ? String(c.startTime) : "-";
-
-                    const rowMeeting = document.createElement("div");
-                    rowMeeting.className = "cal-card-row";
-                    const meetingLabel = document.createElement("span");
-                    meetingLabel.className = "cal-card-label";
-                    meetingLabel.textContent = "Meeting:";
-                    const meetingVal = document.createElement("span");
-                    meetingVal.className = "cal-card-value";
-                    meetingVal.textContent = String(c.meetingDone || 0) + "/" + String(c.meetingTotal || 0);
-                    rowMeeting.appendChild(meetingLabel);
-                    rowMeeting.appendChild(meetingVal);
-
-                    const rowMentor = document.createElement("div");
-                    rowMentor.className = "cal-card-row";
-                    const mentorLabel = document.createElement("span");
-                    mentorLabel.className = "cal-card-label";
-                    mentorLabel.textContent = "Mentor:";
-                    const mentorChip = document.createElement("span");
-                    mentorChip.className = "cal-mentor-chip";
-                    const mentorFullName = c.mentors && c.mentors.length ? c.mentors[0].name : "-";
-                    mentorChip.textContent = getFirstName(mentorFullName);
-                    mentorChip.title = mentorFullName || "-";
-                    rowMentor.appendChild(mentorLabel);
-                    rowMentor.appendChild(mentorChip);
-
-                    const rowSupervisor = document.createElement("div");
-                    rowSupervisor.className = "cal-card-row";
-                    const supervisorLabel = document.createElement("span");
-                    supervisorLabel.className = "cal-card-label";
-                    supervisorLabel.textContent = "Supervisor:";
-                    const supervisorAvatar = document.createElement("span");
-                    supervisorAvatar.className = "cal-supervisor-avatar";
-                    const supName = c.supervisor && c.supervisor.name ? c.supervisor.name : "-";
-                    const supPhoto = c.supervisor && c.supervisor.photo ? c.supervisor.photo : "";
-                    supervisorAvatar.title = supName;
-                    if (supPhoto) {
-                        const img = document.createElement("img");
-                        img.src = supPhoto;
-                        img.alt = supName;
-                        supervisorAvatar.appendChild(img);
-                    } else {
-                        supervisorAvatar.textContent = getInitials(supName);
-                    }
-                    rowSupervisor.appendChild(supervisorLabel);
-                    rowSupervisor.appendChild(supervisorAvatar);
-
-                    const rowType = document.createElement("div");
-                    rowType.className = "cal-card-row";
-                    const typeLabel = document.createElement("span");
-                    typeLabel.className = "cal-card-label";
-                    typeLabel.textContent = "Type Class:";
-                    const typePill = document.createElement("span");
-                    typePill.className = getTypePillClass(c.type || "Offline");
-                    typePill.textContent = c.type || "Offline";
-                    rowType.appendChild(typeLabel);
-                    rowType.appendChild(typePill);
-
-                    card.appendChild(title);
-                    card.appendChild(time);
-                    card.appendChild(rowMeeting);
-                    card.appendChild(rowMentor);
-                    card.appendChild(rowSupervisor);
-                    card.appendChild(rowType);
-                    cell.appendChild(card);
-                });
-                grid.appendChild(cell);
+                classes.forEach(c => appendCard(cell, c));
+                return cell;
             }
 
-            const totalCells = firstDay + daysInMonth;
-            const remaining = (7 - (totalCells % 7)) % 7;
-            for (let i = 1; i <= remaining; i++) {
-                const cell = document.createElement("div");
-                cell.className = "cal-cell other-month";
-                const num = document.createElement("div");
-                num.className = "cal-date-num";
-                num.textContent = i;
-                cell.appendChild(num);
-                grid.appendChild(cell);
+            if (calViewMode === "day") {
+                grid.style.gridTemplateColumns = "1fr";
+                const currentDate = getCurrentCursorDate();
+                if (label) label.textContent = formatHumanDate(currentDate);
+                const h = document.createElement("div");
+                h.className = "cal-day-header";
+                h.textContent = DAY_NAMES[currentDate.getDay()].substring(0, 3);
+                grid.appendChild(h);
+                grid.appendChild(createDateCell(currentDate, false));
+            } else if (calViewMode === "week") {
+                grid.style.gridTemplateColumns = "repeat(7,1fr)";
+                const currentDate = getCurrentCursorDate();
+                const weekStart = new Date(currentDate);
+                weekStart.setDate(currentDate.getDate() - currentDate.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                if (label) label.textContent = formatRangeDate(weekStart) + " - " + formatRangeDate(weekEnd);
+                DAY_NAMES.forEach(d => {
+                    const h = document.createElement("div");
+                    h.className = "cal-day-header";
+                    h.textContent = d.substring(0, 3);
+                    grid.appendChild(h);
+                });
+                for (let i = 0; i < 7; i++) {
+                    const dateObj = new Date(weekStart);
+                    dateObj.setDate(weekStart.getDate() + i);
+                    grid.appendChild(createDateCell(dateObj, false));
+                }
+            } else {
+                grid.style.gridTemplateColumns = "repeat(7,1fr)";
+                if (label) label.textContent = MONTH_NAMES[calMonth] + " " + calYear;
+                DAY_NAMES.forEach(d => {
+                    const h = document.createElement("div");
+                    h.className = "cal-day-header";
+                    h.textContent = d.substring(0, 3);
+                    grid.appendChild(h);
+                });
+
+                const firstDay = new Date(calYear, calMonth, 1).getDay();
+                const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+                const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
+                for (let i = 0; i < firstDay; i++) {
+                    const dateObj = new Date(calYear, calMonth - 1, prevMonthDays - firstDay + 1 + i);
+                    grid.appendChild(createDateCell(dateObj, true));
+                }
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateObj = new Date(calYear, calMonth, d);
+                    grid.appendChild(createDateCell(dateObj, false));
+                }
+                const totalCells = firstDay + daysInMonth;
+                const remaining = (7 - (totalCells % 7)) % 7;
+                for (let i = 1; i <= remaining; i++) {
+                    const dateObj = new Date(calYear, calMonth + 1, i);
+                    grid.appendChild(createDateCell(dateObj, true));
+                }
             }
 
             if (countEl) countEl.textContent = calCount + " kelas";
@@ -1056,6 +1120,9 @@
             const calPrev = document.getElementById("calPrev");
             const calNext = document.getElementById("calNext");
             const calTodayBtn = document.getElementById("calToday");
+            const btnPeriodDay = document.getElementById("btnPeriodDay");
+            const btnPeriodWeek = document.getElementById("btnPeriodWeek");
+            const btnPeriodMonth = document.getElementById("btnPeriodMonth");
             const btnCloseDetail = document.getElementById("btnCloseDetail");
             const btnEnableDetailEdit = document.getElementById("btnEnableDetailEdit");
             const btnCancelDetailEdit = document.getElementById("btnCancelDetailEdit");
@@ -1083,21 +1150,25 @@
             }
             if (calPrev) {
                 calPrev.addEventListener("click", () => {
-                    calMonth -= 1;
-                    if (calMonth < 0) {
-                        calMonth = 11;
-                        calYear -= 1;
-                    }
+                    const cursor = getCurrentCursorDate();
+                    if (calViewMode === "day") cursor.setDate(cursor.getDate() - 1);
+                    else if (calViewMode === "week") cursor.setDate(cursor.getDate() - 7);
+                    else cursor.setMonth(cursor.getMonth() - 1);
+                    calYear = cursor.getFullYear();
+                    calMonth = cursor.getMonth();
+                    calDay = cursor.getDate();
                     renderCalendar(applyFilters());
                 });
             }
             if (calNext) {
                 calNext.addEventListener("click", () => {
-                    calMonth += 1;
-                    if (calMonth > 11) {
-                        calMonth = 0;
-                        calYear += 1;
-                    }
+                    const cursor = getCurrentCursorDate();
+                    if (calViewMode === "day") cursor.setDate(cursor.getDate() + 1);
+                    else if (calViewMode === "week") cursor.setDate(cursor.getDate() + 7);
+                    else cursor.setMonth(cursor.getMonth() + 1);
+                    calYear = cursor.getFullYear();
+                    calMonth = cursor.getMonth();
+                    calDay = cursor.getDate();
                     renderCalendar(applyFilters());
                 });
             }
@@ -1106,8 +1177,18 @@
                     const now = new Date();
                     calYear = now.getFullYear();
                     calMonth = now.getMonth();
+                    calDay = now.getDate();
                     renderCalendar(applyFilters());
                 });
+            }
+            if (btnPeriodDay) {
+                btnPeriodDay.addEventListener("click", () => setPeriodMode("day"));
+            }
+            if (btnPeriodWeek) {
+                btnPeriodWeek.addEventListener("click", () => setPeriodMode("week"));
+            }
+            if (btnPeriodMonth) {
+                btnPeriodMonth.addEventListener("click", () => setPeriodMode("month"));
             }
             if (btnCloseDetail) {
                 btnCloseDetail.addEventListener("click", () => closeDetailModal());
@@ -1186,6 +1267,7 @@
         }
 
         bindControls();
+        setPeriodMode("month");
         loadClassesFromFirestore().catch(() => {
             showToast("Gagal memuat data class", "error");
         });
