@@ -10,6 +10,26 @@
     <link href="../assets/css/style.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .detail-user-select { display:none; }
+        .detail-multi-dropdown { position:relative; }
+        .detail-multi-btn { width:100%; min-height:36px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; color:#0f172a; font-size:12px; font-weight:600; padding:8px 34px 8px 12px; text-align:left; line-height:1.2; display:flex; align-items:center; }
+        .detail-multi-btn:disabled { opacity:.65; cursor:not-allowed; }
+        .detail-multi-btn-icon { position:absolute; right:10px; top:50%; transform:translateY(-50%); color:#64748b; pointer-events:none; }
+        .detail-multi-panel { position:absolute; z-index:60; left:0; right:0; margin-top:6px; max-height:220px; overflow:auto; border:1px solid #e2e8f0; border-radius:12px; background:#fff; box-shadow:0 10px 25px rgba(15,23,42,.08); padding:6px; }
+        .detail-multi-panel.hidden { display:none; }
+        .detail-multi-item { display:flex; align-items:center; gap:8px; font-size:12px; color:#0f172a; padding:6px 8px; border-radius:8px; cursor:pointer; }
+        .detail-multi-item:hover { background:#f8fafc; }
+        .detail-multi-empty { font-size:11px; color:#94a3b8; font-weight:600; padding:8px; }
+        .detail-multi-search-wrap { padding:4px 6px 8px 6px; border-bottom:1px solid #f1f5f9; margin-bottom:4px; }
+        .detail-multi-search-input { width:100%; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; color:#0f172a; font-size:12px; padding:6px 10px; outline:none; }
+        .detail-multi-search-input:focus { border-color:#6366f1; box-shadow:0 0 0 2px rgba(99,102,241,.12); }
+        .detail-multi-list { display:flex; flex-direction:column; gap:2px; }
+        .detail-user-avatar-list { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px; min-height:24px; }
+        .detail-user-avatar { width:24px; height:24px; border-radius:999px; overflow:hidden; border:1px solid rgba(15,23,42,.12); background:#0f172a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; flex-shrink:0; }
+        .detail-user-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+        .detail-user-empty { font-size:11px; color:#94a3b8; font-weight:600; }
+    </style>
 </head>
 <body class="p-8 bg-slate-50" style="font-family: 'Poppins', sans-serif;">
     <div id="topbarContainer"></div>
@@ -77,19 +97,53 @@
                     </div>
                     <div>
                         <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Supervisor</div>
-                        <select id="editSupervisorUser" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                        <div class="detail-multi-dropdown">
+                            <button id="editSupervisorUsersToggle" type="button" class="detail-multi-btn">
+                                <span id="editSupervisorUsersLabel">Pilih supervisor</span>
+                            </button>
+                            <i data-lucide="chevron-down" class="w-4 h-4 detail-multi-btn-icon"></i>
+                            <div id="editSupervisorUsersPanel" class="detail-multi-panel hidden"></div>
+                        </div>
+                        <select id="editSupervisorUsers" multiple class="detail-user-select">
                             <option value="">Pilih supervisor</option>
                         </select>
+                        <div class="text-[10px] text-slate-400 mt-1">Bisa pilih lebih dari satu supervisor</div>
                     </div>
                     <div>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">WA Group</div>
-                        <input id="editWaGroupLink" type="url" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
-                        <a id="viewWaGroupLink" href="#" target="_blank" rel="noopener" class="block mt-1 text-[11px] font-semibold text-indigo-600 break-all"></a>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Admin</div>
+                        <div class="detail-multi-dropdown">
+                            <button id="editAdminUsersToggle" type="button" class="detail-multi-btn">
+                                <span id="editAdminUsersLabel">Pilih admin</span>
+                            </button>
+                            <i data-lucide="chevron-down" class="w-4 h-4 detail-multi-btn-icon"></i>
+                            <div id="editAdminUsersPanel" class="detail-multi-panel hidden"></div>
+                        </div>
+                        <select id="editAdminUsers" multiple class="detail-user-select">
+                            <option value="">Pilih admin</option>
+                        </select>
+                        <div class="text-[10px] text-slate-400 mt-1">Bisa pilih lebih dari satu admin</div>
                     </div>
                     <div>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Video Class</div>
-                        <input id="editVideoClassLink" type="url" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
-                        <a id="viewVideoClassLink" href="#" target="_blank" rel="noopener" class="block mt-1 text-[11px] font-semibold text-indigo-600 break-all"></a>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Treasurer</div>
+                        <div class="detail-multi-dropdown">
+                            <button id="editTreasurerUsersToggle" type="button" class="detail-multi-btn">
+                                <span id="editTreasurerUsersLabel">Pilih treasurer</span>
+                            </button>
+                            <i data-lucide="chevron-down" class="w-4 h-4 detail-multi-btn-icon"></i>
+                            <div id="editTreasurerUsersPanel" class="detail-multi-panel hidden"></div>
+                        </div>
+                        <select id="editTreasurerUsers" multiple class="detail-user-select">
+                            <option value="">Pilih treasurer</option>
+                        </select>
+                        <div class="text-[10px] text-slate-400 mt-1">Bisa pilih lebih dari satu treasurer</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Class Links</div>
+                        <div id="classLinksContainer" class="space-y-2"></div>
+                        <div class="mt-2">
+                            <button id="btnAddClassLink" type="button" class="w-8 h-8 rounded-full border border-slate-200 bg-white text-base font-bold text-slate-700 hover:bg-slate-50">+</button>
+                        </div>
+                        <div id="classLinksView" class="mt-2 space-y-1"></div>
                     </div>
                     <div>
                         <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Meeting Done</div>
@@ -139,6 +193,11 @@
         let loaded = null;
         let usersState = [];
         let mentorsState = [];
+        const userMultiSearchState = {
+            editSupervisorUsers: "",
+            editAdminUsers: "",
+            editTreasurerUsers: ""
+        };
 
         function showToast(message, type) {
             const toast = document.getElementById("toast");
@@ -151,30 +210,178 @@
             setTimeout(() => toast.classList.add("hidden"), 2500);
         }
 
-        function updateLinkPreview(anchorId, value) {
-            const anchor = document.getElementById(anchorId);
-            if (!anchor) return;
-            const raw = (value || "").trim();
-            if (!raw) {
-                anchor.textContent = "-";
-                anchor.href = "#";
+        function inferClassLinkType(url) {
+            const v = String(url || "").toLowerCase();
+            if (!v) return "video_class";
+            if (v.includes("chat.whatsapp.com") || v.includes("wa.me") || v.includes("whatsapp")) return "wa_group";
+            return "video_class";
+        }
+
+        function normalizeClassLinkItem(raw) {
+            if (!raw) return null;
+            if (typeof raw === "string") {
+                const url = raw.trim();
+                if (!url) return null;
+                return { type: inferClassLinkType(url), url, title: "" };
+            }
+            if (typeof raw !== "object") return null;
+            const url = String(raw.url || raw.link || raw.href || "").trim();
+            if (!url) return null;
+            const type = raw.type ? String(raw.type) : inferClassLinkType(url);
+            const title = String(raw.title || raw.label || raw.name || "").trim();
+            return { type, url, title };
+        }
+
+        function dedupeClassLinks(items) {
+            const map = new Map();
+            items.forEach((item) => {
+                const normalized = normalizeClassLinkItem(item);
+                if (!normalized) return;
+                const key = normalized.url.toLowerCase();
+                if (!map.has(key)) {
+                    map.set(key, normalized);
+                    return;
+                }
+                const existing = map.get(key);
+                if (existing && !existing.title && normalized.title) {
+                    existing.title = normalized.title;
+                }
+            });
+            return Array.from(map.values());
+        }
+
+        function parseClassLinksFromData(d) {
+            const fromArray = Array.isArray(d.class_links) ? d.class_links : (Array.isArray(d.classLinks) ? d.classLinks : (Array.isArray(d.links) ? d.links : []));
+            const merged = [];
+            fromArray.forEach((item) => merged.push(item));
+            const waLegacy = String(d.group_link || d.groupLink || "").trim();
+            const videoLegacy = String(d.video_class || d.videoClass || d.video_class_link || d.videoClassLink || "").trim();
+            if (waLegacy) merged.push({ type: "wa_group", url: waLegacy, title: "WA Group" });
+            if (videoLegacy) merged.push({ type: "video_class", url: videoLegacy, title: "Video Class" });
+            return dedupeClassLinks(merged);
+        }
+
+        function renderClassLinksView(list) {
+            const view = document.getElementById("classLinksView");
+            if (!view) return;
+            view.innerHTML = "";
+            const items = dedupeClassLinks(Array.isArray(list) ? list : []);
+            if (!items.length) {
+                const empty = document.createElement("div");
+                empty.className = "text-[11px] text-slate-400";
+                empty.textContent = "-";
+                view.appendChild(empty);
                 return;
             }
-            anchor.textContent = raw;
-            anchor.href = raw;
+            items.forEach((item) => {
+                const anchor = document.createElement("a");
+                anchor.href = item.url;
+                anchor.target = "_blank";
+                anchor.rel = "noopener";
+                anchor.className = "block w-full text-[11px] font-semibold text-indigo-600 whitespace-nowrap overflow-hidden text-ellipsis";
+                anchor.textContent = item.title || item.url;
+                anchor.title = item.url;
+                view.appendChild(anchor);
+            });
+        }
+
+        function createClassLinkRow(item, disabled) {
+            const row = document.createElement("div");
+            row.className = "grid grid-cols-[minmax(0,1fr)_160px_auto] gap-2";
+            const urlInput = document.createElement("input");
+            urlInput.type = "url";
+            urlInput.placeholder = "https://...";
+            urlInput.className = "w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50";
+            urlInput.value = item && item.url ? item.url : "";
+            urlInput.dataset.linkUrl = "1";
+            urlInput.disabled = !!disabled;
+            const titleInput = document.createElement("input");
+            titleInput.type = "text";
+            titleInput.placeholder = "Title link";
+            titleInput.className = "w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50";
+            titleInput.value = item && item.title ? item.title : "";
+            titleInput.dataset.linkTitle = "1";
+            titleInput.disabled = !!disabled;
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "w-7 h-7 rounded-lg border border-slate-200 bg-white text-sm font-bold leading-none text-rose-600 hover:bg-rose-50";
+            removeBtn.textContent = "×";
+            removeBtn.disabled = !!disabled;
+            removeBtn.addEventListener("click", () => {
+                row.remove();
+                renderClassLinksView(getClassLinksFromEditor());
+            });
+            urlInput.addEventListener("input", () => renderClassLinksView(getClassLinksFromEditor()));
+            titleInput.addEventListener("input", () => renderClassLinksView(getClassLinksFromEditor()));
+            row.appendChild(urlInput);
+            row.appendChild(titleInput);
+            row.appendChild(removeBtn);
+            return row;
+        }
+
+        function getClassLinksFromEditor() {
+            const container = document.getElementById("classLinksContainer");
+            if (!container) return [];
+            const rows = Array.from(container.children || []);
+            const list = rows.map((row) => {
+                const urlInput = row.querySelector("input[data-link-url='1']");
+                const titleInput = row.querySelector("input[data-link-title='1']");
+                return normalizeClassLinkItem({
+                    url: urlInput ? urlInput.value : "",
+                    title: titleInput ? titleInput.value : ""
+                });
+            }).filter(Boolean);
+            return dedupeClassLinks(list);
+        }
+
+        function renderClassLinksEditor(list, disabled) {
+            const container = document.getElementById("classLinksContainer");
+            if (!container) return;
+            const items = dedupeClassLinks(Array.isArray(list) ? list : []);
+            container.innerHTML = "";
+            if (!items.length) {
+                container.appendChild(createClassLinkRow({ url: "" }, disabled));
+            } else {
+                items.forEach((item) => container.appendChild(createClassLinkRow(item, disabled)));
+            }
+            renderClassLinksView(getClassLinksFromEditor());
+        }
+
+        function addClassLinkRow() {
+            const container = document.getElementById("classLinksContainer");
+            if (!container) return;
+            container.appendChild(createClassLinkRow({ url: "" }, !detailEditEnabled));
+            renderClassLinksView(getClassLinksFromEditor());
+        }
+
+        function setClassLinksEditDisabled(disabled) {
+            const container = document.getElementById("classLinksContainer");
+            const addBtn = document.getElementById("btnAddClassLink");
+            if (addBtn) addBtn.disabled = !!disabled;
+            if (!container) return;
+            Array.from(container.children || []).forEach((row) => {
+                const urlInput = row.querySelector("input[data-link-url='1']");
+                const titleInput = row.querySelector("input[data-link-title='1']");
+                const removeBtn = row.querySelector("button");
+                if (urlInput) urlInput.disabled = !!disabled;
+                if (titleInput) titleInput.disabled = !!disabled;
+                if (removeBtn) removeBtn.disabled = !!disabled;
+            });
         }
 
         function setEditMode(enabled) {
             detailEditEnabled = enabled;
             const inputIds = [
                 "editClassName", "editStatus", "editStartDate", "editLocation", "editType",
-                "editStartTime", "editMentorName", "editSupervisorUser", "editWaGroupLink", "editVideoClassLink", "editMeetingDone",
+                "editStartTime", "editMentorName", "editSupervisorUsers", "editAdminUsers", "editTreasurerUsers", "editMeetingDone",
                 "editMeetingTotal", "editComment"
             ];
             inputIds.forEach((id) => {
                 const el = document.getElementById(id);
                 if (el) el.disabled = !enabled;
             });
+            setUserMultiDropdownDisabled(!enabled);
+            setClassLinksEditDisabled(!enabled);
             const btnEnable = document.getElementById("btnEnableEdit");
             const btnCancel = document.getElementById("btnCancelEdit");
             const btnSave = document.getElementById("btnSave");
@@ -198,6 +405,83 @@
             const name = d.name || d.displayName || d.nickname || d.email || uid;
             const photo = d.photo || d.photoURL || d.avatar_url || d.avatar || "";
             return { uid, name, photo };
+        }
+
+        function getInitials(fullName) {
+            if (!fullName) return "U";
+            const parts = String(fullName).trim().split(/\s+/).filter(Boolean);
+            if (!parts.length) return "U";
+            return parts.slice(0, 2).map(p => p[0]).join("").toUpperCase();
+        }
+
+        function normalizeAssignee(raw) {
+            if (!raw) return null;
+            if (typeof raw === "string") {
+                const name = raw.trim();
+                if (!name) return null;
+                return { uid: "", name, photo: "" };
+            }
+            if (typeof raw !== "object") return null;
+            const uid = String(raw.uid || raw.userId || raw.id || "").trim();
+            const name = String(raw.name || raw.displayName || raw.fullName || raw.nama || "").trim();
+            const photo = String(raw.photo || raw.photoURL || raw.avatar || raw.image || "").trim();
+            if (!uid && !name) return null;
+            return { uid, name: name || uid, photo };
+        }
+
+        function normalizeAssigneeArray(raw) {
+            if (!Array.isArray(raw)) return [];
+            return raw.map(normalizeAssignee).filter(Boolean);
+        }
+
+        function dedupeAssignees(list) {
+            const map = new Map();
+            list.forEach((item) => {
+                const normalized = normalizeAssignee(item);
+                if (!normalized) return;
+                const key = normalized.uid ? "uid:" + normalized.uid : "name:" + normalized.name.toLowerCase();
+                if (!map.has(key)) map.set(key, normalized);
+            });
+            return Array.from(map.values());
+        }
+
+        function extractSupervisorsFromDoc(d) {
+            const legacySupervisor = normalizeAssignee({
+                uid: d.pic_uid || d.picUid || d.supervisor_uid || d.supervisorUid || "",
+                name: d.pic || d.supervisor_name || d.supervisorName || "",
+                photo: d.pic_photo || d.picPhoto || d.supervisor_photo || d.supervisorPhoto || ""
+            });
+            const merged = [
+                ...normalizeAssigneeArray(d.supervisors),
+                ...normalizeAssigneeArray(d.supervisor_users),
+                ...normalizeAssigneeArray(d.supervisorUsers)
+            ];
+            const picObjectSupervisor = normalizeAssignee(d.pic && typeof d.pic === "object" ? d.pic : null);
+            const supervisorObject = normalizeAssignee(d.supervisor && typeof d.supervisor === "object" ? d.supervisor : null);
+            if (picObjectSupervisor) merged.push(picObjectSupervisor);
+            if (supervisorObject) merged.push(supervisorObject);
+            if (legacySupervisor) merged.push(legacySupervisor);
+            return dedupeAssignees(merged);
+        }
+
+        function extractAdminsFromDoc(d) {
+            return dedupeAssignees([
+                ...normalizeAssigneeArray(d.admins),
+                ...normalizeAssigneeArray(d.admin_users),
+                ...normalizeAssigneeArray(d.adminUsers),
+                normalizeAssignee(d.admin),
+                normalizeAssignee(d.admin_user)
+            ]);
+        }
+
+        function extractTreasurersFromDoc(d) {
+            return dedupeAssignees([
+                ...normalizeAssigneeArray(d.treasurers),
+                ...normalizeAssigneeArray(d.treasurer_users),
+                ...normalizeAssigneeArray(d.treasurerUsers),
+                normalizeAssignee(d.treasurer),
+                normalizeAssignee(d.treasurer_user)
+            ]);
         }
 
         async function loadUsersForSupervisorDropdown() {
@@ -257,39 +541,245 @@
             }
         }
 
-        function renderSupervisorOptions(selectedSupervisor) {
-            const select = document.getElementById("editSupervisorUser");
+        function renderUserMultiOptions(selectId, selectedUsers, emptyLabel) {
+            const select = document.getElementById(selectId);
             if (!select) return;
+            const selected = dedupeAssignees(Array.isArray(selectedUsers) ? selectedUsers : []);
+            const selectedKeys = new Set(selected.map((u) => (u.uid ? "uid:" + u.uid : "name:" + u.name)));
             select.innerHTML = "";
             const emptyOption = document.createElement("option");
             emptyOption.value = "";
-            emptyOption.textContent = "Pilih supervisor";
+            emptyOption.textContent = emptyLabel;
+            emptyOption.disabled = true;
             select.appendChild(emptyOption);
             usersState.forEach((u) => {
                 const opt = document.createElement("option");
                 opt.value = u.uid;
                 opt.textContent = u.name;
+                if (selectedKeys.has("uid:" + u.uid)) opt.selected = true;
                 select.appendChild(opt);
             });
-            if (selectedSupervisor && selectedSupervisor.uid) {
-                const found = usersState.some(u => u.uid === selectedSupervisor.uid);
-                if (!found && selectedSupervisor.name) {
+            selected.forEach((u) => {
+                const key = u.uid ? "uid:" + u.uid : "name:" + u.name;
+                const found = u.uid ? usersState.some(item => item.uid === u.uid) : false;
+                if (!found && !Array.from(select.options).some(opt => opt.value === key)) {
                     const opt = document.createElement("option");
-                    opt.value = selectedSupervisor.uid;
-                    opt.textContent = selectedSupervisor.name;
+                    opt.value = key;
+                    opt.textContent = u.name || u.uid;
+                    opt.selected = true;
                     select.appendChild(opt);
                 }
-                select.value = selectedSupervisor.uid;
+            });
+            refreshUserMultiDropdown(selectId, emptyLabel);
+            updateUserMultiPreview(selectId, selected);
+        }
+
+        function getSelectedUsersFromMultiSelect(selectId) {
+            const select = document.getElementById(selectId);
+            if (!select) return [];
+            const selectedOptions = Array.from(select.selectedOptions || []).filter(opt => opt.value);
+            const selectedUsers = selectedOptions.map((opt) => {
+                const value = opt.value || "";
+                if (value.startsWith("uid:")) {
+                    const uid = value.slice(4);
+                    const found = usersState.find(u => u.uid === uid);
+                    if (found) return { uid: found.uid, name: found.name, photo: found.photo || "" };
+                    return { uid, name: opt.textContent || uid, photo: "" };
+                }
+                const found = usersState.find(u => u.uid === value);
+                if (found) return { uid: found.uid, name: found.name, photo: found.photo || "" };
+                if (value.startsWith("name:")) return { uid: "", name: value.slice(5), photo: "" };
+                return { uid: value, name: opt.textContent || value, photo: "" };
+            });
+            return dedupeAssignees(selectedUsers);
+        }
+
+        function updateUserMultiPreview(selectId, selectedUsers) {
+            const previewMap = {
+                editSupervisorUsers: "editSupervisorUsersPreview",
+                editAdminUsers: "editAdminUsersPreview",
+                editTreasurerUsers: "editTreasurerUsersPreview"
+            };
+            const container = document.getElementById(previewMap[selectId] || "");
+            if (!container) return;
+            const list = dedupeAssignees(Array.isArray(selectedUsers) ? selectedUsers : []);
+            container.innerHTML = "";
+            if (!list.length) {
+                const empty = document.createElement("span");
+                empty.className = "detail-user-empty";
+                empty.textContent = "-";
+                container.appendChild(empty);
                 return;
             }
-            if (selectedSupervisor && selectedSupervisor.name) {
-                const manualVal = "name:" + selectedSupervisor.name;
-                const opt = document.createElement("option");
-                opt.value = manualVal;
-                opt.textContent = selectedSupervisor.name;
-                select.appendChild(opt);
-                select.value = manualVal;
+            list.forEach((u) => {
+                const avatar = document.createElement("span");
+                avatar.className = "detail-user-avatar";
+                avatar.title = u.name || "-";
+                if (u.photo) {
+                    const img = document.createElement("img");
+                    img.src = u.photo;
+                    img.alt = u.name || "User";
+                    avatar.appendChild(img);
+                } else {
+                    avatar.textContent = getInitials(u.name || "U");
+                }
+                container.appendChild(avatar);
+            });
+        }
+
+        function getUserMultiDropdownConfig(selectId) {
+            const map = {
+                editSupervisorUsers: {
+                    toggleId: "editSupervisorUsersToggle",
+                    labelId: "editSupervisorUsersLabel",
+                    panelId: "editSupervisorUsersPanel"
+                },
+                editAdminUsers: {
+                    toggleId: "editAdminUsersToggle",
+                    labelId: "editAdminUsersLabel",
+                    panelId: "editAdminUsersPanel"
+                },
+                editTreasurerUsers: {
+                    toggleId: "editTreasurerUsersToggle",
+                    labelId: "editTreasurerUsersLabel",
+                    panelId: "editTreasurerUsersPanel"
+                }
+            };
+            return map[selectId] || null;
+        }
+
+        function updateUserMultiDropdownLabel(selectId, emptyLabel) {
+            const cfg = getUserMultiDropdownConfig(selectId);
+            if (!cfg) return;
+            const select = document.getElementById(selectId);
+            const label = document.getElementById(cfg.labelId);
+            if (!select || !label) return;
+            const selectedOptions = Array.from(select.selectedOptions || []).filter(opt => opt.value);
+            if (!selectedOptions.length) {
+                label.textContent = emptyLabel;
+                return;
             }
+            if (selectedOptions.length === 1) {
+                label.textContent = selectedOptions[0].textContent || emptyLabel;
+                return;
+            }
+            const first = selectedOptions[0].textContent || "";
+            label.textContent = first + " +" + String(selectedOptions.length - 1) + " lainnya";
+        }
+
+        function refreshUserMultiDropdown(selectId, emptyLabel) {
+            const cfg = getUserMultiDropdownConfig(selectId);
+            if (!cfg) return;
+            const select = document.getElementById(selectId);
+            const panel = document.getElementById(cfg.panelId);
+            if (!select || !panel) return;
+            const options = Array.from(select.options || []).filter(opt => opt.value);
+            panel.innerHTML = "";
+            if (!options.length) {
+                const empty = document.createElement("div");
+                empty.className = "detail-multi-empty";
+                empty.textContent = "Belum ada user";
+                panel.appendChild(empty);
+                updateUserMultiDropdownLabel(selectId, emptyLabel);
+                return;
+            }
+            const searchWrap = document.createElement("div");
+            searchWrap.className = "detail-multi-search-wrap";
+            const searchInput = document.createElement("input");
+            searchInput.type = "text";
+            searchInput.className = "detail-multi-search-input";
+            searchInput.placeholder = "Cari user...";
+            searchInput.value = userMultiSearchState[selectId] || "";
+            searchWrap.appendChild(searchInput);
+            panel.appendChild(searchWrap);
+            const listWrap = document.createElement("div");
+            listWrap.className = "detail-multi-list";
+            panel.appendChild(listWrap);
+            const noResult = document.createElement("div");
+            noResult.className = "detail-multi-empty hidden";
+            noResult.textContent = "User tidak ditemukan";
+            panel.appendChild(noResult);
+            options.forEach((opt) => {
+                const row = document.createElement("label");
+                row.className = "detail-multi-item";
+                row.dataset.searchText = String(opt.textContent || "").toLowerCase();
+                row.dataset.userOption = "1";
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.checked = !!opt.selected;
+                checkbox.addEventListener("change", () => {
+                    opt.selected = checkbox.checked;
+                    updateUserMultiDropdownLabel(selectId, emptyLabel);
+                    updateUserMultiPreview(selectId, getSelectedUsersFromMultiSelect(selectId));
+                });
+                const text = document.createElement("span");
+                text.textContent = opt.textContent || "";
+                row.appendChild(checkbox);
+                row.appendChild(text);
+                listWrap.appendChild(row);
+            });
+            const applySearch = () => {
+                const query = (searchInput.value || "").trim().toLowerCase();
+                userMultiSearchState[selectId] = searchInput.value || "";
+                let visibleCount = 0;
+                const rows = listWrap.querySelectorAll("[data-user-option='1']");
+                rows.forEach((row) => {
+                    const keyword = row.dataset.searchText || "";
+                    const matched = !query || keyword.includes(query);
+                    row.classList.toggle("hidden", !matched);
+                    if (matched) visibleCount += 1;
+                });
+                noResult.classList.toggle("hidden", visibleCount > 0);
+            };
+            searchInput.addEventListener("input", applySearch);
+            applySearch();
+            updateUserMultiDropdownLabel(selectId, emptyLabel);
+        }
+
+        function closeAllUserMultiDropdownPanels() {
+            ["editSupervisorUsers", "editAdminUsers", "editTreasurerUsers"].forEach((selectId) => {
+                const cfg = getUserMultiDropdownConfig(selectId);
+                if (!cfg) return;
+                const panel = document.getElementById(cfg.panelId);
+                if (panel) panel.classList.add("hidden");
+            });
+        }
+
+        function setUserMultiDropdownDisabled(disabled) {
+            ["editSupervisorUsers", "editAdminUsers", "editTreasurerUsers"].forEach((selectId) => {
+                const cfg = getUserMultiDropdownConfig(selectId);
+                if (!cfg) return;
+                const toggle = document.getElementById(cfg.toggleId);
+                if (toggle) toggle.disabled = !!disabled;
+                if (disabled) {
+                    const panel = document.getElementById(cfg.panelId);
+                    if (panel) panel.classList.add("hidden");
+                }
+            });
+        }
+
+        function bindUserMultiDropdown(selectId, emptyLabel) {
+            const cfg = getUserMultiDropdownConfig(selectId);
+            if (!cfg) return;
+            const toggle = document.getElementById(cfg.toggleId);
+            const panel = document.getElementById(cfg.panelId);
+            if (!toggle || !panel) return;
+            toggle.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (toggle.disabled) return;
+                const willOpen = panel.classList.contains("hidden");
+                closeAllUserMultiDropdownPanels();
+                if (willOpen) {
+                    refreshUserMultiDropdown(selectId, emptyLabel);
+                    panel.classList.remove("hidden");
+                    const searchInput = panel.querySelector(".detail-multi-search-input");
+                    if (searchInput) searchInput.focus();
+                }
+            });
+            panel.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
         }
 
         function populateForm(data) {
@@ -302,8 +792,6 @@
             const startTime = document.getElementById("editStartTime");
             const location = document.getElementById("editLocation");
             const type = document.getElementById("editType");
-            const waGroup = document.getElementById("editWaGroupLink");
-            const video = document.getElementById("editVideoClassLink");
             const meetingDone = document.getElementById("editMeetingDone");
             const meetingTotal = document.getElementById("editMeetingTotal");
             const comment = document.getElementById("editComment");
@@ -315,14 +803,13 @@
             if (type) type.value = data.type || "Offline";
             const selectedMentorName = Array.isArray(data.mentors) && data.mentors.length ? data.mentors[0].name : "";
             renderMentorOptions(selectedMentorName);
-            renderSupervisorOptions(data.supervisor || null);
-            if (waGroup) waGroup.value = data.groupLink || "";
-            if (video) video.value = data.videoClassLink || "";
+            renderUserMultiOptions("editSupervisorUsers", data.supervisors || (data.supervisor ? [data.supervisor] : []), "Pilih supervisor");
+            renderUserMultiOptions("editAdminUsers", data.admins || [], "Pilih admin");
+            renderUserMultiOptions("editTreasurerUsers", data.treasurers || [], "Pilih treasurer");
             if (meetingDone) meetingDone.value = String(data.meetingDone || 0);
             if (meetingTotal) meetingTotal.value = String(data.meetingTotal || 0);
             if (comment) comment.value = data.comment || "";
-            updateLinkPreview("viewWaGroupLink", data.groupLink || "");
-            updateLinkPreview("viewVideoClassLink", data.videoClassLink || "");
+            renderClassLinksEditor(data.classLinks || [], true);
             setEditMode(false);
         }
 
@@ -347,17 +834,17 @@
                 location: d.location || "",
                 type: d.type || "Offline",
                 mentors: Array.isArray(d.mentors) ? d.mentors : [],
-                supervisor: {
-                    uid: d.pic_uid || d.picUid || d.supervisor_uid || d.supervisorUid || "",
-                    name: d.pic || "",
-                    photo: d.pic_photo || d.picPhoto || d.supervisor_photo || d.supervisorPhoto || ""
-                },
+                supervisors: extractSupervisorsFromDoc(d),
+                admins: extractAdminsFromDoc(d),
+                treasurers: extractTreasurersFromDoc(d),
                 groupLink: d.group_link || d.groupLink || "",
                 videoClassLink: d.video_class || d.videoClass || d.video_class_link || d.videoClassLink || "",
+                classLinks: parseClassLinksFromData(d),
                 meetingDone: typeof d.meeting_done === "number" ? d.meeting_done : 0,
                 meetingTotal: typeof d.meeting_total === "number" ? d.meeting_total : 0,
                 comment: d.comment || ""
             };
+            mapped.supervisor = mapped.supervisors.length ? mapped.supervisors[0] : { uid: "", name: "", photo: "" };
             populateForm(mapped);
         }
 
@@ -376,16 +863,13 @@
             const type = (document.getElementById("editType")?.value || "Offline").trim();
             const mentorName = (document.getElementById("editMentorName")?.value || "").trim();
             const mentors = buildMentorArrayFromName(mentorName);
-            const supervisorSelectValue = (document.getElementById("editSupervisorUser")?.value || "").trim();
-            let supervisor = { uid: "", name: "", photo: "" };
-            if (supervisorSelectValue.startsWith("name:")) {
-                supervisor = { uid: "", name: supervisorSelectValue.slice(5), photo: "" };
-            } else if (supervisorSelectValue) {
-                const selectedUser = usersState.find(u => u.uid === supervisorSelectValue);
-                if (selectedUser) supervisor = { uid: selectedUser.uid, name: selectedUser.name, photo: selectedUser.photo || "" };
-            }
-            const waGroupLink = (document.getElementById("editWaGroupLink")?.value || "").trim();
-            const videoClassLink = (document.getElementById("editVideoClassLink")?.value || "").trim();
+            const supervisors = getSelectedUsersFromMultiSelect("editSupervisorUsers");
+            const admins = getSelectedUsersFromMultiSelect("editAdminUsers");
+            const treasurers = getSelectedUsersFromMultiSelect("editTreasurerUsers");
+            const supervisor = supervisors.length ? supervisors[0] : { uid: "", name: "", photo: "" };
+            const classLinks = getClassLinksFromEditor();
+            const waGroupLink = (classLinks.find((item) => item.type === "wa_group") || {}).url || "";
+            const videoClassLink = (classLinks.find((item) => item.type === "video_class") || {}).url || "";
             const meetingDone = parseInt(document.getElementById("editMeetingDone")?.value || "0", 10) || 0;
             const meetingTotal = parseInt(document.getElementById("editMeetingTotal")?.value || "0", 10) || 0;
             const comment = (document.getElementById("editComment")?.value || "").trim();
@@ -411,11 +895,19 @@
                     type,
                     mentors,
                     mentor_name: mentorName,
+                    supervisors,
+                    supervisor_users: supervisors,
                     pic: supervisor.name || "",
                     pic_uid: supervisor.uid || "",
                     picUid: supervisor.uid || "",
                     pic_photo: supervisor.photo || "",
                     picPhoto: supervisor.photo || "",
+                    admins,
+                    admin_users: admins,
+                    treasurers,
+                    treasurer_users: treasurers,
+                    class_links: classLinks,
+                    classLinks: classLinks,
                     group_link: waGroupLink,
                     groupLink: waGroupLink,
                     video_class: videoClassLink,
@@ -435,6 +927,10 @@
                     type,
                     mentors,
                     supervisor,
+                    supervisors,
+                    admins,
+                    treasurers,
+                    classLinks,
                     groupLink: waGroupLink,
                     videoClassLink,
                     meetingDone,
@@ -455,16 +951,46 @@
         const btnEnableEdit = document.getElementById("btnEnableEdit");
         const btnCancelEdit = document.getElementById("btnCancelEdit");
         const btnSave = document.getElementById("btnSave");
-        const waGroupInput = document.getElementById("editWaGroupLink");
-        const videoInput = document.getElementById("editVideoClassLink");
+        const btnAddClassLink = document.getElementById("btnAddClassLink");
+        const editSupervisorUsers = document.getElementById("editSupervisorUsers");
+        const editAdminUsers = document.getElementById("editAdminUsers");
+        const editTreasurerUsers = document.getElementById("editTreasurerUsers");
         if (btnEnableEdit) btnEnableEdit.addEventListener("click", () => setEditMode(true));
         if (btnCancelEdit) btnCancelEdit.addEventListener("click", () => {
             if (!loaded) return;
             populateForm(loaded);
         });
         if (btnSave) btnSave.addEventListener("click", () => saveChanges());
-        if (waGroupInput) waGroupInput.addEventListener("input", () => updateLinkPreview("viewWaGroupLink", waGroupInput.value));
-        if (videoInput) videoInput.addEventListener("input", () => updateLinkPreview("viewVideoClassLink", videoInput.value));
+        if (btnAddClassLink) {
+            btnAddClassLink.addEventListener("click", () => {
+                if (!detailEditEnabled) return;
+                addClassLinkRow();
+            });
+        }
+        if (editSupervisorUsers) {
+            editSupervisorUsers.addEventListener("change", () => {
+                updateUserMultiPreview("editSupervisorUsers", getSelectedUsersFromMultiSelect("editSupervisorUsers"));
+                refreshUserMultiDropdown("editSupervisorUsers", "Pilih supervisor");
+            });
+        }
+        if (editAdminUsers) {
+            editAdminUsers.addEventListener("change", () => {
+                updateUserMultiPreview("editAdminUsers", getSelectedUsersFromMultiSelect("editAdminUsers"));
+                refreshUserMultiDropdown("editAdminUsers", "Pilih admin");
+            });
+        }
+        if (editTreasurerUsers) {
+            editTreasurerUsers.addEventListener("change", () => {
+                updateUserMultiPreview("editTreasurerUsers", getSelectedUsersFromMultiSelect("editTreasurerUsers"));
+                refreshUserMultiDropdown("editTreasurerUsers", "Pilih treasurer");
+            });
+        }
+        bindUserMultiDropdown("editSupervisorUsers", "Pilih supervisor");
+        bindUserMultiDropdown("editAdminUsers", "Pilih admin");
+        bindUserMultiDropdown("editTreasurerUsers", "Pilih treasurer");
+        document.addEventListener("click", () => {
+            closeAllUserMultiDropdownPanels();
+        });
 
         loadUsersForSupervisorDropdown()
             .then(() => loadMentorsForDropdown())
