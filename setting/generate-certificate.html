@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Certificate - Team Dialogika</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+        }
+        .cert-container {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        .controls-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            width: 350px;
+            flex-shrink: 0;
+        }
+        .preview-panel {
+            flex-grow: 1;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .preview-panel svg {
+            width: 100%;
+            height: auto;
+            max-width: 1000px;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div id="topbarContainer"></div>
+
+    <div class="dashboard-container">
+        <div id="sidebarContainer"></div>
+
+        <main class="main-content">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800">Generate Certificate</h1>
+                    <nav class="text-sm text-slate-500 flex items-center gap-2 mt-1">
+                        <i class="bi bi-house-door-fill text-xs"></i>
+                        <span>/ Product Division /</span>
+                        <span class="font-medium text-slate-800">Generate Certificate</span>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="cert-container flex-col lg:flex-row">
+                <!-- Control Panel -->
+                <div class="controls-panel w-full lg:w-[350px]">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Editor Sertifikat</h2>
+                    
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nomor Invoice</label>
+                        <input type="text" id="invoiceInput" value="13.07353" oninput="updatePreview()"
+                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nama Peserta</label>
+                        <input type="text" id="nameInput" value="Asih Wulansari" oninput="updatePreview()"
+                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Tanggal Sertifikat</label>
+                        <input type="date" id="dateInput" oninput="updatePreview()"
+                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+
+                    <div class="space-y-3">
+                        <button onclick="downloadSVG()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                            <i class="bi bi-filetype-svg"></i> Download SVG
+                        </button>
+                        <button onclick="downloadPNG()" class="w-full bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                            <i class="bi bi-image"></i> Download PNG
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-4 text-center">*Gunakan Chrome/Edge untuk hasil terbaik.</p>
+                </div>
+
+                <!-- Preview Panel -->
+                <div class="preview-panel w-full">
+                    <!-- SVG Area -->
+                    <svg id="certSvg" width="2000" height="1414" viewBox="0 0 2000 1414" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Background Image -->
+                        <image id="svgBg" href="../template.png" x="0" y="0" width="2000" height="1414" />
+
+                        <!-- Teks Nomor Sertifikat -->
+                        <text id="textInvoice" x="1820" y="380" font-family="'Montserrat', sans-serif" font-weight="700" font-size="35" fill="#0b2b6a" text-anchor="end" style="letter-spacing: 0.1em; line-height: 1.4;">13.07353/PT-DIA/IX/2025</text>
+
+                        <!-- Teks Nama -->
+                        <text id="textName" x="130" y="610" font-family="'Montserrat', sans-serif" font-weight="700" font-size="95" fill="#0b2b6a" style="letter-spacing: 0; line-height: 1.4;">Asih Wulansari</text>
+
+                        <!-- Teks Tanggal Award -->
+                        <text id="textAward" x="140" y="783" font-family="'Montserrat', sans-serif" font-weight="700" font-size="33" fill="#0b2b6a" style="letter-spacing: 0.1em; line-height: 1.6;">THIS CERTIFICATE IS AWARDED ON 20 NOVEMBER 2025</text>
+                    </svg>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { renderTopBar } from "../element/topbar.js";
+        import { renderSidebar } from "../element/sidebar.js";
+
+        const topbarTarget = document.getElementById('topbarContainer');
+        renderTopBar(topbarTarget);
+        const sidebarTarget = document.getElementById('sidebarContainer');
+        renderSidebar(sidebarTarget);
+    </script>
+    <script>
+        // Certificate Generator Logic
+        document.getElementById('dateInput').valueAsDate = new Date();
+
+        function toRoman(n) {
+            return ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"][n];
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        function updatePreview() {
+            const invoice = document.getElementById('invoiceInput').value;
+            const name = document.getElementById('nameInput').value;
+            const dateVal = document.getElementById('dateInput').value;
+            const d = new Date(dateVal);
+
+            const fullInvoice = `${invoice}/PT-DIA/${toRoman(d.getMonth())}/${d.getFullYear()}`;
+            const fullDateText = `THIS CERTIFICATE IS AWARDED ON ${formatDate(dateVal)}`;
+
+            document.getElementById('textInvoice').textContent = fullInvoice;
+            document.getElementById('textName').textContent = name;
+            document.getElementById('textAward').textContent = fullDateText;
+        }
+
+        // Initialize preview on load
+        updatePreview();
+
+        // Convert external image to base64 immediately on load to allow proper SVG/PNG export
+        let base64Template = "";
+        fetch('../template.png')
+            .then(res => res.blob())
+            .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    base64Template = reader.result;
+                    document.getElementById('svgBg').setAttribute('href', base64Template);
+                }
+                reader.readAsDataURL(blob);
+            })
+            .catch(err => console.error("Gagal memuat template.png", err));
+
+        function downloadSVG() {
+            const svgData = document.getElementById('certSvg').outerHTML;
+            const svgBlob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
+            const svgUrl = URL.createObjectURL(svgBlob);
+            const downloadLink = document.createElement("a");
+            downloadLink.href = svgUrl;
+            downloadLink.download = `Sertifikat-${document.getElementById('nameInput').value}.svg`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+
+        function downloadPNG() {
+            const svg = document.getElementById('certSvg');
+            const serializer = new XMLSerializer();
+            const svgStr = serializer.serializeToString(svg);
+            const canvas = document.createElement("canvas");
+            canvas.width = 2000;
+            canvas.height = 1414;
+            const ctx = canvas.getContext("2d");
+            const img = new Image();
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+                const pngUrl = canvas.toDataURL("image/png");
+                const downloadLink = document.createElement("a");
+                downloadLink.href = pngUrl;
+                downloadLink.download = `Sertifikat-${document.getElementById('nameInput').value}.png`;
+                downloadLink.click();
+            };
+            img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgStr)));
+        }
+    </script>
+</body>
+</html>
