@@ -25,7 +25,7 @@
             padding: 1.5rem;
             border-radius: 1rem;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            width: 350px;
+            width: 420px;
             flex-shrink: 0;
         }
         .preview-panel {
@@ -44,6 +44,31 @@
             max-width: 1000px;
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+        .batch-textarea {
+            min-height: 180px;
+            resize: vertical;
+            font-family: Consolas, Monaco, monospace;
+        }
+        .batch-entry-list {
+            max-height: 260px;
+            overflow-y: auto;
+        }
+        .batch-entry-item {
+            transition: all 0.2s ease;
+        }
+        .batch-entry-item.active {
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+        @media (min-width: 1024px) {
+            .preview-panel {
+                position: sticky;
+                top: calc(var(--topbar-height) + 20px);
+                max-height: calc(100vh - var(--topbar-height) - 40px);
+                overflow: auto;
+                align-self: flex-start;
+            }
         }
     </style>
 </head>
@@ -67,40 +92,194 @@
 
             <div class="cert-container flex-col lg:flex-row">
                 <!-- Control Panel -->
-                <div class="controls-panel w-full lg:w-[350px]">
+                <div class="controls-panel w-full lg:w-[420px]">
                     <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Editor Sertifikat</h2>
-                    
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nomor Invoice</label>
-                        <input type="text" id="invoiceInput" value="13.07353" oninput="updatePreview()"
-                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+
+                    <div class="space-y-6">
+                        <section class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <div class="flex items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-800">Preview Peserta Aktif</h3>
+                                    <p class="text-[11px] text-slate-500 mt-1">Tetap bisa dipakai untuk satu sertifikat atau mengecek hasil batch.</p>
+                                </div>
+                                <span id="validCountBadge" class="inline-flex flex-nowrap items-center whitespace-nowrap shrink-0 rounded-full bg-white px-4 py-1 text-[11px] font-bold text-slate-600 border border-slate-200">1 peserta</span>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Tanggal Global Sertifikat</label>
+                                <input type="date" id="globalDateInput"
+                                    class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                <p class="text-[11px] text-slate-400 mt-2">Dipakai untuk semua peserta yang tidak memiliki tanggal override di baris batch.</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nomor Invoice</label>
+                                    <input type="text" id="invoiceInput"
+                                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nama Peserta</label>
+                                    <input type="text" id="nameInput"
+                                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div class="rounded-xl bg-white border border-slate-200 px-4 py-3 mb-4">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div>
+                                        <div id="activeEntryLabel" class="text-xs font-bold text-slate-700">Peserta 1 dari 1</div>
+                                        <div id="activeEntryDate" class="text-[11px] text-slate-500 mt-1">Tanggal aktif: -</div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button id="prevEntryBtn" type="button" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">Prev</button>
+                                        <button id="nextEntryBtn" type="button" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">Next</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <button id="downloadSvgBtn" type="button" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                                    <i class="bi bi-filetype-svg"></i> Download SVG Peserta Aktif
+                                </button>
+                                <button id="downloadPngBtn" type="button" class="w-full bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                                    <i class="bi bi-image"></i> Download PNG Peserta Aktif
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="rounded-2xl border border-slate-200 bg-white p-4">
+                            <div class="flex items-center justify-between gap-3 mb-3">
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-800">Batch Input</h3>
+                                    <p class="text-[11px] text-slate-500 mt-1">Tempel banyak peserta sekaligus dari spreadsheet atau daftar manual.</p>
+                                </div>
+                                <span id="invalidCountBadge" class="inline-flex flex-nowrap items-center whitespace-nowrap shrink-0 rounded-full bg-rose-50 px-4 py-1 text-[11px] font-bold text-rose-600 border border-rose-100">0 invalid</span>
+                            </div>
+
+                            <div class="mb-4 rounded-xl border border-blue-100 bg-blue-50 px-4 py-4">
+                                <div class="flex items-center justify-between gap-3 mb-3">
+                                    <div>
+                                        <div class="text-xs font-bold uppercase tracking-wider text-blue-700">Panduan Batch Input</div>
+                                        <p class="text-[11px] text-blue-800 mt-1">Gunakan format yang konsisten agar proses import dan export ZIP berjalan mulus.</p>
+                                    </div>
+                                    <button id="toggleGuideBtn" type="button" class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-[11px] font-bold text-blue-700 hover:bg-blue-100 transition-all">
+                                        <i class="bi bi-info-circle-fill text-blue-500"></i>
+                                        <span id="toggleGuideLabel">Sembunyikan</span>
+                                    </button>
+                                </div>
+
+                                <div id="batchGuideBody" class="grid grid-cols-1 gap-3 text-[11px] text-slate-700">
+                                    <div class="rounded-lg bg-white/80 border border-blue-100 px-3 py-3">
+                                        <div class="font-bold text-slate-800 mb-2">Langkah Pakai</div>
+                                        <ol class="list-decimal pl-4 space-y-1">
+                                            <li>Isi `Tanggal Global Sertifikat` terlebih dahulu bila sebagian baris tidak memiliki tanggal sendiri.</li>
+                                            <li>Tempel data peserta, satu peserta per baris.</li>
+                                            <li>Klik `Import Batch`, cek jumlah valid/invalid, lalu review preview peserta aktif.</li>
+                                            <li>Pilih format export batch (`SVG`, `PNG`, atau `Keduanya`) sebelum klik `Download Batch ZIP`.</li>
+                                        </ol>
+                                    </div>
+
+                                    <div class="rounded-lg bg-white/80 border border-blue-100 px-3 py-3">
+                                        <div class="font-bold text-slate-800 mb-2">Aturan Format</div>
+                                        <ul class="list-disc pl-4 space-y-1">
+                                            <li>Setiap baris minimal berisi `invoice` dan `nama peserta`.</li>
+                                            <li>Kolom ketiga `tanggal` bersifat opsional, formatnya `DD/MM/YYYY`.</li>
+                                            <li>Pemisah yang didukung: `TAB`, `|`, atau koma `,`.</li>
+                                            <li>Baris kosong diabaikan, baris invalid tidak ikut diproses.</li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="rounded-lg bg-slate-900 text-slate-100 px-3 py-3">
+                                        <div class="font-bold text-white mb-2">Contoh Format Valid</div>
+                                        <pre id="batchGuideExample" class="text-[11px] leading-5 whitespace-pre-wrap mb-0">13.07353	Asih Wulansari
+13.07354	Budi Santoso	20/04/2026
+13.07355|Citra Lestari|21/04/2026
+13.07356,Daniel Pratama,22/04/2026</pre>
+                                    </div>
+                                </div>
+
+                                <div id="batchGuideActions" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                                    <button id="copyGuideExampleBtn" type="button" class="w-full rounded-lg border border-blue-200 bg-white px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
+                                        <i class="bi bi-clipboard"></i> Salin Contoh
+                                    </button>
+                                    <button id="fillGuideExampleBtn" type="button" class="w-full rounded-lg border border-blue-200 bg-white px-4 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
+                                        <i class="bi bi-magic"></i> Isi Ke Textarea
+                                    </button>
+                                </div>
+                            </div>
+
+                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Paste Daftar Peserta</label>
+                            <textarea id="batchInput" class="batch-textarea w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="13.07353	Asih Wulansari&#10;13.07354	Budi Santoso	20/04/2026&#10;13.07355|Citra Lestari|21/04/2026"></textarea>
+                            <p class="text-[11px] text-slate-400 mt-2">Format per baris: invoice + nama + tanggal opsional. Separator bisa TAB, koma, atau pipe.</p>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+                                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Baris Di Textarea</div>
+                                    <div id="totalLinesStat" class="text-sm font-bold text-slate-700 mt-1">0</div>
+                                </div>
+                                <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+                                    <div class="text-[10px] uppercase tracking-wider text-emerald-500 font-bold">Valid Terakhir</div>
+                                    <div id="validLinesStat" class="text-sm font-bold text-emerald-700 mt-1">0</div>
+                                </div>
+                                <div class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2">
+                                    <div class="text-[10px] uppercase tracking-wider text-rose-500 font-bold">Invalid Terakhir</div>
+                                    <div id="invalidLinesStat" class="text-sm font-bold text-rose-700 mt-1">0</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3">
+                                <div class="text-[10px] uppercase tracking-wider text-indigo-500 font-bold mb-2">Format Export Batch ZIP</div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    <label class="flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 cursor-pointer">
+                                        <input type="radio" name="batchExportFormat" value="both" checked class="text-indigo-600">
+                                        <span>SVG + PNG</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 cursor-pointer">
+                                        <input type="radio" name="batchExportFormat" value="svg" class="text-indigo-600">
+                                        <span>SVG saja</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 cursor-pointer">
+                                        <input type="radio" name="batchExportFormat" value="png" class="text-indigo-600">
+                                        <span>PNG saja</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                                <button id="importBatchBtn" type="button" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                                    <i class="bi bi-upload"></i> Import Batch
+                                </button>
+                                <button id="downloadBatchBtn" type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                                    <i class="bi bi-file-earmark-zip"></i> Download Batch ZIP
+                                </button>
+                            </div>
+
+                            <div id="batchStatus" class="mt-4 hidden rounded-xl border px-4 py-3 text-sm"></div>
+                            <div id="batchErrors" class="mt-4 hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                                <div class="text-xs font-bold uppercase tracking-wider text-amber-700 mb-2">Baris Invalid</div>
+                                <ul id="batchErrorsList" class="space-y-1 text-[11px] text-amber-800 list-disc pl-4"></ul>
+                            </div>
+
+                            <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                <div class="flex items-center justify-between gap-3 mb-3">
+                                    <div>
+                                        <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Daftar Peserta Valid</div>
+                                        <p class="text-[11px] text-slate-500 mt-1">Klik peserta untuk langsung lompat ke preview. Ini jauh lebih cepat daripada `Prev/Next` saat data banyak.</p>
+                                    </div>
+                                </div>
+                                <div id="batchEntryListEmpty" class="text-[11px] text-slate-400">Belum ada hasil import batch.</div>
+                                <div id="batchEntryList" class="batch-entry-list space-y-2 hidden"></div>
+                            </div>
+                        </section>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nama Peserta</label>
-                        <input type="text" id="nameInput" value="Asih Wulansari" oninput="updatePreview()"
-                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Tanggal Sertifikat</label>
-                        <input type="date" id="dateInput" oninput="updatePreview()"
-                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                    </div>
-
-                    <div class="space-y-3">
-                        <button onclick="downloadSVG()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
-                            <i class="bi bi-filetype-svg"></i> Download SVG
-                        </button>
-                        <button onclick="downloadPNG()" class="w-full bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
-                            <i class="bi bi-image"></i> Download PNG
-                        </button>
-                    </div>
-                    <p class="text-[10px] text-slate-400 mt-4 text-center">*Gunakan Chrome/Edge untuk hasil terbaik.</p>
+                    <p class="text-[10px] text-slate-400 mt-4 text-center">*Gunakan Chrome/Edge untuk hasil export SVG, PNG, dan ZIP terbaik.</p>
                 </div>
 
                 <!-- Preview Panel -->
-                <div class="preview-panel w-full">
+                <div id="previewPanel" class="preview-panel w-full">
                     <!-- SVG Area -->
                     <svg id="certSvg" width="2000" height="1414" viewBox="0 0 2000 1414" xmlns="http://www.w3.org/2000/svg">
                         <!-- Background Image -->
@@ -121,6 +300,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
@@ -129,84 +309,667 @@
         renderTopBar(topbarTarget);
         const sidebarTarget = document.getElementById('sidebarContainer');
         renderSidebar(sidebarTarget);
+
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById('sidebarNav');
+            if (!sidebar) return;
+
+            const isMobile = window.innerWidth <= 991;
+            if (isMobile) {
+                sidebar.classList.toggle('show');
+                return;
+            }
+
+            document.body.classList.toggle('sidebar-collapsed');
+        };
+
+        const initializeSidebarState = () => {
+            const sidebar = document.getElementById('sidebarNav');
+            if (!sidebar) return;
+
+            document.body.classList.remove('sidebar-collapsed');
+
+            if (window.innerWidth <= 991) {
+                sidebar.classList.add('show');
+            } else {
+                sidebar.classList.remove('show');
+            }
+        };
+
+        initializeSidebarState();
     </script>
     <script>
-        // Certificate Generator Logic
-        document.getElementById('dateInput').valueAsDate = new Date();
+        const state = {
+            batchEntries: [],
+            invalidEntries: [],
+            activeIndex: 0,
+            globalCertificateDate: "",
+            isExporting: false
+        };
+
+        const invoiceInput = document.getElementById('invoiceInput');
+        const nameInput = document.getElementById('nameInput');
+        const globalDateInput = document.getElementById('globalDateInput');
+        const batchInput = document.getElementById('batchInput');
+        const validCountBadge = document.getElementById('validCountBadge');
+        const invalidCountBadge = document.getElementById('invalidCountBadge');
+        const activeEntryLabel = document.getElementById('activeEntryLabel');
+        const activeEntryDate = document.getElementById('activeEntryDate');
+        const batchStatus = document.getElementById('batchStatus');
+        const batchErrors = document.getElementById('batchErrors');
+        const batchErrorsList = document.getElementById('batchErrorsList');
+        const toggleGuideBtn = document.getElementById('toggleGuideBtn');
+        const toggleGuideLabel = document.getElementById('toggleGuideLabel');
+        const batchGuideBody = document.getElementById('batchGuideBody');
+        const batchGuideActions = document.getElementById('batchGuideActions');
+        const batchGuideExample = document.getElementById('batchGuideExample');
+        const copyGuideExampleBtn = document.getElementById('copyGuideExampleBtn');
+        const fillGuideExampleBtn = document.getElementById('fillGuideExampleBtn');
+        const totalLinesStat = document.getElementById('totalLinesStat');
+        const validLinesStat = document.getElementById('validLinesStat');
+        const invalidLinesStat = document.getElementById('invalidLinesStat');
+        const batchEntryList = document.getElementById('batchEntryList');
+        const batchEntryListEmpty = document.getElementById('batchEntryListEmpty');
+        const previewPanel = document.getElementById('previewPanel');
+        const batchExportFormatInputs = document.querySelectorAll('input[name="batchExportFormat"]');
+        const prevEntryBtn = document.getElementById('prevEntryBtn');
+        const nextEntryBtn = document.getElementById('nextEntryBtn');
+        const importBatchBtn = document.getElementById('importBatchBtn');
+        const downloadBatchBtn = document.getElementById('downloadBatchBtn');
+        const downloadSvgBtn = document.getElementById('downloadSvgBtn');
+        const downloadPngBtn = document.getElementById('downloadPngBtn');
+        const certSvg = document.getElementById('certSvg');
+        const textInvoice = document.getElementById('textInvoice');
+        const textName = document.getElementById('textName');
+        const textAward = document.getElementById('textAward');
+        const svgBg = document.getElementById('svgBg');
+
+        const DEFAULT_INVOICE = "13.07353";
+        const DEFAULT_NAME = "Asih Wulansari";
+        const GUIDE_EXAMPLE_TEXT = `13.07353\tAsih Wulansari
+13.07354\tBudi Santoso\t20/04/2026
+13.07355|Citra Lestari|21/04/2026
+13.07356,Daniel Pratama,22/04/2026`;
+        let base64Template = "";
+        let guideExpanded = true;
 
         function toRoman(n) {
-            return ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"][n];
+            return ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][n];
         }
 
         function formatDate(dateStr) {
             const d = new Date(dateStr);
+            if (Number.isNaN(d.getTime())) return "-";
             const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
             return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
         }
 
-        function updatePreview() {
-            const invoice = document.getElementById('invoiceInput').value;
-            const name = document.getElementById('nameInput').value;
-            const dateVal = document.getElementById('dateInput').value;
-            const d = new Date(dateVal);
-
-            const fullInvoice = `${invoice}/PT-DIA/${toRoman(d.getMonth())}/${d.getFullYear()}`;
-            const fullDateText = `THIS CERTIFICATE IS AWARDED ON ${formatDate(dateVal)}`;
-
-            document.getElementById('textInvoice').textContent = fullInvoice;
-            document.getElementById('textName').textContent = name;
-            document.getElementById('textAward').textContent = fullDateText;
+        function formatDateLabel(dateStr) {
+            if (!dateStr) return "-";
+            const d = new Date(dateStr);
+            if (Number.isNaN(d.getTime())) return "-";
+            return new Intl.DateTimeFormat('id-ID', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            }).format(d);
         }
 
-        // Initialize preview on load
-        updatePreview();
+        function buildFullInvoice(invoice, dateStr) {
+            const d = new Date(dateStr);
+            if (Number.isNaN(d.getTime())) return invoice || "-";
+            return `${invoice}/PT-DIA/${toRoman(d.getMonth())}/${d.getFullYear()}`;
+        }
 
-        // Convert external image to base64 immediately on load to allow proper SVG/PNG export
-        let base64Template = "";
-        fetch('../template.png')
-            .then(res => res.blob())
-            .then(blob => {
-                const reader = new FileReader();
-                reader.onloadend = function() {
-                    base64Template = reader.result;
-                    document.getElementById('svgBg').setAttribute('href', base64Template);
+        function sanitizeFilename(name) {
+            return String(name || 'sertifikat')
+                .trim()
+                .replace(/[\\/:*?"<>|]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '') || 'sertifikat';
+        }
+
+        function getTodayInputValue() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function parseBatchDateInput(dateText) {
+            const trimmed = String(dateText || '').trim();
+            const match = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (!match) return null;
+
+            const [, dayStr, monthStr, yearStr] = match;
+            const day = Number(dayStr);
+            const month = Number(monthStr);
+            const year = Number(yearStr);
+            const date = new Date(year, month - 1, day);
+
+            if (
+                Number.isNaN(date.getTime()) ||
+                date.getFullYear() !== year ||
+                date.getMonth() !== month - 1 ||
+                date.getDate() !== day
+            ) {
+                return null;
+            }
+
+            return `${yearStr}-${monthStr}-${dayStr}`;
+        }
+
+        function resolveEntryDate(entry, globalDate = state.globalCertificateDate) {
+            return entry.rawDate || globalDate || "";
+        }
+
+        function getEntryForPreview() {
+            if (!state.batchEntries.length) {
+                return {
+                    invoice: invoiceInput.value.trim() || DEFAULT_INVOICE,
+                    name: nameInput.value.trim() || DEFAULT_NAME,
+                    rawDate: "",
+                    certificateDate: globalDateInput.value || getTodayInputValue()
+                };
+            }
+
+            const current = state.batchEntries[state.activeIndex] || state.batchEntries[0];
+            return {
+                ...current,
+                certificateDate: resolveEntryDate(current)
+            };
+        }
+
+        function renderCertificateToSvgData(entry) {
+            const certificateDate = resolveEntryDate(entry);
+            return {
+                invoiceText: buildFullInvoice(entry.invoice, certificateDate),
+                nameText: entry.name || "-",
+                awardText: `THIS CERTIFICATE IS AWARDED ON ${formatDate(certificateDate)}`
+            };
+        }
+
+        function applySvgToPreview(entry) {
+            const svgData = renderCertificateToSvgData(entry);
+            textInvoice.textContent = svgData.invoiceText;
+            textName.textContent = svgData.nameText;
+            textAward.textContent = svgData.awardText;
+        }
+
+        function setStatus(message, type = 'info') {
+            if (!message) {
+                batchStatus.className = 'mt-4 hidden rounded-xl border px-4 py-3 text-sm';
+                batchStatus.textContent = '';
+                return;
+            }
+
+            const classes = {
+                info: 'mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700',
+                success: 'mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700',
+                warning: 'mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700',
+                error: 'mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'
+            };
+
+            batchStatus.className = classes[type] || classes.info;
+            batchStatus.textContent = message;
+        }
+
+        function renderInvalidEntries() {
+            if (!state.invalidEntries.length) {
+                batchErrors.classList.add('hidden');
+                batchErrorsList.innerHTML = '';
+                return;
+            }
+
+            batchErrors.classList.remove('hidden');
+            batchErrorsList.innerHTML = '';
+            state.invalidEntries.slice(0, 8).forEach((item) => {
+                const li = document.createElement('li');
+                li.textContent = `Baris ${item.line}: ${item.reason}`;
+                batchErrorsList.appendChild(li);
+            });
+        }
+
+        function countNonEmptyLines(text) {
+            return String(text || '')
+                .split(/\r?\n/)
+                .map((line) => line.trim())
+                .filter(Boolean)
+                .length;
+        }
+
+        function renderBatchStats() {
+            totalLinesStat.textContent = String(countNonEmptyLines(batchInput.value));
+            validLinesStat.textContent = String(state.batchEntries.length);
+            invalidLinesStat.textContent = String(state.invalidEntries.length);
+        }
+
+        function renderBatchEntryList() {
+            if (!state.batchEntries.length) {
+                batchEntryList.classList.add('hidden');
+                batchEntryListEmpty.classList.remove('hidden');
+                batchEntryList.innerHTML = '';
+                return;
+            }
+
+            batchEntryList.classList.remove('hidden');
+            batchEntryListEmpty.classList.add('hidden');
+            batchEntryList.innerHTML = '';
+
+            state.batchEntries.forEach((entry, index) => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = `batch-entry-item w-full text-left rounded-xl border px-3 py-3 ${index === state.activeIndex ? 'active border-blue-300 bg-blue-50' : 'border-slate-200 bg-white hover:bg-slate-100'}`;
+                item.innerHTML = `
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">${String(index + 1).padStart(2, '0')}. ${entry.name || '-'}</div>
+                            <div class="text-[11px] text-slate-500 mt-1">${entry.invoice || '-'} • ${formatDateLabel(resolveEntryDate(entry))}</div>
+                        </div>
+                        <span class="text-[10px] font-bold ${index === state.activeIndex ? 'text-blue-600' : 'text-slate-400'}">Preview</span>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    state.activeIndex = index;
+                    refreshPreview();
+                    ensurePreviewVisible();
+                });
+                batchEntryList.appendChild(item);
+            });
+        }
+
+        function isElementMostlyVisible(element) {
+            if (!element) return false;
+            const rect = element.getBoundingClientRect();
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+            const visibleTop = Math.max(rect.top, 0);
+            const visibleBottom = Math.min(rect.bottom, viewportHeight);
+            const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+            return visibleHeight >= Math.min(rect.height * 0.45, 320);
+        }
+
+        function ensurePreviewVisible() {
+            if (!previewPanel) return;
+            const isMobile = window.innerWidth < 1024;
+            if (!isMobile && isElementMostlyVisible(previewPanel)) return;
+            if (isMobile && isElementMostlyVisible(previewPanel)) return;
+            previewPanel.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        function renderGuideState() {
+            if (!batchGuideBody || !toggleGuideLabel) return;
+            batchGuideBody.classList.toggle('hidden', !guideExpanded);
+            if (batchGuideActions) {
+                batchGuideActions.classList.toggle('hidden', !guideExpanded);
+            }
+            toggleGuideLabel.textContent = guideExpanded ? 'Sembunyikan' : 'Tampilkan';
+        }
+
+        function syncActiveInputs() {
+            const activeEntry = getEntryForPreview();
+            invoiceInput.value = activeEntry.invoice || '';
+            nameInput.value = activeEntry.name || '';
+            globalDateInput.value = state.globalCertificateDate;
+        }
+
+        function updateNavigationState() {
+            const total = state.batchEntries.length || 1;
+            const current = state.batchEntries.length ? state.activeIndex + 1 : 1;
+            activeEntryLabel.textContent = `Peserta ${current} dari ${total}`;
+            const activeEntry = getEntryForPreview();
+            activeEntryDate.textContent = `Tanggal aktif: ${formatDateLabel(resolveEntryDate(activeEntry))}`;
+            prevEntryBtn.disabled = !state.batchEntries.length || state.activeIndex === 0 || state.isExporting;
+            nextEntryBtn.disabled = !state.batchEntries.length || state.activeIndex >= state.batchEntries.length - 1 || state.isExporting;
+            prevEntryBtn.classList.toggle('opacity-50', prevEntryBtn.disabled);
+            nextEntryBtn.classList.toggle('opacity-50', nextEntryBtn.disabled);
+        }
+
+        function renderCounters() {
+            const validCount = state.batchEntries.length || 1;
+            validCountBadge.textContent = `${validCount} peserta`;
+            invalidCountBadge.textContent = `${state.invalidEntries.length} invalid`;
+        }
+
+        function refreshPreview() {
+            const activeEntry = getEntryForPreview();
+            syncActiveInputs();
+            applySvgToPreview(activeEntry);
+            updateNavigationState();
+            renderCounters();
+            renderBatchStats();
+            renderInvalidEntries();
+            renderBatchEntryList();
+        }
+
+        function parseBatchLine(line) {
+            if (line.includes('\t')) return line.split('\t');
+            if (line.includes('|')) return line.split('|');
+            return line.split(',');
+        }
+
+        async function copyGuideExample() {
+            try {
+                await navigator.clipboard.writeText(GUIDE_EXAMPLE_TEXT);
+                setStatus('Contoh format berhasil disalin ke clipboard.', 'success');
+            } catch (error) {
+                console.error('Gagal menyalin contoh format', error);
+                setStatus('Clipboard tidak tersedia. Salin manual dari contoh format di panduan.', 'warning');
+            }
+        }
+
+        function fillGuideExample() {
+            batchInput.value = GUIDE_EXAMPLE_TEXT;
+            renderBatchStats();
+            setStatus('Contoh format dimasukkan ke textarea. Anda bisa edit lalu klik Import Batch.', 'info');
+        }
+
+        function parseBatchInput(rawText, globalDate) {
+            const validEntries = [];
+            const invalidEntries = [];
+            const lines = String(rawText || '').split(/\r?\n/);
+
+            lines.forEach((line, index) => {
+                const trimmed = line.trim();
+                if (!trimmed) return;
+
+                const parts = parseBatchLine(trimmed).map((part) => part.trim());
+                const invoice = parts[0] || '';
+                const name = parts[1] || '';
+                const rawDate = parts[2] || '';
+                const normalizedDate = rawDate ? parseBatchDateInput(rawDate) : '';
+
+                if (!invoice || !name) {
+                    invalidEntries.push({ line: index + 1, reason: 'Invoice dan nama wajib diisi.' });
+                    return;
                 }
-                reader.readAsDataURL(blob);
-            })
-            .catch(err => console.error("Gagal memuat template.png", err));
 
-        function downloadSVG() {
-            const svgData = document.getElementById('certSvg').outerHTML;
-            const svgBlob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
-            const svgUrl = URL.createObjectURL(svgBlob);
-            const downloadLink = document.createElement("a");
-            downloadLink.href = svgUrl;
-            downloadLink.download = `Sertifikat-${document.getElementById('nameInput').value}.svg`;
+                if (rawDate) {
+                    if (!normalizedDate) {
+                        invalidEntries.push({ line: index + 1, reason: 'Format tanggal tidak valid. Gunakan DD/MM/YYYY.' });
+                        return;
+                    }
+                } else if (!globalDate) {
+                    invalidEntries.push({ line: index + 1, reason: 'Tanggal kosong dan belum ada tanggal global.' });
+                    return;
+                }
+
+                validEntries.push({
+                    invoice,
+                    name,
+                    rawDate: normalizedDate,
+                    certificateDate: normalizedDate || globalDate
+                });
+            });
+
+            return { validEntries, invalidEntries };
+        }
+
+        function updateActiveEntry(field, value) {
+            if (state.batchEntries.length) {
+                state.batchEntries[state.activeIndex][field] = value;
+                state.batchEntries[state.activeIndex].certificateDate = resolveEntryDate(state.batchEntries[state.activeIndex]);
+            }
+        }
+
+        function getSvgString() {
+            return new XMLSerializer().serializeToString(certSvg);
+        }
+
+        function triggerBlobDownload(blob, filename) {
+            const downloadLink = document.createElement('a');
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = filename;
             document.body.appendChild(downloadLink);
             downloadLink.click();
             document.body.removeChild(downloadLink);
+            setTimeout(() => URL.revokeObjectURL(downloadLink.href), 1000);
         }
 
-        function downloadPNG() {
-            const svg = document.getElementById('certSvg');
-            const serializer = new XMLSerializer();
-            const svgStr = serializer.serializeToString(svg);
-            const canvas = document.createElement("canvas");
-            canvas.width = 2000;
-            canvas.height = 1414;
-            const ctx = canvas.getContext("2d");
-            const img = new Image();
-            
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0);
-                const pngUrl = canvas.toDataURL("image/png");
-                const downloadLink = document.createElement("a");
-                downloadLink.href = pngUrl;
-                downloadLink.download = `Sertifikat-${document.getElementById('nameInput').value}.png`;
-                downloadLink.click();
-            };
-            img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgStr)));
+        function svgStringToPngBlob(svgStr) {
+            return new Promise((resolve, reject) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 2000;
+                canvas.height = 1414;
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+
+                img.onload = function () {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            reject(new Error('Gagal membuat PNG blob.'));
+                            return;
+                        }
+                        resolve(blob);
+                    }, 'image/png');
+                };
+
+                img.onerror = () => reject(new Error('Gagal merender SVG ke PNG.'));
+                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
+            });
         }
+
+        function createEntryFilename(entry, index) {
+            const sequence = String(index + 1).padStart(3, '0');
+            return `${sequence}-${sanitizeFilename(entry.name)}`;
+        }
+
+        function getSelectedBatchExportFormat() {
+            const selected = Array.from(batchExportFormatInputs).find((input) => input.checked);
+            return selected ? selected.value : 'both';
+        }
+
+        async function downloadSingleSvg(entry = getEntryForPreview()) {
+            applySvgToPreview(entry);
+            const svgData = getSvgString();
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            triggerBlobDownload(svgBlob, `${createEntryFilename(entry, state.activeIndex)}.svg`);
+        }
+
+        async function downloadSinglePng(entry = getEntryForPreview()) {
+            applySvgToPreview(entry);
+            const svgData = getSvgString();
+            const pngBlob = await svgStringToPngBlob(svgData);
+            triggerBlobDownload(pngBlob, `${createEntryFilename(entry, state.activeIndex)}.png`);
+        }
+
+        function setExportingState(isExporting, message = '') {
+            state.isExporting = isExporting;
+            downloadBatchBtn.disabled = isExporting;
+            downloadSvgBtn.disabled = isExporting;
+            downloadPngBtn.disabled = isExporting;
+            importBatchBtn.disabled = isExporting;
+            [downloadBatchBtn, downloadSvgBtn, downloadPngBtn, importBatchBtn].forEach((btn) => {
+                btn.classList.toggle('opacity-50', isExporting);
+            });
+            updateNavigationState();
+            if (message) {
+                setStatus(message, 'info');
+            }
+        }
+
+        async function downloadBatchZip() {
+            if (!state.batchEntries.length) {
+                setStatus('Belum ada batch valid untuk diexport. Import daftar peserta terlebih dahulu.', 'warning');
+                return;
+            }
+
+            if (!window.JSZip) {
+                setStatus('Library ZIP tidak berhasil dimuat. Coba refresh halaman.', 'error');
+                return;
+            }
+
+            setExportingState(true, 'Menyiapkan file ZIP batch...');
+
+            const zip = new window.JSZip();
+            const previousIndex = state.activeIndex;
+            const exportFormat = getSelectedBatchExportFormat();
+
+            try {
+                for (let index = 0; index < state.batchEntries.length; index += 1) {
+                    const entry = {
+                        ...state.batchEntries[index],
+                        certificateDate: resolveEntryDate(state.batchEntries[index])
+                    };
+
+                    state.activeIndex = index;
+                    refreshPreview();
+                    setStatus(`Generating ${index + 1}/${state.batchEntries.length}`, 'info');
+
+                    applySvgToPreview(entry);
+                    const svgData = getSvgString();
+                    const baseFilename = createEntryFilename(entry, index);
+
+                    if (exportFormat === 'both' || exportFormat === 'svg') {
+                        zip.file(`${baseFilename}.svg`, svgData);
+                    }
+
+                    if (exportFormat === 'both' || exportFormat === 'png') {
+                        const pngBlob = await svgStringToPngBlob(svgData);
+                        zip.file(`${baseFilename}.png`, pngBlob);
+                    }
+                }
+
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                const now = new Date();
+                const stamp = [
+                    now.getFullYear(),
+                    String(now.getMonth() + 1).padStart(2, '0'),
+                    String(now.getDate()).padStart(2, '0')
+                ].join('') + '-' + [
+                    String(now.getHours()).padStart(2, '0'),
+                    String(now.getMinutes()).padStart(2, '0')
+                ].join('');
+
+                triggerBlobDownload(zipBlob, `sertifikat-batch-${exportFormat}-${stamp}.zip`);
+                const exportLabel = exportFormat === 'both' ? 'SVG + PNG' : exportFormat.toUpperCase();
+                setStatus(`ZIP berhasil dibuat untuk ${state.batchEntries.length} peserta dengan format ${exportLabel}.`, 'success');
+            } catch (error) {
+                console.error('Gagal membuat batch ZIP', error);
+                setStatus(`Gagal membuat ZIP: ${error.message}`, 'error');
+            } finally {
+                state.activeIndex = Math.min(previousIndex, Math.max(state.batchEntries.length - 1, 0));
+                setExportingState(false);
+                refreshPreview();
+            }
+        }
+
+        function importBatch() {
+            const rawText = batchInput.value;
+            const { validEntries, invalidEntries } = parseBatchInput(rawText, state.globalCertificateDate);
+
+            state.invalidEntries = invalidEntries;
+
+            if (!validEntries.length) {
+                renderCounters();
+                renderInvalidEntries();
+                refreshPreview();
+                setStatus('Tidak ada data valid yang bisa diimport. Periksa format daftar peserta.', 'warning');
+                return;
+            }
+
+            state.batchEntries = validEntries;
+            state.activeIndex = 0;
+            setStatus(`Batch berhasil diimport: ${validEntries.length} valid, ${invalidEntries.length} invalid.`, 'success');
+            refreshPreview();
+        }
+
+        function initializeDefaultState() {
+            const today = getTodayInputValue();
+            state.globalCertificateDate = today;
+            globalDateInput.value = today;
+            state.batchEntries = [{
+                invoice: DEFAULT_INVOICE,
+                name: DEFAULT_NAME,
+                rawDate: '',
+                certificateDate: today
+            }];
+            state.invalidEntries = [];
+            state.activeIndex = 0;
+            batchInput.value = `${DEFAULT_INVOICE}\t${DEFAULT_NAME}`;
+            refreshPreview();
+            setStatus('Siap digunakan. Anda bisa edit peserta aktif atau import batch sekaligus.', 'info');
+        }
+
+        invoiceInput.addEventListener('input', () => {
+            updateActiveEntry('invoice', invoiceInput.value.trim());
+            refreshPreview();
+        });
+
+        nameInput.addEventListener('input', () => {
+            updateActiveEntry('name', nameInput.value);
+            refreshPreview();
+        });
+
+        globalDateInput.addEventListener('input', () => {
+            state.globalCertificateDate = globalDateInput.value;
+            state.batchEntries = state.batchEntries.map((entry) => ({
+                ...entry,
+                certificateDate: resolveEntryDate(entry, globalDateInput.value)
+            }));
+            refreshPreview();
+        });
+
+        prevEntryBtn.addEventListener('click', () => {
+            if (state.activeIndex > 0) {
+                state.activeIndex -= 1;
+                refreshPreview();
+            }
+        });
+
+        nextEntryBtn.addEventListener('click', () => {
+            if (state.activeIndex < state.batchEntries.length - 1) {
+                state.activeIndex += 1;
+                refreshPreview();
+            }
+        });
+
+        importBatchBtn.addEventListener('click', importBatch);
+        downloadBatchBtn.addEventListener('click', downloadBatchZip);
+        toggleGuideBtn.addEventListener('click', () => {
+            guideExpanded = !guideExpanded;
+            renderGuideState();
+        });
+        copyGuideExampleBtn.addEventListener('click', copyGuideExample);
+        fillGuideExampleBtn.addEventListener('click', fillGuideExample);
+        batchInput.addEventListener('input', renderBatchStats);
+        downloadSvgBtn.addEventListener('click', () => {
+            downloadSingleSvg(getEntryForPreview()).catch((error) => {
+                console.error(error);
+                setStatus(`Gagal download SVG: ${error.message}`, 'error');
+            });
+        });
+        downloadPngBtn.addEventListener('click', () => {
+            downloadSinglePng(getEntryForPreview()).catch((error) => {
+                console.error(error);
+                setStatus(`Gagal download PNG: ${error.message}`, 'error');
+            });
+        });
+
+        fetch('../template.png')
+            .then((res) => res.blob())
+            .then((blob) => {
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    base64Template = reader.result;
+                    svgBg.setAttribute('href', base64Template);
+                };
+                reader.readAsDataURL(blob);
+            })
+            .catch((err) => console.error('Gagal memuat template.png', err))
+            .finally(() => {
+                if (batchGuideExample) {
+                    batchGuideExample.textContent = GUIDE_EXAMPLE_TEXT;
+                }
+                renderGuideState();
+                initializeDefaultState();
+            });
     </script>
 </body>
 </html>
