@@ -415,6 +415,23 @@
                             </dl>
                         </div>
                         <div class="bg-slate-50 rounded-2xl p-4">
+                            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Informasi Bank</h3>
+                            <dl class="space-y-1 text-xs text-slate-600">
+                                <div class="flex justify-between">
+                                    <dt class="text-slate-500">Nama Bank</dt>
+                                    <dd class="font-semibold text-slate-800" id="detailBankName"></dd>
+                                </div>
+                                <div class="flex justify-between">
+                                    <dt class="text-slate-500">No. Rekening</dt>
+                                    <dd class="font-semibold text-slate-800" id="detailAccountNumber"></dd>
+                                </div>
+                                <div class="flex justify-between">
+                                    <dt class="text-slate-500">Atas Nama</dt>
+                                    <dd class="font-semibold text-slate-800" id="detailAccountHolderName"></dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <div class="bg-slate-50 rounded-2xl p-4">
                             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Availability</h3>
                             <div id="detailAvailability" class="text-xs text-slate-600"></div>
                         </div>
@@ -623,6 +640,21 @@
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Fee Offline</label>
                         <input id="addMentorFeeOffline" type="number" min="0" step="1000" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="75000">
+                    </div>
+                    <div class="md:col-span-2 border-t border-slate-200 pt-3 mt-1">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-1">🏦 Informasi Bank</p>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Bank</label>
+                        <input id="addMentorBankName" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="BCA, BNI, Mandiri, dll.">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">No. Rekening</label>
+                        <input id="addMentorAccountNumber" type="text" inputmode="numeric" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="1234567890">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Pemilik Rekening</label>
+                        <input id="addMentorAccountHolderName" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Nama sesuai buku rekening">
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Contract Notes</label>
@@ -966,7 +998,10 @@
                         feeOffline: parseNumberish(d.feeOffline) !== null ? parseNumberish(d.feeOffline) : (parseNumberish(d.fee_offline) !== null ? parseNumberish(d.fee_offline) : 0),
                         availability: normalizeAvailabilityList(Array.isArray(d.availability) ? d.availability : (Array.isArray(d.ketersediaan) ? d.ketersediaan : [])),
                         classHistory: Array.isArray(d.classHistory) ? d.classHistory : [],
-                        contractNotes: d.contractNotes || d.contract_notes || d.catatan_khusus || ""
+                        contractNotes: d.contractNotes || d.contract_notes || d.catatan_khusus || "",
+                        bankName: d.bankName || d.bank_name || d.namaBank || "",
+                        accountNumber: d.accountNumber || d.account_number || d.noRekening || d.no_rekening || "",
+                        accountHolderName: d.accountHolderName || d.beneficiaryName || d.nama_rekening || d.namaPemilikRekening || ""
                     };
                     mentors.push(mentor);
                 });
@@ -1541,6 +1576,12 @@
                 status.innerHTML = "";
                 status.appendChild(getStatusBadge(mentor.status || ""));
             }
+            const detailBankName = document.getElementById("detailBankName");
+            const detailAccountNumber = document.getElementById("detailAccountNumber");
+            const detailAccountHolderName = document.getElementById("detailAccountHolderName");
+            if (detailBankName) detailBankName.textContent = mentor.bankName || "-";
+            if (detailAccountNumber) detailAccountNumber.textContent = mentor.accountNumber || "-";
+            if (detailAccountHolderName) detailAccountHolderName.textContent = mentor.accountHolderName || mentor.fullName || "-";
             if (availability) {
                 const availabilityItems = normalizeAvailabilityList(mentor.availability);
                 if (availabilityItems.length) {
@@ -1727,6 +1768,12 @@
             if (feeOnlineInput) feeOnlineInput.value = "";
             if (feeOfflineInput) feeOfflineInput.value = "";
             if (notesInput) notesInput.value = "";
+            const bankNameInput = document.getElementById("addMentorBankName");
+            const accountNumberInput = document.getElementById("addMentorAccountNumber");
+            const accountHolderNameInput = document.getElementById("addMentorAccountHolderName");
+            if (bankNameInput) bankNameInput.value = "";
+            if (accountNumberInput) accountNumberInput.value = "";
+            if (accountHolderNameInput) accountHolderNameInput.value = "";
             renderAvailabilitySlots([]);
             if (saveBtn) {
                 saveBtn.disabled = false;
@@ -1777,6 +1824,12 @@
             if (feeOnlineInput) feeOnlineInput.value = String(mentor.feeOnline || 0);
             if (feeOfflineInput) feeOfflineInput.value = String(mentor.feeOffline || 0);
             if (notesInput) notesInput.value = mentor.contractNotes || "";
+            const bankNameInput2 = document.getElementById("addMentorBankName");
+            const accountNumberInput2 = document.getElementById("addMentorAccountNumber");
+            const accountHolderNameInput2 = document.getElementById("addMentorAccountHolderName");
+            if (bankNameInput2) bankNameInput2.value = mentor.bankName || "";
+            if (accountNumberInput2) accountNumberInput2.value = mentor.accountNumber || "";
+            if (accountHolderNameInput2) accountHolderNameInput2.value = mentor.accountHolderName || mentor.fullName || "";
             renderAvailabilitySlots(Array.isArray(mentor.availability) ? mentor.availability : []);
 
             updateMentorModalMode(true);
@@ -1840,6 +1893,9 @@
             const feeOnline = feeOnlineInput ? Math.max(0, parseNumberInput(feeOnlineInput.value, 0)) : 0;
             const feeOffline = feeOfflineInput ? Math.max(0, parseNumberInput(feeOfflineInput.value, 0)) : 0;
             const contractNotes = notesInput ? notesInput.value.trim() : "";
+            const bankNameVal = (document.getElementById("addMentorBankName")?.value || "").trim();
+            const accountNumberVal = (document.getElementById("addMentorAccountNumber")?.value || "").trim();
+            const accountHolderNameVal = (document.getElementById("addMentorAccountHolderName")?.value || "").trim();
             const ratingString = rating.toFixed(1);
             const existingMentor = isEditMode ? mentorsState.find(m => m.id === editingMentorDocId) : null;
 
@@ -1885,7 +1941,10 @@
                 feeOffline: feeOffline,
                 availability: availabilityResult.list,
                 classHistory: existingMentor && Array.isArray(existingMentor.classHistory) ? existingMentor.classHistory : [],
-                contractNotes: contractNotes
+                contractNotes: contractNotes,
+                bankName: bankNameVal,
+                accountNumber: accountNumberVal,
+                accountHolderName: accountHolderNameVal || fullName
             };
 
             try {

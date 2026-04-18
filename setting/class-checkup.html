@@ -106,6 +106,9 @@
         .salary-published-detail { font-size:11px; color:#6b7280; margin-top:2px; }
         .salary-link-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:10px; border:1px solid #d1fae5; background:#ecfdf5; color:#059669; font-size:11px; font-weight:800; text-decoration:none; transition:all .15s; margin-top:8px; }
         .salary-link-btn:hover { background:#d1fae5; color:#047857; }
+        .salary-btn-undo { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:12px; border:1px solid #fecaca; background:#fff5f5; color:#dc2626; font-size:11px; font-weight:800; cursor:pointer; transition:all .2s; }
+        .salary-btn-undo:hover { background:#fee2e2; border-color:#fca5a5; transform:translateY(-1px); box-shadow:0 4px 12px rgba(220,38,38,.15); }
+        .salary-btn-undo:disabled { opacity:.55; cursor:not-allowed; transform:none; box-shadow:none; }
         .salary-help { font-size:10px; color:#9ca3af; margin-top:8px; }
         .salary-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
         @media(max-width:640px){ .salary-grid{grid-template-columns:1fr;} }
@@ -378,10 +381,20 @@
                                     <div id="salaryPublishedDetail" class="salary-published-detail"></div>
                                 </div>
                             </div>
-                            <a id="salaryExpenseLink" href="./operational-expenses.html" target="_blank" class="salary-link-btn">
-                                <i data-lucide="external-link" class="w-3 h-3"></i>
-                                Lihat di Operational Expenses
-                            </a>
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px">
+                                <a id="salaryExpenseLink" href="./operational-expenses.html" target="_blank" class="salary-link-btn">
+                                    <i data-lucide="external-link" class="w-3 h-3"></i>
+                                    Lihat di Operational Expenses
+                                </a>
+                                <button id="btnUndoSalary" type="button" class="salary-btn-undo">
+                                    <i data-lucide="undo-2" class="w-3 h-3"></i>
+                                    Undo Publish
+                                </button>
+                            </div>
+                            <div class="salary-help" style="margin-top:10px">
+                                <i data-lucide="alert-triangle" class="w-3 h-3 inline" style="vertical-align:middle;color:#f59e0b"></i>
+                                Undo akan menghapus data expense dari Operational Expenses dan membuka kembali form publish.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -396,7 +409,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, setDoc, getDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
@@ -1642,6 +1655,63 @@
             }
         }
 
+        async function undoSalaryPublish() {
+            if (!currentDetailClassId) return;
+            const idx = classesState.findIndex(c => c.id === currentDetailClassId);
+            if (idx < 0) return;
+            const c = classesState[idx];
+            if (!c.salaryExpenseId) {
+                showToast("Tidak ada publish gaji yang bisa di-undo", "error");
+                return;
+            }
+            const confirmed = confirm(
+                "Anda yakin ingin membatalkan publish gaji mentor?\n\n" +
+                "Expense ID: " + c.salaryExpenseId + "\n" +
+                "Kelas: " + (c.name || "-") + "\n\n" +
+                "Data expense di Operational Expenses akan dihapus dan form publish akan terbuka kembali."
+            );
+            if (!confirmed) return;
+            const btnUndo = document.getElementById("btnUndoSalary");
+            if (btnUndo) {
+                btnUndo.disabled = true;
+                btnUndo.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Membatalkan...';
+            }
+            try {
+                const user = getCurrentUserAuditInfo();
+                const expenseId = c.salaryExpenseId;
+                await deleteDoc(doc(db, "operational_expenses", expenseId));
+                await updateDoc(doc(db, "class_availability", c.docId), {
+                    salary_expense_id: "",
+                    salary_published_at: null,
+                    salary_published_by: "",
+                    updatedAt: serverTimestamp()
+                });
+                classesState[idx] = {
+                    ...c,
+                    salaryExpenseId: "",
+                    salaryPublishedAt: null,
+                    salaryPublishedBy: ""
+                };
+                await logScheduleChange(classesState[idx], "", "", "salary_undo", [{
+                    field: "salary",
+                    label: "Undo Publish Gaji Mentor",
+                    from: expenseId,
+                    to: "Dibatalkan oleh " + (user.userName || "Admin")
+                }]);
+                renderSalarySection(classesState[idx]);
+                if (window.lucide) window.lucide.createIcons();
+                showToast("Publish gaji berhasil dibatalkan. Expense " + expenseId + " telah dihapus.", "success");
+            } catch (e) {
+                showToast("Gagal membatalkan publish gaji: " + (e.message || "Unknown error"), "error");
+            } finally {
+                if (btnUndo) {
+                    btnUndo.disabled = false;
+                    btnUndo.innerHTML = '<i data-lucide="undo-2" class="w-3 h-3"></i> Undo Publish';
+                    if (window.lucide) window.lucide.createIcons();
+                }
+            }
+        }
+
         function closeDetailModal() {
             const modal = document.getElementById("classDetailModal");
             if (!modal) return;
@@ -2213,6 +2283,10 @@
             const btnPublishSalary = document.getElementById("btnPublishSalary");
             if (btnPublishSalary) {
                 btnPublishSalary.addEventListener("click", () => publishSalaryToExpenses());
+            }
+            const btnUndoSalary = document.getElementById("btnUndoSalary");
+            if (btnUndoSalary) {
+                btnUndoSalary.addEventListener("click", () => undoSalaryPublish());
             }
             const salaryAmountInput = document.getElementById("salaryAmount");
             if (salaryAmountInput) {

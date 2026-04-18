@@ -926,6 +926,33 @@
                     )
                 });
 
+                const autoFillMentorBankInfo = async (mentorId, mentorName) => {
+                    try {
+                        let mentorData = null;
+                        if (mentorId) {
+                            const found = mentorOptions.value.find(m => m.id === mentorId);
+                            if (found && found.bankInfo) {
+                                mentorData = found.bankInfo;
+                            }
+                        }
+                        if (!mentorData && mentorName) {
+                            const nameNorm = normalizeText(mentorName);
+                            const found = mentorOptions.value.find(m => normalizeText(m.name) === nameNorm);
+                            if (found && found.bankInfo) {
+                                mentorData = found.bankInfo;
+                                if (!form.value.mentorId) form.value.mentorId = found.id;
+                            }
+                        }
+                        if (mentorData && (mentorData.bankName || mentorData.accountNumber)) {
+                            form.value.beneficiaryName = form.value.beneficiaryName || mentorData.beneficiaryName || '';
+                            form.value.bankName = mentorData.bankName || '';
+                            form.value.accountNumber = mentorData.accountNumber || '';
+                        }
+                    } catch (e) {
+                        console.warn('[OperationalExpenses] Gagal auto-fill bank info mentor:', e);
+                    }
+                };
+
                 const loadRequesterOptions = async () => {
                     try {
                         const snap = await withTimeout(getDocs(collection(db, 'users')), 8000);
@@ -1346,6 +1373,12 @@
                         referenceDetail: expense.referenceDetail || ''
                     };
                     syncSearchInputsFromForm();
+                    if (expense.category === 'mentor_salary') {
+                        const hasBankInfo = !!(expense.bankName && expense.accountNumber);
+                        if (!hasBankInfo) {
+                            autoFillMentorBankInfo(expense.mentorId, expense.mentorName);
+                        }
+                    }
                     showDrawer.value = true;
                 };
 
@@ -1437,6 +1470,11 @@
 
                     try {
                         const proofUpload = await uploadTransferProof(expenseId);
+                        const isNewProofUploaded = !!(proofUpload.url && proofUpload.url !== form.value.transferProofUrl);
+                        if (isNewProofUploaded && form.value.status !== 'paid' && form.value.status !== 'rejected') {
+                            form.value.status = 'paid';
+                            showToast('Bukti transfer terdeteksi → status otomatis diubah ke Paid');
+                        }
                         const selectedMentor = mentorOptions.value.find((item) => item.id === form.value.mentorId);
                         const mentorBankInfo = selectedMentor ? selectedMentor.bankInfo : null;
                         const nowMs = Date.now();
@@ -1539,18 +1577,39 @@
                     }
                 };
 
+                const enrichExpensesWithMentorBank = () => {
+                    expenses.value.forEach(expense => {
+                        if (expense.category !== 'mentor_salary') return;
+                        if (expense.bankName && expense.accountNumber) return;
+                        let mentorOpt = null;
+                        if (expense.mentorId) {
+                            mentorOpt = mentorOptions.value.find(m => m.id === expense.mentorId);
+                        }
+                        if (!mentorOpt && expense.mentorName) {
+                            const nameNorm = normalizeText(expense.mentorName);
+                            mentorOpt = mentorOptions.value.find(m => normalizeText(m.name) === nameNorm);
+                        }
+                        if (mentorOpt && mentorOpt.bankInfo) {
+                            if (!expense.beneficiaryName) expense.beneficiaryName = mentorOpt.bankInfo.beneficiaryName || '';
+                            if (!expense.bankName) expense.bankName = mentorOpt.bankInfo.bankName || '';
+                            if (!expense.accountNumber) expense.accountNumber = mentorOpt.bankInfo.accountNumber || '';
+                        }
+                    });
+                };
+
                 onMounted(() => {
                     form.value = createEmptyForm();
                     syncSearchInputsFromForm();
-                    onAuthStateChanged(auth, (user) => {
+                    onAuthStateChanged(auth, async (user) => {
                         if (!user) {
                             window.location.href = "../index.html";
                             return;
                         }
-                        loadExpenses();
                         loadRequesterOptions();
-                        loadMentorOptions();
                         loadClassOptions();
+                        await loadMentorOptions();
+                        await loadExpenses();
+                        enrichExpensesWithMentorBank();
                     });
                 });
 
