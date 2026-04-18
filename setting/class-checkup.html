@@ -84,6 +84,31 @@
         #classDetailModal .modal-card::-webkit-scrollbar { width:0; height:0; display:none; }
         .cal-scroll-wrapper { overflow-x:auto; overflow-y:auto; max-height:600px; border-radius:16px; }
         @media(max-width:768px){ .cal-grid{min-width:880px;} .cal-cell{min-height:180px;} }
+        .salary-section { border:1px solid #d1fae5; border-radius:18px; background:linear-gradient(135deg,#ecfdf5 0%,#f0fdf4 50%,#f0fdfa 100%); padding:20px; margin-top:8px; position:relative; overflow:hidden; }
+        .salary-section::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#10b981,#14b8a6,#06b6d4); }
+        .salary-section-title { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800; color:#065f46; margin-bottom:14px; }
+        .salary-section-title i { color:#10b981; }
+        .salary-status-bar { display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; background:rgba(16,185,129,.08); border:1px solid rgba(16,185,129,.18); margin-bottom:14px; font-size:11px; font-weight:700; color:#065f46; }
+        .salary-field-label { display:block; font-size:10px; font-weight:800; color:#6b7280; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
+        .salary-input { width:100%; border:1px solid #d1d5db; border-radius:12px; background:#fff; padding:9px 12px; font-size:12px; color:#0f172a; outline:none; transition:all .15s; }
+        .salary-input:focus { border-color:#10b981; box-shadow:0 0 0 2px rgba(16,185,129,.15); }
+        .salary-input:disabled { background:#f3f4f6; color:#9ca3af; cursor:not-allowed; }
+        .salary-textarea { resize:vertical; min-height:70px; }
+        .salary-btn-publish { display:inline-flex; align-items:center; gap:8px; padding:10px 22px; border-radius:14px; border:none; background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-size:12px; font-weight:800; cursor:pointer; transition:all .2s; box-shadow:0 4px 14px rgba(16,185,129,.25); }
+        .salary-btn-publish:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(16,185,129,.35); }
+        .salary-btn-publish:disabled { opacity:.55; cursor:not-allowed; transform:none; box-shadow:none; }
+        .salary-btn-publish .pulse-dot { width:8px; height:8px; border-radius:50%; background:#fff; animation:salaryPulse 1.5s ease-in-out infinite; }
+        @keyframes salaryPulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.4;transform:scale(.7);} }
+        .salary-published { display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:14px; background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.2); }
+        .salary-published-icon { width:32px; height:32px; border-radius:50%; background:#10b981; color:#fff; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:800; flex-shrink:0; }
+        .salary-published-info { flex:1; }
+        .salary-published-label { font-size:11px; font-weight:800; color:#065f46; }
+        .salary-published-detail { font-size:11px; color:#6b7280; margin-top:2px; }
+        .salary-link-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:10px; border:1px solid #d1fae5; background:#ecfdf5; color:#059669; font-size:11px; font-weight:800; text-decoration:none; transition:all .15s; margin-top:8px; }
+        .salary-link-btn:hover { background:#d1fae5; color:#047857; }
+        .salary-help { font-size:10px; color:#9ca3af; margin-top:8px; }
+        .salary-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+        @media(max-width:640px){ .salary-grid{grid-template-columns:1fr;} }
     </style>
 </head>
 <body class="p-8 bg-slate-50">
@@ -299,6 +324,67 @@
                     <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Comment</div>
                     <textarea id="editComment" rows="4" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 resize-y"></textarea>
                 </div>
+                <div id="salarySection" class="md:col-span-2 hidden">
+                    <div class="salary-section">
+                        <div class="salary-section-title">
+                            <i data-lucide="banknote" class="w-5 h-5"></i>
+                            Publish Gaji Mentor
+                        </div>
+                        <div id="salaryStatusBar" class="salary-status-bar">
+                            <i data-lucide="check-circle-2" class="w-4 h-4" style="color:#10b981"></i>
+                            <span id="salaryStatusText">Kelas telah graduate</span>
+                        </div>
+                        <div id="salaryFormArea">
+                            <div class="salary-grid">
+                                <div>
+                                    <label class="salary-field-label">Mentor</label>
+                                    <input id="salaryMentorName" type="text" class="salary-input" disabled>
+                                </div>
+                                <div>
+                                    <label class="salary-field-label">Kelas</label>
+                                    <input id="salaryClassName" type="text" class="salary-input" disabled>
+                                </div>
+                            </div>
+                            <div class="salary-grid">
+                                <div>
+                                    <label class="salary-field-label">Nominal Gaji (IDR)</label>
+                                    <input id="salaryAmount" type="text" inputmode="numeric" class="salary-input" placeholder="Contoh: 950.000">
+                                </div>
+                                <div>
+                                    <label class="salary-field-label">Due Date</label>
+                                    <input id="salaryDueDate" type="date" class="salary-input">
+                                </div>
+                            </div>
+                            <div style="margin-bottom:14px">
+                                <label class="salary-field-label">Notes untuk Treasurer <span style="color:#ef4444">*wajib</span></label>
+                                <textarea id="salaryNotes" class="salary-input salary-textarea" placeholder="Jelaskan breakdown nominal, misal: 8 sesi mengajar + bonus evaluasi + transport. Treasurer perlu ini sebelum transfer."></textarea>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                                <button id="btnPublishSalary" type="button" class="salary-btn-publish">
+                                    <span class="pulse-dot"></span>
+                                    Publish ke Operational Expenses
+                                </button>
+                            </div>
+                            <div class="salary-help">
+                                <i data-lucide="info" class="w-3 h-3 inline" style="vertical-align:middle"></i>
+                                Notes wajib diisi agar treasurer memahami breakdown nominal sebelum transfer.
+                            </div>
+                        </div>
+                        <div id="salaryPublishedArea" class="hidden">
+                            <div class="salary-published">
+                                <div class="salary-published-icon">✓</div>
+                                <div class="salary-published-info">
+                                    <div class="salary-published-label">Sudah dipublish ke Operational Expenses</div>
+                                    <div id="salaryPublishedDetail" class="salary-published-detail"></div>
+                                </div>
+                            </div>
+                            <a id="salaryExpenseLink" href="./operational-expenses.html" target="_blank" class="salary-link-btn">
+                                <i data-lucide="external-link" class="w-3 h-3"></i>
+                                Lihat di Operational Expenses
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -310,7 +396,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
@@ -620,6 +706,7 @@
                     let sourceLabel = "Perubahan";
                     if (d.source === "calendar_drag") sourceLabel = "Kalender";
                     else if (d.source === "detail_modal") sourceLabel = "Detail";
+                    else if (d.source === "salary_publish") sourceLabel = "Publish Gaji";
                     const changeRows = Array.isArray(d.changes) ? d.changes : [];
                     const detailHtml = changeRows.length
                         ? "<div class=\"text-[11px] text-slate-700\">" + changeRows.map((change) => {
@@ -683,17 +770,23 @@
             const admins = extractAdminsFromDoc(d);
             const treasurers = extractTreasurersFromDoc(d);
             const supervisor = supervisors.length ? supervisors[0] : { uid: "", name: "", photo: "" };
+            const meetingDone = typeof d.meeting_done === "number" ? d.meeting_done : 0;
+            const meetingTotal = typeof d.meeting_total === "number" ? d.meeting_total : 0;
+            let status = deriveStatusFromAvailability(d);
+            if (meetingTotal > 0 && meetingDone >= meetingTotal && status === "Running") {
+                status = "Graduate";
+            }
             return {
                 id: d.id || docSnap.id,
                 docId: docSnap.id,
                 name: d.name || d.class_name || "Unnamed Class",
-                status: deriveStatusFromAvailability(d),
+                status,
                 startDate: toDateString(d.start_date || d.startDate),
                 startTime: d.start_time || d.startTime || d.class_time || d.classTime || d.time || d.jam || "",
                 location: d.location || "",
                 type: d.type || "Offline",
-                meetingDone: typeof d.meeting_done === "number" ? d.meeting_done : 0,
-                meetingTotal: typeof d.meeting_total === "number" ? d.meeting_total : 0,
+                meetingDone,
+                meetingTotal,
                 groupLink: d.group_link || d.groupLink || "",
                 videoClassLink: d.video_class || d.videoClass || d.video_class_link || d.videoClassLink || "",
                 classLinks: parseClassLinksFromData(d),
@@ -702,7 +795,10 @@
                 supervisors,
                 admins,
                 treasurers,
-                mentors
+                mentors,
+                salaryExpenseId: d.salary_expense_id || "",
+                salaryPublishedAt: d.salary_published_at || null,
+                salaryPublishedBy: d.salary_published_by || ""
             };
         }
 
@@ -1345,9 +1441,205 @@
             renderUserMultiOptions("editTreasurerUsers", c.treasurers || [], "Pilih treasurer");
             renderClassLinksEditor(c.classLinks || [], true);
             setDetailPageLink(c);
+            renderSalarySection(c);
             setDetailEditMode(false);
             modal.classList.add("open");
             if (window.lucide) window.lucide.createIcons();
+        }
+
+        function formatSalaryCurrency(value) {
+            const num = parseInt(String(value || "").replace(/[^\d]/g, ""), 10);
+            if (!num || isNaN(num)) return "";
+            return new Intl.NumberFormat("id-ID").format(num);
+        }
+
+        function renderSalarySection(c) {
+            const section = document.getElementById("salarySection");
+            const formArea = document.getElementById("salaryFormArea");
+            const publishedArea = document.getElementById("salaryPublishedArea");
+            const statusText = document.getElementById("salaryStatusText");
+            const mentorInput = document.getElementById("salaryMentorName");
+            const classInput = document.getElementById("salaryClassName");
+            const amountInput = document.getElementById("salaryAmount");
+            const dueDateInput = document.getElementById("salaryDueDate");
+            const notesInput = document.getElementById("salaryNotes");
+            const publishedDetail = document.getElementById("salaryPublishedDetail");
+            const expenseLink = document.getElementById("salaryExpenseLink");
+            if (!section) return;
+            const isGraduateOrComplete = c.status === "Graduate" || c.status === "Complete";
+            if (!isGraduateOrComplete) {
+                section.classList.add("hidden");
+                return;
+            }
+            section.classList.remove("hidden");
+            const mentorFullName = c.mentors && c.mentors.length ? c.mentors[0].name : "-";
+            if (statusText) statusText.textContent = "Kelas telah " + c.status.toLowerCase() + " (" + c.meetingDone + "/" + c.meetingTotal + " meeting)";
+            if (mentorInput) mentorInput.value = mentorFullName;
+            if (classInput) classInput.value = c.name || "-";
+            if (c.salaryExpenseId) {
+                if (formArea) formArea.classList.add("hidden");
+                if (publishedArea) publishedArea.classList.remove("hidden");
+                if (publishedDetail) {
+                    const byText = c.salaryPublishedBy ? " oleh " + c.salaryPublishedBy : "";
+                    publishedDetail.textContent = "Expense ID: " + c.salaryExpenseId + byText;
+                }
+                if (expenseLink) expenseLink.href = "./operational-expenses.html";
+            } else {
+                if (formArea) formArea.classList.remove("hidden");
+                if (publishedArea) publishedArea.classList.add("hidden");
+                if (amountInput) amountInput.value = "";
+                if (dueDateInput) {
+                    const nextWeek = new Date();
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    dueDateInput.value = toDateKey(nextWeek);
+                }
+                if (notesInput) notesInput.value = "";
+            }
+        }
+
+        async function findMentorDocByName(mentorName) {
+            if (!mentorName) return null;
+            try {
+                const snap = await getDocs(collection(db, "mentor"));
+                let found = null;
+                snap.forEach((docSnap) => {
+                    if (found) return;
+                    const d = docSnap.data() || {};
+                    const names = [
+                        d.fullName, d.nama_lengkap, d.name, d.displayName
+                    ].filter(Boolean).map(n => String(n).trim().toLowerCase());
+                    if (names.includes(mentorName.trim().toLowerCase())) {
+                        found = { id: docSnap.id, data: d };
+                    }
+                });
+                return found;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function extractBankInfoFromMentor(d) {
+            const first = (...vals) => {
+                for (const v of vals) {
+                    const s = String(v || "").trim();
+                    if (s) return s;
+                }
+                return "";
+            };
+            return {
+                beneficiaryName: first(d.beneficiaryName, d.accountHolderName, d.accountName, d.namaPemilikRekening, d.nama_rekening, d.namaRekening, d.fullName, d.nama_lengkap, d.name),
+                bankName: first(d.bankName, d.bank, d.namaBank, d.bank_name, d.rekeningBank, d.bankAccountBank),
+                accountNumber: first(d.accountNumber, d.noRekening, d.no_rekening, d.nomorRekening, d.nomor_rekening, d.account_number)
+            };
+        }
+
+        async function publishSalaryToExpenses() {
+            if (!currentDetailClassId) return;
+            const idx = classesState.findIndex(c => c.id === currentDetailClassId);
+            if (idx < 0) return;
+            const c = classesState[idx];
+            if (c.salaryExpenseId) {
+                showToast("Gaji untuk kelas ini sudah dipublish sebelumnya", "error");
+                return;
+            }
+            const amountRaw = (document.getElementById("salaryAmount")?.value || "").replace(/[^\d]/g, "");
+            const amount = parseInt(amountRaw, 10) || 0;
+            const dueDate = (document.getElementById("salaryDueDate")?.value || "").trim();
+            const notes = (document.getElementById("salaryNotes")?.value || "").trim();
+            if (!amount || amount <= 0) {
+                showToast("Nominal gaji wajib diisi dan lebih dari 0", "error");
+                return;
+            }
+            if (!notes) {
+                showToast("Notes untuk treasurer wajib diisi agar jelas tujuan transfer", "error");
+                return;
+            }
+            const btnPublish = document.getElementById("btnPublishSalary");
+            if (btnPublish) {
+                btnPublish.disabled = true;
+                btnPublish.innerHTML = '<span class="pulse-dot"></span> Publishing...';
+            }
+            try {
+                const mentorFullName = c.mentors && c.mentors.length ? c.mentors[0].name : "";
+                const user = getCurrentUserAuditInfo();
+                const mentorDoc = await findMentorDocByName(mentorFullName);
+                let bankInfo = { beneficiaryName: mentorFullName, bankName: "", accountNumber: "" };
+                let mentorId = "";
+                if (mentorDoc) {
+                    mentorId = mentorDoc.id;
+                    bankInfo = extractBankInfoFromMentor(mentorDoc.data);
+                    if (!bankInfo.beneficiaryName) bankInfo.beneficiaryName = mentorFullName;
+                }
+                const expenseId = "OPS-" + Date.now();
+                const nowMs = Date.now();
+                const expensePayload = {
+                    title: "Gaji Mentor " + (mentorFullName || "Unknown") + " - " + (c.name || "Unknown Class"),
+                    category: "mentor_salary",
+                    department: "Client & Product",
+                    requesterId: user.userId || "",
+                    requesterName: user.userName || "Admin",
+                    classId: c.docId || "",
+                    relatedClass: c.name || "",
+                    mentorId: mentorId,
+                    mentorName: mentorFullName,
+                    dueDate: dueDate,
+                    amount: amount,
+                    status: "requested",
+                    beneficiaryName: bankInfo.beneficiaryName,
+                    bankName: bankInfo.bankName,
+                    accountNumber: bankInfo.accountNumber,
+                    paymentMethod: "Transfer Bank",
+                    transferProofUrl: "",
+                    transferProofPath: "",
+                    notes: notes,
+                    paymentNotes: "",
+                    vendorName: "",
+                    expensePeriod: "",
+                    reimburseType: "",
+                    reimburseReason: "",
+                    toolName: "",
+                    billingPeriod: "",
+                    travelerName: "",
+                    travelDate: "",
+                    travelRoute: "",
+                    referenceLabel: "",
+                    referenceDetail: "",
+                    createdAtMs: nowMs,
+                    updatedAtMs: nowMs,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                    sourcePublish: "class_checkup",
+                    sourceClassDocId: c.docId || ""
+                };
+                await setDoc(doc(db, "operational_expenses", expenseId), expensePayload);
+                await updateDoc(doc(db, "class_availability", c.docId), {
+                    salary_expense_id: expenseId,
+                    salary_published_at: serverTimestamp(),
+                    salary_published_by: user.userName || "Admin",
+                    updatedAt: serverTimestamp()
+                });
+                classesState[idx] = {
+                    ...c,
+                    salaryExpenseId: expenseId,
+                    salaryPublishedBy: user.userName || "Admin"
+                };
+                await logScheduleChange(classesState[idx], "", "", "salary_publish", [{
+                    field: "salary",
+                    label: "Publish Gaji Mentor",
+                    from: "-",
+                    to: "Rp " + formatSalaryCurrency(String(amount)) + " → " + expenseId
+                }]);
+                renderSalarySection(classesState[idx]);
+                if (window.lucide) window.lucide.createIcons();
+                showToast("Gaji mentor berhasil dipublish ke Operational Expenses!", "success");
+            } catch (e) {
+                showToast("Gagal mempublish gaji mentor: " + (e.message || "Unknown error"), "error");
+            } finally {
+                if (btnPublish) {
+                    btnPublish.disabled = false;
+                    btnPublish.innerHTML = '<span class="pulse-dot"></span> Publish ke Operational Expenses';
+                }
+            }
         }
 
         function closeDetailModal() {
@@ -1394,13 +1686,19 @@
             const meetingDone = parseInt(document.getElementById("editMeetingDone")?.value || "0", 10) || 0;
             const meetingTotal = parseInt(document.getElementById("editMeetingTotal")?.value || "0", 10) || 0;
             const comment = (document.getElementById("editComment")?.value || "").trim();
+            if (meetingTotal > 0 && meetingDone >= meetingTotal && status === "Running") {
+                const statusEl2 = document.getElementById("editStatus");
+                if (statusEl2) statusEl2.value = "Graduate";
+                showToast("Meeting selesai! Status otomatis diubah ke Graduate", "success");
+            }
+            const finalStatus = (document.getElementById("editStatus")?.value || "Soon").trim();
             if (btnSave) {
                 btnSave.disabled = true;
                 btnSave.textContent = "Menyimpan...";
             }
             const nextClassData = {
                 name,
-                status,
+                status: finalStatus,
                 startDate,
                 startTime,
                 location,
@@ -1436,8 +1734,8 @@
                 await updateDoc(doc(db, "class_availability", selected.docId), {
                     name,
                     class_name: name,
-                    status,
-                    class_status: status,
+                    status: finalStatus,
+                    class_status: finalStatus,
                     start_date: startDate,
                     startDate: startDate,
                     start_time: startTime,
@@ -1475,7 +1773,7 @@
                 classesState[idx] = {
                     ...selected,
                     name,
-                    status,
+                    status: finalStatus,
                     startDate,
                     startTime,
                     location,
@@ -1910,6 +2208,18 @@
                 btnCloseScheduleLogs.addEventListener("click", (e) => {
                     e.preventDefault();
                     closeScheduleLogsModal();
+                });
+            }
+            const btnPublishSalary = document.getElementById("btnPublishSalary");
+            if (btnPublishSalary) {
+                btnPublishSalary.addEventListener("click", () => publishSalaryToExpenses());
+            }
+            const salaryAmountInput = document.getElementById("salaryAmount");
+            if (salaryAmountInput) {
+                salaryAmountInput.addEventListener("input", (e) => {
+                    const raw = (e.target.value || "").replace(/[^\d]/g, "");
+                    const formatted = formatSalaryCurrency(raw);
+                    e.target.value = formatted;
                 });
             }
         }
