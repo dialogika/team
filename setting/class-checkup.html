@@ -503,7 +503,7 @@
                 if (lower === "graduate") return "Graduate";
                 if (lower === "complete") return "Complete";
             }
-            const startRaw = d && (d.start_date || d.startDate);
+            const startRaw = d && (d.date || d.start_date || d.startDate);
             if (!startRaw || startRaw === "Flexible") return "Soon";
             const start = new Date(startRaw);
             if (isNaN(start.getTime())) return "Soon";
@@ -764,7 +764,7 @@
 
         function mapAvailabilityDocToClass(docSnap) {
             const d = docSnap.data() || {};
-            const mentorName = d.mentor_name || "";
+            const mentorName = d.mentor_name || d.mentor || "";
             const mentors = [];
             if (typeof mentorName === "string" && mentorName.trim() !== "") {
                 mentorName.split(",").forEach(part => {
@@ -783,8 +783,12 @@
             const admins = extractAdminsFromDoc(d);
             const treasurers = extractTreasurersFromDoc(d);
             const supervisor = supervisors.length ? supervisors[0] : { uid: "", name: "", photo: "" };
-            const meetingDone = typeof d.meeting_done === "number" ? d.meeting_done : 0;
-            const meetingTotal = typeof d.meeting_total === "number" ? d.meeting_total : 0;
+            const meetingDone = typeof d.meeting_done === "number"
+                ? d.meeting_done
+                : (typeof d.meetingDone === "number" ? d.meetingDone : 0);
+            const meetingTotal = typeof d.meeting_total === "number"
+                ? d.meeting_total
+                : (typeof d.meetingTotal === "number" ? d.meetingTotal : 0);
             let status = deriveStatusFromAvailability(d);
             if (meetingTotal > 0 && meetingDone >= meetingTotal && status === "Running") {
                 status = "Graduate";
@@ -794,9 +798,9 @@
                 docId: docSnap.id,
                 name: d.name || d.class_name || "Unnamed Class",
                 status,
-                startDate: toDateString(d.start_date || d.startDate),
-                startTime: d.start_time || d.startTime || d.class_time || d.classTime || d.time || d.jam || "",
-                location: d.location || "",
+                startDate: toDateString(d.date || d.start_date || d.startDate),
+                startTime: d.time || d.start_time || d.startTime || d.class_time || d.classTime || d.jam || "",
+                location: d.location || (d.room ? "Ruang " + d.room : ""),
                 type: d.type || "Offline",
                 meetingDone,
                 meetingTotal,
@@ -1625,7 +1629,7 @@
                     sourceClassDocId: c.docId || ""
                 };
                 await setDoc(doc(db, "operational_expenses", expenseId), expensePayload);
-                await updateDoc(doc(db, "class_availability", c.docId), {
+                await updateDoc(doc(db, "class_planning", c.docId), {
                     salary_expense_id: expenseId,
                     salary_published_at: serverTimestamp(),
                     salary_published_by: user.userName || "Admin",
@@ -1680,7 +1684,7 @@
                 const user = getCurrentUserAuditInfo();
                 const expenseId = c.salaryExpenseId;
                 await deleteDoc(doc(db, "operational_expenses", expenseId));
-                await updateDoc(doc(db, "class_availability", c.docId), {
+                await updateDoc(doc(db, "class_planning", c.docId), {
                     salary_expense_id: "",
                     salary_published_at: null,
                     salary_published_by: "",
@@ -1801,11 +1805,12 @@
             const changeEntries = buildClassChangeEntries(previousClassData, nextClassData);
             try {
                 const prevDate = selected.startDate || "";
-                await updateDoc(doc(db, "class_availability", selected.docId), {
+                await updateDoc(doc(db, "class_planning", selected.docId), {
                     name,
                     class_name: name,
                     status: finalStatus,
                     class_status: finalStatus,
+                    date: startDate,
                     start_date: startDate,
                     startDate: startDate,
                     start_time: startTime,
@@ -1891,7 +1896,8 @@
 
         async function persistDateChange(c, dateStr) {
             if (!c || !c.docId) return;
-            await updateDoc(doc(db, "class_availability", c.docId), {
+            await updateDoc(doc(db, "class_planning", c.docId), {
+                date: dateStr,
                 start_date: dateStr,
                 startDate: dateStr,
                 updatedAt: serverTimestamp()
@@ -2301,7 +2307,7 @@
         async function loadClassesFromFirestore() {
             await loadUsersForSupervisorDropdown();
             await loadMentorsForDropdown();
-            const snap = await getDocs(collection(db, "class_availability"));
+            const snap = await getDocs(collection(db, "class_planning"));
             const loaded = [];
             snap.forEach((docSnap) => {
                 loaded.push(mapAvailabilityDocToClass(docSnap));
