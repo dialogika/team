@@ -80,7 +80,7 @@
                     </div>
                 </header>
 
-                <div class="flex flex-col md:flex-row gap-4 mb-8">
+                <div class="flex flex-col md:flex-row gap-4 mb-2">
                     <div class="relative flex-grow group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <svg class="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -103,7 +103,30 @@
                             <option value="Full">Sold Out</option>
                         </select>
                     </div>
+                    <div class="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
+                        <select x-model="sortBy" class="bg-transparent pl-3 pr-8 py-2 text-sm font-bold text-slate-600 outline-none border-none">
+                            <option value="priority_sales">Sort: Prioritas Penjualan</option>
+                            <option value="name">Sort: Nama Kelas</option>
+                            <option value="schedule">Sort: Jadwal</option>
+                            <option value="seats_left">Sort: Kursi Tersisa</option>
+                            <option value="mentor">Sort: Mentor</option>
+                            <option value="product">Sort: Product</option>
+                        </select>
+                        <button
+                            type="button"
+                            @click="toggleSortDirection()"
+                            class="w-10 h-10 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition flex items-center justify-center"
+                            :title="sortDirection === 'asc' ? 'Urutan naik (A-Z, terdekat, kecil-besar)' : 'Urutan turun (Z-A, terjauh, besar-kecil)'"
+                        >
+                            <svg x-show="sortDirection === 'asc'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 17V7m0 0l-3 3m3-3l3 3M17 7v10m0 0l3-3m-3 3l-3-3"/></svg>
+                            <svg x-show="sortDirection === 'desc'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 7v10m0 0l-3-3m3 3l3-3M17 17V7m0 0l3 3m-3-3l-3 3"/></svg>
+                        </button>
+                    </div>
                 </div>
+                <p class="text-[11px] text-slate-500 mb-6">
+                    Default sorting menggunakan <span class="font-bold text-slate-700">Prioritas Penjualan</span>:
+                    kursi tersisa paling sedikit ditampilkan lebih dulu, sedangkan kelas sold out/closed dipindah ke bawah agar tim cepat fokus ke batch yang hampir penuh.
+                </p>
 
                 <div class="flex flex-col gap-3">
                     <!-- Loading State -->
@@ -335,10 +358,18 @@
                                         <label class="form-label">Product</label>
                                         <select class="form-select" x-model="newBatchProductId">
                                             <option value="">Pilih product</option>
+                                            <option value="__custom__">Custom (Input Manual)</option>
                                             <template x-for="p in products" :key="p.id">
                                                 <option :value="p.productId" x-text="p.name || p.productId"></option>
                                             </template>
                                         </select>
+                                        <input
+                                            x-show="newBatchProductId === '__custom__'"
+                                            x-model="newBatchCustomProduct"
+                                            type="text"
+                                            class="form-control mt-2"
+                                            placeholder="Masukkan nama / kode product custom"
+                                        >
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Type</label>
@@ -468,9 +499,12 @@
                 search: "",
                 filterType: "All",
                 filterStatus: "All",
+                sortBy: "priority_sales",
+                sortDirection: "asc",
                 loading: false,
                 newBatchName: "",
                 newBatchProductId: "",
+                newBatchCustomProduct: "",
                 newBatchType: "Offline",
                 newBatchMaxSeat: 1,
                 newBatchMentor: "",
@@ -574,6 +608,11 @@
                                 name: d.name || d.internalName || id
                             });
                         });
+                        list.sort((a, b) => {
+                            const left = String(a.name || a.productId || "").toLowerCase();
+                            const right = String(b.name || b.productId || "").toLowerCase();
+                            return left.localeCompare(right, "id");
+                        });
                         this.products = list;
                         console.log("Loaded products for batch dropdown:", list.length);
                     } catch (e) {
@@ -628,6 +667,25 @@
                     } catch (e) {
                         return false;
                     }
+                },
+                getSeatsLeft(item) {
+                    const max = Number(item && item.max_seat ? item.max_seat : 0);
+                    const joined = Number(item && item.current_joined ? item.current_joined : 0);
+                    return max - joined;
+                },
+                getScheduleTimestamp(item) {
+                    if (!item || !item.start_date || item.start_date === "Flexible") return Number.POSITIVE_INFINITY;
+                    const ts = new Date(item.start_date).getTime();
+                    return Number.isFinite(ts) ? ts : Number.POSITIVE_INFINITY;
+                },
+                compareText(a, b) {
+                    return String(a || "").localeCompare(String(b || ""), "id", { sensitivity: "base" });
+                },
+                compareNumber(a, b) {
+                    return Number(a || 0) - Number(b || 0);
+                },
+                toggleSortDirection() {
+                    this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
                 },
                 async updateJoined(id, delta) {
                     const cls = this.classes.find(c => c.id === id);
@@ -776,7 +834,9 @@
                 },
                 async addBatch() {
                     const name = (this.newBatchName || "").trim();
-                    const productId = (this.newBatchProductId || "").trim();
+                    const selectedProduct = (this.newBatchProductId || "").trim();
+                    const customProduct = (this.newBatchCustomProduct || "").trim();
+                    const productId = selectedProduct === "__custom__" ? customProduct : selectedProduct;
                     const type = this.newBatchType || "Offline";
                     const maxSeat = Number(this.newBatchMaxSeat) || 0;
                     const mentor = (this.newBatchMentor || "").trim();
@@ -794,11 +854,19 @@
                         return;
                     }
 
+                    if (selectedProduct === "__custom__" && !customProduct) {
+                        alert("Isi product custom terlebih dahulu.");
+                        return;
+                    }
+
                     const nextId = this.classes.length
                         ? Math.max.apply(null, this.classes.map(c => Number(c.id) || 0)) + 1
                         : 1;
 
                     const productRef = this.products.find(p => p.productId === productId);
+                    const resolvedProductName = selectedProduct === "__custom__"
+                        ? customProduct
+                        : (productRef ? productRef.name : null);
 
                     const newItem = {
                         id: nextId,
@@ -809,7 +877,7 @@
                         start_date: startDate,
                         mentor_name: mentor || "Unknown",
                         product_id: productId,
-                        product_name: productRef ? productRef.name : null,
+                        product_name: resolvedProductName,
                         location,
                         down_payment: downPayment
                     };
@@ -844,6 +912,7 @@
 
                     this.newBatchName = "";
                     this.newBatchProductId = "";
+                    this.newBatchCustomProduct = "";
                     this.newBatchType = "Offline";
                     this.newBatchMaxSeat = 1;
                     this.newBatchMentor = "";
@@ -859,7 +928,7 @@
                 get filteredClasses() {
                     return this.classes
                         .filter(c => {
-                            const seatsLeft = c.max_seat - c.current_joined;
+                            const seatsLeft = this.getSeatsLeft(c);
                             const status = seatsLeft === 0 ? "Full" : (seatsLeft <= 2 ? "Almost Full" : "Open");
                             const typeMatch = this.filterType === "All" || c.type === this.filterType;
                             const statusMatch = this.filterStatus === "All" || status === this.filterStatus;
@@ -868,11 +937,36 @@
                             return typeMatch && statusMatch && searchMatch;
                         })
                         .sort((a, b) => {
-                            const sA = a.max_seat - a.current_joined;
-                            const sB = b.max_seat - b.current_joined;
-                            if (sA === 0) return 1;
-                            if (sB === 0) return -1;
-                            return sA - sB;
+                            let result = 0;
+                            const seatsA = this.getSeatsLeft(a);
+                            const seatsB = this.getSeatsLeft(b);
+
+                            if (this.sortBy === "name") {
+                                result = this.compareText(a.name, b.name);
+                            } else if (this.sortBy === "schedule") {
+                                result = this.compareNumber(this.getScheduleTimestamp(a), this.getScheduleTimestamp(b));
+                                if (result === 0) result = this.compareText(a.name, b.name);
+                            } else if (this.sortBy === "seats_left") {
+                                result = this.compareNumber(seatsA, seatsB);
+                                if (result === 0) result = this.compareText(a.name, b.name);
+                            } else if (this.sortBy === "mentor") {
+                                result = this.compareText(a.mentor_name, b.mentor_name);
+                                if (result === 0) result = this.compareText(a.name, b.name);
+                            } else if (this.sortBy === "product") {
+                                const productA = a.product_name || a.product_id || "";
+                                const productB = b.product_name || b.product_id || "";
+                                result = this.compareText(productA, productB);
+                                if (result === 0) result = this.compareText(a.name, b.name);
+                            } else {
+                                const soldOutA = seatsA <= 0 || this.isBatchClosed(a);
+                                const soldOutB = seatsB <= 0 || this.isBatchClosed(b);
+                                if (soldOutA !== soldOutB) result = soldOutA ? 1 : -1;
+                                else result = this.compareNumber(seatsA, seatsB);
+                                if (result === 0) result = this.compareNumber(this.getScheduleTimestamp(a), this.getScheduleTimestamp(b));
+                                if (result === 0) result = this.compareText(a.name, b.name);
+                            }
+
+                            return this.sortDirection === "asc" ? result : -result;
                         });
                 }
             };

@@ -414,11 +414,12 @@
                                 <th class="px-3 py-2 font-bold">Nama</th>
                                 <th class="px-3 py-2 font-bold">See Certificate</th>
                                 <th class="px-3 py-2 font-bold">Tanggal Pembuatan</th>
+                                <th class="px-3 py-2 font-bold text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="logTableBody" class="divide-y divide-slate-100 bg-white">
                             <tr>
-                                <td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada log transaksi.</td>
+                                <td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada log transaksi.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -440,11 +441,18 @@
                 </div>
             </div>
 
-            <div class="px-5 py-3 border-t border-slate-200 flex items-center justify-end">
-                <button id="closeLogModalFooterBtn" type="button"
-                    class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
-                    Tutup
+            <div class="px-5 py-3 border-t border-slate-200 flex items-center justify-between gap-3">
+                <button id="logDeleteFilteredBtn" type="button"
+                    class="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-extrabold text-rose-700 hover:bg-rose-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="bi bi-trash3"></i>
+                    Hapus Terfilter
                 </button>
+                <div class="flex items-center justify-end gap-2">
+                    <button id="closeLogModalFooterBtn" type="button"
+                        class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
+                        Tutup
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -488,7 +496,28 @@
 
         initializeSidebarState();
     </script>
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeFirestore, collection, query, orderBy, limit, getDocs, doc, setDoc, deleteDoc, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com",
+            projectId: "pre-dialogika",
+            storageBucket: "pre-dialogika.firebasestorage.app",
+            messagingSenderId: "343771410480",
+            appId: "1:343771410480:web:32881c9868522090237df5",
+            measurementId: "G-SXN811P3N0"
+        };
+
+        const firebaseApp = initializeApp(firebaseConfig);
+        const auth = getAuth(firebaseApp);
+        const db = initializeFirestore(firebaseApp, {
+            experimentalForceLongPolling: true,
+            useFetchStreams: false
+        });
+
         const state = {
             batchEntries: [],
             invalidEntries: [],
@@ -547,6 +576,7 @@
         const certificateLogModal = document.getElementById('certificateLogModal');
         const closeLogModalBtn = document.getElementById('closeLogModalBtn');
         const closeLogModalFooterBtn = document.getElementById('closeLogModalFooterBtn');
+        const logDeleteFilteredBtn = document.getElementById('logDeleteFilteredBtn');
         const logLoadErrorBanner = document.getElementById('logLoadErrorBanner');
 
         const DEFAULT_INVOICE = "13.07353";
@@ -556,6 +586,8 @@
 13.07355|Citra Lestari|21/04/2026
 13.07356,Daniel Pratama,22/04/2026`;
         const CERT_LOG_STORAGE_KEY = 'dlg_certificate_logs_v1';
+        const CERT_LOG_COLLECTION = 'certificate_logs';
+        const CERT_LOG_FETCH_LIMIT = 2000;
         const LOG_PAGE_SIZE = 25;
         let base64Template = "";
         let guideExpanded = true;
@@ -565,7 +597,8 @@
             currentPage: 1,
             isModalOpen: false,
             isLoading: false,
-            loadError: ''
+            loadError: '',
+            isDeleting: false
         };
 
         function renderLogModalState() {
@@ -665,13 +698,57 @@
             return `cert-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
         }
 
-        function saveCertificateLogs() {
+        async function persistCertificateLog(payload) {
+            const user = auth.currentUser;
+            const enriched = {
+                ...payload,
+                createdByUid: user?.uid || '',
+                createdByEmail: user?.email || '',
+                serverCreatedAt: serverTimestamp()
+            };
+            await setDoc(doc(db, CERT_LOG_COLLECTION, payload.id), enriched, { merge: true });
+        }
+
+        async function migrateLocalLogsToFirestoreIfNeeded() {
+            let parsed = [];
             try {
-                localStorage.setItem(CERT_LOG_STORAGE_KEY, JSON.stringify(logState.logs));
+                const raw = localStorage.getItem(CERT_LOG_STORAGE_KEY);
+                parsed = raw ? JSON.parse(raw) : [];
             } catch (error) {
-                console.error('Gagal menyimpan certificate logs', error);
-                setStatus('Penyimpanan log lokal gagal. Coba kosongkan storage browser.', 'warning');
+                parsed = [];
             }
+
+            if (!Array.isArray(parsed) || !parsed.length) return;
+
+            const rows = parsed
+                .filter((item) => item && typeof item === 'object')
+                .map((item) => ({ ...item, id: String(item.id || generateLogId()) }));
+
+            const chunkSize = 10;
+            for (let i = 0; i < rows.length; i += chunkSize) {
+                const chunk = rows.slice(i, i + chunkSize);
+                await Promise.all(chunk.map((item) => persistCertificateLog(item)));
+            }
+
+            try {
+                localStorage.removeItem(CERT_LOG_STORAGE_KEY);
+            } catch (error) { }
+        }
+
+        async function fetchCertificateLogsFromFirestore() {
+            const snap = await getDocs(
+                query(
+                    collection(db, CERT_LOG_COLLECTION),
+                    orderBy('createdAtMs', 'desc'),
+                    limit(CERT_LOG_FETCH_LIMIT)
+                )
+            );
+            const rows = [];
+            snap.forEach((docSnap) => {
+                const data = docSnap.data();
+                if (data) rows.push(data);
+            });
+            return rows;
         }
 
         function renderLogErrorBanner() {
@@ -685,7 +762,7 @@
             logLoadErrorBanner.textContent = logState.loadError;
         }
 
-        function loadCertificateLogs(options = {}) {
+        async function loadCertificateLogs(options = {}) {
             const { showLoading = false } = options;
             if (showLoading) {
                 logState.isLoading = true;
@@ -694,9 +771,8 @@
                 renderLogTable();
             }
             try {
-                const raw = localStorage.getItem(CERT_LOG_STORAGE_KEY);
-                const parsed = raw ? JSON.parse(raw) : [];
-                logState.logs = Array.isArray(parsed) ? parsed : [];
+                await migrateLocalLogsToFirestoreIfNeeded();
+                logState.logs = await fetchCertificateLogsFromFirestore();
             } catch (error) {
                 console.error('Gagal memuat certificate logs', error);
                 logState.logs = [];
@@ -725,9 +801,15 @@
                 transactionType: options.transactionType || 'individual',
                 exportFormat: options.exportFormat || 'svg'
             };
+            const optimisticId = payload.id;
             logState.logs.unshift(payload);
-            saveCertificateLogs();
             applyLogFilters();
+            persistCertificateLog(payload).catch((error) => {
+                console.error('Gagal menyimpan log ke Firestore', error);
+                logState.logs = logState.logs.filter((item) => item.id !== optimisticId);
+                applyLogFilters();
+                setStatus('Gagal menyimpan log ke Firestore. Pastikan kamu sudah login dan koneksi internet stabil.', 'warning');
+            });
         }
 
         function applyLogFilters() {
@@ -761,9 +843,12 @@
             renderLogErrorBanner();
 
             if (logState.isLoading) {
-                logTableBody.innerHTML = '<tr><td colspan="4" class="px-3 py-5 text-center"><span class="log-modal-loading"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Memuat log certificate...</span></td></tr>';
+                logTableBody.innerHTML = '<tr><td colspan="5" class="px-3 py-5 text-center"><span class="log-modal-loading"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Memuat log certificate...</span></td></tr>';
                 if (logSummaryText) logSummaryText.textContent = 'Memuat data...';
                 if (logPageInfo) logPageInfo.textContent = 'Halaman - / -';
+                if (logDeleteFilteredBtn) {
+                    logDeleteFilteredBtn.disabled = true;
+                }
                 return;
             }
 
@@ -776,7 +861,7 @@
             const pageItems = logState.filteredLogs.slice(startIndex, startIndex + LOG_PAGE_SIZE);
 
             if (!pageItems.length) {
-                logTableBody.innerHTML = '<tr><td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada data log sesuai filter.</td></tr>';
+                logTableBody.innerHTML = '<tr><td colspan="5" class="px-3 py-4 text-center text-slate-400">Belum ada data log sesuai filter.</td></tr>';
             } else {
                 logTableBody.innerHTML = pageItems.map((item) => (
                     '<tr>' +
@@ -784,12 +869,16 @@
                     `<td class="px-3 py-2 text-slate-700">${escapeHtml(item.recipientName)}</td>` +
                     `<td class="px-3 py-2"><button type="button" data-log-id="${escapeHtml(item.id)}" class="log-see-btn rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700 hover:bg-blue-100 transition-all">Lihat</button></td>` +
                     `<td class="px-3 py-2 text-slate-600">${escapeHtml(item.createdAt)}</td>` +
+                    `<td class="px-3 py-2 text-right"><button type="button" data-log-id="${escapeHtml(item.id)}" class="log-delete-btn inline-flex items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-[11px] font-extrabold text-rose-700 hover:bg-rose-100 transition-all" title="Hapus log"><i class="bi bi-trash3"></i></button></td>` +
                     '</tr>'
                 )).join('');
             }
 
             if (logSummaryText) logSummaryText.textContent = `${total} data • menampilkan ${pageItems.length} baris`;
             if (logPageInfo) logPageInfo.textContent = `Halaman ${logState.currentPage} / ${maxPage}`;
+            if (logDeleteFilteredBtn) {
+                logDeleteFilteredBtn.disabled = logState.isDeleting || total === 0;
+            }
             if (logPrevPageBtn) {
                 logPrevPageBtn.disabled = logState.currentPage <= 1;
                 logPrevPageBtn.classList.toggle('opacity-50', logPrevPageBtn.disabled);
@@ -832,6 +921,86 @@
             }
 
             runPreview();
+        }
+
+        async function deleteCertificateLogById(logId) {
+            await deleteDoc(doc(db, CERT_LOG_COLLECTION, logId));
+        }
+
+        async function deleteCertificateLogsByIds(logIds) {
+            const uniqueIds = Array.from(new Set((logIds || []).filter(Boolean)));
+            if (!uniqueIds.length) return;
+            const batchSize = 450;
+            for (let i = 0; i < uniqueIds.length; i += batchSize) {
+                const chunk = uniqueIds.slice(i, i + batchSize);
+                const batch = writeBatch(db);
+                chunk.forEach((id) => {
+                    batch.delete(doc(db, CERT_LOG_COLLECTION, id));
+                });
+                await batch.commit();
+            }
+        }
+
+        async function deleteSingleLogFromUi(logId) {
+            const found = logState.logs.find((item) => item.id === logId);
+            if (!found) {
+                setStatus('Data log tidak ditemukan.', 'warning');
+                return;
+            }
+
+            const confirmText = `Hapus log ini?\n\nInvoice: ${found.invoice}\nNama: ${found.recipientName}\nTanggal: ${found.createdAt}`;
+            const confirmed = window.confirm(confirmText);
+            if (!confirmed) return;
+
+            const previous = logState.logs.slice();
+            logState.isDeleting = true;
+            logState.logs = logState.logs.filter((item) => item.id !== logId);
+            applyLogFilters();
+
+            try {
+                await deleteCertificateLogById(logId);
+                setStatus('Log berhasil dihapus.', 'success');
+            } catch (error) {
+                console.error('Gagal menghapus log', error);
+                logState.logs = previous;
+                setStatus('Gagal menghapus log. Pastikan kamu sudah login dan koneksi internet stabil.', 'error');
+            } finally {
+                logState.isDeleting = false;
+                applyLogFilters();
+            }
+        }
+
+        async function deleteFilteredLogsFromUi() {
+            const ids = logState.filteredLogs.map((item) => item.id).filter(Boolean);
+            if (!ids.length) {
+                setStatus('Tidak ada log yang bisa dihapus.', 'warning');
+                return;
+            }
+
+            const confirmText = `Hapus ${ids.length} log sesuai filter saat ini?\n\nTindakan ini tidak dapat dibatalkan.`;
+            const confirmed = window.confirm(confirmText);
+            if (!confirmed) return;
+
+            const previous = logState.logs.slice();
+            const idSet = new Set(ids);
+            logState.isDeleting = true;
+            logState.logs = logState.logs.filter((item) => !idSet.has(item.id));
+            applyLogFilters();
+
+            try {
+                await deleteCertificateLogsByIds(ids);
+                setStatus(`Berhasil menghapus ${ids.length} log.`, 'success');
+            } catch (error) {
+                console.error('Gagal menghapus log terfilter', error);
+                logState.logs = previous;
+                setStatus('Gagal menghapus log. Coba lagi atau refresh halaman.', 'error');
+                try {
+                    await loadCertificateLogs();
+                } catch (e) { }
+            } finally {
+                logState.isDeleting = false;
+                applyLogFilters();
+            }
         }
 
         function exportLogAsCsv() {
@@ -1441,12 +1610,28 @@
         });
         logExportCsvBtn.addEventListener('click', exportLogAsCsv);
         logExportExcelBtn.addEventListener('click', exportLogAsExcel);
+        if (logDeleteFilteredBtn) {
+            logDeleteFilteredBtn.addEventListener('click', () => {
+                if (logState.isDeleting || logState.isLoading) return;
+                deleteFilteredLogsFromUi();
+            });
+        }
         logTableBody.addEventListener('click', (event) => {
-            const button = event.target.closest('.log-see-btn');
-            if (!button) return;
-            const logId = button.getAttribute('data-log-id');
-            if (!logId) return;
-            previewLogCertificateById(logId);
+            const seeBtn = event.target.closest('.log-see-btn');
+            if (seeBtn) {
+                const logId = seeBtn.getAttribute('data-log-id');
+                if (!logId) return;
+                previewLogCertificateById(logId);
+                return;
+            }
+
+            const deleteBtn = event.target.closest('.log-delete-btn');
+            if (deleteBtn) {
+                const logId = deleteBtn.getAttribute('data-log-id');
+                if (!logId) return;
+                if (logState.isDeleting || logState.isLoading) return;
+                deleteSingleLogFromUi(logId);
+            }
         });
         downloadSvgBtn.addEventListener('click', () => {
             downloadSingleSvg(getEntryForPreview()).catch((error) => {
