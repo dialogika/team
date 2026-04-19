@@ -179,8 +179,8 @@
                     </div>
                     <div class="two-col">
                         <div>
-                            <div class="planning-label">Durasi (jam)</div>
-                            <input id="modalPlanDuration" type="number" min="1" class="planning-input" value="2">
+                            <div class="planning-label">Durasi (menit)</div>
+                            <input id="modalPlanDuration" type="number" min="30" step="30" class="planning-input" value="90">
                         </div>
                         <div>
                             <div class="planning-label">Tipe</div>
@@ -272,8 +272,9 @@
         function buildTimeSlots() {
             const slots = [];
             for (let h = 7; h <= 21; h++) {
-                const label = (h < 10 ? "0" + h : String(h)) + ":00";
-                slots.push(label);
+                const hh = h < 10 ? "0" + h : String(h);
+                slots.push(hh + ":00");
+                slots.push(hh + ":30");
             }
             return slots;
         }
@@ -282,7 +283,8 @@
             const parts = String(time || "").split(":");
             const h = parseInt(parts[0], 10);
             if (isNaN(h)) return null;
-            return h;
+            const m = parts.length > 1 ? parseInt(parts[1], 10) || 0 : 0;
+            return h + (m >= 30 ? 0.5 : 0);
         }
 
         function getRoomClass(room) {
@@ -299,10 +301,9 @@
             const startHour = parseHour(time);
             if (startHour === null) return false;
             const duration = candidate.duration && candidate.duration > 0 ? candidate.duration : 1;
-            const hours = [];
-            for (let i = 0; i < duration; i++) {
-                hours.push(startHour + i);
-            }
+            const startUnit = Math.round(startHour * 2);
+            const durationUnits = Math.max(1, Math.round(duration * 2));
+            const endUnit = startUnit + durationUnits;
             for (let i = 0; i < planningScheduled.length; i++) {
                 const p = planningScheduled[i];
                 if (p.id === candidate.id) continue;
@@ -311,10 +312,11 @@
                 const otherStart = parseHour(p.time);
                 if (otherStart === null) continue;
                 const otherDuration = p.duration && p.duration > 0 ? p.duration : 1;
-                for (let j = 0; j < otherDuration; j++) {
-                    if (hours.indexOf(otherStart + j) !== -1) {
-                        return true;
-                    }
+                const otherStartUnit = Math.round(otherStart * 2);
+                const otherDurationUnits = Math.max(1, Math.round(otherDuration * 2));
+                const otherEndUnit = otherStartUnit + otherDurationUnits;
+                if (startUnit < otherEndUnit && otherStartUnit < endUnit) {
+                    return true;
                 }
             }
             return false;
@@ -326,10 +328,9 @@
             const startHour = parseHour(time);
             if (startHour === null) return false;
             const duration = candidate.duration && candidate.duration > 0 ? candidate.duration : 1;
-            const hours = [];
-            for (let i = 0; i < duration; i++) {
-                hours.push(startHour + i);
-            }
+            const startUnit = Math.round(startHour * 2);
+            const durationUnits = Math.max(1, Math.round(duration * 2));
+            const endUnit = startUnit + durationUnits;
             for (let i = 0; i < planningScheduled.length; i++) {
                 const p = planningScheduled[i];
                 if (p.id === candidate.id) continue;
@@ -338,10 +339,11 @@
                 const otherStart = parseHour(p.time);
                 if (otherStart === null) continue;
                 const otherDuration = p.duration && p.duration > 0 ? p.duration : 1;
-                for (let j = 0; j < otherDuration; j++) {
-                    if (hours.indexOf(otherStart + j) !== -1) {
-                        return true;
-                    }
+                const otherStartUnit = Math.round(otherStart * 2);
+                const otherDurationUnits = Math.max(1, Math.round(otherDuration * 2));
+                const otherEndUnit = otherStartUnit + otherDurationUnits;
+                if (startUnit < otherEndUnit && otherStartUnit < endUnit) {
+                    return true;
                 }
             }
             return false;
@@ -391,7 +393,7 @@
                     "<div>" + (plan.name || "-") + "</div>" +
                     "<div class=\"planning-card-meta\">" +
                     (plan.mentor ? "Mentor: " + plan.mentor + " • " : "") +
-                    (plan.duration ? plan.duration + " jam • " : "") +
+                    (plan.duration ? (Math.round(plan.duration * 60) + " menit • ") : "") +
                     (plan.type || "") +
                     (plan.room ? " • Ruang " + plan.room : "") +
                     "</div>";
@@ -507,7 +509,7 @@
                             const title = (plan.name || "-") + (isStart ? "" : " (lanjutan)");
                             const metaParts = [];
                             if (plan.mentor) metaParts.push("Mentor: " + plan.mentor);
-                            if (isStart && plan.duration) metaParts.push(plan.duration + " jam");
+                            if (isStart && plan.duration) metaParts.push(Math.round(plan.duration * 60) + " menit");
                             if (plan.room) metaParts.push("Ruang " + plan.room);
                             card.innerHTML =
                                 "<div>" + title + "</div>" +
@@ -647,7 +649,7 @@
             if (btnSave) btnSave.textContent = "Simpan";
             if (nameEl) nameEl.value = "";
             renderMentorOptions("");
-            if (durationEl) durationEl.value = "2";
+            if (durationEl) durationEl.value = "90";
             if (typeEl) typeEl.value = "Online";
             if (roomEl) roomEl.value = "";
             if (noteEl) noteEl.value = "";
@@ -671,7 +673,10 @@
             if (btnSave) btnSave.textContent = "Update";
             if (nameEl) nameEl.value = plan.name || "";
             renderMentorOptions(mentorName);
-            if (durationEl) durationEl.value = plan.duration != null ? plan.duration : 1;
+            if (durationEl) {
+                const minutes = plan.duration != null ? Math.round(plan.duration * 60) : 90;
+                durationEl.value = String(minutes);
+            }
             if (typeEl) typeEl.value = plan.type || "Online";
             if (roomEl) roomEl.value = plan.room || "";
             if (noteEl) noteEl.value = plan.note || "";
@@ -694,8 +699,9 @@
             if (!nameEl || !mentorEl || !durationEl || !typeEl || !noteEl) return;
             const name = nameEl.value.trim();
             const mentor = mentorEl.value.trim();
-            const durationRaw = parseInt(durationEl.value || "0", 10);
-            const duration = isNaN(durationRaw) || durationRaw <= 0 ? 1 : durationRaw;
+            const durationMinutesRaw = parseInt(durationEl.value || "0", 10);
+            const durationMinutes = isNaN(durationMinutesRaw) || durationMinutesRaw <= 0 ? 90 : durationMinutesRaw;
+            const duration = durationMinutes / 60;
             const type = (typeEl.value || "Online").trim();
             const room = roomEl ? roomEl.value.trim() : "";
             const note = noteEl.value.trim();
