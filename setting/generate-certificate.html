@@ -61,6 +61,58 @@
             border-color: #93c5fd;
             background: #eff6ff;
         }
+        .log-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 2200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .log-modal-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .log-modal-card {
+            width: min(1180px, 100%);
+            max-height: calc(100vh - 32px);
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            box-shadow: 0 20px 45px rgba(2, 6, 23, 0.25);
+            transform: translateY(14px) scale(0.98);
+            opacity: 0;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+            overflow: hidden;
+        }
+        .log-modal-backdrop.open .log-modal-card {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+        .log-modal-body {
+            overflow: auto;
+            padding: 20px;
+        }
+        .log-modal-loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #475569;
+            font-size: 12px;
+        }
+        @media (max-width: 767px) {
+            .log-modal-body {
+                padding: 14px;
+            }
+        }
         @media (min-width: 1024px) {
             .preview-panel {
                 position: sticky;
@@ -88,6 +140,11 @@
                         <span class="font-medium text-slate-800">Generate Certificate</span>
                     </nav>
                 </div>
+                <button id="openLogModalBtn" type="button"
+                    class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all shadow-sm">
+                    <i class="bi bi-journal-text text-slate-600"></i>
+                    <span>Lihat Log Sertifikat</span>
+                </button>
             </div>
 
             <div class="cert-container flex-col lg:flex-row">
@@ -296,7 +353,100 @@
                     </svg>
                 </div>
             </div>
+
         </main>
+    </div>
+
+    <div id="certificateLogModal" class="log-modal-backdrop" aria-hidden="true" role="dialog" aria-labelledby="certificateLogModalTitle">
+        <div class="log-modal-card">
+            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
+                <div>
+                    <h3 id="certificateLogModalTitle" class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i class="bi bi-journal-check text-indigo-600"></i>
+                        Riwayat Log Pembuatan Certificate
+                    </h3>
+                    <p class="text-[11px] text-slate-500 mt-1">Pantau seluruh histori generate certificate (individu & batch) dengan filter cepat.</p>
+                </div>
+                <button id="closeLogModalBtn" type="button" class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-all">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div class="log-modal-body">
+                <div id="logLoadErrorBanner" class="hidden rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 mb-3"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-2 mb-2">
+                    <div class="xl:col-span-2">
+                        <label for="logSearchInput" class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">Pencarian</label>
+                        <input id="logSearchInput" type="text" placeholder="Cari invoice / nama..."
+                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label for="logStartDateInput" class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">Tanggal Mulai (Log)</label>
+                        <input id="logStartDateInput" type="date" aria-label="Filter tanggal mulai log" title="Tanggal mulai pembuatan log"
+                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label for="logEndDateInput" class="block text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">Tanggal Akhir (Log)</label>
+                        <input id="logEndDateInput" type="date" aria-label="Filter tanggal akhir log" title="Tanggal akhir pembuatan log"
+                            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="logExportCsvBtn" type="button"
+                            class="w-full rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition-all">
+                            Download CSV
+                        </button>
+                        <button id="logExportExcelBtn" type="button"
+                            class="w-full rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-all">
+                            Download Excel
+                        </button>
+                    </div>
+                </div>
+                <div class="text-[11px] text-slate-500 mb-3">
+                    Filter tanggal di atas memakai <span class="font-semibold text-slate-700">tanggal pembuatan log</span> (timestamp transaksi), bukan tanggal yang tercetak di sertifikat.
+                </div>
+
+                <div class="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+                    <table class="min-w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-600 uppercase tracking-wide">
+                            <tr>
+                                <th class="px-3 py-2 font-bold">Invoice</th>
+                                <th class="px-3 py-2 font-bold">Nama</th>
+                                <th class="px-3 py-2 font-bold">See Certificate</th>
+                                <th class="px-3 py-2 font-bold">Tanggal Pembuatan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody" class="divide-y divide-slate-100 bg-white">
+                            <tr>
+                                <td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada log transaksi.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div id="logSummaryText" class="text-[11px] text-slate-500">0 data</div>
+                    <div class="flex items-center gap-2">
+                        <button id="logPrevPageBtn" type="button"
+                            class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
+                            Prev
+                        </button>
+                        <span id="logPageInfo" class="text-[11px] font-semibold text-slate-600">Halaman 1 / 1</span>
+                        <button id="logNextPageBtn" type="button"
+                            class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-5 py-3 border-t border-slate-200 flex items-center justify-end">
+                <button id="closeLogModalFooterBtn" type="button"
+                    class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all">
+                    Tutup
+                </button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -383,6 +533,21 @@
         const textName = document.getElementById('textName');
         const textAward = document.getElementById('textAward');
         const svgBg = document.getElementById('svgBg');
+        const logSearchInput = document.getElementById('logSearchInput');
+        const logStartDateInput = document.getElementById('logStartDateInput');
+        const logEndDateInput = document.getElementById('logEndDateInput');
+        const logExportCsvBtn = document.getElementById('logExportCsvBtn');
+        const logExportExcelBtn = document.getElementById('logExportExcelBtn');
+        const logTableBody = document.getElementById('logTableBody');
+        const logSummaryText = document.getElementById('logSummaryText');
+        const logPageInfo = document.getElementById('logPageInfo');
+        const logPrevPageBtn = document.getElementById('logPrevPageBtn');
+        const logNextPageBtn = document.getElementById('logNextPageBtn');
+        const openLogModalBtn = document.getElementById('openLogModalBtn');
+        const certificateLogModal = document.getElementById('certificateLogModal');
+        const closeLogModalBtn = document.getElementById('closeLogModalBtn');
+        const closeLogModalFooterBtn = document.getElementById('closeLogModalFooterBtn');
+        const logLoadErrorBanner = document.getElementById('logLoadErrorBanner');
 
         const DEFAULT_INVOICE = "13.07353";
         const DEFAULT_NAME = "Asih Wulansari";
@@ -390,8 +555,36 @@
 13.07354\tBudi Santoso\t20/04/2026
 13.07355|Citra Lestari|21/04/2026
 13.07356,Daniel Pratama,22/04/2026`;
+        const CERT_LOG_STORAGE_KEY = 'dlg_certificate_logs_v1';
+        const LOG_PAGE_SIZE = 25;
         let base64Template = "";
         let guideExpanded = true;
+        const logState = {
+            logs: [],
+            filteredLogs: [],
+            currentPage: 1,
+            isModalOpen: false,
+            isLoading: false,
+            loadError: ''
+        };
+
+        function renderLogModalState() {
+            if (!certificateLogModal) return;
+            certificateLogModal.classList.toggle('open', logState.isModalOpen);
+            certificateLogModal.setAttribute('aria-hidden', logState.isModalOpen ? 'false' : 'true');
+            document.body.style.overflow = logState.isModalOpen ? 'hidden' : '';
+        }
+
+        function openLogModal() {
+            logState.isModalOpen = true;
+            renderLogModalState();
+            loadCertificateLogs({ showLoading: true });
+        }
+
+        function closeLogModal() {
+            logState.isModalOpen = false;
+            renderLogModalState();
+        }
 
         function toRoman(n) {
             return ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"][n];
@@ -436,6 +629,253 @@
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
+        }
+
+        function formatLogTimestamp(dateObj = new Date()) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const hour = String(dateObj.getHours()).padStart(2, '0');
+            const minute = String(dateObj.getMinutes()).padStart(2, '0');
+            const second = String(dateObj.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+        }
+
+        function parseLogTimestamp(ts) {
+            if (!ts) return null;
+            const normalized = String(ts).replace(' ', 'T');
+            const date = new Date(normalized);
+            if (Number.isNaN(date.getTime())) return null;
+            return date;
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function generateLogId() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                return window.crypto.randomUUID();
+            }
+            return `cert-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        }
+
+        function saveCertificateLogs() {
+            try {
+                localStorage.setItem(CERT_LOG_STORAGE_KEY, JSON.stringify(logState.logs));
+            } catch (error) {
+                console.error('Gagal menyimpan certificate logs', error);
+                setStatus('Penyimpanan log lokal gagal. Coba kosongkan storage browser.', 'warning');
+            }
+        }
+
+        function renderLogErrorBanner() {
+            if (!logLoadErrorBanner) return;
+            if (!logState.loadError) {
+                logLoadErrorBanner.classList.add('hidden');
+                logLoadErrorBanner.textContent = '';
+                return;
+            }
+            logLoadErrorBanner.classList.remove('hidden');
+            logLoadErrorBanner.textContent = logState.loadError;
+        }
+
+        function loadCertificateLogs(options = {}) {
+            const { showLoading = false } = options;
+            if (showLoading) {
+                logState.isLoading = true;
+                logState.loadError = '';
+                renderLogErrorBanner();
+                renderLogTable();
+            }
+            try {
+                const raw = localStorage.getItem(CERT_LOG_STORAGE_KEY);
+                const parsed = raw ? JSON.parse(raw) : [];
+                logState.logs = Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                console.error('Gagal memuat certificate logs', error);
+                logState.logs = [];
+                logState.loadError = 'Gagal memuat data log certificate. Coba refresh halaman atau periksa storage browser.';
+            } finally {
+                logState.isLoading = false;
+            }
+            applyLogFilters();
+        }
+
+        function addCertificateLog(entry, options = {}) {
+            if (!entry) return;
+            const now = new Date();
+            const timestamp = formatLogTimestamp(now);
+            const certificateDate = resolveEntryDate(entry) || state.globalCertificateDate || getTodayInputValue();
+            const fileReference = options.fileReference || '-';
+            const payload = {
+                id: generateLogId(),
+                createdAt: timestamp,
+                createdAtMs: now.getTime(),
+                invoice: entry.invoice || '-',
+                recipientName: entry.name || '-',
+                certificateDate,
+                fileReference,
+                seeCertificateRef: `preview://${encodeURIComponent((entry.name || '-').toLowerCase())}-${now.getTime()}`,
+                transactionType: options.transactionType || 'individual',
+                exportFormat: options.exportFormat || 'svg'
+            };
+            logState.logs.unshift(payload);
+            saveCertificateLogs();
+            applyLogFilters();
+        }
+
+        function applyLogFilters() {
+            const query = String(logSearchInput?.value || '').trim().toLowerCase();
+            const startDate = logStartDateInput?.value || '';
+            const endDate = logEndDateInput?.value || '';
+            const startMs = startDate ? new Date(`${startDate}T00:00:00`).getTime() : null;
+            const endMs = endDate ? new Date(`${endDate}T23:59:59`).getTime() : null;
+
+            logState.filteredLogs = logState.logs.filter((item) => {
+                const invoice = String(item.invoice || '');
+                const recipientName = String(item.recipientName || '');
+                const matchesQuery = !query ||
+                    invoice.toLowerCase().includes(query) ||
+                    recipientName.toLowerCase().includes(query);
+                if (!matchesQuery) return false;
+
+                const itemMs = Number(item.createdAtMs) || (parseLogTimestamp(item.createdAt)?.getTime() || 0);
+                if (startMs !== null && itemMs < startMs) return false;
+                if (endMs !== null && itemMs > endMs) return false;
+                return true;
+            }).sort((a, b) => (Number(b.createdAtMs) || 0) - (Number(a.createdAtMs) || 0));
+
+            const maxPage = Math.max(1, Math.ceil(logState.filteredLogs.length / LOG_PAGE_SIZE));
+            logState.currentPage = Math.min(logState.currentPage, maxPage);
+            renderLogTable();
+        }
+
+        function renderLogTable() {
+            if (!logTableBody) return;
+            renderLogErrorBanner();
+
+            if (logState.isLoading) {
+                logTableBody.innerHTML = '<tr><td colspan="4" class="px-3 py-5 text-center"><span class="log-modal-loading"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Memuat log certificate...</span></td></tr>';
+                if (logSummaryText) logSummaryText.textContent = 'Memuat data...';
+                if (logPageInfo) logPageInfo.textContent = 'Halaman - / -';
+                return;
+            }
+
+            const total = logState.filteredLogs.length;
+            const maxPage = Math.max(1, Math.ceil(total / LOG_PAGE_SIZE));
+            if (logState.currentPage < 1) logState.currentPage = 1;
+            if (logState.currentPage > maxPage) logState.currentPage = maxPage;
+
+            const startIndex = (logState.currentPage - 1) * LOG_PAGE_SIZE;
+            const pageItems = logState.filteredLogs.slice(startIndex, startIndex + LOG_PAGE_SIZE);
+
+            if (!pageItems.length) {
+                logTableBody.innerHTML = '<tr><td colspan="4" class="px-3 py-4 text-center text-slate-400">Belum ada data log sesuai filter.</td></tr>';
+            } else {
+                logTableBody.innerHTML = pageItems.map((item) => (
+                    '<tr>' +
+                    `<td class="px-3 py-2 text-slate-700 font-semibold">${escapeHtml(item.invoice)}</td>` +
+                    `<td class="px-3 py-2 text-slate-700">${escapeHtml(item.recipientName)}</td>` +
+                    `<td class="px-3 py-2"><button type="button" data-log-id="${escapeHtml(item.id)}" class="log-see-btn rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700 hover:bg-blue-100 transition-all">Lihat</button></td>` +
+                    `<td class="px-3 py-2 text-slate-600">${escapeHtml(item.createdAt)}</td>` +
+                    '</tr>'
+                )).join('');
+            }
+
+            if (logSummaryText) logSummaryText.textContent = `${total} data • menampilkan ${pageItems.length} baris`;
+            if (logPageInfo) logPageInfo.textContent = `Halaman ${logState.currentPage} / ${maxPage}`;
+            if (logPrevPageBtn) {
+                logPrevPageBtn.disabled = logState.currentPage <= 1;
+                logPrevPageBtn.classList.toggle('opacity-50', logPrevPageBtn.disabled);
+            }
+            if (logNextPageBtn) {
+                logNextPageBtn.disabled = logState.currentPage >= maxPage;
+                logNextPageBtn.classList.toggle('opacity-50', logNextPageBtn.disabled);
+            }
+        }
+
+        function previewLogCertificateById(logId) {
+            const found = logState.logs.find((item) => item.id === logId);
+            if (!found) {
+                setStatus('Data log tidak ditemukan.', 'warning');
+                return;
+            }
+            const runPreview = () => {
+                const previewEntry = {
+                    invoice: found.invoice,
+                    name: found.recipientName,
+                    rawDate: found.certificateDate,
+                    certificateDate: found.certificateDate
+                };
+                applySvgToPreview(previewEntry);
+                invoiceInput.value = previewEntry.invoice || '';
+                nameInput.value = previewEntry.name || '';
+                if (previewEntry.certificateDate) {
+                    globalDateInput.value = previewEntry.certificateDate;
+                    state.globalCertificateDate = previewEntry.certificateDate;
+                }
+                activeEntryDate.textContent = `Tanggal aktif: ${formatDateLabel(resolveEntryDate(previewEntry))}`;
+                ensurePreviewVisible();
+                setStatus(`Preview log: ${found.invoice} - ${found.recipientName}`, 'info');
+            };
+
+            if (logState.isModalOpen) {
+                closeLogModal();
+                setTimeout(runPreview, 260);
+                return;
+            }
+
+            runPreview();
+        }
+
+        function exportLogAsCsv() {
+            const rows = logState.filteredLogs;
+            if (!rows.length) {
+                setStatus('Tidak ada data log untuk diexport.', 'warning');
+                return;
+            }
+            const headers = ['id', 'invoice', 'nama', 'see_certificate', 'tanggal_pembuatan', 'file_reference'];
+            const csvLines = [headers.join(',')];
+            rows.forEach((item) => {
+                const values = [
+                    item.id,
+                    item.invoice,
+                    item.recipientName,
+                    item.seeCertificateRef || '',
+                    item.createdAt,
+                    item.fileReference || ''
+                ].map((value) => `"${String(value || '').replace(/"/g, '""')}"`);
+                csvLines.push(values.join(','));
+            });
+            const csvBlob = new Blob([csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            triggerBlobDownload(csvBlob, `certificate-logs-${Date.now()}.csv`);
+            setStatus('Export CSV berhasil.', 'success');
+        }
+
+        function exportLogAsExcel() {
+            const rows = logState.filteredLogs;
+            if (!rows.length) {
+                setStatus('Tidak ada data log untuk diexport.', 'warning');
+                return;
+            }
+            const tableHtml = [
+                '<table border="1">',
+                '<thead><tr><th>ID</th><th>Invoice</th><th>Nama</th><th>See Certificate</th><th>Tanggal Pembuatan</th><th>File Reference</th></tr></thead>',
+                '<tbody>',
+                ...rows.map((item) => (
+                    `<tr><td>${escapeHtml(item.id)}</td><td>${escapeHtml(item.invoice)}</td><td>${escapeHtml(item.recipientName)}</td><td>${escapeHtml(item.seeCertificateRef || '')}</td><td>${escapeHtml(item.createdAt)}</td><td>${escapeHtml(item.fileReference || '')}</td></tr>`
+                )),
+                '</tbody></table>'
+            ].join('');
+            const excelBlob = new Blob([tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            triggerBlobDownload(excelBlob, `certificate-logs-${Date.now()}.xls`);
+            setStatus('Export Excel berhasil.', 'success');
         }
 
         function parseBatchDateInput(dateText) {
@@ -768,15 +1208,27 @@
         async function downloadSingleSvg(entry = getEntryForPreview()) {
             applySvgToPreview(entry);
             const svgData = getSvgString();
+            const fileName = `${createEntryFilename(entry, state.activeIndex)}.svg`;
             const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            triggerBlobDownload(svgBlob, `${createEntryFilename(entry, state.activeIndex)}.svg`);
+            triggerBlobDownload(svgBlob, fileName);
+            addCertificateLog(entry, {
+                transactionType: 'individual',
+                exportFormat: 'svg',
+                fileReference: `local-download://${fileName}`
+            });
         }
 
         async function downloadSinglePng(entry = getEntryForPreview()) {
             applySvgToPreview(entry);
             const svgData = getSvgString();
+            const fileName = `${createEntryFilename(entry, state.activeIndex)}.png`;
             const pngBlob = await svgStringToPngBlob(svgData);
-            triggerBlobDownload(pngBlob, `${createEntryFilename(entry, state.activeIndex)}.png`);
+            triggerBlobDownload(pngBlob, fileName);
+            addCertificateLog(entry, {
+                transactionType: 'individual',
+                exportFormat: 'png',
+                fileReference: `local-download://${fileName}`
+            });
         }
 
         function setExportingState(isExporting, message = '') {
@@ -810,6 +1262,16 @@
             const zip = new window.JSZip();
             const previousIndex = state.activeIndex;
             const exportFormat = getSelectedBatchExportFormat();
+            const now = new Date();
+            const stamp = [
+                now.getFullYear(),
+                String(now.getMonth() + 1).padStart(2, '0'),
+                String(now.getDate()).padStart(2, '0')
+            ].join('') + '-' + [
+                String(now.getHours()).padStart(2, '0'),
+                String(now.getMinutes()).padStart(2, '0')
+            ].join('');
+            const zipFilename = `sertifikat-batch-${exportFormat}-${stamp}.zip`;
 
             try {
                 for (let index = 0; index < state.batchEntries.length; index += 1) {
@@ -834,20 +1296,22 @@
                         const pngBlob = await svgStringToPngBlob(svgData);
                         zip.file(`${baseFilename}.png`, pngBlob);
                     }
+
+                    let fileReference = `zip://${zipFilename}::${baseFilename}.svg`;
+                    if (exportFormat === 'png') {
+                        fileReference = `zip://${zipFilename}::${baseFilename}.png`;
+                    } else if (exportFormat === 'both') {
+                        fileReference = `zip://${zipFilename}::${baseFilename}.svg|${baseFilename}.png`;
+                    }
+                    addCertificateLog(entry, {
+                        transactionType: 'batch',
+                        exportFormat,
+                        fileReference
+                    });
                 }
 
                 const zipBlob = await zip.generateAsync({ type: 'blob' });
-                const now = new Date();
-                const stamp = [
-                    now.getFullYear(),
-                    String(now.getMonth() + 1).padStart(2, '0'),
-                    String(now.getDate()).padStart(2, '0')
-                ].join('') + '-' + [
-                    String(now.getHours()).padStart(2, '0'),
-                    String(now.getMinutes()).padStart(2, '0')
-                ].join('');
-
-                triggerBlobDownload(zipBlob, `sertifikat-batch-${exportFormat}-${stamp}.zip`);
+                triggerBlobDownload(zipBlob, zipFilename);
                 const exportLabel = exportFormat === 'both' ? 'SVG + PNG' : exportFormat.toUpperCase();
                 setStatus(`ZIP berhasil dibuat untuk ${state.batchEntries.length} peserta dengan format ${exportLabel}.`, 'success');
             } catch (error) {
@@ -939,6 +1403,51 @@
         copyGuideExampleBtn.addEventListener('click', copyGuideExample);
         fillGuideExampleBtn.addEventListener('click', fillGuideExample);
         batchInput.addEventListener('input', renderBatchStats);
+        openLogModalBtn.addEventListener('click', openLogModal);
+        closeLogModalBtn.addEventListener('click', closeLogModal);
+        closeLogModalFooterBtn.addEventListener('click', closeLogModal);
+        certificateLogModal.addEventListener('click', (event) => {
+            if (event.target === certificateLogModal) {
+                closeLogModal();
+            }
+        });
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && logState.isModalOpen) {
+                closeLogModal();
+            }
+        });
+        logSearchInput.addEventListener('input', () => {
+            logState.currentPage = 1;
+            applyLogFilters();
+        });
+        logStartDateInput.addEventListener('change', () => {
+            logState.currentPage = 1;
+            applyLogFilters();
+        });
+        logEndDateInput.addEventListener('change', () => {
+            logState.currentPage = 1;
+            applyLogFilters();
+        });
+        logPrevPageBtn.addEventListener('click', () => {
+            if (logState.currentPage <= 1) return;
+            logState.currentPage -= 1;
+            renderLogTable();
+        });
+        logNextPageBtn.addEventListener('click', () => {
+            const maxPage = Math.max(1, Math.ceil(logState.filteredLogs.length / LOG_PAGE_SIZE));
+            if (logState.currentPage >= maxPage) return;
+            logState.currentPage += 1;
+            renderLogTable();
+        });
+        logExportCsvBtn.addEventListener('click', exportLogAsCsv);
+        logExportExcelBtn.addEventListener('click', exportLogAsExcel);
+        logTableBody.addEventListener('click', (event) => {
+            const button = event.target.closest('.log-see-btn');
+            if (!button) return;
+            const logId = button.getAttribute('data-log-id');
+            if (!logId) return;
+            previewLogCertificateById(logId);
+        });
         downloadSvgBtn.addEventListener('click', () => {
             downloadSingleSvg(getEntryForPreview()).catch((error) => {
                 console.error(error);
@@ -968,6 +1477,7 @@
                     batchGuideExample.textContent = GUIDE_EXAMPLE_TEXT;
                 }
                 renderGuideState();
+                loadCertificateLogs();
                 initializeDefaultState();
             });
     </script>
