@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Data - Team Dialogika</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="../assets/css/style.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        .member-card {
+            border-radius: 24px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            box-shadow: 0 18px 40px -22px rgba(15, 23, 42, 0.35);
+        }
+        #memberDetailModal .modal-content {
+            border-radius: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        #memberDetailModal .modal-title {
+            font-weight: 700;
+        }
+        .badge-pill {
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+        }
+        #memberTableBody tr:hover {
+            background-color: #f8fafc;
+        }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="topbarContainer"></div>
+
+    <div class="dashboard-container">
+        <div id="sidebarContainer"></div>
+
+        <main class="main-content">
+            <div class="max-w-6xl mx-auto px-6 py-6">
+                <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+                    <div>
+                        <nav class="flex gap-2 text-xs font-bold text-blue-600 uppercase tracking-widest mb-2">
+                            <a href="../home.html"><span><i class="bi bi-house-fill"></i></span></a>
+                            <span>/</span>
+                            <span>Marketing</span>
+                            <span>/</span>
+                            <span class="text-slate-400">Member Data</span>
+                        </nav>
+                        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Member Data</h1>
+                        <p class="text-slate-500 mt-1 font-medium text-sm md:text-base">
+                            Lihat daftar member dari Firebase <span class="font-semibold">data_member</span> dengan filter berdasarkan tanggal.
+                        </p>
+                    </div>
+                    <div class="flex flex-col items-stretch gap-3">
+                        <div class="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
+                            <div class="flex items-center gap-1 px-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.16em]">Dari</span>
+                                <input type="date" id="filterStartDate" class="text-xs border border-slate-200 rounded-xl px-3 py-1.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            </div>
+                            <div class="w-[1px] h-6 bg-slate-200"></div>
+                            <div class="flex items-center gap-1 px-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.16em]">Sampai</span>
+                                <input type="date" id="filterEndDate" class="text-xs border border-slate-200 rounded-xl px-3 py-1.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            </div>
+                            <button id="btnResetDate" class="ml-2 px-3 py-1.5 rounded-xl text-[11px] font-semibold text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100">
+                                Reset
+                            </button>
+                        </div>
+                        <span id="summaryText" class="text-xs text-slate-400 font-medium">
+                            Menunggu data member...
+                        </span>
+                    </div>
+                </header>
+
+                <div class="flex flex-col md:flex-row gap-4 mb-4">
+                    <div class="relative flex-grow group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                        <input id="memberSearchInput" type="text" placeholder="Cari nama, email, atau nomor WhatsApp..." class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none text-sm text-slate-700 shadow-sm">
+                    </div>
+                    <div class="flex items-center gap-2 text-[11px] text-slate-400">
+                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Data terbaru di atas</span>
+                    </div>
+                </div>
+
+                <section class="member-card p-4 md:p-5 shadow-sm">
+                    <div id="loadingState" class="text-center py-10">
+                        <div class="spinner-border text-indigo-600" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2 text-slate-500 text-sm">Sedang memuat data member dari Firebase...</p>
+                    </div>
+
+                    <div id="emptyState" class="text-center py-10" style="display:none;">
+                        <p class="text-slate-500 mb-1">Belum ada data member yang sesuai filter.</p>
+                        <p class="text-slate-400 text-xs">Coba ubah rentang tanggal atau kata kunci pencarian.</p>
+                    </div>
+
+                    <div id="tableContainer" style="display:none;">
+                        <div class="table-responsive">
+                            <table class="table mb-0 align-middle">
+                                <thead class="table-light">
+                                    <tr class="text-[11px] text-slate-500">
+                                        <th class="fw-semibold">Member</th>
+                                        <th class="fw-semibold">Kontak</th>
+                                        <th class="fw-semibold text-end">Tanggal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="memberTableBody" class="text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="modal fade" id="memberDetailModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header border-0 pb-0">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle bg-indigo-100 d-flex align-items-center justify-content-center text-indigo-600 fw-bold" style="width:40px;height:40px;">
+                                        <span id="detailMemberInitial">M</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="modal-title mb-0" id="detailMemberTitle">Detail Member</h5>
+                                        <div class="text-xs text-slate-400" id="detailMemberSubtitle">-</div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body pt-3">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <div class="text-xs text-slate-400 font-bold uppercase tracking-[0.18em] mb-1">Nama</div>
+                                        <div id="detailMemberName" class="text-base font-semibold text-slate-900">-</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-xs text-slate-400 font-bold uppercase tracking-[0.18em] mb-1">Program Diambil</div>
+                                        <div id="detailMemberProgram" class="text-sm text-slate-800">-</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-xs text-slate-400 font-bold uppercase tracking-[0.18em] mb-1">Tanggal</div>
+                                        <div id="detailMemberDate" class="text-sm text-slate-800">-</div>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <div class="text-xs text-slate-400 font-bold uppercase tracking-[0.18em] mb-1">Kontak</div>
+                                        <div class="d-flex flex-column gap-2">
+                                            <div id="detailMemberPhone" class="text-sm text-slate-800">-</div>
+                                            <button type="button" id="detailWhatsappBtn" class="btn btn-sm btn-success d-inline-flex align-items-center gap-2">
+                                                <i class="bi bi-whatsapp"></i>
+                                                <span>Chat via WhatsApp</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-xs text-slate-400 font-bold uppercase tracking-[0.18em] mb-1">Email</div>
+                                        <div id="detailMemberEmail" class="text-sm text-slate-800">-</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-xs text-slate-400 font-bold uppercase tracking-[0.18em] mb-1">Domisili</div>
+                                        <div id="detailMemberCity" class="text-sm text-slate-800">-</div>
+                                    </div>
+                                </div>
+                                <hr class="my-3">
+                                <div>
+                                    <div class="text-xs text-slate-400 font-bold uppercase tracking-[0.18em] mb-2">Detail Lainnya</div>
+                                    <div id="detailMemberExtra" class="text-sm text-slate-700"></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { renderTopBar } from "../element/topbar.js";
+        import { renderSidebar } from "../element/sidebar.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            getDocs
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com",
+            projectId: "pre-dialogika",
+            storageBucket: "pre-dialogika.firebasestorage.app",
+            messagingSenderId: "343771410480",
+            appId: "1:343771410480:web:32881c9868522090237df5",
+            measurementId: "G-SXN811P3N0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const topbarTarget = document.getElementById("topbarContainer");
+        if (topbarTarget) {
+            renderTopBar(topbarTarget);
+        }
+        const sidebarTarget = document.getElementById("sidebarContainer");
+        if (sidebarTarget) {
+            renderSidebar(sidebarTarget);
+        }
+
+        const searchInput = document.getElementById("memberSearchInput");
+        const startDateInput = document.getElementById("filterStartDate");
+        const endDateInput = document.getElementById("filterEndDate");
+        const btnResetDate = document.getElementById("btnResetDate");
+        const loadingState = document.getElementById("loadingState");
+        const emptyState = document.getElementById("emptyState");
+        const tableContainer = document.getElementById("tableContainer");
+        const tbody = document.getElementById("memberTableBody");
+        const summaryText = document.getElementById("summaryText");
+
+        let allMembers = [];
+
+        function parseDateOnly(value) {
+            if (!value) return null;
+            const parts = String(value).split("-");
+            if (parts.length !== 3) return null;
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const day = parseInt(parts[2], 10);
+            const d = new Date(year, month, day);
+            if (isNaN(d.getTime())) return null;
+            return d;
+        }
+
+        function normalizeDateOnly(date) {
+            if (!(date instanceof Date)) return null;
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+
+        function getMemberDate(member) {
+            if (member.createdDate instanceof Date) return member.createdDate;
+            return null;
+        }
+
+        function formatDisplayDate(date) {
+            if (!date || !(date instanceof Date) || isNaN(date.getTime())) return "-";
+            const day = String(date.getDate()).padStart(2, "0");
+            const months = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            return `${day} ${month} ${year}`;
+        }
+
+        function renderMembers(data) {
+            tbody.innerHTML = "";
+            if (!data || data.length === 0) {
+                tableContainer.style.display = "none";
+                emptyState.style.display = "block";
+                summaryText.textContent = "Tidak ada member yang cocok dengan filter.";
+                return;
+            }
+            data.forEach((m) => {
+                const tr = document.createElement("tr");
+                const created = getMemberDate(m);
+
+                const name = m.name || "-";
+                const phone = m.phone || "-";
+                const email = m.email || "";
+                const program = m.program || "";
+                const city = m.city || "";
+
+                tr.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-circle bg-indigo-100 d-flex align-items-center justify-content-center text-indigo-600 fw-bold">
+                                ${name ? name.charAt(0).toUpperCase() : "M"}
+                            </div>
+                            <div>
+                                <div class="fw-semibold text-slate-800">${name}</div>
+                                ${email ? `<div class="text-xs text-slate-400">${email}</div>` : ""}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column text-sm">
+                            <span class="text-slate-700"><i class="bi bi-whatsapp text-success me-1"></i>${phone}</span>
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <span class="text-sm text-slate-700">${formatDisplayDate(created)}</span>
+                    </td>
+                `;
+                tr.style.cursor = "pointer";
+                tr.addEventListener("click", () => {
+                    openMemberDetail(m);
+                });
+                tbody.appendChild(tr);
+            });
+            tableContainer.style.display = "block";
+            emptyState.style.display = "none";
+            summaryText.textContent = `Menampilkan ${data.length} member`;
+        }
+
+        function applyFilters() {
+            let list = allMembers.slice();
+            const term = String(searchInput.value || "").toLowerCase().trim();
+
+            if (term) {
+                list = list.filter((m) => {
+                    const name = String(m.name || "").toLowerCase();
+                    const email = String(m.email || "").toLowerCase();
+                    const phone = String(m.phone || "").toLowerCase();
+                    const city = String(m.city || "").toLowerCase();
+                    const program = String(m.program || "").toLowerCase();
+                    return (
+                        name.includes(term) ||
+                        email.includes(term) ||
+                        phone.includes(term) ||
+                        city.includes(term) ||
+                        program.includes(term)
+                    );
+                });
+            }
+
+            const startVal = startDateInput.value;
+            const endVal = endDateInput.value;
+            const hasRange = startVal || endVal;
+
+            if (hasRange) {
+                const start = startVal ? normalizeDateOnly(parseDateOnly(startVal)) : null;
+                const end = endVal ? normalizeDateOnly(parseDateOnly(endVal)) : null;
+                list = list.filter((m) => {
+                    const d = getMemberDate(m);
+                    if (!d) return false;
+                    const nd = normalizeDateOnly(d);
+                    if (!nd) return false;
+                    if (start && nd < start) return false;
+                    if (end && nd > end) return false;
+                    return true;
+                });
+            }
+
+            list.sort((a, b) => {
+                const da = getMemberDate(a);
+                const db = getMemberDate(b);
+                const ta = da && da.getTime ? da.getTime() : 0;
+                const tb = db && db.getTime ? db.getTime() : 0;
+                return tb - ta; // terbaru di atas
+            });
+
+            renderMembers(list);
+        }
+
+        async function loadMembers() {
+            loadingState.style.display = "block";
+            emptyState.style.display = "none";
+            tableContainer.style.display = "none";
+            summaryText.textContent = "Sedang memuat data member...";
+
+            try {
+                const snap = await getDocs(collection(db, "data_member"));
+                allMembers = [];
+                snap.forEach((docSnap) => {
+                    const d = docSnap.data() || {};
+                    const rawDate = d.created_at || d.createdAt || d.created_date || d.tanggal_daftar || d.tanggal || d.date || d.registered_at || d.timestamp || null;
+                    let createdDate = null;
+                    if (rawDate && typeof rawDate.toDate === "function") {
+                        const t = rawDate.toDate();
+                        if (!isNaN(t.getTime())) createdDate = t;
+                    } else if (rawDate) {
+                        const t = new Date(rawDate);
+                        if (!isNaN(t.getTime())) createdDate = t;
+                    }
+
+                    const programTaken = d.program_diambil || d.programDiambil || d.program || d.kelas || d.product || "";
+                    const domicile = d.domisili || d.domisili_kota || d.kota || d.city || "";
+
+                    allMembers.push({
+                        id: docSnap.id,
+                        name: d.name || d.nama || d.nama_lengkap || "",
+                        phone: d.phone || d.whatsapp || d.no_hp || d.telepon || "",
+                        email: d.email || "",
+                        program: programTaken,
+                        city: domicile,
+                        createdDate,
+                        raw: d
+                    });
+                });
+                summaryText.textContent = `Memuat ${allMembers.length} member dari Firebase`;
+                loadingState.style.display = "none";
+                applyFilters();
+            } catch (e) {
+                console.error("Gagal memuat data_member:", e);
+                loadingState.style.display = "none";
+                emptyState.style.display = "block";
+                summaryText.textContent = "Gagal memuat data member. Cek koneksi atau Firebase.";
+            }
+        }
+
+        function openMemberDetail(member) {
+            if (!member) return;
+            const modalEl = document.getElementById("memberDetailModal");
+            if (!modalEl || !window.bootstrap || !window.bootstrap.Modal) return;
+
+            const titleEl = document.getElementById("detailMemberTitle");
+            const initialEl = document.getElementById("detailMemberInitial");
+            const subtitleEl = document.getElementById("detailMemberSubtitle");
+            const nameEl = document.getElementById("detailMemberName");
+            const phoneEl = document.getElementById("detailMemberPhone");
+            const emailEl = document.getElementById("detailMemberEmail");
+            const programEl = document.getElementById("detailMemberProgram");
+            const cityEl = document.getElementById("detailMemberCity");
+            const dateEl = document.getElementById("detailMemberDate");
+            const extraEl = document.getElementById("detailMemberExtra");
+            const waBtn = document.getElementById("detailWhatsappBtn");
+
+            const created = getMemberDate(member);
+
+            const displayName = member.name || "-";
+            if (titleEl) titleEl.textContent = displayName || "Detail Member";
+            if (initialEl) initialEl.textContent = displayName ? displayName.charAt(0).toUpperCase() : "M";
+            if (subtitleEl) subtitleEl.textContent = member.email || member.phone || "";
+            if (nameEl) nameEl.textContent = member.name || "-";
+            if (phoneEl) phoneEl.textContent = member.phone || "-";
+            if (emailEl) emailEl.textContent = member.email || "-";
+            if (programEl) programEl.textContent = member.program || "-";
+            if (cityEl) cityEl.textContent = member.city || "-";
+            if (dateEl) dateEl.textContent = formatDisplayDate(created);
+
+            if (waBtn) {
+                const rawPhone = String(member.phone || "").replace(/[^0-9]/g, "");
+                if (rawPhone) {
+                    waBtn.style.display = "";
+                    waBtn.onclick = () => {
+                        const url = "https://wa.me/" + rawPhone;
+                        window.open(url, "_blank");
+                    };
+                } else {
+                    waBtn.style.display = "none";
+                    waBtn.onclick = null;
+                }
+            }
+
+            if (extraEl) {
+                const raw = member.raw || {};
+                const skipKeys = new Set([
+                    "name","nama","nama_lengkap",
+                    "phone","whatsapp","no_hp","telepon","hp",
+                    "email",
+                    "program","program_diambil","programDiambil","kelas","product",
+                    "city","kota","domisili","domisili_kota",
+                    "created_at","createdAt","created_date","tanggal_daftar","tanggal","date","registered_at","timestamp"
+                ]);
+                const blocks = [];
+                const proofBlocks = [];
+                Object.keys(raw).forEach((key) => {
+                    if (skipKeys.has(key)) return;
+                    const value = raw[key];
+                    if (value === undefined || value === null || value === "") return;
+                    const keyLower = String(key).toLowerCase();
+                    let display = "";
+                    if (value && typeof value.toDate === "function") {
+                        const d = value.toDate();
+                        display = formatDisplayDate(d);
+                    } else if (typeof value === "object") {
+                        try {
+                            display = JSON.stringify(value);
+                        } catch (e) {
+                            display = String(value);
+                        }
+                    } else {
+                        display = String(value);
+                    }
+                    const isImage = /^https?:\/\//i.test(display) && /\.(png|jpe?g|webp|gif)$/i.test(display.split("?")[0]);
+                    if (isImage && (keyLower.includes("bukti") || keyLower.includes("proof"))) {
+                        proofBlocks.push(
+                            `<div class="col-12 mb-3">
+                                <div class="text-xs text-slate-400 fw-semibold text-uppercase mb-1">${key}</div>
+                                <div class="border rounded-3 p-2 bg-slate-50">
+                                    <img src="${display}" alt="${key}" class="img-fluid rounded-3">
+                                </div>
+                            </div>`
+                        );
+                    } else {
+                        blocks.push(
+                            `<div class="col-md-6 mb-2">
+                                <div class="text-xs text-slate-400 fw-semibold text-uppercase mb-1">${key}</div>
+                                <div class="text-xs text-slate-700">${display}</div>
+                            </div>`
+                        );
+                    }
+                });
+                const combined = blocks.concat(proofBlocks);
+                extraEl.innerHTML = combined.length
+                    ? `<div class="row">${combined.join("")}</div>`
+                    : "<div class=\"text-xs text-slate-400\">Tidak ada detail tambahan.</div>";
+            }
+
+            const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener("input", () => {
+                applyFilters();
+            });
+        }
+        if (startDateInput) {
+            startDateInput.addEventListener("change", applyFilters);
+        }
+        if (endDateInput) {
+            endDateInput.addEventListener("change", applyFilters);
+        }
+        if (btnResetDate) {
+            btnResetDate.addEventListener("click", () => {
+                startDateInput.value = "";
+                endDateInput.value = "";
+                applyFilters();
+            });
+        }
+
+        loadMembers();
+    </script>
+</body>
+</html>
