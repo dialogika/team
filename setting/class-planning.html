@@ -59,15 +59,15 @@
         .planning-toast-error { background:#ef4444; color:#fef2f2; }
         .modal-backdrop-custom { position:fixed; inset:0; background:rgba(15,23,42,0.45); display:none; align-items:flex-start; justify-content:center; z-index:2200; overflow-y:auto; padding:84px 16px 24px; }
         .modal-backdrop-custom.open { display:flex; }
-        .modal-card { width:100%; max-width:640px; max-height:calc(100vh - 108px); overflow:hidden; border-radius:24px; background:#ffffff; box-shadow:0 24px 60px rgba(15,23,42,0.25); border:1px solid #e2e8f0; }
-        .modal-body-scroll { max-height:calc(100vh - 220px); overflow-y:auto; }
+        .modal-card { width:100%; max-width:640px; max-height:calc(100vh - 108px); overflow:hidden; border-radius:24px; background:#ffffff; box-shadow:0 24px 60px rgba(15,23,42,0.25); border:1px solid #e2e8f0; display:flex; flex-direction:column; }
+        .modal-body-scroll { flex:1 1 auto; min-height:0; overflow-y:auto; }
         @media (max-width:1200px) {
             .planning-main-grid { grid-template-columns:minmax(0,1fr); }
         }
         @media (max-width:768px) {
             .modal-backdrop-custom { padding-top:72px; padding-bottom:16px; }
             .modal-card { max-height:calc(100vh - 88px); }
-            .modal-body-scroll { max-height:calc(100vh - 220px); }
+            .modal-body-scroll { min-height:0; }
         }
     </style>
 </head>
@@ -190,7 +190,7 @@
                                 <option value="Hybrid">Hybrid</option>
                             </select>
                         </div>
-                    </div>xlsx
+                    </div>
                     <div>
                         <div class="planning-label">Ruang</div>
                         <select id="modalPlanRoom" class="planning-input">
@@ -254,6 +254,8 @@
         let dragState = null;
         let editingPlanId = null;
         let mentorsState = [];
+        const CLASS_SOURCE_PLANNING = "class_planning";
+        const CLASS_SOURCE_AVAILABILITY = "class_availability";
 
         function startOfWeek(d) {
             const date = new Date(d);
@@ -285,6 +287,98 @@
             if (isNaN(h)) return null;
             const m = parts.length > 1 ? parseInt(parts[1], 10) || 0 : 0;
             return h + (m >= 30 ? 0.5 : 0);
+        }
+
+        function normalizeDateKey(raw) {
+            if (!raw) return "";
+            if (raw === "Flexible") return "";
+            let value = raw;
+            if (value && typeof value === "object" && typeof value.toDate === "function") {
+                value = value.toDate();
+            }
+            if (value instanceof Date && !isNaN(value.getTime())) {
+                return formatDateKey(value);
+            }
+            const str = String(value).trim();
+            if (!str) return "";
+            const direct = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (direct) return direct[1] + "-" + direct[2] + "-" + direct[3];
+            const parsed = new Date(str);
+            if (isNaN(parsed.getTime())) return "";
+            return formatDateKey(parsed);
+        }
+
+        function normalizeTimeLabel(raw) {
+            if (!raw) return "";
+            const str = String(raw).trim();
+            if (!str) return "";
+            const m = str.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
+            if (!m) return "";
+            let hour = Number(m[1]);
+            const minute = Number(m[2] || "0");
+            const ampm = (m[3] || "").toUpperCase();
+            if (ampm) {
+                if (hour === 12) hour = 0;
+                if (ampm === "PM") hour += 12;
+            }
+            if (!Number.isFinite(hour) || hour < 0 || hour > 23) return "";
+            if (!Number.isFinite(minute) || minute < 0 || minute > 59) return "";
+            return String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+        }
+
+        function splitAvailabilitySchedule(d) {
+            const rawStart = d.start_date || d.startDate || d.date || "";
+            const fallbackTime = d.time || d.start_time || d.startTime || d.class_time || d.classTime || d.jam || "";
+            let date = normalizeDateKey(rawStart);
+            let time = normalizeTimeLabel(fallbackTime);
+            if (rawStart && typeof rawStart === "string" && rawStart.includes("T")) {
+                const parts = rawStart.split("T");
+                date = normalizeDateKey(parts[0]);
+                const timePart = parts[1] ? parts[1].slice(0, 5) : "";
+                if (!time) time = normalizeTimeLabel(timePart);
+            }
+            return { date, time };
+        }
+
+        function buildPlanningItemFromClassPlanning(docSnap) {
+            const d = docSnap.data() || {};
+            return {
+                id: CLASS_SOURCE_PLANNING + ":" + docSnap.id,
+                sourceCollection: CLASS_SOURCE_PLANNING,
+                sourceDocId: docSnap.id,
+                classId: d.id || "",
+                name: d.name || "",
+                mentor: d.mentor || d.mentor_name || "",
+                duration: typeof d.duration === "number" ? d.duration : 1,
+                type: d.type || "Online",
+                note: d.note || "",
+                room: d.room || "",
+                date: normalizeDateKey(d.date || d.start_date || d.startDate || ""),
+                time: normalizeTimeLabel(d.time || d.start_time || d.startTime || d.class_time || d.classTime || d.jam || "")
+            };
+        }
+
+        function buildPlanningItemFromAvailability(docSnap) {
+            const d = docSnap.data() || {};
+            const schedule = splitAvailabilitySchedule(d);
+            return {
+                id: CLASS_SOURCE_AVAILABILITY + ":" + docSnap.id,
+                sourceCollection: CLASS_SOURCE_AVAILABILITY,
+                sourceDocId: docSnap.id,
+                classId: d.id || "",
+                name: d.name || d.class_name || "",
+                mentor: d.mentor_name || d.mentor || "",
+                duration: typeof d.duration === "number" ? d.duration : 1,
+                type: d.type || "Online",
+                note: d.note || d.comment || "",
+                room: d.room || "",
+                date: schedule.date,
+                time: schedule.time
+            };
+        }
+
+        function isAvailabilityPlan(plan) {
+            return plan && plan.sourceCollection === CLASS_SOURCE_AVAILABILITY;
         }
 
         function getRoomClass(room) {
@@ -350,12 +444,14 @@
         }
 
         async function deletePlanningClass(id) {
+            const target = planningUnscheduled.find(p => p.id === id) || planningScheduled.find(p => p.id === id);
+            if (!target) return;
             planningUnscheduled = planningUnscheduled.filter(p => p.id !== id);
             planningScheduled = planningScheduled.filter(p => p.id !== id);
             renderUnscheduled();
             renderCalendar();
             try {
-                await deleteDoc(doc(db, "class_planning", id));
+                await deleteDoc(doc(db, target.sourceCollection || CLASS_SOURCE_PLANNING, target.sourceDocId || id));
                 showToast("Kelas dihapus dari perencanaan.", "success");
             } catch (e) {
                 console.error("Gagal menghapus rencana kelas:", e);
@@ -398,7 +494,7 @@
                     (plan.room ? " • Ruang " + plan.room : "") +
                     "</div>";
                 card.addEventListener("dragstart", () => {
-                    dragState = { source: "unscheduled", id: plan.id };
+                    dragState = { source: "unscheduled", id: plan.id, collection: plan.sourceCollection, docId: plan.sourceDocId };
                 });
                 card.addEventListener("dragend", () => {
                     dragState = null;
@@ -517,7 +613,7 @@
                                 metaParts.join(" • ") +
                                 "</div>";
                             card.addEventListener("dragstart", () => {
-                                dragState = { source: "calendar", id: plan.id };
+                                dragState = { source: "calendar", id: plan.id, collection: plan.sourceCollection, docId: plan.sourceDocId };
                             });
                             card.addEventListener("dragend", () => {
                                 dragState = null;
@@ -562,22 +658,23 @@
 
         async function loadPlanning() {
             try {
-                const snap = await getDocs(collection(db, "class_planning"));
+                const [planningSnap, availabilitySnap] = await Promise.all([
+                    getDocs(collection(db, CLASS_SOURCE_PLANNING)),
+                    getDocs(collection(db, CLASS_SOURCE_AVAILABILITY))
+                ]);
                 const unscheduled = [];
                 const scheduled = [];
-                snap.forEach((docSnap) => {
-                    const d = docSnap.data() || {};
-                    const item = {
-                        id: docSnap.id,
-                        name: d.name || "",
-                        mentor: d.mentor || "",
-                        duration: typeof d.duration === "number" ? d.duration : 1,
-                        type: d.type || "Online",
-                        note: d.note || "",
-                        room: d.room || "",
-                        date: d.date || "",
-                        time: d.time || ""
-                    };
+                const existingClassIds = new Set();
+                planningSnap.forEach((docSnap) => {
+                    const item = buildPlanningItemFromClassPlanning(docSnap);
+                    if (item.classId) existingClassIds.add(String(item.classId));
+                    if (item.date && item.time) scheduled.push(item);
+                    else unscheduled.push(item);
+                });
+                availabilitySnap.forEach((docSnap) => {
+                    const item = buildPlanningItemFromAvailability(docSnap);
+                    const classIdKey = item.classId ? String(item.classId) : "";
+                    if (classIdKey && existingClassIds.has(classIdKey)) return;
                     if (item.date && item.time) scheduled.push(item);
                     else unscheduled.push(item);
                 });
@@ -713,7 +810,7 @@
             if (btn) btn.disabled = true;
             try {
                 if (!editingPlanId) {
-                    const docRef = await addDoc(collection(db, "class_planning"), {
+                    const docRef = await addDoc(collection(db, CLASS_SOURCE_PLANNING), {
                         name,
                         mentor,
                         duration,
@@ -725,7 +822,10 @@
                         createdAt: serverTimestamp()
                     });
                     const item = {
-                        id: docRef.id,
+                        id: CLASS_SOURCE_PLANNING + ":" + docRef.id,
+                        sourceCollection: CLASS_SOURCE_PLANNING,
+                        sourceDocId: docRef.id,
+                        classId: "",
                         name,
                         mentor,
                         duration,
@@ -777,7 +877,22 @@
                             return;
                         }
                     }
-                    await updateDoc(doc(db, "class_planning", editingPlanId), payload);
+                    const targetCollection = existing && existing.sourceCollection ? existing.sourceCollection : CLASS_SOURCE_PLANNING;
+                    const targetDocId = existing && existing.sourceDocId ? existing.sourceDocId : editingPlanId;
+                    const updatePayload = targetCollection === CLASS_SOURCE_AVAILABILITY
+                        ? {
+                            name,
+                            class_name: name,
+                            mentor_name: mentor,
+                            mentor,
+                            type,
+                            room,
+                            note,
+                            comment: note,
+                            duration
+                        }
+                        : payload;
+                    await updateDoc(doc(db, targetCollection, targetDocId), updatePayload);
                     let item = planningUnscheduled.find(p => p.id === editingPlanId);
                     if (!item) {
                         item = planningScheduled.find(p => p.id === editingPlanId);
@@ -808,11 +923,15 @@
             if (!dragState || !dragState.id) return;
             const id = dragState.id;
             const source = dragState.source;
+            const sourceCollection = dragState.collection || "";
+            const sourceDocId = dragState.docId || "";
             let original = null;
             if (source === "unscheduled") {
-                original = planningUnscheduled.find(p => p.id === id);
+                original = planningUnscheduled.find(p => p.id === id && p.sourceCollection === sourceCollection && p.sourceDocId === sourceDocId)
+                    || planningUnscheduled.find(p => p.id === id);
             } else if (source === "calendar") {
-                original = planningScheduled.find(p => p.id === id);
+                original = planningScheduled.find(p => p.id === id && p.sourceCollection === sourceCollection && p.sourceDocId === sourceDocId)
+                    || planningScheduled.find(p => p.id === id);
             }
             if (!original) return;
             const candidate = {
@@ -854,10 +973,24 @@
             renderUnscheduled();
             renderCalendar();
             try {
-                await updateDoc(doc(db, "class_planning", id), {
-                    date: dateKey,
-                    time: time
-                });
+                if (isAvailabilityPlan(item)) {
+                    await updateDoc(doc(db, CLASS_SOURCE_AVAILABILITY, item.sourceDocId), {
+                        date: dateKey,
+                        time: time,
+                        start_date: dateKey + "T" + time,
+                        startDate: dateKey + "T" + time,
+                        start_time: time,
+                        startTime: time,
+                        class_time: time,
+                        classTime: time,
+                        jam: time
+                    });
+                } else {
+                    await updateDoc(doc(db, CLASS_SOURCE_PLANNING, item.sourceDocId), {
+                        date: dateKey,
+                        time: time
+                    });
+                }
                 showToast("Jadwal diperbarui: " + dateKey + " • " + time, "success");
             } catch (e) {
                 console.error("Gagal menyimpan jadwal perencanaan kelas:", e);

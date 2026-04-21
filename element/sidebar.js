@@ -1,6 +1,21 @@
 export function renderSidebar(target) {
     if (!target) return;
 
+    // Provide a shared sidebar toggle for pages that render topbar+sidebar
+    // but do not define window.toggleSidebar locally.
+    if (typeof window !== 'undefined' && typeof window.toggleSidebar !== 'function') {
+        window.toggleSidebar = function () {
+            var sidebar = document.getElementById('sidebarNav');
+            if (!sidebar) return;
+            var isMobile = window.innerWidth <= 991;
+            if (isMobile) {
+                sidebar.classList.toggle('show');
+                return;
+            }
+            document.body.classList.toggle('sidebar-collapsed');
+        };
+    }
+
     // --- INITIALIZE GLOBAL DATA ---
     if (typeof window !== 'undefined') {
         if (!window.questTasksById) window.questTasksById = {};

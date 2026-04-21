@@ -443,6 +443,8 @@
         let detailEditEnabled = false;
         let usersState = [];
         let mentorsState = [];
+        const CLASS_SOURCE_PLANNING = "class_planning";
+        const CLASS_SOURCE_AVAILABILITY = "class_availability";
         const userMultiSearchState = {
             editSupervisorUsers: "",
             editAdminUsers: "",
@@ -762,7 +764,7 @@
             modal.classList.remove("open");
         }
 
-        function mapAvailabilityDocToClass(docSnap) {
+        function mapAvailabilityDocToClass(docSnap, sourceCollection) {
             const d = docSnap.data() || {};
             const mentorName = d.mentor_name || d.mentor || "";
             const mentors = [];
@@ -796,6 +798,7 @@
             return {
                 id: d.id || docSnap.id,
                 docId: docSnap.id,
+                sourceCollection: sourceCollection || CLASS_SOURCE_PLANNING,
                 name: d.name || d.class_name || "Unnamed Class",
                 status,
                 startDate: toDateString(d.date || d.start_date || d.startDate),
@@ -817,6 +820,10 @@
                 salaryPublishedAt: d.salary_published_at || null,
                 salaryPublishedBy: d.salary_published_by || ""
             };
+        }
+
+        function getClassSourceCollection(c) {
+            return c && c.sourceCollection ? c.sourceCollection : CLASS_SOURCE_PLANNING;
         }
 
         function getCalCardClass(status) {
@@ -1629,7 +1636,7 @@
                     sourceClassDocId: c.docId || ""
                 };
                 await setDoc(doc(db, "operational_expenses", expenseId), expensePayload);
-                await updateDoc(doc(db, "class_planning", c.docId), {
+                await updateDoc(doc(db, getClassSourceCollection(c), c.docId), {
                     salary_expense_id: expenseId,
                     salary_published_at: serverTimestamp(),
                     salary_published_by: user.userName || "Admin",
@@ -1684,7 +1691,7 @@
                 const user = getCurrentUserAuditInfo();
                 const expenseId = c.salaryExpenseId;
                 await deleteDoc(doc(db, "operational_expenses", expenseId));
-                await updateDoc(doc(db, "class_planning", c.docId), {
+                await updateDoc(doc(db, getClassSourceCollection(c), c.docId), {
                     salary_expense_id: "",
                     salary_published_at: null,
                     salary_published_by: "",
@@ -1805,7 +1812,7 @@
             const changeEntries = buildClassChangeEntries(previousClassData, nextClassData);
             try {
                 const prevDate = selected.startDate || "";
-                await updateDoc(doc(db, "class_planning", selected.docId), {
+                await updateDoc(doc(db, getClassSourceCollection(selected), selected.docId), {
                     name,
                     class_name: name,
                     status: finalStatus,
@@ -1896,7 +1903,7 @@
 
         async function persistDateChange(c, dateStr) {
             if (!c || !c.docId) return;
-            await updateDoc(doc(db, "class_planning", c.docId), {
+            await updateDoc(doc(db, getClassSourceCollection(c), c.docId), {
                 date: dateStr,
                 start_date: dateStr,
                 startDate: dateStr,
@@ -2333,10 +2340,22 @@
         async function loadClassesFromFirestore() {
             await loadUsersForSupervisorDropdown();
             await loadMentorsForDropdown();
-            const snap = await getDocs(collection(db, "class_planning"));
+            const [planningSnap, availabilitySnap] = await Promise.all([
+                getDocs(collection(db, CLASS_SOURCE_PLANNING)),
+                getDocs(collection(db, CLASS_SOURCE_AVAILABILITY))
+            ]);
             const loaded = [];
-            snap.forEach((docSnap) => {
-                loaded.push(mapAvailabilityDocToClass(docSnap));
+            const seenClassIds = new Set();
+            planningSnap.forEach((docSnap) => {
+                const item = mapAvailabilityDocToClass(docSnap, CLASS_SOURCE_PLANNING);
+                loaded.push(item);
+                if (item.id) seenClassIds.add(String(item.id));
+            });
+            availabilitySnap.forEach((docSnap) => {
+                const item = mapAvailabilityDocToClass(docSnap, CLASS_SOURCE_AVAILABILITY);
+                const key = item.id ? String(item.id) : "";
+                if (key && seenClassIds.has(key)) return;
+                loaded.push(item);
             });
             classesState = loaded;
             renderCalendar(applyFilters());
