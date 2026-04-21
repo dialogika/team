@@ -101,6 +101,7 @@
                             <option value="Open">Available</option>
                             <option value="Almost Full">Almost Full</option>
                             <option value="Full">Sold Out</option>
+                            <option value="Closed">Kelas Ditutup</option>
                         </select>
                     </div>
                     <div class="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
@@ -674,9 +675,22 @@
                     return max - joined;
                 },
                 getScheduleTimestamp(item) {
-                    if (!item || !item.start_date || item.start_date === "Flexible") return Number.POSITIVE_INFINITY;
+                    if (!item || !item.start_date) return Number.POSITIVE_INFINITY;
+                    if (item.start_date === "Flexible") {
+                        const anchor = new Date();
+                        anchor.setHours(12, 0, 0, 0);
+                        return anchor.getTime();
+                    }
                     const ts = new Date(item.start_date).getTime();
                     return Number.isFinite(ts) ? ts : Number.POSITIVE_INFINITY;
+                },
+                getBatchStatus(item) {
+                    if (!item) return "Open";
+                    if (this.isBatchClosed(item)) return "Closed";
+                    const seatsLeft = this.getSeatsLeft(item);
+                    if (seatsLeft <= 0) return "Full";
+                    if (seatsLeft <= 2) return "Almost Full";
+                    return "Open";
                 },
                 compareText(a, b) {
                     return String(a || "").localeCompare(String(b || ""), "id", { sensitivity: "base" });
@@ -928,8 +942,7 @@
                 get filteredClasses() {
                     return this.classes
                         .filter(c => {
-                            const seatsLeft = this.getSeatsLeft(c);
-                            const status = seatsLeft === 0 ? "Full" : (seatsLeft <= 2 ? "Almost Full" : "Open");
+                            const status = this.getBatchStatus(c);
                             const typeMatch = this.filterType === "All" || c.type === this.filterType;
                             const statusMatch = this.filterStatus === "All" || status === this.filterStatus;
                             const searchMatch = c.name.toLowerCase().includes(this.search.toLowerCase()) ||
