@@ -1477,6 +1477,14 @@
             return new Intl.NumberFormat("id-ID").format(num);
         }
 
+        function shouldShowSalarySection(status) {
+            const normalized = String(status || "").trim().toLowerCase();
+            return normalized === "graduate"
+                || normalized === "complete"
+                || normalized === "stall"
+                || normalized === "reminder";
+        }
+
         function renderSalarySection(c) {
             const section = document.getElementById("salarySection");
             const formArea = document.getElementById("salaryFormArea");
@@ -1490,8 +1498,8 @@
             const publishedDetail = document.getElementById("salaryPublishedDetail");
             const expenseLink = document.getElementById("salaryExpenseLink");
             if (!section) return;
-            const isGraduateOrComplete = c.status === "Graduate" || c.status === "Complete";
-            if (!isGraduateOrComplete) {
+            const isSalaryVisible = shouldShowSalarySection(c.status);
+            if (!isSalaryVisible) {
                 section.classList.add("hidden");
                 return;
             }
