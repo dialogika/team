@@ -111,10 +111,16 @@
                                     <div class="planning-card-title">Perencanaan Kelas</div>
                                     <div class="planning-card-sub">Tambahkan kelas, lalu drag ke kalender mingguan.</div>
                                 </div>
-                                <button id="btnOpenPlanningModal" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-emerald-600 text-white hover:bg-emerald-700">
-                                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                                    Tambah Kelas
-                                </button>
+                                <div class="flex items-center gap-2">
+                                    <div class="relative">
+                                        <input id="planningSearchInput" type="text" placeholder="Cari nama kelas atau mentor..." class="planning-input" style="padding-left:26px; min-width:220px;">
+                                        <i class="bi bi-search" style="position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:11px; color:#9ca3af;"></i>
+                                    </div>
+                                    <button id="btnOpenPlanningModal" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-emerald-600 text-white hover:bg-emerald-700">
+                                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                        Tambah Kelas
+                                    </button>
+                                </div>
                             </div>
                             <div class="planning-unscheduled" style="margin-bottom:16px;">
                                 <div class="planning-unscheduled-header">
@@ -376,14 +382,23 @@
         function renderUnscheduled() {
             const listEl = document.getElementById("planningUnscheduledList");
             const countEl = document.getElementById("planningUnscheduledCount");
+            const searchInput = document.getElementById("planningSearchInput");
+            const term = searchInput ? searchInput.value.trim().toLowerCase() : "";
             if (!listEl) return;
+            const sourceList = term
+                ? planningUnscheduled.filter((plan) => {
+                    const name = String(plan.name || "").toLowerCase();
+                    const mentor = String(plan.mentor || "").toLowerCase();
+                    return name.includes(term) || mentor.includes(term);
+                })
+                : planningUnscheduled.slice();
             if (countEl) countEl.textContent = planningUnscheduled.length + " kelas";
-            if (!planningUnscheduled.length) {
+            if (!sourceList.length) {
                 listEl.innerHTML = "<div class=\"planning-unscheduled-empty\">Belum ada kelas pada daftar rencana.</div>";
                 return;
             }
             listEl.innerHTML = "";
-            planningUnscheduled.forEach(plan => {
+            sourceList.forEach(plan => {
                 const card = document.createElement("div");
                 const roomClass = getRoomClass(plan.room);
                 card.className = "planning-card" + (roomClass ? " " + roomClass : "");
@@ -576,7 +591,8 @@
                         note: d.note || "",
                         room: d.room || "",
                         date: d.date || "",
-                        time: d.time || ""
+                        time: d.time || "",
+                        availabilityId: d.availabilityId || d.availability_id || ""
                     };
                     if (item.date && item.time) scheduled.push(item);
                     else unscheduled.push(item);
@@ -590,6 +606,78 @@
             }
             renderUnscheduled();
             renderCalendar();
+        }
+
+        async function syncAvailabilityToPlanning() {
+            try {
+                if (!db || !collection || !getDocs || !addDoc) return;
+                const existing = new Set();
+                planningUnscheduled.forEach((p) => {
+                    if (p.availabilityId) existing.add(String(p.availabilityId));
+                });
+                planningScheduled.forEach((p) => {
+                    if (p.availabilityId) existing.add(String(p.availabilityId));
+                });
+
+                const snap = await getDocs(collection(db, "class_availability"));
+                const newItems = [];
+                const now = new Date();
+
+                const tasks = [];
+                snap.forEach((docSnap) => {
+                    const d = docSnap.data() || {};
+                    const availId = docSnap.id;
+                    if (existing.has(availId)) return;
+
+                    const rawStart = d.start_date || d.startDate || d.date || "";
+                    if (rawStart && rawStart !== "Flexible") {
+                        const ts = new Date(rawStart).getTime();
+                        if (Number.isFinite(ts) && ts < now.getTime()) {
+                            return;
+                        }
+                    }
+
+                    const name = d.name || "Unnamed Class";
+                    const mentor = d.mentor_name || "";
+                    const type = d.type || "Offline";
+
+                    const payload = {
+                        name,
+                        mentor,
+                        duration: 1.5,
+                        type,
+                        room: "",
+                        note: "",
+                        date: "",
+                        time: "",
+                        availabilityId: availId
+                    };
+
+                    const task = addDoc(collection(db, "class_planning"), payload)
+                        .then((ref) => {
+                            newItems.push({
+                                id: ref.id,
+                                ...payload
+                            });
+                        })
+                        .catch((err) => {
+                            console.error("Gagal sinkron kelas dari class_availability:", err);
+                        });
+
+                    tasks.push(task);
+                });
+
+                if (tasks.length) {
+                    await Promise.all(tasks);
+                    if (newItems.length) {
+                        planningUnscheduled = planningUnscheduled.concat(newItems);
+                        renderUnscheduled();
+                        renderCalendar();
+                    }
+                }
+            } catch (e) {
+                console.error("Gagal sinkron kelas availability ke planning:", e);
+            }
         }
 
         function renderMentorOptions(selectedName) {
@@ -873,6 +961,7 @@
             const modalEl = document.getElementById("planningInputModal");
             const btnPrev = document.getElementById("planningPrevWeek");
             const btnNext = document.getElementById("planningNextWeek");
+            const searchInput = document.getElementById("planningSearchInput");
 
             if (btnOpenModal) {
                 btnOpenModal.addEventListener("click", () => {
@@ -911,11 +1000,17 @@
                     renderCalendar();
                 });
             }
-            loadMentorsForPlanning().then(() => {
-                loadPlanning();
-            }).catch(() => {
-                loadPlanning();
-            });
+            if (searchInput) {
+                searchInput.addEventListener("input", () => {
+                    renderUnscheduled();
+                });
+            }
+            loadMentorsForPlanning()
+                .then(() => loadPlanning())
+                .then(() => syncAvailabilityToPlanning())
+                .catch(() => {
+                    loadPlanning().then(() => syncAvailabilityToPlanning());
+                });
         });
     </script>
 </body>
