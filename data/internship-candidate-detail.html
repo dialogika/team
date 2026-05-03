@@ -1654,7 +1654,7 @@
         }
     </style>
 </head>
-<body class="p-8 page-shell">
+<body class="page-shell">
     <div id="topbarContainer"></div>
 
     <div class="dashboard-container">
@@ -2126,8 +2126,10 @@
         window.getDocs = getDocs;
         window.collection = collection;
         window.toggleSidebar = () => {
-            const sidebar = document.getElementById("sidebarNav");
-            if (sidebar) sidebar.classList.toggle("show");
+            const sidebar = document.getElementById('sidebarNav');
+            if (!sidebar) return;
+            sidebar.classList.toggle('show');
+            document.body.classList.toggle('sidebar-collapsed');
         };
 
         function showSuccess(message, title) {
