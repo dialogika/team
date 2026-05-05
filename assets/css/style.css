@@ -348,6 +348,7 @@ body {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     border: 1px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     color: var(--dlg-blue); text-decoration: none; height: 100%; min-height: 110px; transition: 0.2s;
+    position: relative;
 }
 .app-box:hover {
     box-shadow: 0 8px 15px rgba(11, 43, 106, 0.1);
@@ -360,6 +361,26 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 .app-title { font-size: 0.8rem; font-weight: 600; line-height: 1.2; }
+
+/* Menu Badges */
+.menu-badge {
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 4px 6px;
+    border-radius: 999px;
+    min-width: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+.menu-badge-hidden { display: none !important; }
+.menu-badge-floating { position: absolute; top: 8px; right: 8px; }
+.menu-badge-inline { margin-left: auto; }
+.sidebar-link .menu-badge-inline { margin-right: 8px; }
 
 /* Tags */
 .tag-pill {

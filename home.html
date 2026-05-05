@@ -244,6 +244,7 @@
                     <div class="col"><a href="data/candidate-internship.html" class="app-box">
                             <div class="app-icon-wrapper grad-green"><i class="bi bi-clipboard-data-fill"></i></div>
                             <div class="app-title">Candidate Internship</div>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="candidate-internship"></span>
                         </a></div>
                     <div class="col"><a href="data/candidate-mentor.html" class="app-box">
                             <div class="app-icon-wrapper grad-blue"><i class="bi bi-cart-fill"></i></div>
@@ -261,6 +262,7 @@
                     <div class="col"><a href="setting/operational-expenses.html" class="app-box">
                             <div class="app-icon-wrapper grad-red"><i class="bi bi-wallet2"></i></div>
                             <div class="app-title">Operational Expenses</div>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="operational-expenses"></span>
                         </a></div>
                 </div>
 
@@ -276,14 +278,17 @@
                     <div class="col"><a href="setting/invoice-management.html" class="app-box">
                             <div class="app-icon-wrapper grad-purple"><i class="bi bi-kanban-fill"></i></div>
                             <div class="app-title">Create Invoice</div>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="create-invoice"></span>
                         </a></div>
                     <div class="col"><a href="data/class-available.html" class="app-box">
                             <div class="app-icon-wrapper grad-blue"><i class="bi bi-check-circle-fill"></i></div>
                             <div class="app-title">Class Available</div>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="class-available"></span>
                         </a></div>
                     <div class="col"><a href="setting/referral-dashboard.html" class="app-box">
                             <div class="app-icon-wrapper grad-green"><i class="bi bi-ticket-perforated-fill"></i></div>
                             <div class="app-title">Referal Kelas</div>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="referral-kelas"></span>
                         </a></div>
                     <div class="col"><a href="setting/leads-management.html" class="app-box">
                             <div class="app-icon-wrapper grad-yellow"><i class="bi bi-graph-up-arrow"></i></div>
@@ -296,6 +301,7 @@
                     <div class="col"><a href="data/mailing-list.html" class="app-box">
                             <div class="app-icon-wrapper grad-purple"><i class="bi bi-envelope-paper-fill"></i></div>
                             <div class="app-title">Mailing List</div>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="mailing-list"></span>
                         </a></div>
                 </div>
 
@@ -324,6 +330,7 @@
                         <a href="setting/class-management.html" class="app-box">
                             <div class="app-icon-wrapper grad-blue"><i class="bi bi-bar-chart-steps"></i></div>
                             <div class="app-title">Class Management</div>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="class-management"></span>
                         </a>
                     </div>
                     <div class="col">
@@ -584,6 +591,7 @@
         let globalProjectTasksTotal = 0;
         let cachedProjects = [];
         let presenceIntervalId = null;
+        let menuBadgeIntervalId = null;
 
         // --- 2. PROTEKSI HALAMAN (Cek Login) ---
         onAuthStateChanged(auth, async (user) => {
@@ -613,6 +621,7 @@
                 listenToTasks();
                 startPresenceTracking();
                 listenToOnlineUsers();
+                startMenuBadgeRefresh();
             } else {
                 // Jika tidak login, lempar ke halaman login
                 window.location.href = "index.html";
@@ -928,6 +937,233 @@
                 });
             } catch (e) {
                 console.error("Failed to listen to online users", e);
+            }
+        }
+
+        function setMenuBadge(key, count) {
+            const nodes = document.querySelectorAll(`[data-menu-badge="${key}"]`);
+            if (!nodes.length) return;
+            const normalized = Number.isFinite(count) ? count : 0;
+            const label = normalized > 99 ? "99+" : String(normalized);
+            nodes.forEach(node => {
+                if (normalized > 0) {
+                    node.textContent = label;
+                    node.classList.remove('menu-badge-hidden');
+                } else {
+                    node.textContent = '';
+                    node.classList.add('menu-badge-hidden');
+                }
+            });
+        }
+
+        function getMs(value) {
+            if (value == null) return null;
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') {
+                const num = Number(value);
+                if (!Number.isNaN(num)) return num;
+                const d = new Date(value);
+                return Number.isNaN(d.getTime()) ? null : d.getTime();
+            }
+            if (value instanceof Date) {
+                const t = value.getTime();
+                return Number.isNaN(t) ? null : t;
+            }
+            if (typeof value.toDate === 'function') {
+                const d = value.toDate();
+                return Number.isNaN(d.getTime()) ? null : d.getTime();
+            }
+            return null;
+        }
+
+        function isRecentByFields(data, cutoffMs) {
+            const ms = getMs(data.createdAtMs || data.created_at_ms);
+            const ts = getMs(data.createdAt || data.created_at);
+            return (ms != null && ms >= cutoffMs) || (ts != null && ts >= cutoffMs);
+        }
+
+        function normalizeStatus(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        async function getMergedDocs(queryList, fallbackRef, allowFullScan) {
+            const merged = new Map();
+            let anySuccess = false;
+            for (const q of queryList) {
+                if (!q) continue;
+                try {
+                    const snap = await getDocs(q);
+                    anySuccess = true;
+                    snap.forEach(docSnap => merged.set(docSnap.id, docSnap));
+                } catch (e) {
+                    console.warn('Menu badge query failed:', e);
+                }
+            }
+            if (!anySuccess && allowFullScan && fallbackRef) {
+                try {
+                    const snap = await getDocs(fallbackRef);
+                    snap.forEach(docSnap => merged.set(docSnap.id, docSnap));
+                } catch (e) {
+                    console.warn('Menu badge fallback failed:', e);
+                }
+            }
+            return Array.from(merged.values());
+        }
+
+        async function fetchDocsByCutoff(collectionName, cutoffMs, options) {
+            if (!db) return [];
+            const colRef = collection(db, collectionName);
+            const filters = (options && options.whereFilters) ? options.whereFilters : [];
+            const cutoffDate = new Date(cutoffMs);
+            const queries = [
+                query(colRef, ...filters, where('createdAtMs', '>=', cutoffMs)),
+                query(colRef, ...filters, where('createdAt', '>=', cutoffDate))
+            ];
+            return await getMergedDocs(queries, colRef, options && options.allowFullScan);
+        }
+
+        async function fetchDocsByStatus(collectionName, statuses, options) {
+            if (!db) return [];
+            const colRef = collection(db, collectionName);
+            const queries = [];
+            if (Array.isArray(statuses) && statuses.length > 0) {
+                queries.push(query(colRef, where('status', 'in', statuses)));
+            }
+            return await getMergedDocs(queries, colRef, options && options.allowFullScan);
+        }
+
+        async function getDocsFromPaths(pathList) {
+            if (!db) return null;
+            for (const path of pathList) {
+                try {
+                    const snap = await getDocs(collection(db, ...path));
+                    return snap;
+                } catch (e) {
+                    console.warn('Menu badge path failed:', path.join('/'), e);
+                }
+            }
+            return null;
+        }
+
+        function addMonths(dateValue, months) {
+            const d = new Date(dateValue);
+            const count = Number(months) || 0;
+            d.setMonth(d.getMonth() + count);
+            return d;
+        }
+
+        function startMenuBadgeRefresh() {
+            if (menuBadgeIntervalId) {
+                clearInterval(menuBadgeIntervalId);
+            }
+            refreshMenuBadges();
+            menuBadgeIntervalId = setInterval(refreshMenuBadges, 60000);
+        }
+
+        async function refreshMenuBadges() {
+            if (!db) return;
+            const cutoffMs = Date.now() - (5 * 24 * 60 * 60 * 1000);
+
+            try {
+                const candidateDocs = await fetchDocsByCutoff('interns_screening', cutoffMs, { allowFullScan: true });
+                setMenuBadge('candidate-internship', candidateDocs.filter(ds => isRecentByFields(ds.data() || {}, cutoffMs)).length);
+
+                const expenseDocs = await fetchDocsByCutoff('operational_expenses', cutoffMs, {
+                    whereFilters: [where('status', 'in', ['requested', 'reviewing'])],
+                    allowFullScan: true
+                });
+                const expenseCount = expenseDocs.filter(ds => {
+                    const data = ds.data() || {};
+                    const status = normalizeStatus(data.status);
+                    return (status === 'requested' || status === 'reviewing') && isRecentByFields(data, cutoffMs);
+                }).length;
+                setMenuBadge('operational-expenses', expenseCount);
+
+                const invoiceDocs = await fetchDocsByCutoff('invoices', cutoffMs, { allowFullScan: true });
+                const invoiceCount = invoiceDocs.filter(ds => {
+                    const data = ds.data() || {};
+                    if (!isRecentByFields(data, cutoffMs)) return false;
+                    const paidAtMs = getMs(data.paidAtMs || data.paid_at_ms || data.paidAt || data.paid_at);
+                    const paidAmount = Number(data.paidAmount || data.paid_amount || 0);
+                    return (paidAtMs != null && paidAtMs > 0) || paidAmount > 0;
+                }).length;
+                setMenuBadge('create-invoice', invoiceCount);
+
+                const classAvailableDocs = await fetchDocsByCutoff('class_availability', cutoffMs, { allowFullScan: true });
+                setMenuBadge('class-available', classAvailableDocs.filter(ds => isRecentByFields(ds.data() || {}, cutoffMs)).length);
+
+                const mailingDocs = await fetchDocsByCutoff('subscription_email', cutoffMs, { allowFullScan: true });
+                setMenuBadge('mailing-list', mailingDocs.filter(ds => isRecentByFields(ds.data() || {}, cutoffMs)).length);
+
+                const referralSnap = await getDocsFromPaths([
+                    ['settings', 'referrals'],
+                    ['referrals'],
+                    ['settings_referrals']
+                ]);
+                if (referralSnap) {
+                    let referralCount = 0;
+                    const nowMs = Date.now();
+                    referralSnap.forEach(docSnap => {
+                        const data = docSnap.data() || {};
+                        const createdAtMs = getMs(data.createdAtMs || data.created_at_ms || data.createdAt || data.created_at);
+                        if (createdAtMs == null) return;
+                        const monthsValid = Number(data.monthsValid ?? data.months_valid ?? 0);
+                        const expiresAt = addMonths(new Date(createdAtMs), monthsValid).getTime();
+                        if (nowMs > expiresAt) referralCount++;
+                    });
+                    setMenuBadge('referral-kelas', referralCount);
+                } else {
+                    setMenuBadge('referral-kelas', 0);
+                }
+
+                const classAvailabilityAll = await fetchDocsByStatus('class_availability', ['Stall', 'Soon', 'Running', 'Graduate'], { allowFullScan: true });
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+                const todayMs = todayStart.getTime();
+                let classManagementCount = 0;
+                let classCheckupCount = 0;
+
+                classAvailabilityAll.forEach(ds => {
+                    const data = ds.data() || {};
+                    const status = normalizeStatus(data.status);
+                    const startMs = getMs(data.start_date || data.startDate || data.start_at || data.startAt);
+
+                    if (status === 'stall') {
+                        classManagementCount++;
+                    } else if (status === 'soon' && startMs != null && startMs < todayMs) {
+                        classManagementCount++;
+                    }
+
+                    const meetingDone = Number(data.meeting_done ?? data.meetingDone ?? 0);
+                    const meetingTotal = Number(data.meeting_total ?? data.meetingTotal ?? 0);
+                    const salaryExpenseId = data.salaryExpenseId || data.salary_expense_id || '';
+                    const isRunningDone = status === 'running' && meetingTotal > 0 && meetingDone >= meetingTotal;
+                    const isGraduatePending = status === 'graduate' && !String(salaryExpenseId).trim();
+                    if (isRunningDone || isGraduatePending) {
+                        classCheckupCount++;
+                    }
+                });
+
+                setMenuBadge('class-checkup', classCheckupCount);
+
+                let classPlanningCount = 0;
+                try {
+                    const planningSnap = await getDocs(collection(db, 'class_planning'));
+                    planningSnap.forEach(docSnap => {
+                        const data = docSnap.data() || {};
+                        const dateVal = data.date;
+                        const timeVal = data.time;
+                        const dateEmpty = !String(dateVal || '').trim();
+                        const timeEmpty = !String(timeVal || '').trim();
+                        if (dateEmpty || timeEmpty) classPlanningCount++;
+                    });
+                } catch (e) {
+                    console.warn('Menu badge class planning failed:', e);
+                }
+                setMenuBadge('class-planning', classPlanningCount);
+                setMenuBadge('class-management', classManagementCount + classCheckupCount + classPlanningCount);
+            } catch (e) {
+                console.error('Failed to refresh menu badges:', e);
             }
         }
 

@@ -222,6 +222,7 @@ export function renderSidebar(target) {
                 <div class="nav-category">Main Navigation</div>
                 <a href="javascript:void(0)" class="sidebar-link active" onclick="window.toggleDashboardMenu(this)">
                     <i class="bi bi-columns-gap"></i> Dashboard 
+                    <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="dashboard"></span>
                     <span class="sidebar-badge">
                         <i class="bi bi-arrow-left-square-fill" id="dashboardIcon"></i>
                     </span>
@@ -233,13 +234,25 @@ export function renderSidebar(target) {
                     <a href="javascript:void(0)" class="sidebar-submenu-link">Branding</a>
                 </div>
                 <a href="#" class="sidebar-link"><i class="bi bi-list-columns-reverse"></i> Shortcut 
-                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-chat-dots"></i> Pings</a>
-                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-bell"></i> Hey!</a>
-                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-activity"></i> Activity</a>
-                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-person-circle"></i> My Stuff</a>
+                    <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="shortcut"></span>
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-chat-dots"></i> Pings
+                    <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="pings"></span>
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-bell"></i> Hey!
+                    <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="hey"></span>
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-activity"></i> Activity
+                    <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="activity"></span>
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-person-circle"></i> My Stuff
+                    <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="my-stuff"></span>
+                </a>
 
                 <div class="nav-category mt-4">System</div>
-                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-gear"></i>System Settings</a>
+                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-gear"></i>System Settings
+                    <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="system-settings"></span>
+                </a>
                 <a href="javascript:void(0)" class="sidebar-link text-danger" id="logoutBtn">
                 <i class="bi bi-box-arrow-right"></i> Logout</a>
 
