@@ -214,6 +214,7 @@
                     <div id="detailSubtitle" class="text-[11px] text-slate-500"></div>
                 </div>
                 <div class="flex items-center gap-2">
+                    <button id="btnManualSalaryTrigger" type="button" class="px-3 py-1.5 rounded-xl text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700">Publish Gaji Mentor</button>
                     <a id="btnOpenDetailPage" href="./class-detail.html" class="px-3 py-1.5 rounded-xl text-[11px] font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Halaman Detail</a>
                     <button id="btnEnableDetailEdit" class="px-3 py-1.5 rounded-xl text-[11px] font-bold text-white bg-amber-500 hover:bg-amber-600">Aktifkan Edit</button>
                     <button id="btnCancelDetailEdit" class="hidden px-3 py-1.5 rounded-xl text-[11px] font-bold border border-slate-200 text-slate-700 hover:bg-slate-50">Batal</button>
@@ -440,6 +441,7 @@
         let dragClassId = null;
         let lastDropAt = 0;
         let currentDetailClassId = null;
+        let manualSalaryTriggerClassId = null;
         let detailEditEnabled = false;
         let usersState = [];
         let mentorsState = [];
@@ -1477,12 +1479,15 @@
             return new Intl.NumberFormat("id-ID").format(num);
         }
 
-        function shouldShowSalarySection(status) {
+        function shouldAutoShowSalarySection(status) {
             const normalized = String(status || "").trim().toLowerCase();
             return normalized === "graduate"
-                || normalized === "complete"
-                || normalized === "stall"
-                || normalized === "reminder";
+                || normalized === "stall";
+        }
+
+        function shouldShowSalarySection(status, classId) {
+            if (shouldAutoShowSalarySection(status)) return true;
+            return !!classId && manualSalaryTriggerClassId === classId;
         }
 
         function renderSalarySection(c) {
@@ -1498,7 +1503,7 @@
             const publishedDetail = document.getElementById("salaryPublishedDetail");
             const expenseLink = document.getElementById("salaryExpenseLink");
             if (!section) return;
-            const isSalaryVisible = shouldShowSalarySection(c.status);
+            const isSalaryVisible = shouldShowSalarySection(c.status, c.id);
             if (!isSalaryVisible) {
                 section.classList.add("hidden");
                 return;
@@ -1526,6 +1531,18 @@
                     dueDateInput.value = toDateKey(nextWeek);
                 }
                 if (notesInput) notesInput.value = "";
+            }
+        }
+
+        function triggerManualSalaryFromModal() {
+            if (!currentDetailClassId) return;
+            const idx = classesState.findIndex(c => c.id === currentDetailClassId);
+            if (idx < 0) return;
+            manualSalaryTriggerClassId = currentDetailClassId;
+            renderSalarySection(classesState[idx]);
+            const section = document.getElementById("salarySection");
+            if (section && !section.classList.contains("hidden")) {
+                section.scrollIntoView({ behavior: "smooth", block: "start" });
             }
         }
 
@@ -1734,6 +1751,9 @@
         function closeDetailModal() {
             const modal = document.getElementById("classDetailModal");
             if (!modal) return;
+            if (currentDetailClassId && manualSalaryTriggerClassId === currentDetailClassId) {
+                manualSalaryTriggerClassId = null;
+            }
             modal.classList.remove("open");
             currentDetailClassId = null;
         }
@@ -2330,6 +2350,10 @@
             const btnPublishSalary = document.getElementById("btnPublishSalary");
             if (btnPublishSalary) {
                 btnPublishSalary.addEventListener("click", () => publishSalaryToExpenses());
+            }
+            const btnManualSalaryTrigger = document.getElementById("btnManualSalaryTrigger");
+            if (btnManualSalaryTrigger) {
+                btnManualSalaryTrigger.addEventListener("click", () => triggerManualSalaryFromModal());
             }
             const btnUndoSalary = document.getElementById("btnUndoSalary");
             if (btnUndoSalary) {
