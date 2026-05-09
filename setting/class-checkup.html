@@ -328,7 +328,11 @@
                 </div>
                 <div class="md:col-span-2">
                     <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Comment</div>
-                    <textarea id="editComment" rows="4" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 resize-y"></textarea>
+                    <div id="commentsContainer" class="space-y-2"></div>
+                    <div class="mt-2">
+                        <button id="btnAddComment" type="button" class="w-full h-full rounded-full border border-slate-200 bg-white text-base font-bold text-slate-700 hover:bg-slate-50">+</button>
+                    </div>
+                    <div id="commentsView" class="mt-2 space-y-1"></div>
                 </div>
                 <div id="salarySection" class="md:col-span-2 hidden">
                     <div class="salary-section">
@@ -822,6 +826,7 @@
                 groupLink: d.group_link || d.groupLink || "",
                 videoClassLink: d.video_class || d.videoClass || d.video_class_link || d.videoClassLink || "",
                 classLinks: parseClassLinksFromData(d),
+                comments: parseCommentsFromData(d),
                 comment: d.comment || "",
                 supervisor,
                 supervisors,
@@ -899,6 +904,48 @@
             if (waLegacy) merged.push({ type: "wa_group", url: waLegacy, title: "WA Group" });
             if (videoLegacy) merged.push({ type: "video_class", url: videoLegacy, title: "Video Class" });
             return dedupeClassLinks(merged);
+        }
+
+        function normalizeCommentItem(raw) {
+            if (!raw) return null;
+            if (typeof raw === "string") {
+                const text = raw.trim();
+                if (!text) return null;
+                return { text };
+            }
+            if (typeof raw !== "object") return null;
+            const text = String(raw.text || raw.comment || raw.value || "").trim();
+            if (!text) return null;
+            return { text };
+        }
+
+        function dedupeComments(items) {
+            const map = new Map();
+            items.forEach((item) => {
+                const normalized = normalizeCommentItem(item);
+                if (!normalized) return;
+                const key = normalized.text.toLowerCase();
+                if (!map.has(key)) map.set(key, normalized);
+            });
+            return Array.from(map.values());
+        }
+
+        function parseCommentsFromData(d) {
+            const fromArray = Array.isArray(d.comment_items)
+                ? d.comment_items
+                : (Array.isArray(d.commentItems)
+                    ? d.commentItems
+                    : (Array.isArray(d.comments) ? d.comments : []));
+            const merged = [];
+            fromArray.forEach((item) => merged.push(item));
+            const legacyComment = String(d.comment || "").trim();
+            if (legacyComment) {
+                legacyComment.split(/\r?\n+/).forEach((part) => {
+                    const text = String(part || "").trim();
+                    if (text) merged.push({ text });
+                });
+            }
+            return dedupeComments(merged);
         }
 
         function renderClassLinksView(list) {
@@ -1005,6 +1052,97 @@
                 const removeBtn = row.querySelector("button");
                 if (urlInput) urlInput.disabled = !!disabled;
                 if (titleInput) titleInput.disabled = !!disabled;
+                if (removeBtn) removeBtn.disabled = !!disabled;
+            });
+        }
+
+        function renderCommentsView(list) {
+            const view = document.getElementById("commentsView");
+            if (!view) return;
+            view.innerHTML = "";
+            const items = dedupeComments(Array.isArray(list) ? list : []);
+            if (!items.length) {
+                const empty = document.createElement("div");
+                empty.className = "text-[11px] text-slate-400";
+                empty.textContent = "-";
+                view.appendChild(empty);
+                return;
+            }
+            items.forEach((item, index) => {
+                const block = document.createElement("div");
+                block.className = "w-full text-[11px] text-slate-700 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2";
+                block.textContent = (index + 1) + ". " + item.text;
+                view.appendChild(block);
+            });
+        }
+
+        function createCommentRow(item, disabled) {
+            const row = document.createElement("div");
+            row.className = "grid grid-cols-[minmax(0,1fr)_auto] gap-2";
+            const textInput = document.createElement("textarea");
+            textInput.rows = 2;
+            textInput.placeholder = "Tulis komentar";
+            textInput.className = "w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 resize-y";
+            textInput.value = item && item.text ? item.text : "";
+            textInput.dataset.commentText = "1";
+            textInput.disabled = !!disabled;
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "w-7 h-7 rounded-lg border border-slate-200 bg-white text-sm font-bold leading-none text-rose-600 hover:bg-rose-50";
+            removeBtn.textContent = "×";
+            removeBtn.disabled = !!disabled;
+            removeBtn.addEventListener("click", () => {
+                row.remove();
+                renderCommentsView(getCommentsFromEditor());
+            });
+            textInput.addEventListener("input", () => renderCommentsView(getCommentsFromEditor()));
+            row.appendChild(textInput);
+            row.appendChild(removeBtn);
+            return row;
+        }
+
+        function getCommentsFromEditor() {
+            const container = document.getElementById("commentsContainer");
+            if (!container) return [];
+            const rows = Array.from(container.children || []);
+            const list = rows.map((row) => {
+                const textInput = row.querySelector("textarea[data-comment-text='1']");
+                return normalizeCommentItem({
+                    text: textInput ? textInput.value : ""
+                });
+            }).filter(Boolean);
+            return dedupeComments(list);
+        }
+
+        function renderCommentsEditor(list, disabled) {
+            const container = document.getElementById("commentsContainer");
+            if (!container) return;
+            const items = dedupeComments(Array.isArray(list) ? list : []);
+            container.innerHTML = "";
+            if (!items.length) {
+                container.appendChild(createCommentRow({ text: "" }, disabled));
+            } else {
+                items.forEach((item) => container.appendChild(createCommentRow(item, disabled)));
+            }
+            renderCommentsView(getCommentsFromEditor());
+        }
+
+        function addCommentRow() {
+            const container = document.getElementById("commentsContainer");
+            if (!container) return;
+            container.appendChild(createCommentRow({ text: "" }, !detailEditEnabled));
+            renderCommentsView(getCommentsFromEditor());
+        }
+
+        function setCommentsEditDisabled(disabled) {
+            const container = document.getElementById("commentsContainer");
+            const addBtn = document.getElementById("btnAddComment");
+            if (addBtn) addBtn.disabled = !!disabled;
+            if (!container) return;
+            Array.from(container.children || []).forEach((row) => {
+                const textInput = row.querySelector("textarea[data-comment-text='1']");
+                const removeBtn = row.querySelector("button");
+                if (textInput) textInput.disabled = !!disabled;
                 if (removeBtn) removeBtn.disabled = !!disabled;
             });
         }
@@ -1420,8 +1558,7 @@
                 "editAdminUsers",
                 "editTreasurerUsers",
                 "editMeetingDone",
-                "editMeetingTotal",
-                "editComment"
+                "editMeetingTotal"
             ];
             inputIds.forEach((id) => {
                 const el = document.getElementById(id);
@@ -1429,6 +1566,7 @@
             });
             setUserMultiDropdownDisabled(!enabled);
             setClassLinksEditDisabled(!enabled);
+            setCommentsEditDisabled(!enabled);
             const btnEnable = document.getElementById("btnEnableDetailEdit");
             const btnCancel = document.getElementById("btnCancelDetailEdit");
             const btnSave = document.getElementById("btnSaveDetailEdit");
@@ -1459,7 +1597,6 @@
             const typeEl = document.getElementById("editType");
             const meetingDoneEl = document.getElementById("editMeetingDone");
             const meetingTotalEl = document.getElementById("editMeetingTotal");
-            const commentEl = document.getElementById("editComment");
             if (subEl) subEl.textContent = "ID: " + (c.id || "-");
             if (nameEl) nameEl.value = c.name || "";
             if (statusEl) statusEl.value = c.status || "Soon";
@@ -1471,11 +1608,11 @@
             renderMentorOptions(selectedMentorName);
             if (meetingDoneEl) meetingDoneEl.value = String(c.meetingDone || 0);
             if (meetingTotalEl) meetingTotalEl.value = String(c.meetingTotal || 0);
-            if (commentEl) commentEl.value = c.comment || "";
             renderUserMultiOptions("editSupervisorUsers", c.supervisors || (c.supervisor ? [c.supervisor] : []), "Pilih supervisor");
             renderUserMultiOptions("editAdminUsers", c.admins || [], "Pilih admin");
             renderUserMultiOptions("editTreasurerUsers", c.treasurers || [], "Pilih treasurer");
             renderClassLinksEditor(c.classLinks || [], true);
+            renderCommentsEditor(c.comments || parseCommentsFromData({ comment: c.comment || "" }), true);
             setDetailPageLink(c);
             renderSalarySection(c);
             setDetailEditMode(false);
@@ -1804,7 +1941,8 @@
             const videoClassLink = (classLinks.find((item) => item.type === "video_class") || {}).url || "";
             const meetingDone = parseInt(document.getElementById("editMeetingDone")?.value || "0", 10) || 0;
             const meetingTotal = parseInt(document.getElementById("editMeetingTotal")?.value || "0", 10) || 0;
-            const comment = (document.getElementById("editComment")?.value || "").trim();
+            const comments = getCommentsFromEditor();
+            const comment = comments.map((item) => item.text).join("\n");
             if (meetingTotal > 0 && meetingDone >= meetingTotal && status === "Running") {
                 const statusEl2 = document.getElementById("editStatus");
                 if (statusEl2) statusEl2.value = "Graduate";
@@ -1829,6 +1967,7 @@
                 classLinks,
                 meetingDone,
                 meetingTotal,
+                comments,
                 comment
             };
             const previousClassData = {
@@ -1845,6 +1984,7 @@
                 classLinks: selected.classLinks || [],
                 meetingDone: selected.meetingDone,
                 meetingTotal: selected.meetingTotal,
+                comments: selected.comments || parseCommentsFromData({ comment: selected.comment || "" }),
                 comment: selected.comment || ""
             };
             const changeEntries = buildClassChangeEntries(previousClassData, nextClassData);
@@ -1887,6 +2027,8 @@
                     videoClass: videoClassLink,
                     meeting_done: meetingDone,
                     meeting_total: meetingTotal,
+                    comment_items: comments,
+                    commentItems: comments,
                     comment,
                     updatedAt: serverTimestamp()
                 });
@@ -1908,6 +2050,7 @@
                     videoClassLink: videoClassLink,
                     meetingDone,
                     meetingTotal,
+                    comments,
                     comment
                 };
                 if (changeEntries.length) {
@@ -2211,6 +2354,7 @@
             const editAdminUsers = document.getElementById("editAdminUsers");
             const editTreasurerUsers = document.getElementById("editTreasurerUsers");
             const btnAddClassLink = document.getElementById("btnAddClassLink");
+            const btnAddComment = document.getElementById("btnAddComment");
             const btnCalMore = document.getElementById("btnCalMore");
             const calMoreMenu = document.getElementById("calMoreMenu");
             const btnViewAllScheduleLogs = document.getElementById("btnViewAllScheduleLogs");
@@ -2290,6 +2434,12 @@
                 btnAddClassLink.addEventListener("click", () => {
                     if (!detailEditEnabled) return;
                     addClassLinkRow();
+                });
+            }
+            if (btnAddComment) {
+                btnAddComment.addEventListener("click", () => {
+                    if (!detailEditEnabled) return;
+                    addCommentRow();
                 });
             }
             if (editSupervisorUsers) {
