@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="../assets/css/style.css" rel="stylesheet" />
+    <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
@@ -351,6 +352,7 @@
 
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
                         <div>
+                            <div id="candidateTeamBreadcrumb"></div>
                             <h1 class="page-title">Candidate Team</h1>
                             <p class="text-muted small mb-0">Daftar calon anggota tim yang melamar di Dialogika.</p>
                         </div>
@@ -615,6 +617,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { renderRightbarRecruit } from "../element/rightbar-recruit.js";
+        import { renderBreadcrumb } from "../element/breadcrumb.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import {
@@ -658,6 +661,12 @@
         const sidebarTarget = document.getElementById('sidebarContainer');
         renderSidebar(sidebarTarget);
         renderRightbarRecruit();
+        renderBreadcrumb(document.getElementById('candidateTeamBreadcrumb'), {
+            items: [
+                { label: 'Home', href: '../home.html', iconHtml: '<i class="bi bi-house-fill"></i>' },
+                { label: 'Candidate Team', current: true }
+            ]
+        });
 
         window.app = app;
         window.auth = auth;

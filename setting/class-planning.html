@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet" />
+    <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -79,6 +80,7 @@
             <div class="planning-layout">
                 <div class="planning-header-row">
                     <div>
+                        <div id="planningBreadcrumb"></div>
                         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold">
                             <i data-lucide="calendar-plus" class="w-4 h-4"></i>
                             Perencanaan Kelas
@@ -229,6 +231,7 @@
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
+        import { renderBreadcrumb, runBreadcrumbUnitTests } from "../element/breadcrumb.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -246,6 +249,14 @@
         if (topbarTarget) renderTopBar(topbarTarget);
         const sidebarTarget = document.getElementById("sidebarContainer");
         if (sidebarTarget) renderSidebar(sidebarTarget);
+        renderBreadcrumb(document.getElementById("planningBreadcrumb"), {
+            items: [
+                { label: "Home", href: "../home.html", iconHtml: '<i class="bi bi-house-fill"></i>' },
+                { label: "Class Management", href: "./class-management.html" },
+                { label: "Class Planning", current: true }
+            ]
+        });
+        console.assert(runBreadcrumbUnitTests(), "Breadcrumb unit tests failed");
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);

@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="../assets/css/style.css" rel="stylesheet" />
+    <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .candidate-profile-wrapper {
@@ -2167,6 +2168,7 @@
                     <div class="hero-panel mb-4">
                         <div class="hero-actions d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-4">
                             <div class="hero-copy">
+                                <div id="candidateInternshipBreadcrumb"></div>
                                 <span class="hero-kicker"><i class="fa-solid fa-sparkles"></i> Internship Recruitment Pipeline</span>
                                 <h1 class="hero-title">Candidate Team</h1>
                                 <!-- <p class="hero-subtitle">Kelola seluruh kandidat internship dalam satu dashboard. Setiap kandidat sekarang mengikuti pipeline yang jelas: Screening, Interview, dan Onboarding.</p> -->
@@ -2697,6 +2699,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { renderRightbarRecruit } from "../element/rightbar-recruit.js";
+        import { renderBreadcrumb } from "../element/breadcrumb.js";
         import {
             getInterviewScheduleStatus,
             filterAndSortInterviewSchedules
@@ -2749,6 +2752,12 @@
         const sidebarTarget = document.getElementById('sidebarContainer');
         renderSidebar(sidebarTarget);
         renderRightbarRecruit();
+        renderBreadcrumb(document.getElementById('candidateInternshipBreadcrumb'), {
+            items: [
+                { label: 'Home', href: '../home.html', iconHtml: '<i class="bi bi-house-fill"></i>' },
+                { label: 'Candidate Internship', current: true }
+            ]
+        });
 
         window.app = app;
         window.auth = auth;

@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet" />
+    <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -217,6 +218,7 @@
             <div id="expenseApp" v-cloak class="expense-shell py-4">
                 <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-5 mb-8">
                     <div>
+                        <div id="expensesBreadcrumb"></div>
                         <h1 class="text-3xl font-black tracking-tight text-slate-900">Operational Expenses</h1>
                         <p class="text-slate-500 mt-2 max-w-3xl">
                             Seluruh request pengeluaran perusahaan terdaftar di sini. Treasurer bisa cek tujuan transfer, upload bukti transfer, ubah status ke paid, dan membaca notes penjelasan dari admin kelas atau PIC.
@@ -737,6 +739,7 @@
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
+        import { renderBreadcrumb } from "../element/breadcrumb.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeFirestore, collection, getDocs, setDoc, doc, deleteDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -764,6 +767,12 @@
         renderTopBar(topbarTarget);
         const sidebarTarget = document.getElementById('sidebarContainer');
         renderSidebar(sidebarTarget);
+        renderBreadcrumb(document.getElementById('expensesBreadcrumb'), {
+            items: [
+                { label: 'Home', href: '../home.html', iconHtml: '<i class="bi bi-house-fill"></i>' },
+                { label: 'Operational Expenses', current: true }
+            ]
+        });
 
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebarNav');

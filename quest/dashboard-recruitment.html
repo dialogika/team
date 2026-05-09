@@ -11,6 +11,7 @@
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="../assets/css/style.css" rel="stylesheet" />
+    <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
@@ -466,6 +467,7 @@
             <div class="container-fluid">
                 <section class="d-flex justify-content-between align-items-center mb-5">
                     <div>
+                        <div id="recruitmentBreadcrumb"></div>
                         <h2 class="fw-bold mb-0" id="greetingText">Good Morning,</h2>
                         <p class="text-muted-custom mb-0" id="dateText">Today is Monday, 09 January 2026</p>
                     </div>
@@ -718,6 +720,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { renderRightbarRecruit } from "../element/rightbar-recruit.js";
+        import { renderBreadcrumb, runBreadcrumbUnitTests } from "../element/breadcrumb.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import {
@@ -756,6 +759,13 @@
         const sidebarTarget = document.getElementById('sidebarContainer');
         renderSidebar(sidebarTarget);
         renderRightbarRecruit();
+        renderBreadcrumb(document.getElementById('recruitmentBreadcrumb'), {
+            items: [
+                { label: 'Home', href: '../home.html', iconHtml: '<i class="bi bi-house-fill"></i>' },
+                { label: 'Recruitment Specialist', current: true }
+            ]
+        });
+        console.assert(runBreadcrumbUnitTests(), 'Breadcrumb unit tests failed');
 
         window.app = app;
         window.auth = auth;

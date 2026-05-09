@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="../assets/css/style.css" rel="stylesheet" />
+    <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .page-title {
@@ -493,6 +494,7 @@
 
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
                         <div>
+                            <div id="scoutingBreadcrumb"></div>
                             <h1 class="page-title">Scouting Candidate</h1>
                             <p class="text-muted small mb-0">Kumpulkan dan pantau calon talenta terbaik untuk tim Anda.</p>
                         </div>
@@ -999,6 +1001,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { renderRightbarRecruit } from "../element/rightbar-recruit.js";
+        import { renderBreadcrumb, runBreadcrumbUnitTests } from "../element/breadcrumb.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import {
@@ -1041,6 +1044,13 @@
         const sidebarTarget = document.getElementById('sidebarContainer');
         renderSidebar(sidebarTarget);
         renderRightbarRecruit();
+        renderBreadcrumb(document.getElementById('scoutingBreadcrumb'), {
+            items: [
+                { label: 'Home', href: '../home.html', iconHtml: '<i class="bi bi-house-fill"></i>' },
+                { label: 'Scouting Candidate', current: true }
+            ]
+        });
+        console.assert(runBreadcrumbUnitTests(), 'Breadcrumb unit tests failed');
 
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebarNav');

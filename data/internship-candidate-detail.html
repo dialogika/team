@@ -2033,6 +2033,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { renderRightbarRecruit } from "../element/rightbar-recruit.js";
+        import { renderBreadcrumb } from "../element/breadcrumb.js";
         import { normalizeWhatsappMessage, buildWhatsappDeepLink, hasReplacementCharacter } from "../element/whatsapp-encoding.js";
         import {
             normalizeInterviewMode,
@@ -2121,6 +2122,15 @@
         renderTopBar(document.getElementById("topbarContainer"));
         renderSidebar(document.getElementById("sidebarContainer"));
         renderRightbarRecruit();
+        const renderCandidateDetailBreadcrumb = () => {
+            renderBreadcrumb(document.getElementById("internshipCandidateDetailBreadcrumb"), {
+                items: [
+                    { label: "Home", href: "../home.html", iconHtml: '<i class="bi bi-house-fill"></i>' },
+                    { label: "Candidate Internship", href: "./candidate-internship.html" },
+                    { label: "Internship Candidate Detail", current: true }
+                ]
+            });
+        };
 
         window.db = db;
         window.getDocs = getDocs;
@@ -3417,6 +3427,7 @@
                 '<div class="section-stack">' +
                     '<div class="detail-hero">' +
                         '<div class="d-flex flex-column gap-4">' +
+                            '<div id="internshipCandidateDetailBreadcrumb"></div>' +
                             '<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">' +
                                 '<a href="./candidate-internship.html" class="detail-back-link"><i class="fa-solid fa-arrow-left"></i><span>Kembali ke daftar kandidat</span></a>' +
                                 '<div class="detail-chip-row mt-0">' +
@@ -3503,6 +3514,7 @@
                         actionHtml +
                     '</div>' +
                 '</div>';
+            renderCandidateDetailBreadcrumb();
 
             bindDetailActions(vm);
             syncActionHints(vm);
