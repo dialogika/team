@@ -31,25 +31,51 @@
         .planning-unscheduled-empty { font-size:11px; color:#94a3b8; }
         .planning-chip { display:inline-flex; align-items:center; gap:6px; padding:4px 9px; border-radius:999px; font-size:10px; font-weight:600; background:#f1f5f9; color:#64748b; }
         .planning-chip-dot { width:7px; height:7px; border-radius:999px; background:#22c55e; }
-        .planning-card { padding:8px 10px; border-radius:12px; margin-bottom:4px; cursor:grab; transition:transform .12s,box-shadow .12s; border-left:4px solid #0ea5e9; background:#e0f2fe; font-size:11px; font-weight:600; color:#0f172a; }
+        .planning-card { padding:10px 12px; border-radius:12px; margin-bottom:4px; cursor:grab; transition:transform .12s,box-shadow .12s; border-left:4px solid #0ea5e9; background:#e0f2fe; font-size:12px; font-weight:600; color:#0f172a; }
         .planning-card:active { cursor:grabbing; }
         .planning-card:hover { transform:translateY(-1px); box-shadow:0 2px 8px rgba(15,23,42,.18); }
-        .planning-card-meta { font-size:10px; color:#64748b; margin-top:2px; }
+        .planning-card-meta { font-size:11px; color:#64748b; margin-top:4px; }
         .planning-calendar-shell { display:flex; flex-direction:column; gap:8px; }
         .planning-calendar-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
         .planning-calendar-range { font-size:11px; font-weight:600; color:#0f172a; padding:4px 10px; border-radius:999px; background:#f1f5f9; }
         .planning-calendar-nav { display:flex; align-items:center; gap:4px; }
         .planning-nav-btn { padding:6px 10px; border-radius:999px; border:1px solid #e2e8f0; background:#ffffff; font-size:11px; font-weight:600; color:#334155; cursor:pointer; }
         .planning-nav-btn:hover { background:#f8fafc; }
-        .planning-calendar { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:1px; background:#e2e8f0; border-radius:22px; overflow:hidden; min-height:360px; }
-        .planning-day-header { background:#f8fafc; padding:10px 6px; text-align:center; font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.10em; }
-        .planning-day-column { background:#ffffff; }
-        .planning-day-column-inner { padding:6px 6px 8px; }
-        .planning-slot { border-radius:12px; border:1px dashed #e2e8f0; margin-bottom:6px; padding:4px 6px; font-size:10px; color:#64748b; background:#ffffff; }
-        .planning-slot-time { font-weight:700; font-size:10px; color:#0f172a; margin-bottom:2px; }
-        .planning-slot-body { display:flex; flex-direction:column; gap:4px; }
-        .planning-slot-empty { font-size:10px; color:#cbd5e1; }
-        .planning-slot-active { border-color:#0ea5e9; background:#f0f9ff; }
+        .planning-calendar { display:block; overflow-x:auto; }
+        .planning-calendar-table { border-radius:22px; overflow:hidden; border:1px solid #e2e8f0; background:#e2e8f0; width:max-content; }
+        .planning-calendar-header,
+        .planning-calendar-subheader,
+        .planning-calendar-row {
+            display:grid;
+            grid-template-columns: var(--time-col-width, 72px) repeat(var(--column-count, 21), var(--room-col-width, 160px));
+        }
+        .planning-calendar-header { background:#f8fafc; border-bottom:1px solid #e2e8f0; }
+        .planning-calendar-header-time { padding:8px 6px; text-align:center; font-size:10px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:.12em; }
+        .planning-calendar-header-day {
+            padding:8px 6px; text-align:center; font-size:11px; font-weight:800; color:#475569;
+            text-transform:uppercase; letter-spacing:.08em; border-left:1px solid #e2e8f0;
+        }
+        .planning-calendar-subheader { background:#ffffff; border-bottom:1px solid #e2e8f0; }
+        .planning-calendar-subheader-time { background:#ffffff; border-right:1px solid #e2e8f0; }
+        .planning-calendar-subheader-room {
+            padding:6px 6px; text-align:center; font-size:10px; font-weight:700; color:#94a3b8;
+            border-left:1px solid #e2e8f0;
+        }
+        .planning-calendar-body { display:flex; flex-direction:column; background:#ffffff; }
+        .planning-calendar-row { background:#ffffff; min-height:var(--slot-height, 64px); }
+        .planning-time-cell {
+            padding:6px 8px; font-size:10px; font-weight:700; color:#0f172a; text-align:right;
+            border-right:1px solid #e2e8f0; border-bottom:1px solid #f1f5f9; background:#f8fafc;
+            height:var(--slot-height, 64px); box-sizing:border-box; display:flex; align-items:center; justify-content:flex-end;
+        }
+        .planning-room-cell {
+            height:var(--slot-height, 64px); border-left:1px solid #e2e8f0; border-bottom:1px solid #f1f5f9;
+            padding:0; background:#ffffff; position:relative; overflow:visible; box-sizing:border-box;
+        }
+        .planning-room-cell-active { background:#f0f9ff; }
+        .planning-calendar-card {
+            margin-bottom:0; position:absolute; left:4px; right:4px; top:4px; z-index:2;
+        }
         .planning-card-room-pede { border-left-color:#ef4444; background:#fee2e2; }
         .planning-card-room-tara { border-left-color:#0ea5e9; background:#e0f2fe; }
         .planning-card-room-kata { border-left-color:#16a34a; background:#ecfdf5; }
@@ -264,10 +290,18 @@
         if (window.lucide) window.lucide.createIcons();
 
         const DAY_NAMES = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        const ROOM_COLUMNS = [
+            { key: "Tara", label: "Ruang Tara" },
+            { key: "Pede", label: "Ruang Pede" },
+            { key: "Kata", label: "Ruang Kata" }
+        ];
+        const WEEK_DAY_ORDER = [6, 0, 1, 2, 3, 4, 5];
         let planningWeekStart = startOfWeek(new Date());
         let planningUnscheduled = [];
         let planningScheduled = [];
         const planningSlots = buildTimeSlots();
+        const SLOT_HEIGHT = 64;
+        const ROOM_COLUMN_WIDTH = 200;
         let dragState = null;
         let editingPlanId = null;
         let mentorsState = [];
@@ -286,6 +320,22 @@
             const month = String(d.getMonth() + 1).padStart(2, "0");
             const day = String(d.getDate()).padStart(2, "0");
             return year + "-" + month + "-" + day;
+        }
+
+        function formatDayLabel(d) {
+            const dayName = DAY_NAMES[d.getDay()];
+            const shortDate = d.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
+            return dayName + ", " + shortDate;
+        }
+
+        function buildOrderedWeekDates(start) {
+            const ordered = [];
+            WEEK_DAY_ORDER.forEach((offset) => {
+                const dayDate = new Date(start.getTime());
+                dayDate.setDate(start.getDate() + offset);
+                ordered.push(dayDate);
+            });
+            return ordered;
         }
 
         function buildTimeSlots() {
@@ -398,16 +448,25 @@
             return plan && plan.sourceCollection === CLASS_SOURCE_AVAILABILITY;
         }
 
+        function normalizeRoomKey(room) {
+            const r = String(room || "").trim().toLowerCase();
+            if (!r) return "";
+            if (r.includes("pede")) return "Pede";
+            if (r.includes("tara")) return "Tara";
+            if (r.includes("kata")) return "Kata";
+            return "";
+        }
+
         function getRoomClass(room) {
-            const r = String(room || "").toLowerCase();
-            if (r === "pede") return "planning-card-room-pede";
-            if (r === "tara") return "planning-card-room-tara";
-            if (r === "kata") return "planning-card-room-kata";
+            const key = normalizeRoomKey(room).toLowerCase();
+            if (key === "pede") return "planning-card-room-pede";
+            if (key === "tara") return "planning-card-room-tara";
+            if (key === "kata") return "planning-card-room-kata";
             return "";
         }
 
         function isRoomConflict(dateKey, time, candidate) {
-            const room = (candidate.room || "").trim();
+            const room = normalizeRoomKey(candidate.room);
             if (!room) return false;
             const startHour = parseHour(time);
             if (startHour === null) return false;
@@ -419,7 +478,7 @@
                 const p = planningScheduled[i];
                 if (p.id === candidate.id) continue;
                 if ((p.date || "") !== dateKey) continue;
-                if ((p.room || "").trim() !== room) continue;
+                if (normalizeRoomKey(p.room) !== room) continue;
                 const otherStart = parseHour(p.time);
                 if (otherStart === null) continue;
                 const otherDuration = p.duration && p.duration > 0 ? p.duration : 1;
@@ -567,119 +626,157 @@
             if (label) {
                 label.textContent = formatDateKey(start) + " - " + formatDateKey(end);
             }
-            for (let i = 0; i < 7; i++) {
-                const dayDate = new Date(start.getTime());
-                dayDate.setDate(start.getDate() + i);
-                const header = document.createElement("div");
-                header.className = "planning-day-header";
-                header.textContent = DAY_NAMES[dayDate.getDay()] + " " + dayDate.getDate();
-                grid.appendChild(header);
-            }
-            for (let i = 0; i < 7; i++) {
-                const dayDate = new Date(start.getTime());
-                dayDate.setDate(start.getDate() + i);
-                const dateKey = formatDateKey(dayDate);
-                const col = document.createElement("div");
-                col.className = "planning-day-column";
-                const inner = document.createElement("div");
-                inner.className = "planning-day-column-inner";
-                planningSlots.forEach((time) => {
-                    const slot = document.createElement("div");
-                    slot.className = "planning-slot";
-                    slot.dataset.date = dateKey;
-                    slot.dataset.time = time;
-                    slot.addEventListener("dragover", (e) => {
-                        e.preventDefault();
-                        slot.classList.add("planning-slot-active");
-                    });
-                    slot.addEventListener("dragleave", () => {
-                        slot.classList.remove("planning-slot-active");
-                    });
-                    slot.addEventListener("drop", (e) => {
-                        e.preventDefault();
-                        slot.classList.remove("planning-slot-active");
-                        handleDrop(dateKey, time);
-                    });
-                    const timeLabel = document.createElement("div");
-                    timeLabel.className = "planning-slot-time";
-                    timeLabel.textContent = time;
-                    slot.appendChild(timeLabel);
-                    const body = document.createElement("div");
-                    body.className = "planning-slot-body";
-                    const slotHour = parseHour(time);
-                    const occupying = planningScheduled.filter(p => {
-                        if ((p.date || "") !== dateKey) return false;
-                        const start = parseHour(p.time);
-                        if (start === null || slotHour === null) return false;
-                        const duration = p.duration && p.duration > 0 ? p.duration : 1;
-                        return slotHour >= start && slotHour < start + duration;
-                    });
-                    if (!occupying.length) {
-                        const placeholder = document.createElement("div");
-                        placeholder.className = "planning-slot-empty";
-                        placeholder.textContent = "Kosong";
-                        body.appendChild(placeholder);
-                    } else {
-                        occupying.forEach(plan => {
-                            const startHour = parseHour(plan.time);
-                            const isStart = startHour !== null && startHour === slotHour;
-                            const card = document.createElement("div");
-                            const roomClass = getRoomClass(plan.room);
-                            card.className = "planning-card" + (roomClass ? " " + roomClass : "");
-                            card.dataset.planId = plan.id;
-                            card.draggable = true;
-                            const title = (plan.name || "-") + (isStart ? "" : " (lanjutan)");
-                            const metaParts = [];
-                            if (plan.mentor) metaParts.push("Mentor: " + plan.mentor);
-                            if (isStart && plan.duration) metaParts.push(Math.round(plan.duration * 60) + " menit");
-                            if (plan.room) metaParts.push("Ruang " + plan.room);
-                            card.innerHTML =
-                                "<div>" + title + "</div>" +
-                                "<div class=\"planning-card-meta\">" +
-                                metaParts.join(" • ") +
-                                "</div>";
-                            card.addEventListener("dragstart", () => {
-                                dragState = { source: "calendar", id: plan.id, collection: plan.sourceCollection, docId: plan.sourceDocId };
-                            });
-                            card.addEventListener("dragend", () => {
-                                dragState = null;
-                            });
-                            const actions = document.createElement("div");
-                            actions.style.marginTop = "2px";
-                            actions.style.display = "flex";
-                            actions.style.gap = "8px";
-                            const editBtn = document.createElement("button");
-                            editBtn.textContent = "Edit";
-                            editBtn.style.fontSize = "10px";
-                            editBtn.style.color = "#0369a1";
-                            editBtn.style.alignSelf = "flex-start";
-                            editBtn.addEventListener("click", (e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                openEditModal(plan);
-                            });
-                            const deleteBtn = document.createElement("button");
-                            deleteBtn.textContent = "Hapus";
-                            deleteBtn.style.fontSize = "10px";
-                            deleteBtn.style.color = "#b91c1c";
-                            deleteBtn.style.alignSelf = "flex-start";
-                            deleteBtn.addEventListener("click", (e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                deletePlanningClass(plan.id);
-                            });
-                            actions.appendChild(editBtn);
-                            actions.appendChild(deleteBtn);
-                            card.appendChild(actions);
-                            body.appendChild(card);
-                        });
-                    }
-                    slot.appendChild(body);
-                    inner.appendChild(slot);
+            const dayDates = buildOrderedWeekDates(start);
+
+            const totalColumns = dayDates.length * ROOM_COLUMNS.length;
+            grid.style.setProperty("--column-count", String(totalColumns));
+            grid.style.setProperty("--time-col-width", "72px");
+            grid.style.setProperty("--slot-height", SLOT_HEIGHT + "px");
+            grid.style.setProperty("--room-col-width", ROOM_COLUMN_WIDTH + "px");
+
+            const table = document.createElement("div");
+            table.className = "planning-calendar-table";
+
+            const headerRow = document.createElement("div");
+            headerRow.className = "planning-calendar-header";
+            const timeHeader = document.createElement("div");
+            timeHeader.className = "planning-calendar-header-time";
+            timeHeader.textContent = "WIB";
+            headerRow.appendChild(timeHeader);
+            dayDates.forEach((dayDate) => {
+                const dayCell = document.createElement("div");
+                dayCell.className = "planning-calendar-header-day";
+                dayCell.textContent = formatDayLabel(dayDate);
+                dayCell.style.gridColumn = "span " + ROOM_COLUMNS.length;
+                headerRow.appendChild(dayCell);
+            });
+            table.appendChild(headerRow);
+
+            const subHeaderRow = document.createElement("div");
+            subHeaderRow.className = "planning-calendar-subheader";
+            const subTime = document.createElement("div");
+            subTime.className = "planning-calendar-subheader-time";
+            subHeaderRow.appendChild(subTime);
+            dayDates.forEach(() => {
+                ROOM_COLUMNS.forEach((room) => {
+                    const roomCell = document.createElement("div");
+                    roomCell.className = "planning-calendar-subheader-room";
+                    roomCell.textContent = room.label;
+                    subHeaderRow.appendChild(roomCell);
                 });
-                col.appendChild(inner);
-                grid.appendChild(col);
-            }
+            });
+            table.appendChild(subHeaderRow);
+
+            const body = document.createElement("div");
+            body.className = "planning-calendar-body";
+            planningSlots.forEach((time) => {
+                const row = document.createElement("div");
+                row.className = "planning-calendar-row";
+                const timeCell = document.createElement("div");
+                timeCell.className = "planning-time-cell";
+                timeCell.textContent = time;
+                row.appendChild(timeCell);
+                dayDates.forEach((dayDate) => {
+                    const dateKey = formatDateKey(dayDate);
+                    ROOM_COLUMNS.forEach((room) => {
+                        const cell = document.createElement("div");
+                        cell.className = "planning-room-cell";
+                        cell.dataset.date = dateKey;
+                        cell.dataset.time = time;
+                        cell.dataset.room = room.key;
+                        cell.addEventListener("dragover", (e) => {
+                            e.preventDefault();
+                            cell.classList.add("planning-room-cell-active");
+                        });
+                        cell.addEventListener("dragleave", () => {
+                            cell.classList.remove("planning-room-cell-active");
+                        });
+                        cell.addEventListener("drop", (e) => {
+                            e.preventDefault();
+                            cell.classList.remove("planning-room-cell-active");
+                            handleDrop(dateKey, time, room.key);
+                        });
+
+                        const slotHour = parseHour(time);
+                        const occupying = planningScheduled.filter(p => {
+                            if ((p.date || "") !== dateKey) return false;
+                            if (normalizeRoomKey(p.room) !== room.key) return false;
+                            const start = parseHour(p.time);
+                            if (start === null || slotHour === null) return false;
+                            const duration = p.duration && p.duration > 0 ? p.duration : 1;
+                            return slotHour >= start && slotHour < start + duration;
+                        });
+
+                        if (occupying.length) {
+                            occupying.forEach(plan => {
+                                const startHour = parseHour(plan.time);
+                                const isStart = startHour !== null && startHour === slotHour;
+                                if (!isStart) return;
+                                const card = document.createElement("div");
+                                const roomClass = getRoomClass(plan.room);
+                                card.className = "planning-card planning-calendar-card" + (roomClass ? " " + roomClass : "");
+                                card.dataset.planId = plan.id;
+                                card.draggable = true;
+                                const durationHours = plan.duration && plan.duration > 0 ? plan.duration : 1;
+                                const durationUnits = Math.max(1, Math.round(durationHours * 2));
+                                const cardHeight = Math.max(SLOT_HEIGHT - 8, SLOT_HEIGHT * durationUnits - 8);
+                                card.style.height = cardHeight + "px";
+                                const title = plan.name || "-";
+                                const metaParts = [];
+                                if (plan.mentor) metaParts.push("Mentor: " + plan.mentor);
+                                if (durationHours) metaParts.push(Math.round(durationHours * 60) + " menit");
+                                if (plan.type) metaParts.push(plan.type);
+                                if (plan.room) metaParts.push("Ruang " + plan.room);
+                                card.innerHTML =
+                                    "<div>" + title + "</div>" +
+                                    "<div class=\"planning-card-meta\">" +
+                                    metaParts.join(" • ") +
+                                    "</div>";
+                                card.addEventListener("dragstart", () => {
+                                    dragState = { source: "calendar", id: plan.id, collection: plan.sourceCollection, docId: plan.sourceDocId };
+                                });
+                                card.addEventListener("dragend", () => {
+                                    dragState = null;
+                                });
+                                const actions = document.createElement("div");
+                                actions.style.marginTop = "2px";
+                                actions.style.display = "flex";
+                                actions.style.gap = "8px";
+                                const editBtn = document.createElement("button");
+                                editBtn.textContent = "Edit";
+                                editBtn.style.fontSize = "10px";
+                                editBtn.style.color = "#0369a1";
+                                editBtn.style.alignSelf = "flex-start";
+                                editBtn.addEventListener("click", (e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    openEditModal(plan);
+                                });
+                                const deleteBtn = document.createElement("button");
+                                deleteBtn.textContent = "Hapus";
+                                deleteBtn.style.fontSize = "10px";
+                                deleteBtn.style.color = "#b91c1c";
+                                deleteBtn.style.alignSelf = "flex-start";
+                                deleteBtn.addEventListener("click", (e) => {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    deletePlanningClass(plan.id);
+                                });
+                                actions.appendChild(editBtn);
+                                actions.appendChild(deleteBtn);
+                                card.appendChild(actions);
+                                cell.appendChild(card);
+                            });
+                        }
+
+                        row.appendChild(cell);
+                    });
+                });
+                body.appendChild(row);
+            });
+
+            table.appendChild(body);
+            grid.appendChild(table);
         }
 
         async function loadPlanning() {
@@ -1017,7 +1114,7 @@
             }
         }
 
-        async function handleDrop(dateKey, time) {
+        async function handleDrop(dateKey, time, roomKey) {
             if (!dragState || !dragState.id) return;
             const id = dragState.id;
             const source = dragState.source;
@@ -1039,7 +1136,7 @@
                 duration: original.duration,
                 type: original.type,
                 note: original.note,
-                room: original.room,
+                room: roomKey || original.room,
                 date: dateKey,
                 time: time
             };
@@ -1058,6 +1155,7 @@
                 item = planningUnscheduled.splice(idx, 1)[0];
                 item.date = dateKey;
                 item.time = time;
+                item.room = roomKey || item.room;
                 planningScheduled.push(item);
             } else if (source === "calendar") {
                 const idx = planningScheduled.findIndex(p => p.id === id);
@@ -1065,6 +1163,7 @@
                 item = planningScheduled[idx];
                 item.date = dateKey;
                 item.time = time;
+                item.room = roomKey || item.room;
             } else {
                 return;
             }
@@ -1075,6 +1174,7 @@
                     await updateDoc(doc(db, CLASS_SOURCE_AVAILABILITY, item.sourceDocId), {
                         date: dateKey,
                         time: time,
+                        room: item.room || "",
                         start_date: dateKey + "T" + time,
                         startDate: dateKey + "T" + time,
                         start_time: time,
@@ -1086,7 +1186,8 @@
                 } else {
                     await updateDoc(doc(db, CLASS_SOURCE_PLANNING, item.sourceDocId), {
                         date: dateKey,
-                        time: time
+                        time: time,
+                        room: item.room || ""
                     });
                 }
                 showToast("Jadwal diperbarui: " + dateKey + " • " + time, "success");
