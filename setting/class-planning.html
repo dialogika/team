@@ -301,7 +301,7 @@
         let planningScheduled = [];
         const planningSlots = buildTimeSlots();
         const SLOT_HEIGHT = 64;
-        const ROOM_COLUMN_WIDTH = 200;
+        const ROOM_COLUMN_WIDTH = 185;
         let dragState = null;
         let editingPlanId = null;
         let mentorsState = [];
@@ -420,6 +420,7 @@
                 type: d.type || "Online",
                 note: d.note || "",
                 room: d.room || "",
+                location: d.location || d.city || d.kota || "",
                 date: normalizeDateKey(d.date || d.start_date || d.startDate || ""),
                 time: normalizeTimeLabel(d.time || d.start_time || d.startTime || d.class_time || d.classTime || d.jam || "")
             };
@@ -439,6 +440,7 @@
                 type: d.type || "Online",
                 note: d.note || d.comment || "",
                 room: d.room || "",
+                location: d.location || d.city || d.kota || "",
                 date: schedule.date,
                 time: schedule.time
             };
@@ -455,6 +457,27 @@
             if (r.includes("tara")) return "Tara";
             if (r.includes("kata")) return "Kata";
             return "";
+        }
+
+        function isYogyakartaLocation(plan) {
+            const raw = [plan.location, plan.kota, plan.city, plan.name, plan.note]
+                .filter(Boolean)
+                .join(" ");
+            const compact = raw.toLowerCase().replace(/[^a-z]/g, "");
+            if (!compact) return false;
+            const variants = [
+                "yogyakarta",
+                "yogya",
+                "yogjakarta",
+                "yogjakrta",
+                "yogjakata",
+                "yogyakart",
+                "jogja",
+                "jogjakarta",
+                "jogyakarta",
+                "jogjakrta"
+            ];
+            return variants.some((variant) => compact.includes(variant));
         }
 
         function getRoomClass(room) {
@@ -551,14 +574,17 @@
             const searchInput = document.getElementById("planningSearchInput");
             const term = searchInput ? searchInput.value.trim().toLowerCase() : "";
             if (!listEl) return;
+            const offlineList = planningUnscheduled.filter((plan) => {
+                return String(plan.type || "").toLowerCase() === "offline" && isYogyakartaLocation(plan);
+            });
             const sourceList = term
-                ? planningUnscheduled.filter((plan) => {
+                ? offlineList.filter((plan) => {
                     const name = String(plan.name || "").toLowerCase();
                     const mentor = String(plan.mentor || "").toLowerCase();
                     return name.includes(term) || mentor.includes(term);
                 })
-                : planningUnscheduled.slice();
-            if (countEl) countEl.textContent = planningUnscheduled.length + " kelas";
+                : offlineList.slice();
+            if (countEl) countEl.textContent = offlineList.length + " kelas";
             if (!sourceList.length) {
                 listEl.innerHTML = "<div class=\"planning-unscheduled-empty\">Belum ada kelas pada daftar rencana.</div>";
                 return;
