@@ -77,6 +77,7 @@
         .status-requested { background: #e0f2fe; color: #0369a1; }
         .status-reviewing { background: #fef3c7; color: #b45309; }
         .status-paid { background: #dcfce7; color: #15803d; }
+        .status-whatsapp { background: #dcfce7; color: #166534; }
         .status-rejected { background: #fee2e2; color: #b91c1c; }
         .note-box {
             background: #f8fafc;
@@ -268,6 +269,7 @@
                                 <option value="requested">Requested</option>
                                 <option value="reviewing">Reviewing</option>
                                 <option value="paid">Paid</option>
+                                <option value="complete">Complete</option>
                                 <option value="rejected">Rejected</option>
                             </select>
                         </div>
@@ -363,6 +365,9 @@
                                         <div class="space-y-2">
                                             <span :class="statusBadgeClass(expense.status)" class="badge-pill">{{ expense.status }}</span>
                                             <div class="text-xs text-slate-500">{{ expense.paymentMethod || 'Belum ditentukan' }}</div>
+                                            <div v-if="expense.status === 'complete' && expense.whatsappLink" class="text-xs">
+                                                <a :href="expense.whatsappLink" target="_blank" class="font-bold text-emerald-600 hover:text-emerald-700">Buka WhatsApp Mentor</a>
+                                            </div>
                                             <div class="text-xs text-slate-400">Updated: {{ formatDateTimeLabel(expense.updatedAtMs) }}</div>
                                         </div>
                                     </td>
@@ -372,11 +377,18 @@
                                                 Open Detail
                                             </button>
                                             <button
-                                                v-if="expense.status !== 'paid'"
+                                                v-if="expense.status !== 'paid' && expense.status !== 'complete'"
                                                 @click="markAsReviewing(expense)"
                                                 class="px-4 py-2 rounded-xl border border-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-50 transition-all"
                                             >
                                                 Mark Reviewing
+                                            </button>
+                                            <button
+                                                v-if="expense.category === 'mentor_salary' && expense.status === 'paid' && expense.transferProofUrl"
+                                                @click="sendWhatsappToMentor(expense)"
+                                                class="px-4 py-2 rounded-xl border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-50 transition-all"
+                                            >
+                                                Kirim Bukti ke Mentor
                                             </button>
                                         </div>
                                     </td>
@@ -484,9 +496,10 @@
                                                 <option value="requested">Requested</option>
                                                 <option value="reviewing">Reviewing</option>
                                                 <option value="paid">Paid</option>
+                                                <option value="complete">Complete</option>
                                                 <option value="rejected">Rejected</option>
                                             </select>
-                                            <div class="field-help">Gunakan `paid` setelah bukti transfer dilampirkan.</div>
+                                            <div class="field-help">Gunakan `paid` setelah bukti transfer dilampirkan, lalu `complete` setelah bukti dikirim ke mentor.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -552,6 +565,11 @@
                                                 </div>
                                             </div>
                                             <div class="field-help">Saat mentor dipilih, rekening tujuan akan terisi otomatis dari collection `mentor`.</div>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="field-label">Nomor WhatsApp Mentor</label>
+                                            <input v-model="form.mentorWhatsapp" type="text" class="field-control" readonly placeholder="Diambil otomatis dari collection mentor">
+                                            <div class="field-help">Nomor ini dipakai untuk mengirim bukti transfer setelah status paid.</div>
                                         </div>
                                     </div>
 
@@ -737,6 +755,7 @@
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
+        import { buildWhatsappDeepLink, normalizeWhatsappMessage, normalizeWhatsappNumber } from "../element/whatsapp-encoding.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeFirestore, collection, getDocs, setDoc, doc, deleteDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -819,6 +838,9 @@
                     paymentMethod: 'Transfer Bank',
                     transferProofUrl: '',
                     transferProofPath: '',
+                    mentorWhatsapp: '',
+                    whatsappMessage: '',
+                    whatsappLink: '',
                     notes: '',
                     paymentNotes: '',
                     vendorName: '',
@@ -859,6 +881,9 @@
                     paymentMethod: d.paymentMethod || 'Transfer Bank',
                     transferProofUrl: d.transferProofUrl || '',
                     transferProofPath: d.transferProofPath || '',
+                    mentorWhatsapp: d.mentorWhatsapp || '',
+                    whatsappMessage: d.whatsappMessage || '',
+                    whatsappLink: d.whatsappLink || '',
                     notes: d.notes || '',
                     paymentNotes: d.paymentNotes || '',
                     vendorName: d.vendorName || '',
@@ -894,6 +919,45 @@
                         }
                     }
                     return '';
+                };
+
+                const extractMentorWhatsapp = (data) => firstFilled(
+                    data.whatsappNumber,
+                    data.whatsapp,
+                    data.whatsApp,
+                    data.phone,
+                    data.no_wa,
+                    data.noWa,
+                    data.no_hp,
+                    data.noHp,
+                    data.nomorHp,
+                    data.nomor_hp,
+                    data.telepon
+                );
+
+                const buildMentorWhatsappMessage = ({ mentorName, className, proofUrl }) => {
+                    const safeProofUrl = String(proofUrl || '').trim();
+                    const lines = [
+                        `Halo Kak ${mentorName || '-'},`,
+                        '',
+                        `Kami ingin menginformasikan bahwa gaji mentor untuk kelas ${className || '-'} sudah kami transfer.`,
+                        '',
+                        'Silakan dicek kembali rekeningnya. Terima kasih atas kontribusi dan dedikasinya dalam membimbing kelas'
+                    ];
+                    if (safeProofUrl) {
+                        lines.push('', 'Bukti transfer:', safeProofUrl);
+                    }
+                    return normalizeWhatsappMessage(lines.join('\n'));
+                };
+
+                const buildMentorWhatsappPayload = ({ mentorName, className, proofUrl, phoneNumber }) => {
+                    const normalizedPhone = normalizeWhatsappNumber(phoneNumber);
+                    const message = buildMentorWhatsappMessage({ mentorName, className, proofUrl });
+                    return {
+                        phoneNumber: normalizedPhone,
+                        message,
+                        link: normalizedPhone ? buildWhatsappDeepLink(normalizedPhone, message) : ''
+                    };
                 };
 
                 const extractMentorBankInfo = (data) => ({
@@ -992,6 +1056,8 @@
                                 name,
                                 meta: metaParts.length ? metaParts.join(' • ') : 'Data rekening mentor belum lengkap',
                                 bankInfo,
+                                whatsapp: extractMentorWhatsapp(d),
+                                whatsappNumber: normalizeWhatsappNumber(extractMentorWhatsapp(d)),
                                 search: [name, bankInfo.bankName, bankInfo.accountNumber].filter(Boolean).join(' ').toLowerCase()
                             });
                         });
@@ -1053,6 +1119,7 @@
                 const selectMentor = (option) => {
                     form.value.mentorId = option.id;
                     form.value.mentorName = option.name;
+                    form.value.mentorWhatsapp = option.whatsappNumber || normalizeWhatsappNumber(option.whatsapp || '') || option.whatsapp || '';
                     mentorSearch.value = option.name;
                     form.value.beneficiaryName = option.bankInfo.beneficiaryName || option.name;
                     form.value.bankName = option.bankInfo.bankName || '';
@@ -1148,6 +1215,9 @@
                             accountNumber: '1234567890',
                             paymentMethod: 'Transfer Bank',
                             transferProofUrl: '',
+                            mentorWhatsapp: '6281234567890',
+                            whatsappMessage: '',
+                            whatsappLink: '',
                             notes: 'Nominal termasuk 8 sesi mengajar, 1 sesi evaluasi tambahan, dan kompensasi revisi materi.',
                             paymentNotes: '',
                             paidAtMs: 0,
@@ -1170,6 +1240,9 @@
                             accountNumber: '9988776655',
                             paymentMethod: 'Transfer Bank',
                             transferProofUrl: '',
+                            mentorWhatsapp: '',
+                            whatsappMessage: '',
+                            whatsappLink: '',
                             notes: 'Pembayaran langganan bulanan Zoom Pro untuk meeting internal dan interview.',
                             paymentNotes: 'Menunggu approval final dari treasurer.',
                             paidAtMs: 0,
@@ -1192,6 +1265,9 @@
                             accountNumber: '4455667788',
                             paymentMethod: 'Transfer Bank',
                             transferProofUrl: 'https://example.com/proof-demo.jpg',
+                            mentorWhatsapp: '6289988877766',
+                            whatsappMessage: '',
+                            whatsappLink: '',
                             notes: 'Transport offline untuk 3 pertemuan di lokasi mitra.',
                             paymentNotes: 'Sudah dibayar tanggal 15 April 2026.',
                             paidAtMs: Date.now() - 7200000,
@@ -1260,6 +1336,7 @@
                 const statusBadgeClass = (status) => {
                     const normalized = String(status || '').toLowerCase();
                     if (normalized === 'paid') return 'status-paid';
+                    if (normalized === 'complete') return 'status-whatsapp';
                     if (normalized === 'reviewing') return 'status-reviewing';
                     if (normalized === 'rejected') return 'status-rejected';
                     return 'status-requested';
@@ -1300,7 +1377,7 @@
 
                 const stats = computed(() => {
                     const pending = expenses.value.filter((item) => item.status === 'requested' || item.status === 'reviewing').length;
-                    const paid = expenses.value.filter((item) => item.status === 'paid').length;
+                    const paid = expenses.value.filter((item) => item.status === 'paid' || item.status === 'complete').length;
                     const amount = expenses.value.reduce((total, item) => total + (Number(item.amount) || 0), 0);
                     return {
                         total: expenses.value.length,
@@ -1339,6 +1416,15 @@
                 const openEditDrawer = (expense) => {
                     isEditMode.value = true;
                     currentExpenseId.value = expense.id;
+                    let fallbackMentorWhatsapp = expense.mentorWhatsapp || '';
+                    if (!normalizeWhatsappNumber(fallbackMentorWhatsapp) && expense.mentorId) {
+                        const mentorById = mentorOptions.value.find((item) => item.id === expense.mentorId);
+                        fallbackMentorWhatsapp = mentorById?.whatsappNumber || mentorById?.whatsapp || fallbackMentorWhatsapp;
+                    }
+                    if (!normalizeWhatsappNumber(fallbackMentorWhatsapp) && expense.mentorName) {
+                        const mentorByName = mentorOptions.value.find((item) => normalizeText(item.name) === normalizeText(expense.mentorName));
+                        fallbackMentorWhatsapp = mentorByName?.whatsappNumber || mentorByName?.whatsapp || fallbackMentorWhatsapp;
+                    }
                     form.value = {
                         title: expense.title || '',
                         category: expense.category || 'other',
@@ -1358,6 +1444,9 @@
                         paymentMethod: expense.paymentMethod || 'Transfer Bank',
                         transferProofUrl: expense.transferProofUrl || '',
                         transferProofPath: expense.transferProofPath || '',
+                        mentorWhatsapp: normalizeWhatsappNumber(fallbackMentorWhatsapp) || fallbackMentorWhatsapp || '',
+                        whatsappMessage: expense.whatsappMessage || '',
+                        whatsappLink: expense.whatsappLink || '',
                         notes: expense.notes || '',
                         paymentNotes: expense.paymentNotes || '',
                         vendorName: expense.vendorName || '',
@@ -1454,11 +1543,64 @@
                             return false;
                         }
                     }
-                    if (form.value.status === 'paid' && !form.value.transferProofUrl && !(proofFileInput.value && proofFileInput.value.files && proofFileInput.value.files[0])) {
+                    if ((form.value.status === 'paid' || form.value.status === 'complete') && !form.value.transferProofUrl && !(proofFileInput.value && proofFileInput.value.files && proofFileInput.value.files[0])) {
                         alert('Untuk status paid, bukti transfer wajib dilampirkan.');
                         return false;
                     }
+                    if (form.value.status === 'complete' && form.value.category === 'mentor_salary') {
+                        if (!normalizeWhatsappNumber(form.value.mentorWhatsapp)) {
+                            alert('Nomor WhatsApp mentor belum tersedia atau tidak valid.');
+                            return false;
+                        }
+                    }
                     return true;
+                };
+
+                const sendWhatsappToMentor = async (expense) => {
+                    if (!expense || expense.category !== 'mentor_salary') return;
+                    let phoneNumber = normalizeWhatsappNumber(expense.mentorWhatsapp || '');
+                    if (!phoneNumber && expense.mentorId) {
+                        const mentorOption = mentorOptions.value.find((item) => item.id === expense.mentorId);
+                        phoneNumber = mentorOption?.whatsappNumber || normalizeWhatsappNumber(mentorOption?.whatsapp || '');
+                    }
+                    if (!phoneNumber && expense.mentorName) {
+                        const mentorOption = mentorOptions.value.find((item) => normalizeText(item.name) === normalizeText(expense.mentorName));
+                        phoneNumber = mentorOption?.whatsappNumber || normalizeWhatsappNumber(mentorOption?.whatsapp || '');
+                    }
+                    if (!phoneNumber) {
+                        alert('Nomor WhatsApp mentor tidak tersedia atau tidak valid di collection mentor.');
+                        return;
+                    }
+                    if (!expense.transferProofUrl) {
+                        alert('Bukti transfer belum tersedia untuk dikirim ke mentor.');
+                        return;
+                    }
+                    const whatsappPayload = buildMentorWhatsappPayload({
+                        mentorName: expense.mentorName,
+                        className: expense.relatedClass,
+                        proofUrl: expense.transferProofUrl,
+                        phoneNumber
+                    });
+                    if (!whatsappPayload.link) {
+                        alert('Gagal membuat link WhatsApp mentor.');
+                        return;
+                    }
+                    try {
+                        await setDoc(doc(db, 'operational_expenses', expense.id), {
+                            status: 'complete',
+                            mentorWhatsapp: phoneNumber,
+                            whatsappMessage: whatsappPayload.message,
+                            whatsappLink: whatsappPayload.link,
+                            updatedAtMs: Date.now(),
+                            updatedAt: serverTimestamp()
+                        }, { merge: true });
+                        await loadExpenses();
+                        window.open(whatsappPayload.link, '_blank', 'noopener');
+                        showToast('WhatsApp mentor siap dikirim. Bukti transfer sudah disisipkan dalam pesan.');
+                    } catch (error) {
+                        console.error('[OperationalExpenses] Gagal menyiapkan WhatsApp mentor', error);
+                        alert('Gagal menyiapkan WhatsApp mentor.');
+                    }
                 };
 
                 const saveExpense = async () => {
@@ -1478,6 +1620,12 @@
                         const selectedMentor = mentorOptions.value.find((item) => item.id === form.value.mentorId);
                         const mentorBankInfo = selectedMentor ? selectedMentor.bankInfo : null;
                         const nowMs = Date.now();
+                        const whatsappPayload = buildMentorWhatsappPayload({
+                            mentorName: form.value.mentorName,
+                            className: form.value.relatedClass,
+                            proofUrl: proofUpload.url || form.value.transferProofUrl || '',
+                            phoneNumber: form.value.mentorWhatsapp || ''
+                        });
                         const payload = {
                             title: String(form.value.title || '').trim(),
                             category: String(form.value.category || 'other').trim(),
@@ -1497,6 +1645,9 @@
                             paymentMethod: String(form.value.paymentMethod || '').trim(),
                             transferProofUrl: proofUpload.url || form.value.transferProofUrl || '',
                             transferProofPath: proofUpload.path || form.value.transferProofPath || '',
+                            mentorWhatsapp: normalizeWhatsappNumber(form.value.mentorWhatsapp || ''),
+                            whatsappMessage: whatsappPayload.message || '',
+                            whatsappLink: whatsappPayload.link || '',
                             notes: String(form.value.notes || '').trim(),
                             paymentNotes: String(form.value.paymentNotes || '').trim(),
                             vendorName: String(form.value.vendorName || '').trim(),
@@ -1519,7 +1670,7 @@
                             payload.createdAt = serverTimestamp();
                         }
 
-                        if (payload.status === 'paid') {
+                        if (payload.status === 'paid' || payload.status === 'complete') {
                             payload.paidAtMs = nowMs;
                         }
 
@@ -1660,6 +1811,7 @@
                     selectClass,
                     saveExpense,
                     markAsReviewing,
+                    sendWhatsappToMentor,
                     deleteExpense
                 };
             }
