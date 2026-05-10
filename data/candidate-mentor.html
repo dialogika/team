@@ -667,7 +667,6 @@
                             <div class="btn-group" role="group" aria-label="View toggle" style="background-color: #fff; border-radius: 10px;">
                                 <button type="button" class="btn view-btn active" id="btnGrid"><i class="fas fa-th-large"></i></button>
                                 <button type="button" class="btn view-btn" id="btnList"><i class="fas fa-list"></i></button>
->>>>>>> af8b2f1cafb791c43c7382a50e3ba3c6ddb5b3f4
                             </div>
                         </div>
                     </div>
@@ -713,32 +712,32 @@
                         <div class="pipeline-stat-card pipeline-stat-total">
                             <div class="pipeline-stat-label">Total Kandidat</div>
                             <div class="pipeline-stat-value" data-summary="total">0</div>
-                            <div class="pipeline-stat-note">Belum ada data yang dimuat.</div>
+                            
                         </div>
                         <div class="pipeline-stat-card pipeline-stat-screening">
                             <div class="pipeline-stat-label">Screening</div>
                             <div class="pipeline-stat-value" data-summary="screening">0</div>
-                            <div class="pipeline-stat-note">Tahap seleksi awal kandidat mentor.</div>
+                            
                         </div>
                         <div class="pipeline-stat-card pipeline-stat-interview">
                             <div class="pipeline-stat-label">Interview</div>
                             <div class="pipeline-stat-value" data-summary="interview">0</div>
-                            <div class="pipeline-stat-note">Kandidat sedang dijadwalkan atau diwawancara.</div>
+                            
                         </div>
                         <div class="pipeline-stat-card pipeline-stat-microteaching">
                             <div class="pipeline-stat-label">Microteaching</div>
                             <div class="pipeline-stat-value" data-summary="microteaching">0</div>
-                            <div class="pipeline-stat-note">Uji praktik mengajar mentor.</div>
+                            
                         </div>
                         <div class="pipeline-stat-card pipeline-stat-decision">
                             <div class="pipeline-stat-label">Decision</div>
                             <div class="pipeline-stat-value" data-summary="decision">0</div>
-                            <div class="pipeline-stat-note">Menunggu keputusan akhir rekrutmen.</div>
+                            
                         </div>
                         <div class="pipeline-stat-card pipeline-stat-rejected">
                             <div class="pipeline-stat-label">Rejected</div>
                             <div class="pipeline-stat-value" data-summary="rejected">0</div>
-                            <div class="pipeline-stat-note">Kandidat yang tidak lanjut proses.</div>
+                           
                         </div>
                     </div>
 
@@ -916,6 +915,8 @@
                 row.style.display = matchesSearch && matchesStatus ? "" : "none";
             });
 
+            updateMentorSummary();
+
             if (sortValue === "none") return;
 
             const compare = (a, b) => {
@@ -958,7 +959,6 @@
 
             const visibleRows = rows.filter(row => row.style.display !== "none");
             visibleRows.sort(compare).forEach(row => listTbody.appendChild(row));
-            updateMentorSummary();
         }
 
         if (gridView && listView) {
@@ -1001,7 +1001,7 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { renderRightbarRecruit } from "../element/rightbar-recruit.js";
-        import { renderBreadcrumb } from "../element/breadcrumb.js";
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import {
@@ -1057,12 +1057,7 @@
         const sidebarTarget = document.getElementById('sidebarContainer');
         renderSidebar(sidebarTarget);
         renderRightbarRecruit();
-        renderBreadcrumb(document.getElementById('candidateMentorBreadcrumb'), {
-            items: [
-                { label: 'Home', href: '../home.html', iconHtml: '<i class="bi bi-house-fill"></i>' },
-                { label: 'Candidate Mentor', current: true }
-            ]
-        });
+
 
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebarNav');
@@ -1707,7 +1702,7 @@
                 const snap = await getDocs(collection(db, MENTOR_SCREENING_COLLECTION));
                 if (snap.empty) {
                     tbody.innerHTML =
-                        '<tr><td colspan="13" class="text-center text-muted small py-4">Belum ada data screening mentor yang dapat ditampilkan.</td></tr>';
+                        '<div class="text-center text-muted small py-4 w-100">Belum ada data screening mentor yang dapat ditampilkan.</div>';
                     return;
                 }
                 let found = 0;
@@ -1718,20 +1713,18 @@
                     const internship = data.internship || data.internship_info || {};
                     const contact = data.contact_info || {};
 
-                    const roleIdRaw = data.role_id || data.roleId || scouting.role_id || internship.role_id || "";
-                    const roleNameRaw = data.role_name || data.role || basic.current_role || scouting.role_name || "";
-                    const roleIdValue = (roleIdRaw || "").toString().trim().toLowerCase();
-                    const roleNameValue = (roleNameRaw || "").toString().trim().toLowerCase();
-
-                    if (roleIdValue !== "mentor" && roleNameValue !== "mentor") {
-                        return;
-                    }
+                    // Karena kita query langsung ke mentors_screening, semua document adalah mentor
+                    // Jadi tidak perlu validasi roleIdValue !== "mentor"
 
                     const name = basic.full_name || scouting.full_name || data.full_name || "Tanpa Nama";
                     const avatarUrl = basic.avatar_url || null;
 
                     const recruitment = data.recruitment_status || {};
-                    const statusCandidate = (recruitment.current || "").toString().trim().toLowerCase();
+                    let statusCandidate = (recruitment.current || "").toString().trim().toLowerCase();
+                    
+                    if (!statusCandidate) {
+                        statusCandidate = "screening";
+                    }
 
                     if (!MENTOR_SCREENING_STATUSES.has(statusCandidate)) {
                         return;
@@ -1797,7 +1790,7 @@
                 });
                 if (!found) {
                     tbody.innerHTML =
-                        '<tr><td colspan="13" class="text-center text-muted small py-4">Belum ada data mentor pada pipeline screening yang cocok untuk ditampilkan.</td></tr>';
+                        '<div class="text-center text-muted small py-4 w-100">Belum ada data mentor pada pipeline screening yang cocok untuk ditampilkan.</div>';
                 }
                 applyMentorFilters();
             } catch (e) {

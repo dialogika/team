@@ -589,14 +589,12 @@
             const resumeUrl = mentor.resume_url || internship.resume_url || data.resume_url || '';
             const laptopBrand = mentor.laptop_brand || '-';
             const wifiProvider = mentor.wifi_provider || '-';
-            const consent = mentor.consent === true ? 'Ya' : (mentor.consent === false ? 'Tidak' : '-');
             const whatsappHref = whatsapp && whatsapp !== '-' ? whatsapp : '';
             const instagramHref = instagram || '';
             const linkedinHref = linkedin || '';
             const whatsappDisplay = extractWhatsappDigits(whatsapp);
             const instagramDisplay = extractInstagramHandle(instagram);
             const linkedinDisplay = extractLinkedInUsername(linkedin);
-            const roleName = mentor.role_name || data.role_name || '-';
 
             root.innerHTML = `
                 <div class="detail-hero mb-4">
@@ -640,10 +638,6 @@
                                     <div class="kv-item"><div class="kv-label">LinkedIn</div><div class="kv-value">${escapeHtml(linkedinDisplay)}</div></div>
                                     <div class="kv-item"><div class="kv-label">Laptop Brand</div><div class="kv-value">${escapeHtml(laptopBrand)}</div></div>
                                     <div class="kv-item"><div class="kv-label">Wifi Provider</div><div class="kv-value">${escapeHtml(wifiProvider)}</div></div>
-                                    <div class="kv-item"><div class="kv-label">Current Role</div><div class="kv-value">${escapeHtml(basic.current_role || '-')}</div></div>
-                                    <div class="kv-item"><div class="kv-label">Role Name</div><div class="kv-value">${escapeHtml(roleName)}</div></div>
-                                    <div class="kv-item"><div class="kv-label">Consent</div><div class="kv-value">${escapeHtml(consent)}</div></div>
-                                    <div class="kv-item"><div class="kv-label">Created At</div><div class="kv-value">${escapeHtml(formatDate(createdAt))}</div></div>
                                 </div>
                                 <div class="text-panel">
                                     <div class="text-panel-title">Deskripsi Singkat</div>
