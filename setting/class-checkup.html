@@ -2533,29 +2533,9 @@
             await loadUsersForSupervisorDropdown();
             await loadMentorsForDropdown();
 
-            // Initial load via getDocs (fast, returns cached data)
-            const [planningSnap, availabilitySnap] = await Promise.all([
-                getDocs(collection(db, CLASS_SOURCE_PLANNING)),
-                getDocs(collection(db, CLASS_SOURCE_AVAILABILITY))
-            ]);
-            const loaded = [];
-            const seenClassIds = new Set();
-            planningSnap.forEach((docSnap) => {
-                const item = mapAvailabilityDocToClass(docSnap, CLASS_SOURCE_PLANNING);
-                loaded.push(item);
-                if (item.id) seenClassIds.add(String(item.id));
-            });
-            availabilitySnap.forEach((docSnap) => {
-                const item = mapAvailabilityDocToClass(docSnap, CLASS_SOURCE_AVAILABILITY);
-                const key = item.id ? String(item.id) : "";
-                if (key && seenClassIds.has(key)) return;
-                loaded.push(item);
-            });
-            classesState = loaded;
-            renderCalendar(applyFilters());
-            _initialLoadDone = true;
-
-            // ── Register real-time listeners ──
+            // Use onSnapshot as the SOLE data source (no getDocs).
+            // The first onSnapshot callback already delivers all documents
+            // as "added" changes — using getDocs first would double the reads.
             startRealtimeSync();
         }
 
@@ -2566,20 +2546,15 @@
             // Create sync badge
             const badgeContainer = document.getElementById("syncBadgeContainer");
             if (badgeContainer) createSyncBadge(badgeContainer);
-            updateSyncBadge("live");
+            updateSyncBadge("syncing");
 
-            // Helper: rebuild classesState from docId-keyed maps
+            // docId-keyed maps for merging both collections
             const planningDocs = new Map();
             const availabilityDocs = new Map();
 
-            // Seed maps from initial load
-            classesState.forEach((c) => {
-                if (c.sourceCollection === CLASS_SOURCE_PLANNING) {
-                    planningDocs.set(c.docId, c);
-                } else {
-                    availabilityDocs.set(c.docId, c);
-                }
-            });
+            // Track which collections have completed initial load
+            let planningReady = false;
+            let availabilityReady = false;
 
             function rebuildClassesState() {
                 const merged = [];
@@ -2613,17 +2588,15 @@
             _unsubPlanning = onSnapshot(
                 collection(db, CLASS_SOURCE_PLANNING),
                 (snapshot) => {
-                    if (!_initialLoadDone) return; // skip first fire (already loaded)
+                    const isInitial = !planningReady;
                     let hasChanges = false;
                     const newIds = [];
                     snapshot.docChanges().forEach((change) => {
                         const item = mapAvailabilityDocToClass(change.doc, CLASS_SOURCE_PLANNING);
                         if (change.type === "added") {
-                            if (!planningDocs.has(change.doc.id)) {
-                                planningDocs.set(change.doc.id, item);
-                                newIds.push(change.doc.id);
-                                hasChanges = true;
-                            }
+                            planningDocs.set(change.doc.id, item);
+                            if (!isInitial) newIds.push(change.doc.id);
+                            hasChanges = true;
                         } else if (change.type === "modified") {
                             planningDocs.set(change.doc.id, item);
                             hasChanges = true;
@@ -2632,7 +2605,16 @@
                             hasChanges = true;
                         }
                     });
-                    if (hasChanges) scheduleRerender(newIds);
+                    planningReady = true;
+                    if (hasChanges) {
+                        // On initial load or subsequent changes, rebuild + render
+                        if (isInitial && !availabilityReady) {
+                            // Wait for both collections before first render
+                            return;
+                        }
+                        _initialLoadDone = true;
+                        scheduleRerender(newIds);
+                    }
                 },
                 (error) => {
                     console.error("onSnapshot error (class_planning):", error);
@@ -2644,17 +2626,15 @@
             _unsubAvailability = onSnapshot(
                 collection(db, CLASS_SOURCE_AVAILABILITY),
                 (snapshot) => {
-                    if (!_initialLoadDone) return;
+                    const isInitial = !availabilityReady;
                     let hasChanges = false;
                     const newIds = [];
                     snapshot.docChanges().forEach((change) => {
                         const item = mapAvailabilityDocToClass(change.doc, CLASS_SOURCE_AVAILABILITY);
                         if (change.type === "added") {
-                            if (!availabilityDocs.has(change.doc.id)) {
-                                availabilityDocs.set(change.doc.id, item);
-                                newIds.push(change.doc.id);
-                                hasChanges = true;
-                            }
+                            availabilityDocs.set(change.doc.id, item);
+                            if (!isInitial) newIds.push(change.doc.id);
+                            hasChanges = true;
                         } else if (change.type === "modified") {
                             availabilityDocs.set(change.doc.id, item);
                             hasChanges = true;
@@ -2663,7 +2643,14 @@
                             hasChanges = true;
                         }
                     });
-                    if (hasChanges) scheduleRerender(newIds);
+                    availabilityReady = true;
+                    if (hasChanges) {
+                        if (isInitial && !planningReady) {
+                            return;
+                        }
+                        _initialLoadDone = true;
+                        scheduleRerender(newIds);
+                    }
                 },
                 (error) => {
                     console.error("onSnapshot error (class_availability):", error);
@@ -2675,8 +2662,6 @@
             _unsubBroadcast = onBroadcastMessage((msg) => {
                 if (msg.type === "CLASS_ADDED" && msg.docId) {
                     _recentlyAddedDocIds.add(msg.docId);
-                    // onSnapshot will fire shortly and pick up the new doc.
-                    // The docId is tracked so we can highlight it.
                     updateSyncBadge("syncing");
                     showToast("Kelas baru ditambahkan: " + (msg.className || "Unknown"), "success");
                 }
