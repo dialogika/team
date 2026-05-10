@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet" />
-    <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -52,7 +51,13 @@
             <div class="max-w-6xl mx-auto px-6 py-6">
                 <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                     <div>
-                        <div id="memberDataBreadcrumb"></div>
+                        <nav class="flex gap-2 text-xs font-bold text-blue-600 uppercase tracking-widest mb-2">
+                            <a href="../home.html"><span><i class="bi bi-house-fill"></i></span></a>
+                            <span>/</span>
+                            <span>Marketing</span>
+                            <span>/</span>
+                            <span class="text-slate-400">Member Data</span>
+                        </nav>
                         <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Member Data</h1>
                         <p class="text-slate-500 mt-1 font-medium text-sm md:text-base">
                             Lihat daftar member dari Firebase <span class="font-semibold">data_member</span> dengan filter berdasarkan tanggal.
@@ -190,7 +195,6 @@
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
-        import { renderBreadcrumb } from "../element/breadcrumb.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import {
             getFirestore,
@@ -219,12 +223,6 @@
         if (sidebarTarget) {
             renderSidebar(sidebarTarget);
         }
-        renderBreadcrumb(document.getElementById("memberDataBreadcrumb"), {
-            items: [
-                { label: "Home", href: "../home.html", iconHtml: '<i class="bi bi-house-fill"></i>' },
-                { label: "Member Data", current: true }
-            ]
-        });
 
         const searchInput = document.getElementById("memberSearchInput");
         const startDateInput = document.getElementById("filterStartDate");

@@ -10,7 +10,6 @@
     <!-- Fonts & Global CSS -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet" />
-    <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <!-- Tailwind (opsional, untuk utility kelas yang masih terpakai) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome untuk Icon tambahan -->
@@ -194,8 +193,14 @@
                 <!-- Header -->
                 <div class="row align-items-end mb-5">
                     <div class="col-md-6">
-                        <div id="internshipManagementBreadcrumb"></div>
                         <h2 class="fw-bold mb-1">Internship Management</h2>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <a href="../home.html"><li class="breadcrumb-item text-muted"><i class="fas fa-home me-2"></i></li></a>
+                                <li class="breadcrumb-item text-muted">Setting</li>
+                                <li class="breadcrumb-item active text-dark">Internship Directory</li>
+                            </ol>
+                        </nav>
                     </div>
                     <div class="col-md-6 d-flex justify-content-md-end gap-3 mt-3 mt-md-0">
                         <button class="btn btn-light border bg-white rounded-3 px-3 fw-semibold text-muted">
@@ -517,7 +522,6 @@
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
-        import { renderBreadcrumb } from "../element/breadcrumb.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import {
@@ -969,12 +973,6 @@
 
         const sidebarTarget = document.getElementById('sidebarContainer');
         renderSidebar(sidebarTarget);
-        renderBreadcrumb(document.getElementById('internshipManagementBreadcrumb'), {
-            items: [
-                { label: 'Home', href: '../home.html', iconHtml: '<i class="bi bi-house-fill"></i>' },
-                { label: 'Internship Management', current: true }
-            ]
-        });
 
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebarNav');

@@ -8,9 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet" />
-    <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -220,7 +218,6 @@
             <div id="expenseApp" v-cloak class="expense-shell py-4">
                 <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-5 mb-8">
                     <div>
-                        <div id="expensesBreadcrumb"></div>
                         <h1 class="text-3xl font-black tracking-tight text-slate-900">Operational Expenses</h1>
                         <p class="text-slate-500 mt-2 max-w-3xl">
                             Seluruh request pengeluaran perusahaan terdaftar di sini. Treasurer bisa cek tujuan transfer, upload bukti transfer, ubah status ke paid, dan membaca notes penjelasan dari admin kelas atau PIC.
@@ -229,13 +226,6 @@
                     <div class="flex flex-wrap gap-3">
                         <button @click="loadExpenses" class="px-5 py-3 rounded-2xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-white transition-all">
                             Refresh Data
-                        </button>
-                        <button
-                            @click="exportToXlsx"
-                            :disabled="exporting"
-                            class="px-5 py-3 rounded-2xl border border-emerald-200 text-emerald-700 font-bold text-sm hover:bg-emerald-50 transition-all disabled:opacity-60"
-                        >
-                            {{ exporting ? 'Exporting...' : 'Export XLSX' }}
                         </button>
                         <button @click="openCreateDrawer" class="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-100 transition-all">
                             + New Expense Request
@@ -765,7 +755,6 @@
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
-        import { renderBreadcrumb } from "../element/breadcrumb.js";
         import { buildWhatsappDeepLink, normalizeWhatsappMessage, normalizeWhatsappNumber } from "../element/whatsapp-encoding.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -794,12 +783,6 @@
         renderTopBar(topbarTarget);
         const sidebarTarget = document.getElementById('sidebarContainer');
         renderSidebar(sidebarTarget);
-        renderBreadcrumb(document.getElementById('expensesBreadcrumb'), {
-            items: [
-                { label: 'Home', href: '../home.html', iconHtml: '<i class="bi bi-house-fill"></i>' },
-                { label: 'Operational Expenses', current: true }
-            ]
-        });
 
         window.toggleSidebar = () => {
             const sidebar = document.getElementById('sidebarNav');
@@ -823,7 +806,6 @@
                 const showDrawer = ref(false);
                 const isEditMode = ref(false);
                 const saving = ref(false);
-                const exporting = ref(false);
                 const toast = ref(null);
                 const currentExpenseId = ref('');
                 const proofFileInput = ref(null);
@@ -1416,120 +1398,6 @@
                     }
                 });
 
-                const exportToXlsx = async () => {
-                    if (exporting.value) return;
-                    const list = filteredExpenses.value;
-                    if (!list.length) {
-                        alert('Tidak ada data untuk diexport.');
-                        return;
-                    }
-                    const ExcelJS = window.ExcelJS;
-                    if (!ExcelJS) {
-                        alert('Library ExcelJS belum tersedia.');
-                        return;
-                    }
-
-                    exporting.value = true;
-                    showToast('Menyiapkan file XLSX...');
-
-                    try {
-                        const workbook = new ExcelJS.Workbook();
-                        workbook.creator = 'Dialogika';
-                        workbook.created = new Date();
-
-                        const worksheet = workbook.addWorksheet('Operational Expenses', {
-                            views: [{ state: 'frozen', ySplit: 1 }]
-                        });
-
-                        worksheet.columns = [
-                            { header: 'ID', key: 'id', width: 18 },
-                            { header: 'Title', key: 'title', width: 28 },
-                            { header: 'Category', key: 'category', width: 16 },
-                            { header: 'Department', key: 'department', width: 18 },
-                            { header: 'Requester', key: 'requester', width: 20 },
-                            { header: 'Related Class', key: 'relatedClass', width: 20 },
-                            { header: 'Mentor', key: 'mentor', width: 18 },
-                            { header: 'Due Date', key: 'dueDate', width: 16 },
-                            { header: 'Amount (IDR)', key: 'amount', width: 16 },
-                            { header: 'Status', key: 'status', width: 12 },
-                            { header: 'Beneficiary', key: 'beneficiary', width: 20 },
-                            { header: 'Bank', key: 'bank', width: 14 },
-                            { header: 'Account Number', key: 'accountNumber', width: 18 },
-                            { header: 'Payment Method', key: 'paymentMethod', width: 16 },
-                            { header: 'Notes', key: 'notes', width: 32 },
-                            { header: 'Treasurer Note', key: 'paymentNotes', width: 32 },
-                            { header: 'Paid At', key: 'paidAt', width: 18 },
-                            { header: 'Updated At', key: 'updatedAt', width: 18 },
-                            { header: 'Proof Link', key: 'proofLink', width: 36 }
-                        ];
-
-                        worksheet.getRow(1).font = { bold: true };
-                        worksheet.getColumn('amount').numFmt = '#,##0';
-                        worksheet.getColumn('proofLink').alignment = { vertical: 'middle', horizontal: 'center' };
-
-                        worksheet.columns.forEach(col => {
-                            if (col) col.alignment = { vertical: 'middle' };
-                        });
-
-                        ['title', 'relatedClass', 'notes', 'paymentNotes'].forEach(key => {
-                            const col = worksheet.getColumn(key);
-                            if (col) col.alignment = { vertical: 'middle', wrapText: true };
-                        });
-
-                        worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-
-                        for (const expense of list) {
-                            const row = worksheet.addRow({
-                                id: expense.id,
-                                title: expense.title || '',
-                                category: formatCategory(expense.category),
-                                department: expense.department || '',
-                                requester: expense.requesterName || '',
-                                relatedClass: expense.relatedClass || '',
-                                mentor: expense.mentorName || '',
-                                dueDate: formatDateLabel(expense.dueDate),
-                                amount: Number(expense.amount) || 0,
-                                status: expense.status || '',
-                                beneficiary: expense.beneficiaryName || '',
-                                bank: expense.bankName || '',
-                                accountNumber: expense.accountNumber || '',
-                                paymentMethod: expense.paymentMethod || '',
-                                notes: expense.notes || '',
-                                paymentNotes: expense.paymentNotes || '',
-                                paidAt: formatDateTimeLabel(expense.paidAtMs),
-                                updatedAt: formatDateTimeLabel(expense.updatedAtMs),
-                                proofLink: expense.transferProofUrl ? { text: '🖼️ Lihat Gambar', hyperlink: expense.transferProofUrl } : ''
-                            });
-
-                            if (expense.transferProofUrl) {
-                                const proofCell = row.getCell('proofLink');
-                                proofCell.font = { color: { argb: 'FF0563C1' }, underline: true };
-                            }
-                        }
-
-                        const buffer = await workbook.xlsx.writeBuffer();
-                        const blob = new Blob([buffer], {
-                            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                        });
-                        const url = window.URL.createObjectURL(blob);
-                        const anchor = document.createElement('a');
-                        const dateStamp = new Date().toISOString().slice(0, 10);
-                        anchor.href = url;
-                        anchor.download = `operational-expenses-${dateStamp}.xlsx`;
-                        document.body.appendChild(anchor);
-                        anchor.click();
-                        anchor.remove();
-                        window.URL.revokeObjectURL(url);
-
-                        showToast('File XLSX berhasil diunduh');
-                    } catch (error) {
-                        console.error('[OperationalExpenses] Gagal export XLSX', error);
-                        alert('Gagal export XLSX. Silakan coba lagi.');
-                    } finally {
-                        exporting.value = false;
-                    }
-                };
-
                 const showToast = (message) => {
                     toast.value = message;
                     setTimeout(() => {
@@ -1913,7 +1781,6 @@
                     isEditMode,
                     saving,
                     toast,
-                    exporting,
                     currentExpenseId,
                     form,
                     proofFileInput,
@@ -1945,8 +1812,7 @@
                     saveExpense,
                     markAsReviewing,
                     sendWhatsappToMentor,
-                    deleteExpense,
-                    exportToXlsx
+                    deleteExpense
                 };
             }
         }).mount('#expenseApp');

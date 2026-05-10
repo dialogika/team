@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="../assets/css/style.css" rel="stylesheet" />
-    <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -33,7 +32,6 @@
             <nav class="sticky top-0 z-50 glass-header border-b border-slate-100 px-8 py-5 mb-10">
                 <div class="max-w-7xl mx-auto flex justify-between items-center">
                     <div>
-                        <div id="permitManagementBreadcrumb"></div>
                         <h1 class="text-2xl font-bold tracking-tight text-slate-900">Manajemen Data Izin</h1>
                         <p class="text-xs text-slate-500 font-medium">Panel Kontrol Konfigurasi & Persetujuan Intern</p>
                     </div>
@@ -205,7 +203,6 @@
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
-        import { renderBreadcrumb } from "../element/breadcrumb.js";
         const firebaseConfig = {
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
             authDomain: "pre-dialogika.firebaseapp.com",
@@ -249,13 +246,6 @@
         if (sidebarTarget) {
             renderSidebar(sidebarTarget);
         }
-        renderBreadcrumb(document.getElementById("permitManagementBreadcrumb"), {
-            items: [
-                { label: "Home", href: "../home.html", iconHtml: '<i class="bi bi-house-fill"></i>' },
-                { label: "Internship Management", href: "../setting/internship-management.html" },
-                { label: "Permit Management", current: true }
-            ]
-        });
         const summaryText = document.getElementById("summaryText");
         const permitTableBody = document.getElementById("permitTableBody");
         const permitSearchInput = document.getElementById("permitSearchInput");
