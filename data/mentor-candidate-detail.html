@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Kandidat Mentor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="../assets/css/style.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background:
+                radial-gradient(circle at top right, rgba(191, 219, 254, 0.35), transparent 26%),
+                radial-gradient(circle at top left, rgba(224, 231, 255, 0.4), transparent 24%),
+                #f8fafc;
+            font-size: 1rem;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .detail-shell {
+            width: 100%;
+            max-width: 100%;
+            padding: 1rem 0 1.75rem;
+        }
+
+        .detail-page-container {
+            width: 100%;
+            max-width: min(100%, 72rem);
+            margin: 0 auto;
+            padding-inline: 0.75rem;
+        }
+
+        .main-content {
+            min-width: 0;
+        }
+
+        .detail-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            padding: 1.1rem 1rem 1.2rem;
+            background:
+                radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 24%),
+                linear-gradient(145deg, #ffffff 0%, #f8fbff 54%, #eef6ff 100%);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            box-shadow: 0 22px 70px rgba(15, 23, 42, 0.08);
+        }
+        .detail-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb 0%, #7c3aed 54%, #10b981 100%);
+        }
+        .detail-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.7rem 0.95rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid #dbe4ee;
+            color: #1e3a8a;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.5;
+            max-width: 100%;
+        }
+        .detail-avatar {
+            width: 5.75rem;
+            height: 5.75rem;
+            border-radius: 1.5rem;
+            object-fit: cover;
+            border: 5px solid rgba(255, 255, 255, 0.96);
+            box-shadow: 0 18px 40px rgba(37, 99, 235, 0.16);
+            background: #e2e8f0;
+            flex-shrink: 0;
+        }
+        .detail-name {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 800;
+            line-height: 1.3;
+            color: #0f172a;
+            letter-spacing: -0.03em;
+        }
+        .detail-headline-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            min-width: 0;
+        }
+        .detail-subline {
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin: 0;
+        }
+        .detail-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.625rem;
+            margin-top: 1rem;
+        }
+        .detail-role-chip,
+        .detail-meta-chip,
+        .status-badge-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 2.75rem;
+            padding: 0.7rem 0.95rem;
+            border-radius: 999px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            border: 1px solid transparent;
+            line-height: 1.5;
+            max-width: 100%;
+        }
+        .detail-role-chip {
+            background: rgba(239, 246, 255, 0.96);
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+        }
+        .detail-meta-chip {
+            background: rgba(255, 255, 255, 0.92);
+            border-color: #dbe4ee;
+            color: #475569;
+            text-transform: none;
+            letter-spacing: normal;
+            font-size: 0.9rem;
+        }
+        .status-badge-modern::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: currentColor;
+            opacity: 0.85;
+        }
+        .status-screening { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+        .status-interview { background: #fff7ed; color: #b45309; border-color: #fdba74; }
+        .status-microteaching { background: #f5f3ff; color: #6d28d9; border-color: #c4b5fd; }
+        .status-decision, .status-accepted { background: #ecfdf5; color: #047857; border-color: #86efac; }
+        .status-rejected { background: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
+        .detail-card {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: 1.35rem;
+            padding: 1rem;
+            box-shadow: 0 16px 45px rgba(15, 23, 42, 0.06);
+            height: 100%;
+            min-width: 0;
+        }
+        .detail-card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 0.9rem;
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.5;
+        }
+        .detail-card-title-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        .kv-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0.85rem;
+        }
+        .kv-item {
+            min-height: 0;
+            padding: 0.95rem;
+            border-radius: 1rem;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            min-width: 0;
+        }
+        .kv-label {
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            margin-bottom: 0.4rem;
+            line-height: 1.5;
+        }
+        .kv-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.65;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+        .text-panel {
+            padding: 1rem;
+            border-radius: 1rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            min-height: 0;
+        }
+        .text-panel-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #94a3b8;
+            margin-bottom: 0.6rem;
+            line-height: 1.5;
+        }
+        .text-panel-value {
+            font-size: 1rem;
+            line-height: 1.75;
+            color: #334155;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+        .doc-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 2.875rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.95rem;
+            border: 1px solid #dbe4ee;
+            background: #ffffff;
+            color: #1e3a8a;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 8px 18px rgba(30, 58, 138, 0.06);
+            line-height: 1.5;
+            max-width: 100%;
+            white-space: nowrap;
+        }
+
+        .icon-link-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.625rem;
+            margin-top: 1.05rem;
+            align-items: center;
+        }
+
+        .icon-link-btn {
+            width: 2.875rem;
+            height: 2.875rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #dbe4ee;
+            background: #ffffff;
+            color: #1e3a8a;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .icon-link-btn:hover {
+            transform: translateY(-1px);
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .detail-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: 100%;
+            min-width: 0;
+        }
+        .empty-state-card {
+            border-radius: 1.35rem;
+            padding: 1.5rem 1rem;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            box-shadow: 0 16px 45px rgba(15, 23, 42, 0.06);
+            text-align: center;
+            color: #64748b;
+        }
+        @media (min-width: 37.5rem) {
+            body {
+                font-size: 1rem;
+            }
+
+            .detail-page-container {
+                padding-inline: 1rem;
+            }
+
+            .detail-shell {
+                padding: 1.25rem 0 2rem;
+            }
+
+            .detail-card {
+                padding: 1.15rem;
+            }
+
+            .detail-hero {
+                padding: 1.35rem 1.25rem 1.4rem;
+            }
+
+            .detail-avatar {
+                width: 6.25rem;
+                height: 6.25rem;
+                border-radius: 1.75rem;
+            }
+
+            .detail-name {
+                font-size: 1.5rem;
+            }
+
+            .kv-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 56.25rem) {
+            body {
+                font-size: 1.125rem;
+                line-height: 1.65;
+            }
+
+            .detail-page-container {
+                padding-inline: 1.25rem;
+            }
+
+            .detail-shell {
+                padding: 1.5rem 0 2.5rem;
+            }
+
+            .detail-hero {
+                border-radius: 1.75rem;
+                padding: 1.6rem 1.6rem 1.75rem;
+            }
+
+            .detail-name {
+                font-size: 1.85rem;
+            }
+
+            .detail-subline,
+            .kv-value,
+            .text-panel-value,
+            .detail-meta-chip,
+            .detail-role-chip,
+            .status-badge-modern,
+            .doc-link,
+            .detail-back-link {
+                font-size: 1rem;
+            }
+        }
+
+        @media (min-width: 75rem) {
+            body {
+                font-size: 1.25rem;
+                line-height: 1.7;
+            }
+
+            .detail-page-container {
+                max-width: min(100%, 78rem);
+                padding-inline: 1.5rem;
+            }
+
+            .detail-shell {
+                padding: 2rem 0 3rem;
+            }
+
+            .detail-hero {
+                border-radius: 2rem;
+                padding: 2rem 2.1rem;
+            }
+
+            .detail-avatar {
+                width: 7.75rem;
+                height: 7.75rem;
+                border-radius: 2rem;
+            }
+
+            .detail-name {
+                font-size: 2.2rem;
+            }
+
+            .detail-card {
+                padding: 1.45rem;
+                border-radius: 1.75rem;
+            }
+
+            .kv-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 112.5rem) {
+            .detail-page-container {
+                max-width: min(100%, 92rem);
+                padding-inline: 2rem;
+            }
+
+            .detail-name {
+                font-size: 2.4rem;
+            }
+
+            .detail-card {
+                padding: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="topbarContainer"></div>
+
+    <div class="dashboard-container">
+        <div id="sidebarContainer"></div>
+
+        <main class="main-content">
+            <div class="detail-page-container detail-shell">
+                <div id="detailRoot"></div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { renderTopBar } from "../element/topbar.js";
+        import { renderSidebar } from "../element/sidebar.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com",
+            projectId: "pre-dialogika",
+            storageBucket: "pre-dialogika.firebasestorage.app",
+            messagingSenderId: "343771410480",
+            appId: "1:343771410480:web:32881c9868522090237df5",
+            measurementId: "G-SXN811P3N0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const root = document.getElementById('detailRoot');
+        const CANDIDATE_COLLECTION = 'mentors_screening';
+
+        const topbarTarget = document.getElementById('topbarContainer');
+        if (topbarTarget) {
+            renderTopBar(topbarTarget);
+        }
+
+        const sidebarTarget = document.getElementById('sidebarContainer');
+        if (sidebarTarget) {
+            renderSidebar(sidebarTarget);
+        }
+
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById('sidebarNav');
+            if (!sidebar) return;
+            const isMobile = window.innerWidth <= 991;
+            if (isMobile) {
+                sidebar.classList.toggle('show');
+            } else {
+                document.body.classList.toggle('sidebar-collapsed');
+            }
+        };
+
+        function getQueryTalentId() {
+            const params = new URLSearchParams(window.location.search);
+            return (params.get('talentId') || '').trim();
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatDate(raw) {
+            if (!raw) return '-';
+            try {
+                const dateObj = typeof raw.toDate === 'function' ? raw.toDate() : new Date(raw);
+                if (Number.isNaN(dateObj.getTime())) return '-';
+                return dateObj.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+            } catch (e) {
+                return '-';
+            }
+        }
+
+        function extractInstagramHandle(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '-';
+            const normalized = raw.replace(/^https?:\/\/(www\.)?/i, '').replace(/^www\./i, '');
+            const match = normalized.match(/instagram\.com\/([^/?#]+)/i);
+            const username = match && match[1] ? match[1] : raw.replace(/^@+/, '').split(/[/?#]/)[0].trim();
+            return username ? ('@' + username.replace(/^@+/, '')) : '-';
+        }
+
+        function extractLinkedInUsername(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '-';
+            const normalized = raw.replace(/^https?:\/\/(www\.)?/i, '').replace(/^www\./i, '');
+            const match = normalized.match(/linkedin\.com\/(?:in|company)\/([^/?#]+)/i);
+            const username = match && match[1] ? match[1] : raw.split('/').filter(Boolean).pop();
+            return username ? username.trim() : '-';
+        }
+
+        function extractWhatsappDigits(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '-';
+            const withoutPrefix = raw.replace(/^https?:\/\/(wa\.me\/|api\.whatsapp\.com\/send\?phone=)/i, '');
+            let digits = withoutPrefix.replace(/\D+/g, '');
+            if (!digits) return '-';
+            if (digits.startsWith('62')) {
+                digits = digits.substring(2);
+            }
+            if (digits.startsWith('0')) {
+                digits = digits.substring(1);
+            }
+            return digits || '-';
+        }
+
+        function statusClass(status) {
+            const value = String(status || '').toLowerCase();
+            if (value === 'interview') return 'status-interview';
+            if (value === 'microteaching') return 'status-microteaching';
+            if (value === 'decision' || value === 'accepted' || value === 'accept') return 'status-decision';
+            if (value === 'rejected' || value === 'reject') return 'status-rejected';
+            return 'status-screening';
+        }
+
+        function renderEmpty(message) {
+            root.innerHTML = `
+                <div class="empty-state-card">
+                    <div class="fs-1 mb-3"><i class="fa-regular fa-folder-open"></i></div>
+                    <h2 class="h5 fw-bold text-slate-800 mb-2">Data tidak ditemukan</h2>
+                    <p class="mb-4">${escapeHtml(message)}</p>
+                    <a href="./candidate-mentor.html" class="detail-back-link"><i class="fa-solid fa-arrow-left"></i>Kembali ke Candidate Mentor</a>
+                </div>
+            `;
+        }
+
+        function renderDetail(candidate) {
+            const data = candidate || {};
+            const basic = data.basic_info || {};
+            const contact = data.contact_info || {};
+            const education = data.education || {};
+            const profiling = data.profiling || {};
+            const internship = data.internship || data.internship_info || {};
+            const mentor = data.mentor || {};
+            const recruitment = data.recruitment_status || {};
+
+            const fullName = basic.full_name || data.full_name || 'Tanpa Nama';
+            const avatarUrl = basic.avatar_url || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=800';
+            const status = recruitment.current || 'screening';
+            const dueDate = recruitment.due_date || null;
+            const createdAt = data.created_at || data.createdAt || data.created || null;
+            const address = contact.address || internship.address || '-';
+            const campus = education.campus || contact.campus || internship.campus || '-';
+            const whatsapp = contact.whatsapp || contact.phone || internship.whatsapp || '-';
+            const email = contact.email || basic.email || internship.email || '-';
+            const instagram = contact.instagram || internship.instagram || '';
+            const linkedin = contact.linkedin || internship.linkedin || '';
+            const description = profiling.short_description || '-';
+            const resumeUrl = mentor.resume_url || internship.resume_url || data.resume_url || '';
+            const laptopBrand = mentor.laptop_brand || '-';
+            const wifiProvider = mentor.wifi_provider || '-';
+            const consent = mentor.consent === true ? 'Ya' : (mentor.consent === false ? 'Tidak' : '-');
+            const whatsappHref = whatsapp && whatsapp !== '-' ? whatsapp : '';
+            const instagramHref = instagram || '';
+            const linkedinHref = linkedin || '';
+            const whatsappDisplay = extractWhatsappDigits(whatsapp);
+            const instagramDisplay = extractInstagramHandle(instagram);
+            const linkedinDisplay = extractLinkedInUsername(linkedin);
+            const roleName = mentor.role_name || data.role_name || '-';
+
+            root.innerHTML = `
+                <div class="detail-hero mb-4">
+                    <div class="d-flex flex-column gap-4">
+                        <div>
+                            <a href="./candidate-mentor.html" class="detail-back-link"><i class="fa-solid fa-arrow-left"></i>Kembali ke Candidate Mentor</a>
+                        </div>
+                        <div class="d-flex flex-column flex-lg-row gap-4 align-items-lg-center justify-content-between">
+                            <div class="d-flex flex-column flex-md-row gap-4 align-items-md-center">
+                                <img src="${escapeHtml(avatarUrl)}" alt="${escapeHtml(fullName)}" class="detail-avatar">
+                                <div class="detail-headline-block">
+                                   
+                                    <h1 class="detail-name mt-3">${escapeHtml(fullName)}</h1>
+                                    
+                                    <div class="detail-chip-row">
+                                        <div class="status-badge-modern ${statusClass(status)}">${escapeHtml(status)}</div>
+                                        <div class="detail-meta-chip"><i class="fa-regular fa-calendar"></i>Mendaftar pada : ${escapeHtml(formatDate(createdAt))}</div>
+                                        <div class="detail-meta-chip"><i class="fa-solid fa-location-dot"></i>${escapeHtml(address)}</div>
+                                    </div>
+                                    <div class="icon-link-row">
+                                        ${whatsappHref ? `<a href="${escapeHtml(whatsappHref)}" target="_blank" class="icon-link-btn" title="Buka WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>` : ''}
+                                        ${instagramHref ? `<a href="${escapeHtml(instagramHref)}" target="_blank" class="icon-link-btn" title="Buka Instagram"><i class="fa-brands fa-instagram"></i></a>` : ''}
+                                        ${linkedinHref ? `<a href="${escapeHtml(linkedinHref)}" target="_blank" class="icon-link-btn" title="Buka LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>` : ''}
+                                        ${resumeUrl ? `<a href="${escapeHtml(resumeUrl)}" target="_blank" rel="noopener noreferrer" class="doc-link" title="Lihat CV"><i class="fa-solid fa-file-pdf"></i>Lihat CV</a>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12 col-xl-8">
+                        <div class="detail-stack">
+                            <div class="detail-card">
+                                <div class="detail-card-title"><span class="detail-card-title-icon"><i class="fa-solid fa-address-book"></i></span>Kontak & Profil</div>
+                                <div class="kv-grid mb-3">
+                                    <div class="kv-item"><div class="kv-label">Whatsapp</div><div class="kv-value">${escapeHtml(whatsappDisplay)}</div></div>
+                                    <div class="kv-item"><div class="kv-label">Email</div><div class="kv-value">${escapeHtml(email)}</div></div>
+                                    <div class="kv-item"><div class="kv-label">Instagram</div><div class="kv-value">${escapeHtml(instagramDisplay)}</div></div>
+                                    <div class="kv-item"><div class="kv-label">LinkedIn</div><div class="kv-value">${escapeHtml(linkedinDisplay)}</div></div>
+                                    <div class="kv-item"><div class="kv-label">Laptop Brand</div><div class="kv-value">${escapeHtml(laptopBrand)}</div></div>
+                                    <div class="kv-item"><div class="kv-label">Wifi Provider</div><div class="kv-value">${escapeHtml(wifiProvider)}</div></div>
+                                    <div class="kv-item"><div class="kv-label">Current Role</div><div class="kv-value">${escapeHtml(basic.current_role || '-')}</div></div>
+                                    <div class="kv-item"><div class="kv-label">Role Name</div><div class="kv-value">${escapeHtml(roleName)}</div></div>
+                                    <div class="kv-item"><div class="kv-label">Consent</div><div class="kv-value">${escapeHtml(consent)}</div></div>
+                                    <div class="kv-item"><div class="kv-label">Created At</div><div class="kv-value">${escapeHtml(formatDate(createdAt))}</div></div>
+                                </div>
+                                <div class="text-panel">
+                                    <div class="text-panel-title">Deskripsi Singkat</div>
+                                    <div class="text-panel-value">${escapeHtml(description)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadDetail() {
+            const talentId = getQueryTalentId();
+            if (!talentId) {
+                renderEmpty('Parameter talentId tidak ditemukan.');
+                return;
+            }
+            try {
+                const snap = await getDoc(doc(db, CANDIDATE_COLLECTION, talentId));
+                if (!snap.exists()) {
+                    renderEmpty('Kandidat mentor tidak ditemukan di collection mentors_screening.');
+                    return;
+                }
+                renderDetail(snap.data());
+            } catch (error) {
+                console.error('Gagal memuat detail kandidat mentor:', error);
+                renderEmpty('Terjadi kesalahan saat memuat detail kandidat mentor.');
+            }
+        }
+
+        loadDetail();
+    </script>
+</body>
+</html>
