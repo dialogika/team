@@ -1,41 +1,50 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Operational Expenses - Team Dialogika</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet" />
     <link href="../assets/css/breadcrumb.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
             background: #f8fafc;
         }
+
         [v-cloak] {
             display: none;
         }
+
         .expense-shell {
             max-width: 1500px;
             margin: 0 auto;
         }
+
         .expense-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 26px;
             box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
         }
+
         .expense-table-wrap {
             overflow-x: auto;
         }
+
         .expense-table {
             min-width: 1200px;
             width: 100%;
             border-collapse: collapse;
         }
+
         .expense-table thead th {
             font-size: 10px;
             text-transform: uppercase;
@@ -46,24 +55,40 @@
             padding: 18px 22px;
             border-bottom: 1px solid #e2e8f0;
         }
+
         .expense-table tbody td {
             padding: 20px 22px;
             border-bottom: 1px solid #f1f5f9;
             vertical-align: top;
         }
+
         .expense-table tbody tr:hover {
             background: #f8fafc;
         }
+
         .stat-card {
             border-radius: 22px;
             padding: 22px;
             color: white;
             min-height: 122px;
         }
-        .stat-indigo { background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); }
-        .stat-amber { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
-        .stat-emerald { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
-        .stat-slate { background: linear-gradient(135deg, #0f172a 0%, #334155 100%); }
+
+        .stat-indigo {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        }
+
+        .stat-amber {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+        }
+
+        .stat-emerald {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        }
+
+        .stat-slate {
+            background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+        }
+
         .badge-pill {
             display: inline-flex;
             align-items: center;
@@ -75,23 +100,46 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
         }
-        .status-requested { background: #e0f2fe; color: #0369a1; }
-        .status-reviewing { background: #fef3c7; color: #b45309; }
-        .status-paid { background: #dcfce7; color: #15803d; }
-        .status-whatsapp { background: #dcfce7; color: #166534; }
-        .status-rejected { background: #fee2e2; color: #b91c1c; }
+
+        .status-requested {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .status-reviewing {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status-paid {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-whatsapp {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
         .note-box {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 18px;
             padding: 14px 16px;
         }
+
         .form-panel {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 26px;
             padding: 28px;
         }
+
         .field-label {
             display: block;
             font-size: 11px;
@@ -101,6 +149,7 @@
             letter-spacing: 0.14em;
             margin-bottom: 8px;
         }
+
         .field-control {
             width: 100%;
             border: 1px solid #e2e8f0;
@@ -112,21 +161,25 @@
             outline: none;
             transition: all 0.2s ease;
         }
+
         .field-control:focus {
             border-color: #818cf8;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
             background: #ffffff;
         }
+
         .field-help {
             font-size: 11px;
             color: #94a3b8;
             margin-top: 7px;
         }
+
         .empty-state {
             padding: 56px 20px;
             text-align: center;
             color: #94a3b8;
         }
+
         .drawer-backdrop {
             position: fixed;
             top: var(--topbar-height);
@@ -138,6 +191,7 @@
             display: flex;
             justify-content: flex-end;
         }
+
         .drawer-panel {
             width: min(720px, 100%);
             height: calc(100vh - var(--topbar-height));
@@ -146,9 +200,11 @@
             overflow-y: auto;
             padding: 28px;
         }
+
         .mono {
             font-family: Consolas, Monaco, monospace;
         }
+
         .proof-preview {
             border: 1px dashed #cbd5e1;
             border-radius: 18px;
@@ -159,14 +215,17 @@
             background: #f8fafc;
             overflow: hidden;
         }
+
         .proof-preview img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
+
         .search-select {
             position: relative;
         }
+
         .search-select-list {
             position: absolute;
             top: calc(100% + 8px);
@@ -181,6 +240,7 @@
             padding: 8px;
             z-index: 30;
         }
+
         .search-select-item {
             width: 100%;
             border: 0;
@@ -190,18 +250,22 @@
             text-align: left;
             transition: background 0.2s ease;
         }
+
         .search-select-item:hover {
             background: #f8fafc;
         }
+
         .search-select-empty {
             padding: 12px;
             font-size: 12px;
             color: #94a3b8;
         }
+
         .field-readonly {
             background: #eef2ff;
             color: #4338ca;
         }
+
         @media (max-width: 991px) {
             .drawer-panel {
                 width: 100%;
@@ -209,6 +273,7 @@
         }
     </style>
 </head>
+
 <body class="p-8">
     <div id="topbarContainer"></div>
 
@@ -222,14 +287,22 @@
                         <div id="expensesBreadcrumb"></div>
                         <h1 class="text-3xl font-black tracking-tight text-slate-900">Operational Expenses</h1>
                         <p class="text-slate-500 mt-2 max-w-3xl">
-                            Seluruh request pengeluaran perusahaan terdaftar di sini. Treasurer bisa cek tujuan transfer, upload bukti transfer, ubah status ke paid, dan membaca notes penjelasan dari admin kelas atau PIC.
+                            Seluruh request pengeluaran perusahaan terdaftar di sini. Treasurer bisa cek tujuan
+                            transfer, upload bukti transfer, ubah status ke paid, dan membaca notes penjelasan dari
+                            admin kelas atau PIC.
                         </p>
                     </div>
                     <div class="flex flex-wrap gap-3">
-                        <button @click="loadExpenses" class="px-5 py-3 rounded-2xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-white transition-all">
+                        <button @click="loadExpenses"
+                            class="px-5 py-3 rounded-2xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-white transition-all">
                             Refresh Data
                         </button>
-                        <button @click="openCreateDrawer" class="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-100 transition-all">
+                        <button @click="exportToXlsx" :disabled="exporting"
+                            class="px-5 py-3 rounded-2xl border border-emerald-200 text-emerald-700 font-bold text-sm hover:bg-emerald-50 transition-all disabled:opacity-60">
+                            {{ exporting ? 'Exporting...' : 'Export XLSX' }}
+                        </button>
+                        <button @click="openCreateDrawer"
+                            class="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-100 transition-all">
                             + New Expense Request
                         </button>
                     </div>
@@ -237,7 +310,8 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
                     <div class="stat-card stat-slate">
-                        <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Total Request</div>
+                        <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Total Request
+                        </div>
                         <div class="text-4xl font-black mt-3">{{ stats.total }}</div>
                         <div class="text-xs mt-3 text-white/70">Semua request yang terdaftar</div>
                     </div>
@@ -262,7 +336,8 @@
                     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                         <div class="lg:col-span-2">
                             <label class="field-label">Search Request</label>
-                            <input v-model="searchQuery" type="text" class="field-control" placeholder="Cari judul, PIC, mentor, kelas, bank, atau nomor rekening">
+                            <input v-model="searchQuery" type="text" class="field-control"
+                                placeholder="Cari judul, PIC, mentor, kelas, bank, atau nomor rekening">
                         </div>
                         <div>
                             <label class="field-label">Status Filter</label>
@@ -294,7 +369,8 @@
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 pt-6 pb-4">
                         <div>
                             <h2 class="text-lg font-black text-slate-900">Expense Ledger</h2>
-                            <p class="text-sm text-slate-500 mt-1">Treasurer cukup buka item, cek tujuan transfer, upload bukti, lalu ubah status menjadi paid.</p>
+                            <p class="text-sm text-slate-500 mt-1">Treasurer cukup buka item, cek tujuan transfer,
+                                upload bukti, lalu ubah status menjadi paid.</p>
                         </div>
                         <div class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
                             {{ filteredExpenses.length }} item terlihat
@@ -318,34 +394,48 @@
                                     <td>
                                         <div class="space-y-2 max-w-sm">
                                             <div class="flex items-center gap-2 flex-wrap">
-                                                <div class="text-sm font-black text-slate-900">{{ expense.title || '-' }}</div>
-                                                <span :class="statusBadgeClass(expense.status)" class="badge-pill">{{ expense.status }}</span>
+                                                <div class="text-sm font-black text-slate-900">{{ expense.title || '-'
+                                                    }}</div>
+                                                <span :class="statusBadgeClass(expense.status)" class="badge-pill">{{
+                                                    expense.status }}</span>
                                             </div>
-                                            <div class="text-[11px] text-slate-500 uppercase tracking-[0.16em] font-black">{{ formatCategory(expense.category) }} • {{ expense.department || 'General' }}</div>
+                                            <div
+                                                class="text-[11px] text-slate-500 uppercase tracking-[0.16em] font-black">
+                                                {{ formatCategory(expense.category) }} • {{ expense.department ||
+                                                'General' }}</div>
                                             <div class="text-xs text-slate-600">
                                                 PIC: <span class="font-bold">{{ expense.requesterName || '-' }}</span>
                                             </div>
-                                            <div v-if="expense.relatedClass || expense.mentorName" class="text-xs text-slate-500">
-                                                {{ expense.relatedClass || '-' }}<span v-if="expense.mentorName"> • Mentor: {{ expense.mentorName }}</span>
+                                            <div v-if="expense.relatedClass || expense.mentorName"
+                                                class="text-xs text-slate-500">
+                                                {{ expense.relatedClass || '-' }}<span v-if="expense.mentorName"> •
+                                                    Mentor: {{ expense.mentorName }}</span>
                                             </div>
                                             <div class="mono text-[11px] text-slate-400">#{{ expense.id }}</div>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="space-y-2 max-w-xs">
-                                            <div class="text-sm font-bold text-slate-800">{{ expense.beneficiaryName || '-' }}</div>
+                                            <div class="text-sm font-bold text-slate-800">{{ expense.beneficiaryName ||
+                                                '-' }}</div>
                                             <div class="text-xs text-slate-500">{{ expense.bankName || '-' }}</div>
-                                            <div class="mono text-xs text-slate-700">{{ expense.accountNumber || '-' }}</div>
-                                            <a v-if="expense.transferProofUrl" :href="expense.transferProofUrl" target="_blank" class="inline-flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-800">
+                                            <div class="mono text-xs text-slate-700">{{ expense.accountNumber || '-' }}
+                                            </div>
+                                            <a v-if="expense.transferProofUrl" :href="expense.transferProofUrl"
+                                                target="_blank"
+                                                class="inline-flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-800">
                                                 <i class="bi bi-paperclip"></i> Lihat Bukti TF
                                             </a>
-                                            <span v-else class="text-xs font-bold text-slate-300">Belum ada bukti transfer</span>
+                                            <span v-else class="text-xs font-bold text-slate-300">Belum ada bukti
+                                                transfer</span>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="space-y-2">
-                                            <div class="text-base font-black text-slate-900">Rp {{ formatCurrency(expense.amount) }}</div>
-                                            <div class="text-xs text-slate-500">Due: {{ formatDateLabel(expense.dueDate) }}</div>
+                                            <div class="text-base font-black text-slate-900">Rp {{
+                                                formatCurrency(expense.amount) }}</div>
+                                            <div class="text-xs text-slate-500">Due: {{ formatDateLabel(expense.dueDate)
+                                                }}</div>
                                             <div v-if="expense.paidAtMs" class="text-xs text-emerald-600 font-bold">
                                                 Paid: {{ formatDateTimeLabel(expense.paidAtMs) }}
                                             </div>
@@ -354,42 +444,52 @@
                                     <td>
                                         <div class="space-y-3 max-w-sm">
                                             <div class="note-box">
-                                                <div class="text-[10px] uppercase tracking-[0.16em] font-black text-slate-400 mb-1">Notes / Penjelasan</div>
-                                                <div class="text-xs text-slate-600 leading-relaxed">{{ expense.notes || 'Belum ada penjelasan tambahan.' }}</div>
+                                                <div
+                                                    class="text-[10px] uppercase tracking-[0.16em] font-black text-slate-400 mb-1">
+                                                    Notes / Penjelasan</div>
+                                                <div class="text-xs text-slate-600 leading-relaxed">{{ expense.notes ||
+                                                    'Belum ada penjelasan tambahan.' }}</div>
                                             </div>
                                             <div class="note-box">
-                                                <div class="text-[10px] uppercase tracking-[0.16em] font-black text-slate-400 mb-1">Treasurer Note</div>
-                                                <div class="text-xs text-slate-600 leading-relaxed">{{ expense.paymentNotes || 'Belum ada catatan pembayaran.' }}</div>
+                                                <div
+                                                    class="text-[10px] uppercase tracking-[0.16em] font-black text-slate-400 mb-1">
+                                                    Treasurer Note</div>
+                                                <div class="text-xs text-slate-600 leading-relaxed">{{
+                                                    expense.paymentNotes || 'Belum ada catatan pembayaran.' }}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
                                         <div class="space-y-2">
-                                            <span :class="statusBadgeClass(expense.status)" class="badge-pill">{{ expense.status }}</span>
-                                            <div class="text-xs text-slate-500">{{ expense.paymentMethod || 'Belum ditentukan' }}</div>
-                                            <div v-if="expense.status === 'complete' && expense.whatsappLink" class="text-xs">
-                                                <a :href="expense.whatsappLink" target="_blank" class="font-bold text-emerald-600 hover:text-emerald-700">Buka WhatsApp Mentor</a>
+                                            <span :class="statusBadgeClass(expense.status)" class="badge-pill">{{
+                                                expense.status }}</span>
+                                            <div class="text-xs text-slate-500">{{ expense.paymentMethod || 'Belum
+                                                ditentukan' }}</div>
+                                            <div v-if="expense.status === 'complete' && expense.whatsappLink"
+                                                class="text-xs">
+                                                <a :href="expense.whatsappLink" target="_blank"
+                                                    class="font-bold text-emerald-600 hover:text-emerald-700">Buka
+                                                    WhatsApp Mentor</a>
                                             </div>
-                                            <div class="text-xs text-slate-400">Updated: {{ formatDateTimeLabel(expense.updatedAtMs) }}</div>
+                                            <div class="text-xs text-slate-400">Updated: {{
+                                                formatDateTimeLabel(expense.updatedAtMs) }}</div>
                                         </div>
                                     </td>
                                     <td class="text-right">
                                         <div class="flex flex-col gap-2 items-end">
-                                            <button @click="openEditDrawer(expense)" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-black transition-all">
+                                            <button @click="openEditDrawer(expense)"
+                                                class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-black transition-all">
                                                 Open Detail
                                             </button>
-                                            <button
-                                                v-if="expense.status !== 'paid' && expense.status !== 'complete'"
+                                            <button v-if="expense.status !== 'paid' && expense.status !== 'complete'"
                                                 @click="markAsReviewing(expense)"
-                                                class="px-4 py-2 rounded-xl border border-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-50 transition-all"
-                                            >
+                                                class="px-4 py-2 rounded-xl border border-amber-200 text-amber-700 text-xs font-bold hover:bg-amber-50 transition-all">
                                                 Mark Reviewing
                                             </button>
                                             <button
                                                 v-if="expense.category === 'mentor_salary' && expense.status === 'paid' && expense.transferProofUrl"
                                                 @click="sendWhatsappToMentor(expense)"
-                                                class="px-4 py-2 rounded-xl border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-50 transition-all"
-                                            >
+                                                class="px-4 py-2 rounded-xl border border-emerald-200 text-emerald-700 text-xs font-bold hover:bg-emerald-50 transition-all">
                                                 Kirim Bukti ke Mentor
                                             </button>
                                         </div>
@@ -401,7 +501,8 @@
                                     <td colspan="6">
                                         <div class="empty-state">
                                             <i class="bi bi-wallet2 text-3xl block mb-3"></i>
-                                            <div class="font-bold text-slate-500 mb-1">Belum ada expense request yang sesuai filter</div>
+                                            <div class="font-bold text-slate-500 mb-1">Belum ada expense request yang
+                                                sesuai filter</div>
                                             <div class="text-sm">Buat request baru atau ubah filter pencarian.</div>
                                         </div>
                                     </td>
@@ -416,11 +517,16 @@
                         <div class="drawer-panel">
                             <div class="flex items-start justify-between gap-4 mb-8">
                                 <div>
-                                    <div class="text-[11px] uppercase tracking-[0.18em] font-black text-indigo-500">{{ isEditMode ? 'Update Expense' : 'New Expense Request' }}</div>
-                                    <h3 class="text-2xl font-black text-slate-900 mt-2">{{ form.title || (isEditMode ? 'Expense Detail' : 'Create Request') }}</h3>
-                                    <p class="text-sm text-slate-500 mt-2 max-w-xl">Gunakan halaman ini untuk menyimpan request pengeluaran, detail rekening tujuan, notes penjelasan, dan bukti transfer.</p>
+                                    <div class="text-[11px] uppercase tracking-[0.18em] font-black text-indigo-500">{{
+                                        isEditMode ? 'Update Expense' : 'New Expense Request' }}</div>
+                                    <h3 class="text-2xl font-black text-slate-900 mt-2">{{ form.title || (isEditMode ?
+                                        'Expense Detail' : 'Create Request') }}</h3>
+                                    <p class="text-sm text-slate-500 mt-2 max-w-xl">Gunakan halaman ini untuk menyimpan
+                                        request pengeluaran, detail rekening tujuan, notes penjelasan, dan bukti
+                                        transfer.</p>
                                 </div>
-                                <button @click="closeDrawer" class="w-11 h-11 rounded-2xl border border-slate-200 text-slate-500 hover:bg-slate-100 transition-all">
+                                <button @click="closeDrawer"
+                                    class="w-11 h-11 rounded-2xl border border-slate-200 text-slate-500 hover:bg-slate-100 transition-all">
                                     <i class="bi bi-x-lg"></i>
                                 </button>
                             </div>
@@ -431,7 +537,8 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div class="md:col-span-2">
                                             <label class="field-label">Judul Pengeluaran</label>
-                                            <input v-model="form.title" type="text" class="field-control" placeholder="Contoh: Gaji Mentor FC Batch 12">
+                                            <input v-model="form.title" type="text" class="field-control"
+                                                placeholder="Contoh: Gaji Mentor FC Batch 12">
                                         </div>
                                         <div>
                                             <label class="field-label">Kategori</label>
@@ -457,32 +564,26 @@
                                         <div class="md:col-span-2">
                                             <label class="field-label">Requester / PIC</label>
                                             <div class="search-select">
-                                                <input
-                                                    v-model="requesterSearch"
-                                                    type="text"
-                                                    class="field-control"
+                                                <input v-model="requesterSearch" type="text" class="field-control"
                                                     placeholder="Cari nama PIC, nickname, email, atau role"
-                                                    @focus="activeSearch = 'requester'"
-                                                    @input="handleRequesterInput"
-                                                    @blur="closeSearchLater"
-                                                >
+                                                    @focus="activeSearch = 'requester'" @input="handleRequesterInput"
+                                                    @blur="closeSearchLater">
                                                 <div v-if="activeSearch === 'requester'" class="search-select-list">
-                                                    <button
-                                                        v-for="option in filteredRequesterOptions"
-                                                        :key="option.id"
-                                                        type="button"
-                                                        class="search-select-item"
-                                                        @mousedown.prevent="selectRequester(option)"
-                                                    >
-                                                        <div class="text-sm font-bold text-slate-800">{{ option.name }}</div>
+                                                    <button v-for="option in filteredRequesterOptions" :key="option.id"
+                                                        type="button" class="search-select-item"
+                                                        @mousedown.prevent="selectRequester(option)">
+                                                        <div class="text-sm font-bold text-slate-800">{{ option.name }}
+                                                        </div>
                                                         <div class="text-[11px] text-slate-500">{{ option.meta }}</div>
                                                     </button>
-                                                    <div v-if="!filteredRequesterOptions.length" class="search-select-empty">
+                                                    <div v-if="!filteredRequesterOptions.length"
+                                                        class="search-select-empty">
                                                         Tidak ada user yang cocok.
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="field-help">Terhubung ke collection `users` agar PIC lebih konsisten.</div>
+                                            <div class="field-help">Terhubung ke collection `users` agar PIC lebih
+                                                konsisten.</div>
                                         </div>
                                         <div>
                                             <label class="field-label">Due Date</label>
@@ -490,7 +591,8 @@
                                         </div>
                                         <div>
                                             <label class="field-label">Amount (IDR)</label>
-                                            <input v-model="formattedAmount" type="text" inputmode="numeric" class="field-control" placeholder="1.250.000">
+                                            <input v-model="formattedAmount" type="text" inputmode="numeric"
+                                                class="field-control" placeholder="1.250.000">
                                         </div>
                                         <div>
                                             <label class="field-label">Status</label>
@@ -501,37 +603,31 @@
                                                 <option value="complete">Complete</option>
                                                 <option value="rejected">Rejected</option>
                                             </select>
-                                            <div class="field-help">Gunakan `paid` setelah bukti transfer dilampirkan, lalu `complete` setelah bukti dikirim ke mentor.</div>
+                                            <div class="field-help">Gunakan `paid` setelah bukti transfer dilampirkan,
+                                                lalu `complete` setelah bukti dikirim ke mentor.</div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="form-panel">
                                     <div class="text-sm font-black text-slate-900 mb-5">Category Detail</div>
-                                    <div v-if="form.category === 'mentor_salary'" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div v-if="form.category === 'mentor_salary'"
+                                        class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
                                             <label class="field-label">Related Class</label>
                                             <div class="search-select">
-                                                <input
-                                                    v-model="classSearch"
-                                                    type="text"
-                                                    class="field-control"
-                                                    placeholder="Cari nama kelas"
-                                                    @focus="activeSearch = 'class'"
-                                                    @input="handleClassInput"
-                                                    @blur="closeSearchLater"
-                                                >
+                                                <input v-model="classSearch" type="text" class="field-control"
+                                                    placeholder="Cari nama kelas" @focus="activeSearch = 'class'"
+                                                    @input="handleClassInput" @blur="closeSearchLater">
                                                 <div v-if="activeSearch === 'class'" class="search-select-list">
-                                                    <button
-                                                        v-for="option in filteredClassOptions"
-                                                        :key="option.id"
-                                                        type="button"
-                                                        class="search-select-item"
-                                                        @mousedown.prevent="selectClass(option)"
-                                                    >
-                                                        <div class="text-sm font-bold text-slate-800">{{ option.name }}</div>
+                                                    <button v-for="option in filteredClassOptions" :key="option.id"
+                                                        type="button" class="search-select-item"
+                                                        @mousedown.prevent="selectClass(option)">
+                                                        <div class="text-sm font-bold text-slate-800">{{ option.name }}
+                                                        </div>
                                                     </button>
-                                                    <div v-if="!filteredClassOptions.length" class="search-select-empty">
+                                                    <div v-if="!filteredClassOptions.length"
+                                                        class="search-select-empty">
                                                         Tidak ada kelas yang cocok.
                                                     </div>
                                                 </div>
@@ -541,77 +637,83 @@
                                         <div>
                                             <label class="field-label">Mentor Name</label>
                                             <div class="search-select">
-                                                <input
-                                                    v-model="mentorSearch"
-                                                    type="text"
-                                                    class="field-control"
-                                                    placeholder="Cari mentor"
-                                                    @focus="activeSearch = 'mentor'"
-                                                    @input="handleMentorInput"
-                                                    @blur="closeSearchLater"
-                                                >
+                                                <input v-model="mentorSearch" type="text" class="field-control"
+                                                    placeholder="Cari mentor" @focus="activeSearch = 'mentor'"
+                                                    @input="handleMentorInput" @blur="closeSearchLater">
                                                 <div v-if="activeSearch === 'mentor'" class="search-select-list">
-                                                    <button
-                                                        v-for="option in filteredMentorOptions"
-                                                        :key="option.id"
-                                                        type="button"
-                                                        class="search-select-item"
-                                                        @mousedown.prevent="selectMentor(option)"
-                                                    >
-                                                        <div class="text-sm font-bold text-slate-800">{{ option.name }}</div>
+                                                    <button v-for="option in filteredMentorOptions" :key="option.id"
+                                                        type="button" class="search-select-item"
+                                                        @mousedown.prevent="selectMentor(option)">
+                                                        <div class="text-sm font-bold text-slate-800">{{ option.name }}
+                                                        </div>
                                                         <div class="text-[11px] text-slate-500">{{ option.meta }}</div>
                                                     </button>
-                                                    <div v-if="!filteredMentorOptions.length" class="search-select-empty">
+                                                    <div v-if="!filteredMentorOptions.length"
+                                                        class="search-select-empty">
                                                         Tidak ada mentor yang cocok.
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="field-help">Saat mentor dipilih, rekening tujuan akan terisi otomatis dari collection `mentor`.</div>
+                                            <div class="field-help">Saat mentor dipilih, rekening tujuan akan terisi
+                                                otomatis dari collection `mentor`.</div>
                                         </div>
                                         <div class="md:col-span-2">
                                             <label class="field-label">Nomor WhatsApp Mentor</label>
-                                            <input v-model="form.mentorWhatsapp" type="text" class="field-control" readonly placeholder="Diambil otomatis dari collection mentor">
-                                            <div class="field-help">Nomor ini dipakai untuk mengirim bukti transfer setelah status paid.</div>
+                                            <input v-model="form.mentorWhatsapp" type="text" class="field-control"
+                                                readonly placeholder="Diambil otomatis dari collection mentor">
+                                            <div class="field-help">Nomor ini dipakai untuk mengirim bukti transfer
+                                                setelah status paid.</div>
                                         </div>
                                     </div>
 
-                                    <div v-else-if="form.category === 'operational'" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div v-else-if="form.category === 'operational'"
+                                        class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
                                             <label class="field-label">Operational Item</label>
-                                            <input v-model="form.vendorName" type="text" class="field-control" placeholder="Contoh: Sewa venue / konsumsi / kebutuhan operasional">
+                                            <input v-model="form.vendorName" type="text" class="field-control"
+                                                placeholder="Contoh: Sewa venue / konsumsi / kebutuhan operasional">
                                         </div>
                                         <div>
                                             <label class="field-label">Periode / Keperluan</label>
-                                            <input v-model="form.expensePeriod" type="text" class="field-control" placeholder="Contoh: April 2026 / event onboarding">
+                                            <input v-model="form.expensePeriod" type="text" class="field-control"
+                                                placeholder="Contoh: April 2026 / event onboarding">
                                         </div>
                                     </div>
 
-                                    <div v-else-if="form.category === 'reimburse'" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div v-else-if="form.category === 'reimburse'"
+                                        class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
                                             <label class="field-label">Reimburse Type</label>
-                                            <input v-model="form.reimburseType" type="text" class="field-control" placeholder="Contoh: konsumsi, transport, ATK">
+                                            <input v-model="form.reimburseType" type="text" class="field-control"
+                                                placeholder="Contoh: konsumsi, transport, ATK">
                                         </div>
                                         <div>
                                             <label class="field-label">Reimburse For</label>
-                                            <input v-model="form.reimburseReason" type="text" class="field-control" placeholder="Contoh: meeting client / belanja tim">
+                                            <input v-model="form.reimburseReason" type="text" class="field-control"
+                                                placeholder="Contoh: meeting client / belanja tim">
                                         </div>
                                     </div>
 
-                                    <div v-else-if="form.category === 'tools'" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                    <div v-else-if="form.category === 'tools'"
+                                        class="grid grid-cols-1 md:grid-cols-3 gap-5">
                                         <div class="md:col-span-2">
                                             <label class="field-label">Tool / Platform</label>
-                                            <input v-model="form.toolName" type="text" class="field-control" placeholder="Contoh: Zoom Pro / Canva / Notion">
+                                            <input v-model="form.toolName" type="text" class="field-control"
+                                                placeholder="Contoh: Zoom Pro / Canva / Notion">
                                         </div>
                                         <div>
                                             <label class="field-label">Billing Period</label>
-                                            <input v-model="form.billingPeriod" type="text" class="field-control" placeholder="Bulanan / Tahunan">
+                                            <input v-model="form.billingPeriod" type="text" class="field-control"
+                                                placeholder="Bulanan / Tahunan">
                                         </div>
                                     </div>
 
-                                    <div v-else-if="form.category === 'transport'" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div v-else-if="form.category === 'transport'"
+                                        class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
                                             <label class="field-label">Traveler / Penumpang</label>
-                                            <input v-model="form.travelerName" type="text" class="field-control" placeholder="Nama orang yang melakukan perjalanan">
+                                            <input v-model="form.travelerName" type="text" class="field-control"
+                                                placeholder="Nama orang yang melakukan perjalanan">
                                         </div>
                                         <div>
                                             <label class="field-label">Tanggal Perjalanan</label>
@@ -619,18 +721,21 @@
                                         </div>
                                         <div class="md:col-span-2">
                                             <label class="field-label">Rute / Detail Transport</label>
-                                            <input v-model="form.travelRoute" type="text" class="field-control" placeholder="Contoh: Jogja - Sleman PP / Grab ke venue">
+                                            <input v-model="form.travelRoute" type="text" class="field-control"
+                                                placeholder="Contoh: Jogja - Sleman PP / Grab ke venue">
                                         </div>
                                     </div>
 
                                     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
                                             <label class="field-label">Reference Label</label>
-                                            <input v-model="form.referenceLabel" type="text" class="field-control" placeholder="Kode referensi, vendor, atau label tambahan">
+                                            <input v-model="form.referenceLabel" type="text" class="field-control"
+                                                placeholder="Kode referensi, vendor, atau label tambahan">
                                         </div>
                                         <div>
                                             <label class="field-label">Additional Context</label>
-                                            <input v-model="form.referenceDetail" type="text" class="field-control" placeholder="Keterangan singkat tambahan">
+                                            <input v-model="form.referenceDetail" type="text" class="field-control"
+                                                placeholder="Keterangan singkat tambahan">
                                         </div>
                                     </div>
                                 </div>
@@ -640,41 +745,30 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div class="md:col-span-2">
                                             <label class="field-label">Nama Penerima Rekening</label>
-                                            <input
-                                                v-model="form.beneficiaryName"
-                                                type="text"
-                                                class="field-control"
+                                            <input v-model="form.beneficiaryName" type="text" class="field-control"
                                                 :class="{ 'field-readonly': isMentorSalary && !!form.mentorId }"
                                                 :readonly="isMentorSalary && !!form.mentorId"
-                                                placeholder="Nama pemilik rekening"
-                                            >
+                                                placeholder="Nama pemilik rekening">
                                         </div>
                                         <div>
                                             <label class="field-label">Bank</label>
-                                            <input
-                                                v-model="form.bankName"
-                                                type="text"
-                                                class="field-control"
+                                            <input v-model="form.bankName" type="text" class="field-control"
                                                 :class="{ 'field-readonly': isMentorSalary && !!form.mentorId }"
                                                 :readonly="isMentorSalary && !!form.mentorId"
-                                                placeholder="BCA / BNI / Mandiri / dll"
-                                            >
+                                                placeholder="BCA / BNI / Mandiri / dll">
                                         </div>
                                         <div>
                                             <label class="field-label">Nomor Rekening</label>
-                                            <input
-                                                v-model="form.accountNumber"
-                                                type="text"
-                                                class="field-control mono"
+                                            <input v-model="form.accountNumber" type="text" class="field-control mono"
                                                 :class="{ 'field-readonly': isMentorSalary && !!form.mentorId }"
-                                                :readonly="isMentorSalary && !!form.mentorId"
-                                                placeholder="1234567890"
-                                            >
+                                                :readonly="isMentorSalary && !!form.mentorId" placeholder="1234567890">
                                         </div>
                                         <div class="md:col-span-2">
                                             <label class="field-label">Metode Pembayaran</label>
-                                            <input v-model="form.paymentMethod" type="text" class="field-control" placeholder="Transfer Bank / E-Wallet / Cash">
-                                            <div v-if="isMentorSalary && form.mentorId" class="field-help">Rekening tujuan mengikuti data mentor yang dipilih.</div>
+                                            <input v-model="form.paymentMethod" type="text" class="field-control"
+                                                placeholder="Transfer Bank / E-Wallet / Cash">
+                                            <div v-if="isMentorSalary && form.mentorId" class="field-help">Rekening
+                                                tujuan mengikuti data mentor yang dipilih.</div>
                                         </div>
                                     </div>
                                 </div>
@@ -684,12 +778,15 @@
                                     <div class="grid grid-cols-1 gap-5">
                                         <div>
                                             <label class="field-label">Notes / Penjelasan Request</label>
-                                            <textarea v-model="form.notes" rows="5" class="field-control" placeholder="Misalnya: Mentor mengajar 8 sesi, nominal sekian karena termasuk bonus evaluasi dan transport."></textarea>
-                                            <div class="field-help">Field ini berguna untuk menjelaskan kenapa nominal tertentu diajukan, terutama untuk gaji mentor per kelas.</div>
+                                            <textarea v-model="form.notes" rows="5" class="field-control"
+                                                placeholder="Misalnya: Mentor mengajar 8 sesi, nominal sekian karena termasuk bonus evaluasi dan transport."></textarea>
+                                            <div class="field-help">Field ini berguna untuk menjelaskan kenapa nominal
+                                                tertentu diajukan, terutama untuk gaji mentor per kelas.</div>
                                         </div>
                                         <div>
                                             <label class="field-label">Treasurer Note</label>
-                                            <textarea v-model="form.paymentNotes" rows="4" class="field-control" placeholder="Catatan dari treasurer saat review atau setelah membayar"></textarea>
+                                            <textarea v-model="form.paymentNotes" rows="4" class="field-control"
+                                                placeholder="Catatan dari treasurer saat review atau setelah membayar"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -699,19 +796,24 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
                                             <label class="field-label">Upload Bukti Transfer</label>
-                                            <input ref="proofFileInput" type="file" accept="image/*,.pdf" class="field-control !py-2 !bg-white">
-                                            <div class="field-help">Upload saat treasurer sudah melakukan transfer. File PDF dan gambar didukung.</div>
+                                            <input ref="proofFileInput" type="file" accept="image/*,.pdf"
+                                                class="field-control !py-2 !bg-white">
+                                            <div class="field-help">Upload saat treasurer sudah melakukan transfer. File
+                                                PDF dan gambar didukung.</div>
                                         </div>
                                         <div>
                                             <div class="field-label">Preview Bukti Saat Ini</div>
                                             <div class="proof-preview">
                                                 <template v-if="form.transferProofUrl">
-                                                    <img v-if="isImageUrl(form.transferProofUrl)" :src="form.transferProofUrl" alt="Proof">
-                                                    <a v-else :href="form.transferProofUrl" target="_blank" class="text-sm font-bold text-blue-600 hover:text-blue-800">
+                                                    <img v-if="isImageUrl(form.transferProofUrl)"
+                                                        :src="form.transferProofUrl" alt="Proof">
+                                                    <a v-else :href="form.transferProofUrl" target="_blank"
+                                                        class="text-sm font-bold text-blue-600 hover:text-blue-800">
                                                         Buka Bukti Transfer
                                                     </a>
                                                 </template>
-                                                <span v-else class="text-sm font-bold text-slate-300">Belum ada bukti transfer</span>
+                                                <span v-else class="text-sm font-bold text-slate-300">Belum ada bukti
+                                                    transfer</span>
                                             </div>
                                         </div>
                                     </div>
@@ -720,21 +822,20 @@
 
                             <div class="flex flex-col md:flex-row justify-between gap-3 mt-8">
                                 <div class="text-xs text-slate-400">
-                                    <span v-if="isEditMode">Expense ID: <span class="mono">{{ currentExpenseId }}</span></span>
+                                    <span v-if="isEditMode">Expense ID: <span class="mono">{{ currentExpenseId
+                                            }}</span></span>
                                 </div>
                                 <div class="flex gap-3">
-                                    <button
-                                        v-if="isEditMode"
-                                        @click="deleteExpense"
-                                        :disabled="saving"
-                                        class="px-5 py-3 rounded-2xl border border-rose-200 text-rose-700 font-bold text-sm hover:bg-rose-50 transition-all disabled:opacity-60"
-                                    >
+                                    <button v-if="isEditMode" @click="deleteExpense" :disabled="saving"
+                                        class="px-5 py-3 rounded-2xl border border-rose-200 text-rose-700 font-bold text-sm hover:bg-rose-50 transition-all disabled:opacity-60">
                                         Hapus Data
                                     </button>
-                                    <button @click="closeDrawer" class="px-5 py-3 rounded-2xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-100 transition-all">
+                                    <button @click="closeDrawer"
+                                        class="px-5 py-3 rounded-2xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-100 transition-all">
                                         Cancel
                                     </button>
-                                    <button @click="saveExpense" :disabled="saving" class="px-7 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-100 transition-all disabled:opacity-60">
+                                    <button @click="saveExpense" :disabled="saving"
+                                        class="px-7 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-100 transition-all disabled:opacity-60">
                                         {{ saving ? 'Saving...' : (isEditMode ? 'Update Expense' : 'Create Expense') }}
                                     </button>
                                 </div>
@@ -744,7 +845,8 @@
                 </transition>
 
                 <transition name="fade">
-                    <div v-if="toast" class="fixed bottom-8 right-8 z-[130] px-5 py-3 rounded-2xl bg-slate-900 text-white font-bold text-sm shadow-2xl">
+                    <div v-if="toast"
+                        class="fixed bottom-8 right-8 z-[130] px-5 py-3 rounded-2xl bg-slate-900 text-white font-bold text-sm shadow-2xl">
                         {{ toast }}
                     </div>
                 </transition>
@@ -815,6 +917,7 @@
                 const showDrawer = ref(false);
                 const isEditMode = ref(false);
                 const saving = ref(false);
+                const exporting = ref(false);
                 const toast = ref(null);
                 const currentExpenseId = ref('');
                 const proofFileInput = ref(null);
@@ -1407,6 +1510,120 @@
                     }
                 });
 
+                const exportToXlsx = async () => {
+                    if (exporting.value) return;
+                    const list = filteredExpenses.value;
+                    if (!list.length) {
+                        alert('Tidak ada data untuk diexport.');
+                        return;
+                    }
+                    const ExcelJS = window.ExcelJS;
+                    if (!ExcelJS) {
+                        alert('Library ExcelJS belum tersedia.');
+                        return;
+                    }
+
+                    exporting.value = true;
+                    showToast('Menyiapkan file XLSX...');
+
+                    try {
+                        const workbook = new ExcelJS.Workbook();
+                        workbook.creator = 'Dialogika';
+                        workbook.created = new Date();
+
+                        const worksheet = workbook.addWorksheet('Operational Expenses', {
+                            views: [{ state: 'frozen', ySplit: 1 }]
+                        });
+
+                        worksheet.columns = [
+                            { header: 'ID', key: 'id', width: 18 },
+                            { header: 'Title', key: 'title', width: 28 },
+                            { header: 'Category', key: 'category', width: 16 },
+                            { header: 'Department', key: 'department', width: 18 },
+                            { header: 'Requester', key: 'requester', width: 20 },
+                            { header: 'Related Class', key: 'relatedClass', width: 20 },
+                            { header: 'Mentor', key: 'mentor', width: 18 },
+                            { header: 'Due Date', key: 'dueDate', width: 16 },
+                            { header: 'Amount (IDR)', key: 'amount', width: 16 },
+                            { header: 'Status', key: 'status', width: 12 },
+                            { header: 'Beneficiary', key: 'beneficiary', width: 20 },
+                            { header: 'Bank', key: 'bank', width: 14 },
+                            { header: 'Account Number', key: 'accountNumber', width: 18 },
+                            { header: 'Payment Method', key: 'paymentMethod', width: 16 },
+                            { header: 'Notes', key: 'notes', width: 32 },
+                            { header: 'Treasurer Note', key: 'paymentNotes', width: 32 },
+                            { header: 'Paid At', key: 'paidAt', width: 18 },
+                            { header: 'Updated At', key: 'updatedAt', width: 18 },
+                            { header: 'Proof Link', key: 'proofLink', width: 36 }
+                        ];
+
+                        worksheet.getRow(1).font = { bold: true };
+                        worksheet.getColumn('amount').numFmt = '#,##0';
+                        worksheet.getColumn('proofLink').alignment = { vertical: 'middle', horizontal: 'center' };
+
+                        worksheet.columns.forEach(col => {
+                            if (col) col.alignment = { vertical: 'middle' };
+                        });
+
+                        ['title', 'relatedClass', 'notes', 'paymentNotes'].forEach(key => {
+                            const col = worksheet.getColumn(key);
+                            if (col) col.alignment = { vertical: 'middle', wrapText: true };
+                        });
+
+                        worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+
+                        for (const expense of list) {
+                            const row = worksheet.addRow({
+                                id: expense.id,
+                                title: expense.title || '',
+                                category: formatCategory(expense.category),
+                                department: expense.department || '',
+                                requester: expense.requesterName || '',
+                                relatedClass: expense.relatedClass || '',
+                                mentor: expense.mentorName || '',
+                                dueDate: formatDateLabel(expense.dueDate),
+                                amount: Number(expense.amount) || 0,
+                                status: expense.status || '',
+                                beneficiary: expense.beneficiaryName || '',
+                                bank: expense.bankName || '',
+                                accountNumber: expense.accountNumber || '',
+                                paymentMethod: expense.paymentMethod || '',
+                                notes: expense.notes || '',
+                                paymentNotes: expense.paymentNotes || '',
+                                paidAt: formatDateTimeLabel(expense.paidAtMs),
+                                updatedAt: formatDateTimeLabel(expense.updatedAtMs),
+                                proofLink: expense.transferProofUrl ? { text: 'Lihat Gambar', hyperlink: expense.transferProofUrl } : ''
+                            });
+
+                            if (expense.transferProofUrl) {
+                                const proofCell = row.getCell('proofLink');
+                                proofCell.font = { color: { argb: 'FF0563C1' }, underline: true };
+                            }
+                        }
+
+                        const buffer = await workbook.xlsx.writeBuffer();
+                        const blob = new Blob([buffer], {
+                            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        });
+                        const url = window.URL.createObjectURL(blob);
+                        const anchor = document.createElement('a');
+                        const dateStamp = new Date().toISOString().slice(0, 10);
+                        anchor.href = url;
+                        anchor.download = `operational-expenses-${dateStamp}.xlsx`;
+                        document.body.appendChild(anchor);
+                        anchor.click();
+                        anchor.remove();
+                        window.URL.revokeObjectURL(url);
+
+                        showToast('File XLSX berhasil diunduh');
+                    } catch (error) {
+                        console.error('[OperationalExpenses] Gagal export XLSX', error);
+                        alert('Gagal export XLSX. Silakan coba lagi.');
+                    } finally {
+                        exporting.value = false;
+                    }
+                };
+
                 const showToast = (message) => {
                     toast.value = message;
                     setTimeout(() => {
@@ -1790,6 +2007,7 @@
                     isEditMode,
                     saving,
                     toast,
+                    exporting,
                     currentExpenseId,
                     form,
                     proofFileInput,
@@ -1821,10 +2039,12 @@
                     saveExpense,
                     markAsReviewing,
                     sendWhatsappToMentor,
-                    deleteExpense
+                    deleteExpense,
+                    exportToXlsx
                 };
             }
         }).mount('#expenseApp');
     </script>
 </body>
+
 </html>
