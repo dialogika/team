@@ -47,6 +47,19 @@
             background: #020617;
             color: #e5e7eb;
         }
+        .status-breakdown { font-weight: 800; }
+        .status-breakdown-soon { background:#fca5a5; color:#7f1d1d; }
+        .status-breakdown-running { background:#7dd3fc; color:#0c4a6e; }
+        .status-breakdown-reminder { background:#d8b4fe; color:#581c87; }
+        .status-breakdown-stall { background:#d1d5db; color:#1f2937; }
+        .status-breakdown-graduate { background:#fb923c; color:#7c2d12; }
+        .status-breakdown-complete { background:#4ade80; color:#14532d; }
+        .status-bar-soon { background:#fca5a5; }
+        .status-bar-running { background:#7dd3fc; }
+        .status-bar-reminder { background:#d8b4fe; }
+        .status-bar-stall { background:#d1d5db; }
+        .status-bar-graduate { background:#fb923c; }
+        .status-bar-complete { background:#4ade80; }
         .table-sticky thead th {
             position: sticky;
             top: 0;
@@ -1714,6 +1727,14 @@
             const legend = document.getElementById("statusLegend");
             if (!container) return;
             const statusOrder = ["Soon", "Running", "Reminder", "Stall", "Graduate", "Complete"];
+            const breakdownStyles = {
+                Soon: { badge: "status-breakdown-soon", bar: "status-bar-soon" },
+                Running: { badge: "status-breakdown-running", bar: "status-bar-running" },
+                Reminder: { badge: "status-breakdown-reminder", bar: "status-bar-reminder" },
+                Stall: { badge: "status-breakdown-stall", bar: "status-bar-stall" },
+                Graduate: { badge: "status-breakdown-graduate", bar: "status-bar-graduate" },
+                Complete: { badge: "status-breakdown-complete", bar: "status-bar-complete" }
+            };
             const counts = {};
             statusOrder.forEach(s => counts[s] = 0);
             list.forEach(c => {
@@ -1726,12 +1747,13 @@
             statusOrder.forEach(s => {
                 const count = counts[s] || 0;
                 const pct = Math.round((count / total) * 100);
+                const breakdownClass = breakdownStyles[s] || {};
                 const row = document.createElement("div");
                 row.className = "flex items-center justify-between gap-2";
                 const left = document.createElement("div");
                 left.className = "flex items-center gap-2";
                 const badge = document.createElement("span");
-                badge.className = getStatusClass(s);
+                badge.className = "status-pill status-breakdown " + (breakdownClass.badge || "");
                 badge.textContent = s;
                 const text = document.createElement("span");
                 text.className = "text-[11px] text-slate-500";
@@ -1741,7 +1763,7 @@
                 const barOuter = document.createElement("div");
                 barOuter.className = "flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden";
                 const barInner = document.createElement("div");
-                barInner.className = "h-1.5 rounded-full bg-slate-400";
+                barInner.className = "h-1.5 rounded-full " + (breakdownClass.bar || "bg-slate-400");
                 barInner.style.width = pct + "%";
                 barOuter.appendChild(barInner);
                 row.appendChild(left);
