@@ -116,6 +116,92 @@
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
             background: #ffffff;
         }
+        .field-control-compact {
+            box-sizing: border-box;
+            min-height: 50px;
+            padding: 10px 12px;
+            font-size: 13px;
+            border-radius: 14px;
+        }
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 6px 8px;
+            box-sizing: border-box;
+            min-height: 50px;
+            width: 100%;
+            overflow-x: auto;
+        }
+        .date-nav {
+            width: 36px;
+            height: 36px;
+            border: 0;
+            border-radius: 12px;
+            background: #e2e8f0;
+            color: #94a3b8;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .date-nav:hover {
+            background: #cbd5e1;
+            color: #475569;
+        }
+        .date-pill {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 12px;
+            color: #0f172a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .date-pill-group {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
+            justify-content: space-between;
+            gap: 6px;
+        }
+        .date-pill:hover {
+            background: #f1f5f9;
+        }
+        .date-pill.is-active {
+            background: #cbd5e1;
+            border-color: #cbd5e1;
+            color: #1d4ed8;
+        }
+        .sort-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: 0;
+            padding: 0;
+            font: inherit;
+            color: inherit;
+            text-transform: inherit;
+            letter-spacing: inherit;
+            cursor: pointer;
+        }
+        .sort-icon {
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+        .sort-icon.is-active {
+            color: #64748b;
+        }
         .field-help {
             font-size: 11px;
             color: #94a3b8;
@@ -257,33 +343,79 @@
                 </div>
 
                 <div class="expense-card p-6 mb-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                        <div class="lg:col-span-2">
-                            <label class="field-label">Search Request</label>
-                            <input v-model="searchQuery" type="text" class="field-control" placeholder="Cari judul, PIC, mentor, kelas, bank, atau nomor rekening">
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="field-label">Search Request</label>
+                                <input v-model="searchQuery" type="text" class="field-control field-control-compact" placeholder="Cari judul, PIC, mentor, kelas, bank, atau nomor rekening">
+                            </div>
+                            <div>
+                                <label class="field-label">Status Filter</label>
+                                <select v-model="filterStatus" class="field-control field-control-compact">
+                                    <option value="all">Semua Status</option>
+                                    <option value="requested">Requested</option>
+                                    <option value="reviewing">Reviewing</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="complete">Complete</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="field-label">Category Filter</label>
+                                <select v-model="filterCategory" class="field-control field-control-compact">
+                                    <option value="all">Semua Kategori</option>
+                                    <option value="mentor_salary">Mentor Salary</option>
+                                    <option value="operational">Operational</option>
+                                    <option value="reimburse">Reimburse</option>
+                                    <option value="tools">Tools</option>
+                                    <option value="transport">Transport</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <label class="field-label">Status Filter</label>
-                            <select v-model="filterStatus" class="field-control">
-                                <option value="all">Semua Status</option>
-                                <option value="requested">Requested</option>
-                                <option value="reviewing">Reviewing</option>
-                                <option value="paid">Paid</option>
-                                <option value="complete">Complete</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="field-label">Category Filter</label>
-                            <select v-model="filterCategory" class="field-control">
-                                <option value="all">Semua Kategori</option>
-                                <option value="mentor_salary">Mentor Salary</option>
-                                <option value="operational">Operational</option>
-                                <option value="reimburse">Reimburse</option>
-                                <option value="tools">Tools</option>
-                                <option value="transport">Transport</option>
-                                <option value="other">Other</option>
-                            </select>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="field-label mb-0">Filter Tanggal</label>
+                                    <button
+                                        v-if="filterDate"
+                                        type="button"
+                                        class="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400 hover:text-slate-600 transition-all"
+                                        @click="clearDateFilter"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                                <div class="date-filter">
+                                    <button type="button" class="date-nav" aria-label="Tanggal sebelumnya" @click="shiftDateWindow(-1)">
+                                        <i class="bi bi-caret-left-fill"></i>
+                                    </button>
+                                    <div class="date-pill-group">
+                                        <button
+                                            v-for="option in dateWindow"
+                                            :key="option.iso"
+                                            type="button"
+                                            class="date-pill"
+                                            :class="{ 'is-active': option.iso === filterDate }"
+                                            @click="selectDate(option.iso)"
+                                        >
+                                            {{ option.label }}
+                                        </button>
+                                    </div>
+                                    <button type="button" class="date-nav" aria-label="Tanggal berikutnya" @click="shiftDateWindow(1)">
+                                        <i class="bi bi-caret-right-fill"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="field-label text-[10px]">Start Date</label>
+                                <input v-model="filterDateStart" type="date" class="field-control field-control-compact">
+                            </div>
+                            <div>
+                                <label class="field-label text-[10px]">End Date</label>
+                                <input v-model="filterDateEnd" type="date" class="field-control field-control-compact">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -303,11 +435,36 @@
                         <table class="expense-table">
                             <thead>
                                 <tr>
-                                    <th>Request</th>
-                                    <th>Transfer Destination</th>
-                                    <th>Amount & Due</th>
-                                    <th>Notes</th>
-                                    <th>Status</th>
+                                    <th :aria-sort="sortAria('request')">
+                                        <button type="button" class="sort-button" @click="toggleSort('request')">
+                                            Request
+                                            <i :class="[sortIcon('request'), sortIconClass('request')]"></i>
+                                        </button>
+                                    </th>
+                                    <th :aria-sort="sortAria('destination')">
+                                        <button type="button" class="sort-button" @click="toggleSort('destination')">
+                                            Transfer Destination
+                                            <i :class="[sortIcon('destination'), sortIconClass('destination')]"></i>
+                                        </button>
+                                    </th>
+                                    <th :aria-sort="sortAria('amount')">
+                                        <button type="button" class="sort-button" @click="toggleSort('amount')">
+                                            Amount & Due
+                                            <i :class="[sortIcon('amount'), sortIconClass('amount')]"></i>
+                                        </button>
+                                    </th>
+                                    <th :aria-sort="sortAria('notes')">
+                                        <button type="button" class="sort-button" @click="toggleSort('notes')">
+                                            Notes
+                                            <i :class="[sortIcon('notes'), sortIconClass('notes')]"></i>
+                                        </button>
+                                    </th>
+                                    <th :aria-sort="sortAria('status')">
+                                        <button type="button" class="sort-button" @click="toggleSort('status')">
+                                            Status
+                                            <i :class="[sortIcon('status'), sortIconClass('status')]"></i>
+                                        </button>
+                                    </th>
                                     <th class="text-right">Action</th>
                                 </tr>
                             </thead>
@@ -803,6 +960,12 @@
                 const searchQuery = ref('');
                 const filterStatus = ref('all');
                 const filterCategory = ref('all');
+                const filterDate = ref('');
+                const filterDateStart = ref('');
+                const filterDateEnd = ref('');
+                const dateAnchor = ref(new Date());
+                const sortKey = ref('');
+                const sortDirection = ref('asc');
                 const showDrawer = ref(false);
                 const isEditMode = ref(false);
                 const saving = ref(false);
@@ -861,6 +1024,58 @@
                     new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore request timeout')), ms))
                 ]);
 
+                const getStartOfDay = (value) => {
+                    const d = value instanceof Date ? value : new Date(value);
+                    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                };
+
+                const formatIsoDate = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                };
+
+                if (!filterDate.value) {
+                    filterDate.value = formatIsoDate(dateAnchor.value);
+                }
+
+                const addDays = (date, amount) => {
+                    const d = new Date(date);
+                    d.setDate(d.getDate() + amount);
+                    return d;
+                };
+
+                const dateWindow = computed(() => {
+                    const base = getStartOfDay(dateAnchor.value);
+                    const days = [];
+                    for (let offset = -2; offset <= 2; offset += 1) {
+                        const day = addDays(base, offset);
+                        days.push({
+                            date: day,
+                            iso: formatIsoDate(day),
+                            label: String(day.getDate())
+                        });
+                    }
+                    return days;
+                });
+
+                const selectDate = (isoDate) => {
+                    filterDate.value = filterDate.value === isoDate ? '' : isoDate;
+                    filterDateStart.value = '';
+                    filterDateEnd.value = '';
+                };
+
+                const shiftDateWindow = (days) => {
+                    dateAnchor.value = addDays(dateAnchor.value, days);
+                };
+
+                const clearDateFilter = () => {
+                    filterDate.value = '';
+                    filterDateStart.value = '';
+                    filterDateEnd.value = '';
+                };
+
                 const mapExpenseDoc = (id, d) => ({
                     id,
                     title: d.title || '',
@@ -911,6 +1126,29 @@
                 };
 
                 const normalizeText = (value) => String(value || '').trim().toLowerCase();
+
+                const compareText = (a, b) => String(a || '').localeCompare(String(b || ''), 'id', { sensitivity: 'base' });
+
+                const toggleSort = (key) => {
+                    if (sortKey.value !== key) {
+                        sortKey.value = key;
+                        sortDirection.value = 'asc';
+                        return;
+                    }
+                    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+                };
+
+                const sortIcon = (key) => {
+                    if (sortKey.value !== key) return 'bi bi-arrow-down-up';
+                    return sortDirection.value === 'asc' ? 'bi bi-chevron-up' : 'bi bi-chevron-down';
+                };
+
+                const sortIconClass = (key) => (sortKey.value === key ? 'sort-icon is-active' : 'sort-icon');
+
+                const sortAria = (key) => {
+                    if (sortKey.value !== key) return 'none';
+                    return sortDirection.value === 'asc' ? 'ascending' : 'descending';
+                };
 
                 const firstFilled = (...values) => {
                     for (const value of values) {
@@ -1344,11 +1582,29 @@
 
                 const isImageUrl = (url) => /\.(png|jpe?g|gif|webp)(\?.*)?$/i.test(String(url || ''));
 
+                const sorters = {
+                    request: (a, b) => compareText(normalizeText(a.title || a.requesterName || a.id), normalizeText(b.title || b.requesterName || b.id)),
+                    destination: (a, b) => compareText(normalizeText(a.beneficiaryName || a.bankName || a.accountNumber), normalizeText(b.beneficiaryName || b.bankName || b.accountNumber)),
+                    amount: (a, b) => {
+                        const diff = (Number(a.amount) || 0) - (Number(b.amount) || 0);
+                        if (diff) return diff;
+                        return compareText(String(a.dueDate || ''), String(b.dueDate || ''));
+                    },
+                    notes: (a, b) => compareText(normalizeText(a.notes || a.paymentNotes || ''), normalizeText(b.notes || b.paymentNotes || '')),
+                    status: (a, b) => compareText(normalizeText(a.status || ''), normalizeText(b.status || ''))
+                };
+
                 const filteredExpenses = computed(() => {
                     const q = searchQuery.value.trim().toLowerCase();
-                    return expenses.value.filter((expense) => {
+                    const filtered = expenses.value.filter((expense) => {
                         const matchStatus = filterStatus.value === 'all' || expense.status === filterStatus.value;
                         const matchCategory = filterCategory.value === 'all' || expense.category === filterCategory.value;
+                        const dueDate = String(expense.dueDate || '').slice(0, 10);
+                        const hasRange = !!(filterDateStart.value || filterDateEnd.value);
+                        const matchRange = !hasRange || (!!dueDate
+                            && (!filterDateStart.value || dueDate >= filterDateStart.value)
+                            && (!filterDateEnd.value || dueDate <= filterDateEnd.value));
+                        const matchDate = (!filterDate.value || dueDate === filterDate.value) && matchRange;
                         const matchQuery = !q || [
                             expense.title,
                             expense.requesterName,
@@ -1371,8 +1627,16 @@
                             expense.referenceLabel,
                             expense.referenceDetail
                         ].some((field) => String(field || '').toLowerCase().includes(q));
-                        return matchStatus && matchCategory && matchQuery;
+                        return matchStatus && matchCategory && matchDate && matchQuery;
                     });
+                    if (!sortKey.value || !sorters[sortKey.value]) {
+                        return filtered;
+                    }
+                    const sorted = [...filtered].sort(sorters[sortKey.value]);
+                    if (sortDirection.value === 'desc') {
+                        sorted.reverse();
+                    }
+                    return sorted;
                 });
 
                 const stats = computed(() => {
@@ -1764,6 +2028,12 @@
                     });
                 });
 
+                watch([filterDateStart, filterDateEnd], ([start, end]) => {
+                    if (start || end) {
+                        filterDate.value = '';
+                    }
+                });
+
                 watch(() => form.value.category, (newCategory, oldCategory) => {
                     if (!newCategory || !oldCategory || newCategory === oldCategory) return;
                     clearCategorySpecificFields(newCategory);
@@ -1777,6 +2047,12 @@
                     searchQuery,
                     filterStatus,
                     filterCategory,
+                    filterDate,
+                    filterDateStart,
+                    filterDateEnd,
+                    dateWindow,
+                    sortKey,
+                    sortDirection,
                     showDrawer,
                     isEditMode,
                     saving,
@@ -1799,6 +2075,13 @@
                     formatCategory,
                     statusBadgeClass,
                     isImageUrl,
+                    toggleSort,
+                    sortIcon,
+                    sortIconClass,
+                    sortAria,
+                    selectDate,
+                    shiftDateWindow,
+                    clearDateFilter,
                     openCreateDrawer,
                     openEditDrawer,
                     closeDrawer,
