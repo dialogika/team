@@ -27,6 +27,9 @@
         .cal-cell { background:#fff; min-height:220px; padding:8px; position:relative; vertical-align:top; transition:background-color .12s; }
         .cal-cell.other-month { background:#f8fafc; }
         .cal-cell.today { box-shadow:inset 0 0 0 2px #38bdf8; }
+        .cal-cell.past-date { background:#f1f5f9; }
+        .cal-cell.past-date .cal-card { opacity:.65; filter:grayscale(.35); }
+        .cal-cell.past-date .cal-date-num { color:#94a3b8; }
         .cal-cell.drag-over { background:#ecfeff; box-shadow:inset 0 0 0 2px #0ea5e9; }
         .cal-date-num { font-size:11px; font-weight:700; color:#64748b; margin-bottom:4px; }
         .cal-cell.other-month .cal-date-num { color:#cbd5e1; }
@@ -2118,6 +2121,7 @@
 
             const today = new Date();
             const todayStr = toDateKey(today);
+            const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
             const classByDate = {};
             let calCount = 0;
 
@@ -2246,7 +2250,8 @@
             function createDateCell(dateObj, isOtherMonth) {
                 const dateStr = toDateKey(dateObj);
                 const cell = document.createElement("div");
-                cell.className = "cal-cell" + (dateStr === todayStr ? " today" : "") + (isOtherMonth ? " other-month" : "");
+                const isPast = dateObj < todayStart;
+                cell.className = "cal-cell" + (dateStr === todayStr ? " today" : "") + (isOtherMonth ? " other-month" : "") + (isPast ? " past-date" : "");
                 cell.dataset.date = dateStr;
                 const num = document.createElement("div");
                 num.className = "cal-date-num";
