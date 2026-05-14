@@ -516,6 +516,14 @@
                                                 <div class="text-[10px] uppercase tracking-[0.16em] font-black text-slate-400 mb-1">Treasurer Note</div>
                                                 <div class="text-xs text-slate-600 leading-relaxed">{{ expense.paymentNotes || 'Belum ada catatan pembayaran.' }}</div>
                                             </div>
+                                            <div v-if="expense.reimburseProofUrl" class="note-box">
+                                                <div class="text-[10px] uppercase tracking-[0.16em] font-black text-slate-400 mb-1">Dokumen Pendukung</div>
+                                                <div class="text-xs text-slate-600 leading-relaxed">
+                                                    <a :href="expense.reimburseProofUrl" target="_blank" class="font-bold text-blue-600 hover:text-blue-800">
+                                                        Lihat Dokumen
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                     <td>
@@ -850,6 +858,29 @@
                                 </div>
 
                                 <div class="form-panel">
+                                    <div class="text-sm font-black text-slate-900 mb-5">Supporting Document</div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="field-label">Upload Nota / Dokumen Pendukung</label>
+                                            <input ref="reimburseProofInput" type="file" accept="image/*,.pdf" class="field-control !py-2 !bg-white">
+                                            <div class="field-help">Wajib untuk reimburse. Opsional untuk kategori lain.</div>
+                                        </div>
+                                        <div>
+                                            <div class="field-label">Preview Dokumen Saat Ini</div>
+                                            <div class="proof-preview">
+                                                <template v-if="form.reimburseProofUrl">
+                                                    <img v-if="isImageUrl(form.reimburseProofUrl)" :src="form.reimburseProofUrl" alt="Supporting Doc">
+                                                    <a v-else :href="form.reimburseProofUrl" target="_blank" class="text-sm font-bold text-blue-600 hover:text-blue-800">
+                                                        Buka Dokumen Pendukung
+                                                    </a>
+                                                </template>
+                                                <span v-else class="text-sm font-bold text-slate-300">Belum ada dokumen pendukung</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-panel">
                                     <div class="text-sm font-black text-slate-900 mb-5">Transfer Proof</div>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
@@ -972,6 +1003,7 @@
                 const toast = ref(null);
                 const currentExpenseId = ref('');
                 const proofFileInput = ref(null);
+                const reimburseProofInput = ref(null);
                 const form = ref({});
                 const requesterOptions = ref([]);
                 const mentorOptions = ref([]);
@@ -1010,6 +1042,8 @@
                     expensePeriod: '',
                     reimburseType: '',
                     reimburseReason: '',
+                    reimburseProofUrl: '',
+                    reimburseProofPath: '',
                     toolName: '',
                     billingPeriod: '',
                     travelerName: '',
@@ -1105,6 +1139,8 @@
                     expensePeriod: d.expensePeriod || '',
                     reimburseType: d.reimburseType || '',
                     reimburseReason: d.reimburseReason || '',
+                    reimburseProofUrl: d.reimburseProofUrl || '',
+                    reimburseProofPath: d.reimburseProofPath || '',
                     toolName: d.toolName || '',
                     billingPeriod: d.billingPeriod || '',
                     travelerName: d.travelerName || '',
@@ -1717,6 +1753,8 @@
                         expensePeriod: expense.expensePeriod || '',
                         reimburseType: expense.reimburseType || '',
                         reimburseReason: expense.reimburseReason || '',
+                        reimburseProofUrl: expense.reimburseProofUrl || '',
+                        reimburseProofPath: expense.reimburseProofPath || '',
                         toolName: expense.toolName || '',
                         billingPeriod: expense.billingPeriod || '',
                         travelerName: expense.travelerName || '',
@@ -1745,6 +1783,9 @@
                     if (proofFileInput.value) {
                         proofFileInput.value.value = '';
                     }
+                    if (reimburseProofInput.value) {
+                        reimburseProofInput.value.value = '';
+                    }
                 };
 
                 const uploadTransferProof = async (expenseId) => {
@@ -1760,6 +1801,27 @@
                         .replace(/[^\w.\-]/g, '_')
                         .replace(/_+/g, '_');
                     const path = `operational-expenses/${expenseId}/${Date.now()}-${safeName}`;
+                    const refFile = storageRef(storage, path);
+                    await uploadBytes(refFile, file);
+                    return {
+                        url: await getDownloadURL(refFile),
+                        path
+                    };
+                };
+
+                const uploadReimburseProof = async (expenseId) => {
+                    const file = reimburseProofInput.value && reimburseProofInput.value.files ? reimburseProofInput.value.files[0] : null;
+                    if (!file) {
+                        return {
+                            url: form.value.reimburseProofUrl || '',
+                            path: form.value.reimburseProofPath || ''
+                        };
+                    }
+
+                    const safeName = String(file.name || 'reimburse')
+                        .replace(/[^\w.\-]/g, '_')
+                        .replace(/_+/g, '_');
+                    const path = `operational-expenses/${expenseId}/reimburse-${Date.now()}-${safeName}`;
                     const refFile = storageRef(storage, path);
                     await uploadBytes(refFile, file);
                     return {
@@ -1787,6 +1849,11 @@
                     }
                     if (!(Number(form.value.amount) > 0)) {
                         alert('Nominal pengeluaran wajib lebih dari 0.');
+                        return false;
+                    }
+                    if (form.value.category === 'reimburse' && !form.value.reimburseProofUrl
+                        && !(reimburseProofInput.value && reimburseProofInput.value.files && reimburseProofInput.value.files[0])) {
+                        alert('Untuk kategori reimburse, nota/kwitansi wajib dilampirkan.');
                         return false;
                     }
                     if (form.value.category === 'mentor_salary') {
@@ -1876,6 +1943,7 @@
 
                     try {
                         const proofUpload = await uploadTransferProof(expenseId);
+                        const reimburseUpload = await uploadReimburseProof(expenseId);
                         const isNewProofUploaded = !!(proofUpload.url && proofUpload.url !== form.value.transferProofUrl);
                         if (isNewProofUploaded && form.value.status !== 'paid' && form.value.status !== 'rejected') {
                             form.value.status = 'paid';
@@ -1918,6 +1986,8 @@
                             expensePeriod: String(form.value.expensePeriod || '').trim(),
                             reimburseType: String(form.value.reimburseType || '').trim(),
                             reimburseReason: String(form.value.reimburseReason || '').trim(),
+                            reimburseProofUrl: reimburseUpload.url || '',
+                            reimburseProofPath: reimburseUpload.path || '',
                             toolName: String(form.value.toolName || '').trim(),
                             billingPeriod: String(form.value.billingPeriod || '').trim(),
                             travelerName: String(form.value.travelerName || '').trim(),
@@ -1958,11 +2028,21 @@
                         const proofRef = form.value.transferProofPath
                             ? storageRef(storage, form.value.transferProofPath)
                             : (form.value.transferProofUrl ? storageRef(storage, form.value.transferProofUrl) : null);
+                        const reimburseProofRef = form.value.reimburseProofPath
+                            ? storageRef(storage, form.value.reimburseProofPath)
+                            : (form.value.reimburseProofUrl ? storageRef(storage, form.value.reimburseProofUrl) : null);
                         if (proofRef) {
                             try {
                                 await deleteObject(proofRef);
                             } catch (storageError) {
                                 console.warn('[OperationalExpenses] Bukti transfer tidak berhasil dihapus dari storage', storageError);
+                            }
+                        }
+                        if (reimburseProofRef) {
+                            try {
+                                await deleteObject(reimburseProofRef);
+                            } catch (storageError) {
+                                console.warn('[OperationalExpenses] Nota reimburse tidak berhasil dihapus dari storage', storageError);
                             }
                         }
                         await deleteDoc(doc(db, 'operational_expenses', currentExpenseId.value));
@@ -2060,6 +2140,7 @@
                     currentExpenseId,
                     form,
                     proofFileInput,
+                    reimburseProofInput,
                     requesterSearch,
                     mentorSearch,
                     classSearch,
