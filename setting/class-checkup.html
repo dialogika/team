@@ -68,6 +68,53 @@
         .detail-user-avatar { width:24px; height:24px; border-radius:999px; overflow:hidden; border:1px solid rgba(15,23,42,.12); background:#0f172a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; flex-shrink:0; }
         .detail-user-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
         .detail-user-empty { font-size:11px; color:#94a3b8; font-weight:600; }
+        .comment-thread { display:flex; flex-direction:column; gap:10px; }
+        .comment-card { display:flex; gap:10px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; }
+        .comment-card.is-pinned { border-color:#f59e0b; background:#fffbeb; }
+        .comment-avatar { width:28px; height:28px; border-radius:999px; overflow:hidden; border:1px solid rgba(15,23,42,.12); background:#0f172a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; flex-shrink:0; }
+        .comment-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+        .comment-content { flex:1; min-width:0; }
+        .comment-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+        .comment-author { font-size:11px; font-weight:700; color:#0f172a; }
+        .comment-time { font-size:10px; color:#94a3b8; }
+        .comment-pin { font-size:9px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; padding:2px 6px; border-radius:999px; background:#fef3c7; color:#b45309; }
+        .comment-text { font-size:11px; color:#475569; margin-top:4px; white-space:pre-wrap; line-height:1.4; word-break:break-word; overflow-wrap:anywhere; }
+        .comment-actions { margin-left:auto; display:flex; align-items:center; gap:6px; }
+        .comment-action-btn { font-size:10px; font-weight:800; border:1px solid #e2e8f0; border-radius:999px; padding:4px 8px; background:#fff; color:#475569; cursor:pointer; transition:all .15s; }
+        .comment-action-btn.is-active { background:#fef3c7; border-color:#f59e0b; color:#b45309; }
+        .comment-action-btn.is-danger { color:#dc2626; border-color:#fecaca; background:#fff5f5; }
+        .comment-action-btn.is-danger:hover { background:#fee2e2; border-color:#fca5a5; }
+        .comment-action-btn:disabled { opacity:.6; cursor:not-allowed; }
+        .comment-composer { display:flex; gap:10px; align-items:flex-start; padding:12px; border:1px solid #e2e8f0; border-radius:12px; background:#fff; }
+        .comment-composer-body { flex:1; display:flex; flex-direction:column; gap:8px; }
+        .comment-composer-textarea { width:100%; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; color:#0f172a; font-size:12px; padding:8px 10px; resize:vertical; min-height:60px; outline:none; }
+        .comment-composer-textarea:focus { border-color:#6366f1; box-shadow:0 0 0 2px rgba(99,102,241,.12); background:#fff; }
+        .comment-composer-actions { display:flex; justify-content:flex-end; gap:8px; }
+        .comment-composer-btn { font-size:11px; font-weight:800; border-radius:10px; padding:6px 14px; border:1px solid #e2e8f0; background:#fff; color:#475569; cursor:pointer; transition:all .15s; }
+        .comment-composer-btn.is-primary { background:#0f172a; color:#fff; border-color:#0f172a; }
+        .comment-composer-btn.is-primary:hover { background:#1e293b; border-color:#1e293b; }
+        .comment-composer-btn.is-ghost:hover { background:#f8fafc; }
+        .comment-composer-btn:disabled { opacity:.6; cursor:not-allowed; }
+        .detail-layout { display:grid; grid-template-columns:1fr; gap:20px; flex:1; overflow:hidden; }
+        .detail-main { overflow-y:auto; padding-right:10px; align-content:start; }
+        .detail-comments { overflow-y:auto; padding-right:10px; border-top:1px solid #e2e8f0; padding-top:14px; }
+        @media (min-width: 992px) {
+            .detail-layout { grid-template-columns:2fr 1fr; align-items:stretch; }
+            .detail-comments { border-top:none; border-left:1px solid #e2e8f0; padding-top:0; padding-left:18px; }
+        }
+        .comment-editor-row { border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+        .comment-editor-header { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+        .comment-editor-left { display:flex; align-items:center; gap:8px; min-width:0; }
+        .comment-editor-meta { display:flex; flex-direction:column; min-width:0; }
+        .comment-editor-name { font-size:11px; font-weight:700; color:#0f172a; }
+        .comment-editor-time { font-size:10px; color:#94a3b8; }
+        .comment-editor-actions { display:flex; align-items:center; gap:6px; }
+        .comment-pin-btn { font-size:10px; font-weight:800; border:1px solid #e2e8f0; border-radius:999px; padding:4px 8px; background:#fff; color:#475569; cursor:pointer; transition:all .15s; }
+        .comment-pin-btn.is-active { background:#fef3c7; border-color:#f59e0b; color:#b45309; }
+        .comment-pin-btn:disabled { opacity:.6; cursor:not-allowed; }
+        .comment-remove-btn { width:28px; height:28px; border-radius:10px; border:1px solid #e2e8f0; background:#fff; font-size:14px; font-weight:800; color:#dc2626; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s; }
+        .comment-remove-btn:hover { background:#fee2e2; border-color:#fecaca; }
+        .comment-remove-btn:disabled { opacity:.6; cursor:not-allowed; }
         .cal-type-pill { font-size:11px; font-weight:800; padding:2px 8px; border-radius:8px; color:#fff; }
         .cal-type-online { background:#0284c7; }
         .cal-type-offline { background:#16a34a; }
@@ -83,7 +130,7 @@
         .modal-backdrop-custom { position:fixed; inset:0; background:rgba(15,23,42,.45); display:none; align-items:center; justify-content:center; z-index:2000; padding:20px; }
         .modal-backdrop-custom.open { display:flex; }
         .modal-card { width:100%; max-width:680px; max-height:calc(100vh - 40px); overflow:auto; }
-        #classDetailModal .modal-card { -ms-overflow-style:none; scrollbar-width:none; }
+        #classDetailModal .modal-card { max-width:1000px; overflow:hidden; display:flex; flex-direction:column; -ms-overflow-style:none; scrollbar-width:none; }
         #classDetailModal .modal-card::-webkit-scrollbar { width:0; height:0; display:none; }
         .cal-scroll-wrapper { overflow-x:auto; overflow-y:auto; max-height:760px; border-radius:16px; background:#e2e8f0; }
         @media(max-width:768px){ .cal-grid{grid-template-columns:repeat(7,minmax(140px,1fr)); min-width:980px;} .cal-cell{min-height:180px;} }
@@ -212,7 +259,7 @@
 
     <div id="classDetailModal" class="modal-backdrop-custom">
         <div class="modal-card bg-white rounded-3xl border border-slate-100 shadow-2xl">
-            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
                 <div>
                     <div class="text-base font-bold text-slate-900">Detail Kelas</div>
                     <div id="detailSubtitle" class="text-[11px] text-slate-500"></div>
@@ -228,7 +275,8 @@
                     </button>
                 </div>
             </div>
-            <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="px-6 py-5 text-xs detail-layout">
+                <div class="detail-main grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Class Name</div>
                     <input id="editClassName" type="text" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
@@ -328,14 +376,6 @@
                     </div>
                     <div id="classLinksView" class="mt-2 space-y-1"></div>
                 </div>
-                <div class="md:col-span-2">
-                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Comment</div>
-                    <div id="commentsContainer" class="space-y-2"></div>
-                    <div class="mt-2">
-                        <button id="btnAddComment" type="button" class="w-full h-full rounded-full border border-slate-200 bg-white text-base font-bold text-slate-700 hover:bg-slate-50">+</button>
-                    </div>
-                    <div id="commentsView" class="mt-2 space-y-1"></div>
-                </div>
                 <div id="salarySection" class="md:col-span-2 hidden">
                     <div class="salary-section">
                         <div class="salary-section-title">
@@ -407,6 +447,21 @@
                         </div>
                     </div>
                 </div>
+                </div>
+                <div class="detail-comments">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Comment</div>
+                    <div id="commentsView" class="mt-2 comment-thread"></div>
+                    <div class="comment-composer mt-3">
+                        <div id="commentComposerAvatar" class="comment-avatar">U</div>
+                        <div class="comment-composer-body">
+                            <textarea id="commentInput" rows="2" class="comment-composer-textarea" placeholder="Tulis komentar..."></textarea>
+                            <div class="comment-composer-actions">
+                                <button id="btnCancelCommentEdit" type="button" class="comment-composer-btn is-ghost hidden">Batal</button>
+                                <button id="btnSubmitComment" type="button" class="comment-composer-btn is-primary">Kirim</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -452,6 +507,9 @@
         let currentDetailClassId = null;
         let manualSalaryTriggerClassId = null;
         let detailEditEnabled = false;
+        let detailCommentsState = [];
+        let commentEditId = "";
+        let commentIdSeed = 0;
         let usersState = [];
         let mentorsState = [];
         const CLASS_SOURCE_PLANNING = "class_planning";
@@ -908,17 +966,205 @@
             return dedupeClassLinks(merged);
         }
 
+        function toCommentTimestamp(raw) {
+            if (!raw) return 0;
+            if (typeof raw === "number") return raw;
+            if (typeof raw === "string") {
+                const d = new Date(raw);
+                return isNaN(d.getTime()) ? 0 : d.getTime();
+            }
+            if (typeof raw === "object") {
+                if (typeof raw.toDate === "function") return raw.toDate().getTime();
+                if (typeof raw.seconds === "number") return raw.seconds * 1000;
+            }
+            return 0;
+        }
+
+        function normalizeCommentAuthor(raw) {
+            if (!raw) return { uid: "", name: "", photo: "" };
+            if (typeof raw === "string") {
+                const name = raw.trim();
+                return { uid: "", name, photo: "" };
+            }
+            if (typeof raw !== "object") return { uid: "", name: "", photo: "" };
+            const uid = String(raw.uid || raw.userId || raw.id || "").trim();
+            const name = String(raw.name || raw.displayName || raw.fullName || raw.nama || raw.email || "").trim();
+            const photo = String(raw.photo || raw.photoURL || raw.avatar || raw.image || raw.avatar_url || "").trim();
+            return { uid, name, photo };
+        }
+
+        function formatCommentTimestamp(ms) {
+            if (!ms) return "-";
+            const d = new Date(ms);
+            if (isNaN(d.getTime())) return "-";
+            return d.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        }
+
+        function generateCommentId() {
+            commentIdSeed += 1;
+            return "cmt-" + Date.now() + "-" + commentIdSeed;
+        }
+
+        function setDetailCommentsState(list) {
+            const items = dedupeComments(Array.isArray(list) ? list : []);
+            items.forEach((item) => {
+                if (!item.id) item.id = generateCommentId();
+            });
+            detailCommentsState = items;
+        }
+
+        function getCommentById(commentId) {
+            return detailCommentsState.find((item) => item.id === commentId);
+        }
+
+        function syncCommentComposerAvatar(author) {
+            const avatar = document.getElementById("commentComposerAvatar");
+            if (!avatar) return;
+            const safeAuthor = author || getCurrentCommentAuthor();
+            const name = (safeAuthor.name || safeAuthor.uid || "Unknown User").trim() || "Unknown User";
+            avatar.innerHTML = "";
+            if (safeAuthor.photo) {
+                const img = document.createElement("img");
+                img.src = safeAuthor.photo;
+                img.alt = name;
+                avatar.appendChild(img);
+            } else {
+                avatar.textContent = getInitials(name);
+            }
+        }
+
+        function setCommentEditorDisabled(disabled) {
+            const input = document.getElementById("commentInput");
+            const btnSubmit = document.getElementById("btnSubmitComment");
+            const btnCancel = document.getElementById("btnCancelCommentEdit");
+            if (input) input.disabled = !!disabled;
+            if (btnSubmit) btnSubmit.disabled = !!disabled;
+            if (btnCancel) btnCancel.disabled = !!disabled;
+        }
+
+        function updateCommentComposerState() {
+            const btnSubmit = document.getElementById("btnSubmitComment");
+            const btnCancel = document.getElementById("btnCancelCommentEdit");
+            if (btnSubmit) btnSubmit.textContent = "Kirim";
+            if (btnCancel) btnCancel.classList.add("hidden");
+        }
+
+        function resetCommentComposer() {
+            const input = document.getElementById("commentInput");
+            if (input) input.value = "";
+            commentEditId = "";
+            syncCommentComposerAvatar(getCurrentCommentAuthor());
+            updateCommentComposerState();
+            renderCommentsView(detailCommentsState);
+        }
+
+        function startEditComment(commentId) {
+            commentEditId = commentId;
+            renderCommentsView(detailCommentsState);
+        }
+
+        function toggleCommentPin(commentId) {
+            const item = getCommentById(commentId);
+            if (!item) return;
+            item.pinned = !item.pinned;
+            renderCommentsView(detailCommentsState);
+            persistCommentChanges();
+        }
+
+        function submitComment() {
+            const input = document.getElementById("commentInput");
+            if (!input) return;
+            const text = String(input.value || "").trim();
+            if (!text) {
+                showToast("Komentar tidak boleh kosong", "error");
+                return;
+            }
+            detailCommentsState.unshift({
+                id: generateCommentId(),
+                text,
+                createdAtMs: Date.now(),
+                createdBy: getCurrentCommentAuthor(),
+                pinned: false
+            });
+            renderCommentsView(detailCommentsState);
+            resetCommentComposer();
+            persistCommentChanges();
+        }
+
+        function commitPendingCommentEdit() {
+            resetCommentComposer();
+        }
+
+        function deleteComment(commentId) {
+            const item = getCommentById(commentId);
+            if (!item) return;
+            const preview = (item.text || "").slice(0, 120);
+            const confirmed = confirm("Hapus komentar ini?\n\n" + preview);
+            if (!confirmed) return;
+            detailCommentsState = detailCommentsState.filter((entry) => entry.id !== commentId);
+            renderCommentsView(detailCommentsState);
+            if (commentEditId === commentId) resetCommentComposer();
+            persistCommentChanges();
+        }
+
+        async function persistCommentChanges() {
+            if (!currentDetailClassId) return;
+            const idx = classesState.findIndex(c => c.id === currentDetailClassId);
+            if (idx < 0) return;
+            const selected = classesState[idx];
+            const comments = getCommentsFromEditor();
+            const commentText = comments.map((item) => item.text).join("\n");
+            try {
+                await updateDoc(doc(db, getClassSourceCollection(selected), selected.docId), {
+                    comment_items: comments,
+                    commentItems: comments,
+                    comment: commentText,
+                    updatedAt: serverTimestamp()
+                });
+                classesState[idx] = {
+                    ...selected,
+                    comments,
+                    comment: commentText
+                };
+            } catch (e) {
+                showToast("Gagal menyimpan komentar", "error");
+            }
+        }
+
         function normalizeCommentItem(raw) {
             if (!raw) return null;
             if (typeof raw === "string") {
                 const text = raw.trim();
                 if (!text) return null;
-                return { text };
+                return {
+                    text,
+                    createdAtMs: 0,
+                    createdBy: { uid: "", name: "", photo: "" },
+                    pinned: false
+                };
             }
             if (typeof raw !== "object") return null;
             const text = String(raw.text || raw.comment || raw.value || "").trim();
             if (!text) return null;
-            return { text };
+            const createdAtMs = toCommentTimestamp(raw.createdAtMs || raw.created_at_ms || raw.createdAt || raw.created_at || raw.timestamp || raw.time);
+            const createdBy = normalizeCommentAuthor(raw.createdBy || raw.author || raw.user || raw.by);
+            if (!createdBy.uid) createdBy.uid = String(raw.createdByUid || raw.userId || raw.uid || "").trim();
+            if (!createdBy.name) createdBy.name = String(raw.createdByName || raw.userName || raw.name || raw.byName || "").trim();
+            if (!createdBy.photo) createdBy.photo = String(raw.createdByPhoto || raw.photo || raw.photoURL || raw.avatar || "").trim();
+            const pinned = !!(raw.pinned || raw.isPinned || raw.pin);
+            return {
+                text,
+                createdAtMs,
+                createdBy,
+                pinned,
+                id: String(raw.id || raw.commentId || "").trim()
+            };
         }
 
         function dedupeComments(items) {
@@ -926,7 +1172,13 @@
             items.forEach((item) => {
                 const normalized = normalizeCommentItem(item);
                 if (!normalized) return;
-                const key = normalized.text.toLowerCase();
+                const authorKey = normalized.createdBy && (normalized.createdBy.uid || normalized.createdBy.name)
+                    ? (normalized.createdBy.uid || normalized.createdBy.name).toLowerCase()
+                    : "";
+                const timeKey = normalized.createdAtMs ? String(normalized.createdAtMs) : "";
+                const key = normalized.id
+                    ? "id:" + normalized.id
+                    : [timeKey, authorKey, normalized.text.toLowerCase()].filter(Boolean).join("|") || normalized.text.toLowerCase();
                 if (!map.has(key)) map.set(key, normalized);
             });
             return Array.from(map.values());
@@ -1062,7 +1314,7 @@
             const view = document.getElementById("commentsView");
             if (!view) return;
             view.innerHTML = "";
-            const items = dedupeComments(Array.isArray(list) ? list : []);
+            const items = dedupeComments(Array.isArray(list) ? list : detailCommentsState);
             if (!items.length) {
                 const empty = document.createElement("div");
                 empty.className = "text-[11px] text-slate-400";
@@ -1070,83 +1322,156 @@
                 view.appendChild(empty);
                 return;
             }
-            items.forEach((item, index) => {
-                const block = document.createElement("div");
-                block.className = "w-full text-[11px] text-slate-700 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2";
-                block.textContent = (index + 1) + ". " + item.text;
-                view.appendChild(block);
+            items.sort((a, b) => {
+                if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+                return (b.createdAtMs || 0) - (a.createdAtMs || 0);
             });
-        }
+            items.forEach((item) => {
+                const author = item.createdBy || { uid: "", name: "", photo: "" };
+                const authorName = (author.name || author.uid || "Unknown User").trim() || "Unknown User";
+                const card = document.createElement("div");
+                card.className = "comment-card" + (item.pinned ? " is-pinned" : "");
+                const avatar = document.createElement("div");
+                avatar.className = "comment-avatar";
+                if (author.photo) {
+                    const img = document.createElement("img");
+                    img.src = author.photo;
+                    img.alt = authorName;
+                    avatar.appendChild(img);
+                } else {
+                    avatar.textContent = getInitials(authorName);
+                }
+                const content = document.createElement("div");
+                content.className = "comment-content";
+                const meta = document.createElement("div");
+                meta.className = "comment-meta";
+                const nameEl = document.createElement("div");
+                nameEl.className = "comment-author";
+                nameEl.textContent = authorName;
+                const timeEl = document.createElement("div");
+                timeEl.className = "comment-time";
+                timeEl.textContent = formatCommentTimestamp(item.createdAtMs);
+                meta.appendChild(nameEl);
+                meta.appendChild(timeEl);
+                if (item.pinned) {
+                    const pin = document.createElement("div");
+                    pin.className = "comment-pin";
+                    pin.textContent = "Pinned";
+                    meta.appendChild(pin);
+                }
 
-        function createCommentRow(item, disabled) {
-            const row = document.createElement("div");
-            row.className = "grid grid-cols-[minmax(0,1fr)_auto] gap-2";
-            const textInput = document.createElement("textarea");
-            textInput.rows = 2;
-            textInput.placeholder = "Tulis komentar";
-            textInput.className = "w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 resize-y";
-            textInput.value = item && item.text ? item.text : "";
-            textInput.dataset.commentText = "1";
-            textInput.disabled = !!disabled;
-            const removeBtn = document.createElement("button");
-            removeBtn.type = "button";
-            removeBtn.className = "w-7 h-7 rounded-lg border border-slate-200 bg-white text-sm font-bold leading-none text-rose-600 hover:bg-rose-50";
-            removeBtn.textContent = "×";
-            removeBtn.disabled = !!disabled;
-            removeBtn.addEventListener("click", () => {
-                row.remove();
-                renderCommentsView(getCommentsFromEditor());
+                if (commentEditId === item.id) {
+                    const editArea = document.createElement("div");
+                    editArea.className = "mt-2";
+                    
+                    const textarea = document.createElement("textarea");
+                    textarea.className = "comment-composer-textarea mb-2";
+                    textarea.rows = 2;
+                    textarea.value = item.text;
+                    
+                    const actionsRow = document.createElement("div");
+                    actionsRow.className = "flex justify-end gap-2";
+                    
+                    const btnCancel = document.createElement("button");
+                    btnCancel.className = "comment-composer-btn is-ghost";
+                    btnCancel.textContent = "Batal";
+                    btnCancel.addEventListener("click", () => {
+                        commentEditId = "";
+                        renderCommentsView(detailCommentsState);
+                    });
+                    
+                    const btnSave = document.createElement("button");
+                    btnSave.className = "comment-composer-btn is-primary";
+                    btnSave.textContent = "Simpan";
+                    btnSave.addEventListener("click", () => {
+                        const newText = String(textarea.value || "").trim();
+                        if (!newText) {
+                            showToast("Komentar tidak boleh kosong", "error");
+                            return;
+                        }
+                        item.text = newText;
+                        commentEditId = "";
+                        renderCommentsView(detailCommentsState);
+                        persistCommentChanges();
+                    });
+                    
+                    actionsRow.appendChild(btnCancel);
+                    actionsRow.appendChild(btnSave);
+                    editArea.appendChild(textarea);
+                    editArea.appendChild(actionsRow);
+                    
+                    content.appendChild(meta);
+                    content.appendChild(editArea);
+                    
+                    setTimeout(() => textarea.focus(), 0);
+                } else {
+                    const actions = document.createElement("div");
+                    actions.className = "comment-actions";
+                    const editBtn = document.createElement("button");
+                    editBtn.type = "button";
+                    editBtn.className = "comment-action-btn";
+                    editBtn.textContent = "Edit";
+                    editBtn.addEventListener("click", () => startEditComment(item.id));
+                    const pinBtn = document.createElement("button");
+                    pinBtn.type = "button";
+                    pinBtn.className = "comment-action-btn" + (item.pinned ? " is-active" : "");
+                    pinBtn.textContent = item.pinned ? "Unpin" : "Pin";
+                    pinBtn.addEventListener("click", () => toggleCommentPin(item.id));
+                    const deleteBtn = document.createElement("button");
+                    deleteBtn.type = "button";
+                    deleteBtn.className = "comment-action-btn is-danger";
+                    deleteBtn.textContent = "Hapus";
+                    deleteBtn.addEventListener("click", () => deleteComment(item.id));
+                    actions.appendChild(editBtn);
+                    actions.appendChild(pinBtn);
+                    actions.appendChild(deleteBtn);
+                    meta.appendChild(actions);
+                    
+                    const textEl = document.createElement("div");
+                    textEl.className = "comment-text";
+                    textEl.textContent = item.text;
+                    
+                    content.appendChild(meta);
+                    content.appendChild(textEl);
+                }
+
+                card.appendChild(avatar);
+                card.appendChild(content);
+                view.appendChild(card);
             });
-            textInput.addEventListener("input", () => renderCommentsView(getCommentsFromEditor()));
-            row.appendChild(textInput);
-            row.appendChild(removeBtn);
-            return row;
         }
 
         function getCommentsFromEditor() {
-            const container = document.getElementById("commentsContainer");
-            if (!container) return [];
-            const rows = Array.from(container.children || []);
-            const list = rows.map((row) => {
-                const textInput = row.querySelector("textarea[data-comment-text='1']");
-                return normalizeCommentItem({
-                    text: textInput ? textInput.value : ""
-                });
-            }).filter(Boolean);
-            return dedupeComments(list);
+            return dedupeComments(detailCommentsState);
         }
 
         function renderCommentsEditor(list, disabled) {
-            const container = document.getElementById("commentsContainer");
-            if (!container) return;
-            const items = dedupeComments(Array.isArray(list) ? list : []);
-            container.innerHTML = "";
-            if (!items.length) {
-                container.appendChild(createCommentRow({ text: "" }, disabled));
-            } else {
-                items.forEach((item) => container.appendChild(createCommentRow(item, disabled)));
-            }
-            renderCommentsView(getCommentsFromEditor());
+            setDetailCommentsState(list || []);
+            renderCommentsView(detailCommentsState);
+            setCommentEditorDisabled(false);
+            resetCommentComposer();
+        }
+
+        function getCurrentCommentAuthor() {
+            const user = getCurrentUserAuditInfo();
+            const rawUser = user && user.raw ? user.raw : {};
+            return {
+                uid: user.userId || rawUser.uid || rawUser.id || "",
+                name: user.userName || rawUser.name || rawUser.fullName || rawUser.email || "Unknown User",
+                photo: rawUser.photo || rawUser.photoURL || rawUser.avatar || rawUser.avatar_url || rawUser.image || ""
+            };
         }
 
         function addCommentRow() {
-            const container = document.getElementById("commentsContainer");
-            if (!container) return;
-            container.appendChild(createCommentRow({ text: "" }, !detailEditEnabled));
-            renderCommentsView(getCommentsFromEditor());
+            const input = document.getElementById("commentInput");
+            if (input) input.focus();
         }
 
         function setCommentsEditDisabled(disabled) {
-            const container = document.getElementById("commentsContainer");
-            const addBtn = document.getElementById("btnAddComment");
-            if (addBtn) addBtn.disabled = !!disabled;
-            if (!container) return;
-            Array.from(container.children || []).forEach((row) => {
-                const textInput = row.querySelector("textarea[data-comment-text='1']");
-                const removeBtn = row.querySelector("button");
-                if (textInput) textInput.disabled = !!disabled;
-                if (removeBtn) removeBtn.disabled = !!disabled;
-            });
+            setCommentEditorDisabled(false);
+            syncCommentComposerAvatar(getCurrentCommentAuthor());
+            updateCommentComposerState();
+            renderCommentsView(detailCommentsState);
         }
 
         function getFirstName(fullName) {
@@ -1568,7 +1893,7 @@
             });
             setUserMultiDropdownDisabled(!enabled);
             setClassLinksEditDisabled(!enabled);
-            setCommentsEditDisabled(!enabled);
+            setCommentsEditDisabled(false);
             const btnEnable = document.getElementById("btnEnableDetailEdit");
             const btnCancel = document.getElementById("btnCancelDetailEdit");
             const btnSave = document.getElementById("btnSaveDetailEdit");
@@ -1943,6 +2268,7 @@
             const videoClassLink = (classLinks.find((item) => item.type === "video_class") || {}).url || "";
             const meetingDone = parseInt(document.getElementById("editMeetingDone")?.value || "0", 10) || 0;
             const meetingTotal = parseInt(document.getElementById("editMeetingTotal")?.value || "0", 10) || 0;
+            commitPendingCommentEdit();
             const comments = getCommentsFromEditor();
             const comment = comments.map((item) => item.text).join("\n");
             if (meetingTotal > 0 && meetingDone >= meetingTotal && status === "Running") {
@@ -2359,7 +2685,9 @@
             const editAdminUsers = document.getElementById("editAdminUsers");
             const editTreasurerUsers = document.getElementById("editTreasurerUsers");
             const btnAddClassLink = document.getElementById("btnAddClassLink");
-            const btnAddComment = document.getElementById("btnAddComment");
+            const commentInput = document.getElementById("commentInput");
+            const btnSubmitComment = document.getElementById("btnSubmitComment");
+            const btnCancelCommentEdit = document.getElementById("btnCancelCommentEdit");
             const btnCalMore = document.getElementById("btnCalMore");
             const calMoreMenu = document.getElementById("calMoreMenu");
             const btnViewAllScheduleLogs = document.getElementById("btnViewAllScheduleLogs");
@@ -2441,10 +2769,18 @@
                     addClassLinkRow();
                 });
             }
-            if (btnAddComment) {
-                btnAddComment.addEventListener("click", () => {
-                    if (!detailEditEnabled) return;
-                    addCommentRow();
+            if (btnSubmitComment) {
+                btnSubmitComment.addEventListener("click", submitComment);
+            }
+            if (btnCancelCommentEdit) {
+                btnCancelCommentEdit.addEventListener("click", resetCommentComposer);
+            }
+            if (commentInput) {
+                commentInput.addEventListener("keydown", (e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                        e.preventDefault();
+                        submitComment();
+                    }
                 });
             }
             if (editSupervisorUsers) {
