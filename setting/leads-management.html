@@ -71,6 +71,22 @@
         .upload-proof-scroll table {
             min-width: 1100px;
         }
+        .next-payment-table th,
+        .next-payment-table td {
+            vertical-align: middle;
+        }
+        .next-payment-table th:nth-child(1),
+        .next-payment-table td:nth-child(1) { width: 22%; min-width: 180px; }
+        .next-payment-table th:nth-child(2),
+        .next-payment-table td:nth-child(2) { width: 24%; min-width: 200px; }
+        .next-payment-table th:nth-child(3),
+        .next-payment-table td:nth-child(3) { width: 14%; min-width: 120px; }
+        .next-payment-table th:nth-child(4),
+        .next-payment-table td:nth-child(4) { width: 14%; min-width: 140px; }
+        .next-payment-table th:nth-child(5),
+        .next-payment-table td:nth-child(5) { width: 14%; min-width: 140px; }
+        .next-payment-table th:nth-child(6),
+        .next-payment-table td:nth-child(6) { width: 12%; min-width: 120px; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -172,7 +188,7 @@
                     </div>
                 </div>
                 <div class="table-responsive swipe-scroll next-payment-scroll">
-                    <table class="table table-sm align-middle">
+                    <table class="table table-sm align-middle next-payment-table">
                         <thead class="text-[11px] text-slate-500">
                             <tr>
                                 <th>Nama</th>
@@ -1228,12 +1244,13 @@
 
                 const tdWa = document.createElement("td");
                 if (lead.whatsapp) {
+                    const displayNumber = formatPhoneDisplay(lead.whatsapp);
                     const a = document.createElement("a");
                     a.href = formatWhatsAppLink(lead.whatsapp);
                     a.target = "_blank";
                     a.rel = "noopener noreferrer";
-                    a.className = "btn btn-sm btn-success";
-                    a.textContent = "WA";
+                    a.className = "text-indigo-600 font-semibold hover:underline";
+                    a.textContent = displayNumber;
                     tdWa.appendChild(a);
                 } else {
                     tdWa.textContent = "-";
