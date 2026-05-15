@@ -1409,19 +1409,25 @@
                     actions.className = "comment-actions";
                     const editBtn = document.createElement("button");
                     editBtn.type = "button";
-                    editBtn.className = "comment-action-btn";
-                    editBtn.textContent = "Edit";
+                    editBtn.className = "comment-action-btn flex items-center justify-center w-6 h-6 !p-0";
+                    editBtn.innerHTML = '<i data-lucide="pencil" class="w-3 h-3"></i>';
+                    editBtn.title = "Edit";
                     editBtn.addEventListener("click", () => startEditComment(item.id));
+                    
                     const pinBtn = document.createElement("button");
                     pinBtn.type = "button";
-                    pinBtn.className = "comment-action-btn" + (item.pinned ? " is-active" : "");
-                    pinBtn.textContent = item.pinned ? "Unpin" : "Pin";
+                    pinBtn.className = "comment-action-btn flex items-center justify-center w-6 h-6 !p-0" + (item.pinned ? " is-active" : "");
+                    pinBtn.innerHTML = '<i data-lucide="pin" class="w-3 h-3"></i>';
+                    pinBtn.title = item.pinned ? "Unpin" : "Pin";
                     pinBtn.addEventListener("click", () => toggleCommentPin(item.id));
+                    
                     const deleteBtn = document.createElement("button");
                     deleteBtn.type = "button";
-                    deleteBtn.className = "comment-action-btn is-danger";
-                    deleteBtn.textContent = "Hapus";
+                    deleteBtn.className = "comment-action-btn is-danger flex items-center justify-center w-6 h-6 !p-0";
+                    deleteBtn.innerHTML = '<i data-lucide="trash-2" class="w-3 h-3"></i>';
+                    deleteBtn.title = "Hapus";
                     deleteBtn.addEventListener("click", () => deleteComment(item.id));
+                    
                     actions.appendChild(editBtn);
                     actions.appendChild(pinBtn);
                     actions.appendChild(deleteBtn);
@@ -1439,6 +1445,7 @@
                 card.appendChild(content);
                 view.appendChild(card);
             });
+            if (window.lucide) window.lucide.createIcons();
         }
 
         function getCommentsFromEditor() {
