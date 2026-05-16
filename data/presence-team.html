@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presensi Team - Team Dialogika</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="../assets/css/style.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fdfeff; color: #0f172a; }
+        .premium-shadow { box-shadow: 0 10px 40px -10px rgba(0,0,0,0.04); }
+        .glass { background: rgba(255, 255, 255, 0.78); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        .active-pulse {
+            position: relative;
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: #10b981; border-radius: 50%;
+        }
+        .active-pulse::after {
+            content: '';
+            position: absolute; width: 100%; height: 100%;
+            background: #10b981; border-radius: 50%;
+            animation: pulse 2s infinite; opacity: 0.5;
+        }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(3); opacity: 0; } }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .badge-status { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; padding: 6px 10px; border-radius: 999px; }
+        .row-warning { background: #fff7f7; }
+        .table-fixed-head {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            border-spacing: 0;
+            background: #ffffff;
+        }
+        .table-fixed-head th {
+            background: #ffffff;
+            box-shadow: 0 1px 0 #e2e8f0;
+        }
+        .table-scroll-area {
+            max-height: 420px;
+            overflow-y: auto;
+            overflow-x: auto;
+            position: relative;
+            background: #ffffff;
+        }
+        .table-scroll-area table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        #attendanceBody td,
+        #internRecapBody td,
+        #internshipTotalBody td {
+            background: #ffffff;
+        }
+        .row-warning td { background: #fff7f7 !important; }
+        .avatar-thumb { width: 36px; height: 36px; border-radius: 999px; background-size: cover; background-position: center; background-color: #e2e8f0; border: 2px solid #fff; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08); flex-shrink: 0; }
+    </style>
+</head>
+<body class="antialiased" style="background-color:#f1f7fd;">
+
+    <div id="topbarContainer"></div>
+
+    <div class="dashboard-container">
+        <div id="sidebarContainer"></div>
+
+        <main class="main-content">
+            <div class="ml-20 p-8 md:p-12 lg:p-16 max-w-[1700px] mx-auto">
+                <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="active-pulse"></span>
+                            <span class="text-xs font-bold tracking-[0.2em] text-slate-400 uppercase">Rekap Kehadiran Team</span>
+                        </div>
+                        <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">
+                            Presensi Team
+                            <span class="text-[#0B2B6A] text-base align-middle" id="subtitleText">Live realtime</span>
+                        </h1>
+                    </div>
+                </header>
+
+                <div class="mb-6">
+                    <span id="summaryText" class="text-xs text-slate-400 font-medium">Memuat data presensi...</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+                    <div class="glass p-6 rounded-3xl premium-shadow">
+                        <p class="text-slate-500 text-xs font-semibold tracking-wide uppercase mb-1">Total Team</p>
+                        <p class="text-3xl font-extrabold" id="totalInternDisplay">0</p>
+                    </div>
+                    <div class="glass p-6 rounded-3xl premium-shadow">
+                        <p class="text-slate-500 text-xs font-semibold tracking-wide uppercase mb-1">Present</p>
+                        <p class="text-3xl font-extrabold text-emerald-600" id="presentCountDisplay">0</p>
+                    </div>
+                    <div class="glass p-6 rounded-3xl premium-shadow">
+                        <p class="text-slate-500 text-xs font-semibold tracking-wide uppercase mb-1">Belum Clock Out</p>
+                        <p class="text-3xl font-extrabold text-red-600" id="pendingLogoutDisplay">0</p>
+                    </div>
+                    <div class="glass p-6 rounded-3xl premium-shadow">
+                        <p class="text-slate-500 text-xs font-semibold tracking-wide uppercase mb-1">Tidak Hadir</p>
+                        <p class="text-3xl font-extrabold" id="absentCountDisplay">0</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-8">
+                    <section class="glass rounded-[28px] premium-shadow overflow-hidden">
+                        <div class="px-6 py-5 flex flex-col sm:flex-row gap-3 justify-between sm:items-center border-b border-slate-100/80">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900">Tabel Presensi Team</h2>
+                               
+                            </div>
+                            <div class="flex items-center gap-2 sm:ml-auto">
+                                <input type="date" id="filterDate" class="min-w-[180px] px-3 py-2 rounded-xl text-xs border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]">
+                                <button id="btnExportXlsx" class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#0B2B6A] hover:bg-[#113981] transition"><i class="bi bi-download me-1"></i>Export XLSX</button>
+                                <div id="loadingSpinner" class="w-5 h-5 border-2 border-[#0B2B6A] border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                        </div>
+                        <div class="px-4">
+                            <table class="table-fixed-head text-left min-w-[820px]">
+                                <colgroup>
+                                    <col style="width:36%">
+                                    <col style="width:13%">
+                                    <col style="width:14%">
+                                    <col style="width:19%">
+                                    <col style="width:18%">
+                                </colgroup>
+                                <thead>
+                                    <tr class="text-slate-400 text-[11px] font-extrabold uppercase tracking-[0.2em] border-b border-slate-100">
+                                        <th class="px-4 py-3">Nama Team</th>
+                                        <th class="px-4 py-3">Clock In</th>
+                                        <th class="px-4 py-3">Clock Out</th>
+                                        <th class="px-4 py-3">Total Jam Kerja</th>
+                                        <th class="px-4 py-3">Status</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="p-4 pt-0 table-scroll-area scrollbar-hide">
+                            <table class="text-left min-w-[820px]">
+                                <colgroup>
+                                    <col style="width:36%">
+                                    <col style="width:13%">
+                                    <col style="width:14%">
+                                    <col style="width:19%">
+                                    <col style="width:18%">
+                                </colgroup>
+                                <tbody id="attendanceBody" class="text-slate-700 text-sm"></tbody>
+                            </table>
+                            <p id="emptyState" class="text-xs text-slate-400 hidden py-4">Belum ada data intern/presensi pada tanggal ini.</p>
+                        </div>
+                    </section>
+
+                    <section class="glass rounded-[28px] premium-shadow overflow-hidden">
+                        <div class="px-6 py-5 border-b border-slate-100/80 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-[#0B2B6A]">Tabel Rekap Bulanan Team</h3>
+                               
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <input type="month" id="recapMonthFilter" class="px-3 py-2 rounded-xl text-xs border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]">
+                                <button id="btnExportMonthlyRecapXlsx" class="px-3 py-2 rounded-xl text-xs font-semibold text-white bg-[#0B2B6A] hover:bg-[#113981] transition"><i class="bi bi-download me-1"></i>Export XLSX</button>
+                            </div>
+                        </div>
+                        <div class="px-4">
+                            <table class="table-fixed-head text-left min-w-[640px]">
+                                <colgroup>
+                                    <col style="width:50%">
+                                    <col style="width:20%">
+                                    <col style="width:30%">
+                                </colgroup>
+                                <thead>
+                                    <tr class="text-slate-400 text-[11px] font-extrabold uppercase tracking-[0.2em] border-b border-slate-100">
+                                        <th class="px-4 py-3">Nama Team</th>
+                                        <th class="px-4 py-3">Hari Hadir</th>
+                                        <th class="px-4 py-3">Total Jam Kerja</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="p-4 pt-0 table-scroll-area scrollbar-hide">
+                            <table class="text-left min-w-[640px]">
+                                <colgroup>
+                                    <col style="width:50%">
+                                    <col style="width:20%">
+                                    <col style="width:30%">
+                                </colgroup>
+                                <tbody id="internRecapBody" class="text-slate-700 text-sm"></tbody>
+                            </table>
+                            <p id="internRecapEmpty" class="text-xs text-slate-400 hidden py-4">Belum ada data rekap bulanan.</p>
+                        </div>
+                    </section>
+
+                    <section class="glass rounded-[28px] premium-shadow overflow-hidden">
+                        <div class="px-6 py-5 border-b border-slate-100/80 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-[#0B2B6A]">Tabel Total Jam Team</h3>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button id="btnExportInternshipTotalXlsx" class="px-3 py-2 rounded-xl text-xs font-semibold text-white bg-[#0B2B6A] hover:bg-[#113981] transition"><i class="bi bi-download me-1"></i>Export XLSX</button>
+                            </div>
+                        </div>
+                        <div class="px-4">
+                            <table class="table-fixed-head text-left min-w-[720px]">
+                                <colgroup>
+                                    <col style="width:40%">
+                                    <col style="width:22%">
+                                    <col style="width:18%">
+                                    <col style="width:20%">
+                                </colgroup>
+                                <thead>
+                                    <tr class="text-slate-400 text-[11px] font-extrabold uppercase tracking-[0.2em] border-b border-slate-100">
+                                        <th class="px-4 py-3">Nama Team</th>
+                                        <th class="px-4 py-3">Total Jam Team</th>
+                                        <th class="px-4 py-3">Jumlah Hari Hadir</th>
+                                        <th class="px-4 py-3">Rata-rata per Hari</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        <div class="p-4 pt-0 table-scroll-area scrollbar-hide">
+                            <table class="text-left min-w-[720px]">
+                                <colgroup>
+                                    <col style="width:40%">
+                                    <col style="width:22%">
+                                    <col style="width:18%">
+                                    <col style="width:20%">
+                                </colgroup>
+                                <tbody id="internshipTotalBody" class="text-slate-700 text-sm"></tbody>
+                            </table>
+                            <p id="internshipTotalEmpty" class="text-xs text-slate-400 hidden py-4">Belum ada data total jam team.</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { renderTopBar } from "../element/topbar.js";
+        import { renderSidebar } from "../element/sidebar.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com",
+            projectId: "pre-dialogika",
+            storageBucket: "pre-dialogika.firebasestorage.app",
+            messagingSenderId: "343771410480",
+            appId: "1:343771410480:web:32881c9868522090237df5",
+            measurementId: "G-SXN811P3N0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const topbarTarget = document.getElementById("topbarContainer");
+        if (topbarTarget) renderTopBar(topbarTarget);
+        const sidebarTarget = document.getElementById("sidebarContainer");
+        if (sidebarTarget) renderSidebar(sidebarTarget);
+
+        const filterDateInput = document.getElementById('filterDate');
+        const btnExportXlsx = document.getElementById('btnExportXlsx');
+        const summaryText = document.getElementById('summaryText');
+        const subtitleText = document.getElementById('subtitleText');
+        const attendanceBody = document.getElementById('attendanceBody');
+        const emptyState = document.getElementById('emptyState');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const totalInternDisplay = document.getElementById('totalInternDisplay');
+        const presentCountDisplay = document.getElementById('presentCountDisplay');
+        const pendingLogoutDisplay = document.getElementById('pendingLogoutDisplay');
+        const absentCountDisplay = document.getElementById('absentCountDisplay');
+        const recapMonthFilter = document.getElementById('recapMonthFilter');
+        const btnExportMonthlyRecapXlsx = document.getElementById('btnExportMonthlyRecapXlsx');
+        const btnExportInternshipTotalXlsx = document.getElementById('btnExportInternshipTotalXlsx');
+        const internRecapBody = document.getElementById('internRecapBody');
+        const internRecapEmpty = document.getElementById('internRecapEmpty');
+        const internshipTotalBody = document.getElementById('internshipTotalBody');
+        const internshipTotalEmpty = document.getElementById('internshipTotalEmpty');
+
+        let allInterns = [];
+        let selectedDateRecords = [];
+        let unsubscribeAttendance = null;
+        let unsubscribeInternshipTotal = null;
+        let internshipTotalCache = [];
+        let monthlyRecapCache = [];
+
+        function getTodayKey() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function parseTimeToSeconds(timeStr) {
+            if (!timeStr) return null;
+            const [h, m, s] = String(timeStr).split(':').map(Number);
+            if ([h, m, s].some(Number.isNaN)) return null;
+            return h * 3600 + m * 60 + s;
+        }
+
+        function formatMinutes(totalSeconds) {
+            if (totalSeconds == null || totalSeconds < 0) return '-';
+            const totalMinutes = Math.floor(totalSeconds / 60);
+            const jam = Math.floor(totalMinutes / 60);
+            const menit = totalMinutes % 60;
+            return `${jam} Jam ${menit} Menit`;
+        }
+
+        function getMonthRangeFromMonthKey(monthKey) {
+            const [y, m] = monthKey.split('-').map(Number);
+            const d = new Date(y, (m || 1) - 1, 1);
+            const start = new Date(d.getFullYear(), d.getMonth(), 1);
+            const end = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+            const f = (x) => `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
+            return { startKey: f(start), endKey: f(end) };
+        }
+
+        function getMonthKeyFromDate(dateKey) {
+            const d = new Date(dateKey + 'T00:00:00');
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function getInternPhoto(userId) {
+            const found = allInterns.find(u => u.id === userId);
+            return found ? (found.photo || '') : '';
+        }
+
+        function exportToXlsx(rows, sheetName, fileName) {
+            if (!window.XLSX) return;
+            const ws = window.XLSX.utils.json_to_sheet(rows);
+            const wb = window.XLSX.utils.book_new();
+            window.XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            window.XLSX.writeFile(wb, fileName);
+        }
+
+        async function loadInterns() {
+            const qIntern = query(collection(db, 'users'));
+            const snap = await getDocs(qIntern);
+            const users = [];
+            snap.forEach(docSnap => {
+                const d = docSnap.data() || {};
+                const access = d.access || {};
+                const roleCandidate = [
+                    d.role_id,
+                    access.role_id,
+                    d.role,
+                    access.role,
+                    d.roleId,
+                    access.roleId,
+                    d.role_name,
+                    access.role_name,
+                    d.roleName,
+                    access.roleName
+                ].find((value) => value !== undefined && value !== null && value !== '');
+                const roleValue = roleCandidate ? String(roleCandidate).trim().toLowerCase() : '';
+                const statusValueRaw = d.status;
+                const statusValue = typeof statusValueRaw === 'string' ? statusValueRaw.trim().toLowerCase() : statusValueRaw;
+                const isStatusOk = statusValue === undefined || statusValue === null || statusValue === 'active';
+                const isRoleOk = ['staff', 'sub_team'].includes(roleValue);
+                if (!isStatusOk || !isRoleOk) return;
+
+                users.push({
+                    id: docSnap.id,
+                    name: d.name || d.email || 'Tanpa Nama',
+                    photo: d.photo || ''
+                });
+            });
+            users.sort((a, b) => a.name.localeCompare(b.name));
+            allInterns = users;
+        }
+
+        function aggregateSelectedDateRows(dateKey) {
+            const map = new Map();
+            selectedDateRecords.forEach(r => {
+                if (!r.user_id) return;
+                if (!map.has(r.user_id)) {
+                    map.set(r.user_id, {
+                        user_id: r.user_id,
+                        loginTime: null,
+                        logoutTime: null,
+                        loginSec: null,
+                        logoutSec: null
+                    });
+                }
+                const row = map.get(r.user_id);
+                const sec = parseTimeToSeconds(r.time);
+                if (r.type === 'login') {
+                    if (row.loginSec == null || (sec != null && sec < row.loginSec)) {
+                        row.loginSec = sec;
+                        row.loginTime = r.time || '-';
+                    }
+                }
+                if (r.type === 'logout') {
+                    if (row.logoutSec == null || (sec != null && sec > row.logoutSec)) {
+                        row.logoutSec = sec;
+                        row.logoutTime = r.time || '-';
+                    }
+                }
+            });
+
+            const merged = allInterns.map(intern => {
+                const hit = map.get(intern.id);
+                let status = 'Tidak Hadir';
+                let totalSeconds = null;
+                let loginLabel = '-';
+                let logoutLabel = '-';
+                let isValidPair = false;
+
+                if (hit && hit.loginTime) {
+                    loginLabel = hit.loginTime;
+                    if (hit.logoutTime) {
+                        logoutLabel = hit.logoutTime;
+                        if (hit.logoutSec != null && hit.loginSec != null && hit.logoutSec >= hit.loginSec) {
+                            totalSeconds = hit.logoutSec - hit.loginSec;
+                            isValidPair = true;
+                            status = 'Present';
+                        } else {
+                            status = 'Tidak Valid';
+                        }
+                    } else {
+                        status = 'Tidak Valid (Belum Clock Out)';
+                    }
+                }
+
+                return {
+                    ...intern,
+                    date: dateKey,
+                    loginTime: loginLabel,
+                    logoutTime: logoutLabel,
+                    totalSeconds,
+                    totalLabel: totalSeconds != null ? formatMinutes(totalSeconds) : '-',
+                    status,
+                    isValidPair,
+                    sortValue: hit?.loginSec ?? -1
+                };
+            });
+
+            merged.sort((a, b) => b.sortValue - a.sortValue);
+            return merged;
+        }
+
+        function statusBadge(status) {
+            if (status === 'Present') {
+                return '<span class="badge-status bg-emerald-100 text-emerald-700">Present</span>';
+            }
+            if (status === 'Tidak Valid' || status === 'Tidak Valid (Belum Clock Out)') {
+                return '<span class="badge-status bg-red-100 text-red-700">Belum Clock Out</span>';
+            }
+            return '<span class="badge-status bg-slate-100 text-slate-600">Tidak Hadir</span>';
+        }
+
+        function renderAttendanceTable(rows) {
+            attendanceBody.innerHTML = '';
+            if (!rows.length) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            rows.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = `border-b border-slate-100 ${(r.status === 'Tidak Valid' || r.status === 'Tidak Valid (Belum Clock Out)') ? 'row-warning' : ''}`;
+                tr.innerHTML = `
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-slate-200 bg-cover bg-center" style="background-image:url('${r.photo || ''}')"></div>
+                            <span class="font-semibold text-slate-800">${r.name}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 font-medium">${r.loginTime}</td>
+                    <td class="px-4 py-3 font-medium">${r.logoutTime}</td>
+                    <td class="px-4 py-3">${r.totalLabel}</td>
+                    <td class="px-4 py-3">${statusBadge(r.status)}</td>
+                `;
+                attendanceBody.appendChild(tr);
+            });
+        }
+
+        function updateKpi(rows, dateKey) {
+            const total = rows.length;
+            const present = rows.filter(r => r.status === 'Present').length;
+            const pending = rows.filter(r => r.status === 'Tidak Valid' || r.status === 'Tidak Valid (Belum Clock Out)').length;
+            const absent = rows.filter(r => r.status === 'Tidak Hadir').length;
+
+            totalInternDisplay.textContent = String(total);
+            presentCountDisplay.textContent = String(present);
+            pendingLogoutDisplay.textContent = String(pending);
+            absentCountDisplay.textContent = String(absent);
+
+            subtitleText.textContent = `Rekap ${dateKey}`;
+            summaryText.textContent = `${present} present, ${pending} tidak valid/belum clock out, ${absent} tidak hadir.`;
+        }
+
+        async function loadMonthlyRecap(monthKey) {
+            const monthRange = getMonthRangeFromMonthKey(monthKey);
+            const qMonth = query(collection(db, 'user_attendance'), where('date', '>=', monthRange.startKey), where('date', '<=', monthRange.endKey));
+            const monthSnap = await getDocs(qMonth);
+            const allowedUserIds = new Set(allInterns.map(u => u.id));
+
+            function aggregateDuration(snap) {
+                const byUserDate = new Map();
+                snap.forEach(docSnap => {
+                    const d = docSnap.data() || {};
+                    if (!d.user_id || !d.date || !d.type) return;
+                    if (!allowedUserIds.has(d.user_id)) return;
+                    const key = `${d.user_id}__${d.date}`;
+                    if (!byUserDate.has(key)) byUserDate.set(key, { user_id: d.user_id, date: d.date, loginSec: null, logoutSec: null, name: d.name || 'Tanpa Nama' });
+                    const row = byUserDate.get(key);
+                    const sec = parseTimeToSeconds(d.time);
+                    if (d.type === 'login' && (row.loginSec == null || (sec != null && sec < row.loginSec))) row.loginSec = sec;
+                    if (d.type === 'logout' && (row.logoutSec == null || (sec != null && sec > row.logoutSec))) row.logoutSec = sec;
+                });
+
+                let total = 0;
+                const perIntern = new Map();
+                byUserDate.forEach(v => {
+                    if (v.loginSec == null || v.logoutSec == null || v.logoutSec < v.loginSec) return;
+                    const dur = v.logoutSec - v.loginSec;
+                    total += dur;
+                    const ex = perIntern.get(v.user_id) || { name: v.name, total: 0, days: 0 };
+                    ex.total += dur;
+                    ex.days += 1;
+                    perIntern.set(v.user_id, ex);
+                });
+
+                return { total, perIntern };
+            }
+
+            const monthAgg = aggregateDuration(monthSnap);
+            const recapRows = Array.from(monthAgg.perIntern.entries())
+                .map(([userId, v]) => ({ userId, name: v.name, photo: getInternPhoto(userId), total: v.total, attendanceDays: v.days || 0 }))
+                .sort((a, b) => b.total - a.total);
+            monthlyRecapCache = recapRows;
+
+            internRecapBody.innerHTML = '';
+            if (!recapRows.length) {
+                monthlyRecapCache = [];
+                internRecapEmpty.classList.remove('hidden');
+                return;
+            }
+            internRecapEmpty.classList.add('hidden');
+
+            recapRows.forEach((r) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-100';
+                tr.innerHTML = `
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="avatar-thumb" style="background-image:url('${r.photo || ''}')"></div>
+                            <span class="font-semibold">${r.name}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3">${r.attendanceDays} hari</td>
+                    <td class="px-4 py-3">${formatMinutes(r.total)}</td>
+                `;
+                internRecapBody.appendChild(tr);
+            });
+        }
+
+        function buildInternshipTotalFromRecords(records) {
+            const allowedUserIds = new Set(allInterns.map(u => u.id));
+            const byUserDate = new Map();
+            records.forEach(d => {
+                if (!d.user_id || !d.date || !d.type) return;
+                if (!allowedUserIds.has(d.user_id)) return;
+                const key = `${d.user_id}__${d.date}`;
+                if (!byUserDate.has(key)) byUserDate.set(key, { user_id: d.user_id, name: d.name || 'Tanpa Nama', loginSec: null, logoutSec: null });
+                const row = byUserDate.get(key);
+                const sec = parseTimeToSeconds(d.time);
+                if (d.type === 'login' && (row.loginSec == null || (sec != null && sec < row.loginSec))) row.loginSec = sec;
+                if (d.type === 'logout' && (row.logoutSec == null || (sec != null && sec > row.logoutSec))) row.logoutSec = sec;
+            });
+            const perIntern = new Map();
+            byUserDate.forEach(v => {
+                if (v.loginSec == null || v.logoutSec == null || v.logoutSec < v.loginSec) return;
+                const dur = v.logoutSec - v.loginSec;
+                const ex = perIntern.get(v.user_id) || { name: v.name, total: 0, days: 0 };
+                ex.total += dur;
+                ex.days += 1;
+                perIntern.set(v.user_id, ex);
+            });
+            internshipTotalCache = Array.from(perIntern.entries())
+                .map(([userId, v]) => ({ userId, name: v.name, photo: getInternPhoto(userId), total: v.total, days: v.days }))
+                .sort((a, b) => b.total - a.total);
+        }
+
+        function renderInternshipTotalTable() {
+            internshipTotalBody.innerHTML = '';
+            if (!internshipTotalCache.length) {
+                internshipTotalEmpty.classList.remove('hidden');
+                return;
+            }
+            internshipTotalEmpty.classList.add('hidden');
+            const fragment = document.createDocumentFragment();
+            internshipTotalCache.forEach((r, idx) => {
+                const avgSeconds = r.days > 0 ? Math.floor(r.total / r.days) : 0;
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-100 hover:bg-slate-50/70 transition-colors';
+                tr.innerHTML = `
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[11px] font-semibold text-slate-400 w-6">${idx + 1}</span>
+                            <div class="avatar-thumb" style="background-image:url('${r.photo || ''}')"></div>
+                            <div>
+                                <p class="mb-0 font-semibold text-slate-800">${r.name}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 font-semibold text-[#0B2B6A]">${formatMinutes(r.total)}</td>
+                    <td class="px-4 py-3">${r.days} hari</td>
+                    <td class="px-4 py-3">${formatMinutes(avgSeconds)}</td>
+                `;
+                fragment.appendChild(tr);
+            });
+            internshipTotalBody.appendChild(fragment);
+        }
+
+        function setupInternshipTotalRealtime() {
+            if (unsubscribeInternshipTotal) {
+                unsubscribeInternshipTotal();
+                unsubscribeInternshipTotal = null;
+            }
+            const qAll = collection(db, 'user_attendance');
+            unsubscribeInternshipTotal = onSnapshot(qAll, (snap) => {
+                const rows = [];
+                snap.forEach(docSnap => {
+                    const d = docSnap.data() || {};
+                    rows.push({
+                        user_id: d.user_id || '',
+                        name: d.name || '',
+                        date: d.date || '',
+                        time: d.time || '',
+                        type: d.type || ''
+                    });
+                });
+                buildInternshipTotalFromRecords(rows);
+                renderInternshipTotalTable();
+            }, () => {
+                internshipTotalEmpty.classList.remove('hidden');
+            });
+        }
+
+        function exportInternshipTotalXlsx() {
+            const rows = internshipTotalCache.map(r => ({
+                Nama_Intern: r.name,
+                Total_Hari_Hadir: r.days,
+                Total_Jam_Kerja: formatMinutes(r.total)
+            }));
+            exportToXlsx(rows, 'Total Internship', `total-jam-internship.xlsx`);
+        }
+
+        function exportMonthlyRecapXlsx() {
+            const monthKey = recapMonthFilter.value || getMonthKeyFromDate(getTodayKey());
+            const rows = monthlyRecapCache.map(r => ({
+                Bulan: monthKey,
+                Nama_Intern: r.name,
+                Hari_Hadir: r.attendanceDays,
+                Total_Jam_Kerja: formatMinutes(r.total)
+            }));
+            exportToXlsx(rows, 'Rekap Bulanan', `rekap-bulanan-intern-${monthKey}.xlsx`);
+        }
+
+        function setupAttendanceRealtime(dateKey) {
+            if (unsubscribeAttendance) {
+                unsubscribeAttendance();
+                unsubscribeAttendance = null;
+            }
+            loadingSpinner.classList.remove('hidden');
+
+            const qDay = query(collection(db, 'user_attendance'), where('date', '==', dateKey));
+            unsubscribeAttendance = onSnapshot(qDay, (snap) => {
+                const rows = [];
+                snap.forEach(docSnap => {
+                    const d = docSnap.data() || {};
+                    rows.push({
+                        id: docSnap.id,
+                        user_id: d.user_id || '',
+                        name: d.name || '',
+                        photo: d.photo || '',
+                        date: d.date || '',
+                        time: d.time || '',
+                        type: d.type || ''
+                    });
+                });
+                selectedDateRecords = rows;
+                const tableRows = aggregateSelectedDateRows(dateKey);
+                renderAttendanceTable(tableRows);
+                updateKpi(tableRows, dateKey);
+                loadingSpinner.classList.add('hidden');
+            }, (error) => {
+                console.error('Gagal realtime presensi:', error);
+                summaryText.textContent = 'Gagal memuat realtime presensi.';
+                loadingSpinner.classList.add('hidden');
+            });
+        }
+
+        function exportPresenceXlsx() {
+            const dateKey = filterDateInput.value || getTodayKey();
+            const rows = aggregateSelectedDateRows(dateKey);
+            const exportRows = rows.filter(r => r.isValidPair).map(r => ({
+                Tanggal: dateKey,
+                Nama_Intern: r.name,
+                Clock_In: r.loginTime,
+                Clock_Out: r.logoutTime,
+                Total_Jam_Kerja: r.totalLabel,
+                Status: r.status
+            }));
+            exportToXlsx(exportRows, 'Presensi Harian', `presensi-intern-${dateKey}.xlsx`);
+        }
+
+        async function refreshByDate(dateKey) {
+            setupAttendanceRealtime(dateKey);
+        }
+
+        async function init() {
+            const todayKey = getTodayKey();
+            filterDateInput.value = todayKey;
+            recapMonthFilter.value = getMonthKeyFromDate(todayKey);
+            await loadInterns();
+            await refreshByDate(todayKey);
+            await loadMonthlyRecap(recapMonthFilter.value);
+            setupInternshipTotalRealtime();
+        }
+
+        filterDateInput.addEventListener('change', async () => {
+            const dateKey = filterDateInput.value || getTodayKey();
+            await refreshByDate(dateKey);
+        });
+
+        recapMonthFilter.addEventListener('change', async () => {
+            const monthKey = recapMonthFilter.value || getMonthKeyFromDate(getTodayKey());
+            await loadMonthlyRecap(monthKey);
+        });
+
+        btnExportXlsx.addEventListener('click', exportPresenceXlsx);
+        btnExportMonthlyRecapXlsx.addEventListener('click', exportMonthlyRecapXlsx);
+        btnExportInternshipTotalXlsx.addEventListener('click', exportInternshipTotalXlsx);
+
+        init().catch((e) => {
+            console.error('Init gagal:', e);
+            summaryText.textContent = 'Gagal inisialisasi data presensi.';
+            loadingSpinner.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
