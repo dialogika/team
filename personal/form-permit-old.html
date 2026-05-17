@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Izin - Team Dialogika</title>
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="../assets/css/style.css" rel="stylesheet" />
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <style>
         .btn-new-project-placeholder {
@@ -30,12 +33,14 @@
             cursor: pointer;
             text-decoration: none;
         }
+
         .btn-new-project-placeholder:hover {
             border-color: var(--dlg-blue);
             color: var(--dlg-blue);
             background-color: #eff6ff;
             transform: translateY(-5px);
         }
+
         .new-proj-icon {
             font-size: 2.5rem;
             margin-bottom: 10px;
@@ -45,30 +50,64 @@
         .modal-content {
             border-radius: 12px;
             border: none;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
-        .modal-header { border-bottom: 1px solid #f3f4f6; padding: 20px 30px; }
-        .modal-body { padding: 30px; }
-        .modal-title { font-weight: 800; color: #111; font-size: 1.5rem; }
-        
-        .form-label { font-weight: 700; color: #374151; margin-bottom: 8px; font-size: 0.95rem; }
-        .form-control, .form-select {
-            padding: 10px 15px; border-radius: 6px; border: 1px solid #d1d5db;
+
+        .modal-header {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 20px 30px;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-title {
+            font-weight: 800;
+            color: #111;
+            font-size: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 8px;
             font-size: 0.95rem;
         }
-        .form-control:focus { border-color: var(--dlg-blue); box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1); }
+
+        .form-control,
+        .form-select {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--dlg-blue);
+            box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1);
+        }
 
         .modal-editor-box {
             border: 1px solid #d1d5db;
             border-radius: 6px;
             overflow: hidden;
         }
+
         .modal-editor-toolbar {
-            background: #fff; border-bottom: 1px solid #f3f4f6; padding: 5px 10px;
-            display: flex; gap: 8px; flex-wrap: wrap;
+            background: #fff;
+            border-bottom: 1px solid #f3f4f6;
+            padding: 5px 10px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
+
         .modal-editor-content {
-            min-height: 120px; padding: 15px; outline: none; background: #fff;
+            min-height: 120px;
+            padding: 15px;
+            outline: none;
+            background: #fff;
         }
 
         .form-check-input:checked {
@@ -79,11 +118,13 @@
         .project-card-actions i {
             cursor: pointer;
         }
+
         .project-card-actions .project-trash-icon {
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.15s ease;
         }
+
         .project-card:hover .project-card-actions .project-trash-icon {
             opacity: 1;
             pointer-events: auto;
@@ -94,6 +135,7 @@
             pointer-events: none;
             transition: opacity 0.15s ease;
         }
+
         .project-card:hover .project-card-actions-unpinned i {
             opacity: 1;
             pointer-events: auto;
@@ -103,20 +145,24 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #f8fafc;
         }
+
         .permit-glass {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
+
         .permit-gradient-text {
             background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         .permit-btn-gradient {
             background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
             transition: all 0.3s ease;
         }
+
         .permit-btn-gradient:hover {
             opacity: 0.9;
             transform: translateY(-1px);
@@ -124,21 +170,24 @@
         }
     </style>
 </head>
+
 <body>
 
     <div id="topbarContainer"></div>
-    
+
     <div class="dashboard-container">
-        
+
         <div id="sidebarContainer"></div>
 
         <main class="main-content">
             <div class="permit-root text-slate-900 py-4" style="background-color: #f1f7fd;">
                 <div class="max-w-6xl mx-auto px-3 px-md-4">
                     <header class="mb-12 text-start md:text-left">
-                        <h1 class="text-4xl font-extrabold text-slate-900 mb-2">Form Izin Mandiri</h1><hr style="margin-bottom: 4px;;"/>
+                        <h1 class="text-4xl font-extrabold text-slate-900 mb-2">Form Izin Mandiri</h1>
+                        <hr style="margin-bottom: 4px;;" />
                         <p class="text-slate-500 max-w-2xl">
-                            Ketika izin sudah di setujui maka kamu sudah boleh di izin, namun jika belum maka kamu belum boleh izin, ketika kamu melanggar maka akan menjadi catatan khusus dikami.
+                            Ketika izin sudah di setujui maka kamu sudah boleh di izin, namun jika belum maka kamu belum
+                            boleh izin, ketika kamu melanggar maka akan menjadi catatan khusus dikami.
                         </p>
                     </header>
 
@@ -152,38 +201,73 @@
 
                                 <form id="permitForm" class="space-y-6">
                                     <div class="space-y-2">
-                                        <label for="permitType" class="text-sm font-semibold text-slate-700 ml-1">Jenis Izin</label>
-                                        <select id="permitType" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
-                                            <option value="full">Izin Penuh (Harian)</option>
-                                            <option value="late">Setengah Hari (Datang Terlambat)</option>
-                                            <option value="early">Setengah Hari (Pulang Awal)</option>
-                                            <option value="wfh">WFH (Work From Home)</option>
+                                        <label for="permitType" class="text-sm font-semibold text-slate-700 ml-1">Jenis
+                                            Izin</label>
+                                        <select id="permitType"
+                                            class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
+                                            <!-- <option value="full-day">Full Day</option>
+                                            <option value="setengah-hari">Setengah Hari</option>
+                                            <option value="work-from-home">Work From Home</option> -->
                                         </select>
                                     </div>
 
-                                    <div class="space-y-2">
-                                        <label for="permitDate" class="text-sm font-semibold text-slate-700 ml-1">Tanggal Izin</label>
-                                        <input id="permitDate" type="text" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium" placeholder="Pilih tanggal atau rentang tanggal..." required readonly>
-                                        <p class="text-xs text-slate-500 ml-1 mt-1">Pilih tanggal awal dan akhir. Jika hanya 1 hari, klik tanggal yang sama dua kali.</p>
+                                    <div id="hoursWrapper" class="hidden grid-cols-2 gap-4">
+                                        <div class="space-y-2">
+                                            <label for="permitStartHour"
+                                                class="text-sm font-semibold text-slate-700 ml-1">Mulai Jam</label>
+                                            <input id="permitStartHour" type="time"
+                                                class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
+                                        </div>
+                                        <div class="space-y-2">
+                                            <label for="permitEndHour"
+                                                class="text-sm font-semibold text-slate-700 ml-1">Sampai Jam</label>
+                                            <input id="permitEndHour" type="time"
+                                                class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
+                                        </div>
                                     </div>
 
                                     <div class="space-y-2">
-                                        <label for="permitReason" class="text-sm font-semibold text-slate-700 ml-1">Alasan Izin</label>
-                                        <textarea id="permitReason" rows="4" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium placeholder:text-slate-400" placeholder="Jelaskan secara detail alasan perizinan Anda..."></textarea>
+                                        <label for="permitDate"
+                                            class="text-sm font-semibold text-slate-700 ml-1">Tanggal Izin</label>
+                                        <input id="permitDate" type="text"
+                                            class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium"
+                                            placeholder="Pilih tanggal atau rentang tanggal..." required readonly>
+                                        <p class="text-xs text-slate-500 ml-1 mt-1">Pilih tanggal awal dan akhir. Jika
+                                            hanya 1 hari, klik tanggal yang sama dua kali.</p>
                                     </div>
 
-                                    <div class="p-6 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50 text-center">
-                                        <input type="file" id="permitFile" class="hidden" accept=".pdf,image/*">
-                                        <label for="permitFile" class="cursor-pointer block">
-                                            <svg class="w-8 h-8 text-indigo-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                            </svg>
-                                            <p class="text-sm font-medium text-slate-600">Klik untuk upload Dokumen Pendukung (Opsional)</p>
-                                            <p class="text-xs text-slate-400 mt-1">Format gambar atau PDF (Maks 2MB)</p>
-                                        </label>
+                                    <div class="space-y-2">
+                                        <label for="permitReason"
+                                            class="text-sm font-semibold text-slate-700 ml-1">Alasan Izin</label>
+                                        <textarea id="permitReason" rows="4"
+                                            class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium placeholder:text-slate-400"
+                                            placeholder="Jelaskan secara detail alasan perizinan Anda..."></textarea>
                                     </div>
 
-                                    <button type="submit" class="w-full btn-dlg-blue py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-indigo-100 uppercase tracking-wider">
+                                    <div class="space-y-2">
+                                        <label for="permitFile"
+                                            class="text-sm font-semibold text-slate-700 ml-1">Dokumen Pendukung
+                                            (Opsional)</label>
+                                        <div
+                                            class="p-6 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50 text-center">
+                                            <input type="file" id="permitFile" class="hidden" accept=".pdf,image/*">
+                                            <label for="permitFile" class="cursor-pointer block">
+                                                <svg class="w-8 h-8 text-indigo-500 mx-auto mb-2" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12">
+                                                    </path>
+                                                </svg>
+                                                <p class="text-sm font-medium text-slate-600">Klik untuk upload</p>
+                                                <p class="text-xs text-slate-400 mt-1">Format gambar atau PDF (Maks 2MB)
+                                                </p>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit"
+                                        class="w-full btn-dlg-blue py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-indigo-100 uppercase tracking-wider">
                                         Kirim Permohonan Izin
                                     </button>
                                 </form>
@@ -191,12 +275,14 @@
                         </div>
 
                         <div class="lg:col-span-5 space-y-8">
-                            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+                            <div
+                                class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
                                 <div class="p-6 border-b border-slate-50 flex justify-between items-center">
                                     <h3 class="font-bold text-slate-800">Riwayat Terakhir</h3>
-                                    <a href="#" id="permitViewAll" class="text-xs font-bold text-indigo-600 hover:underline">Lihat Semua</a>
+                                    <a href="#" id="permitViewAll"
+                                        class="text-xs font-bold text-indigo-600 hover:underline">Lihat Semua</a>
                                 </div>
-                                
+
                                 <div id="permitHistoryList" class="divide-y divide-slate-50"></div>
                             </div>
                         </div>
@@ -480,15 +566,57 @@
         }
 
         const permitForm = document.getElementById('permitForm');
-        
+        const typeInput = document.getElementById('permitType');
+        const hoursWrapper = document.getElementById('hoursWrapper');
+        const permitStartHour = document.getElementById('permitStartHour');
+        const permitEndHour = document.getElementById('permitEndHour');
+
+        let fp = null;
+
+        if (typeInput) {
+            typeInput.addEventListener('change', (e) => {
+                const val = e.target.value;
+                if (val === 'setengah-hari') {
+                    if (hoursWrapper) {
+                        hoursWrapper.classList.remove('hidden');
+                        hoursWrapper.classList.add('grid');
+                    }
+                    if (permitStartHour) permitStartHour.required = true;
+                    if (permitEndHour) permitEndHour.required = true;
+
+                    if (fp) {
+                        fp.set("mode", "single");
+                        fp.clear(); // Clear so user must re-select in single mode
+                    }
+                } else {
+                    if (hoursWrapper) {
+                        hoursWrapper.classList.add('hidden');
+                        hoursWrapper.classList.remove('grid');
+                    }
+                    if (permitStartHour) {
+                        permitStartHour.required = false;
+                        permitStartHour.value = '';
+                    }
+                    if (permitEndHour) {
+                        permitEndHour.required = false;
+                        permitEndHour.value = '';
+                    }
+
+                    if (fp) {
+                        fp.set("mode", "range");
+                    }
+                }
+            });
+        }
+
         let selectedStartDate = '';
         let selectedEndDate = '';
 
         if (document.getElementById('permitDate')) {
-            flatpickr("#permitDate", {
+            fp = flatpickr("#permitDate", {
                 mode: "range",
                 dateFormat: "Y-m-d",
-                onChange: function(selectedDates, dateStr, instance) {
+                onChange: function (selectedDates, dateStr, instance) {
                     if (selectedDates.length === 1) {
                         selectedStartDate = instance.formatDate(selectedDates[0], "Y-m-d");
                         selectedEndDate = selectedStartDate;
@@ -559,12 +687,13 @@
                         user_name: userName,
                         user_position: userPosition,
                         user_photo: userPhoto,
-                        category: null, // deprecated
+                        // category: null, // deprecated
                         type,
                         start_date: selectedStartDate || null,
                         end_date: selectedEndDate || null,
+                        permit_hours: (type === 'setengah-hari') ? (permitStartHour.value + ' - ' + permitEndHour.value) : null,
                         reason,
-                        attachment_name: fileName || null,
+                        // attachment_name: fileName || null,
                         attachment_url: fileUrl || null,
                         status: "pending",
                         created_at: serverTimestamp()
@@ -585,4 +714,5 @@
         }
     </script>
 </body>
+
 </html>
