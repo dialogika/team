@@ -79,6 +79,8 @@
         .status-paid { background: #dcfce7; color: #15803d; }
         .status-whatsapp { background: #dcfce7; color: #166534; }
         .status-rejected { background: #fee2e2; color: #b91c1c; }
+        .status-overdue { background: #ffe4e6; color: #e11d48; }
+        .stat-rose { background: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%); }
         .note-box {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
@@ -319,7 +321,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
                     <div class="stat-card stat-slate">
                         <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Total Request</div>
                         <div class="text-4xl font-black mt-3">{{ stats.total }}</div>
@@ -329,6 +331,11 @@
                         <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Need Action</div>
                         <div class="text-4xl font-black mt-3">{{ stats.pending }}</div>
                         <div class="text-xs mt-3 text-white/70">Status requested atau reviewing</div>
+                    </div>
+                    <div class="stat-card stat-rose">
+                        <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Overdue</div>
+                        <div class="text-4xl font-black mt-3">{{ stats.overdue }}</div>
+                        <div class="text-xs mt-3 text-white/70">Melewati due date pembayaran</div>
                     </div>
                     <div class="stat-card stat-emerald">
                         <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Paid</div>
@@ -355,6 +362,7 @@
                                     <option value="all">Semua Status</option>
                                     <option value="requested">Requested</option>
                                     <option value="reviewing">Reviewing</option>
+                                    <option value="overdue">Overdue</option>
                                     <option value="paid">Paid</option>
                                     <option value="complete">Complete</option>
                                     <option value="rejected">Rejected</option>
@@ -474,7 +482,7 @@
                                         <div class="space-y-2 max-w-sm">
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <div class="text-sm font-black text-slate-900">{{ expense.title || '-' }}</div>
-                                                <span :class="statusBadgeClass(expense.status)" class="badge-pill">{{ expense.status }}</span>
+                                                <span :class="statusBadgeClass(displayStatus(expense))" class="badge-pill">{{ displayStatus(expense) }}</span>
                                             </div>
                                             <div class="text-[11px] text-slate-500 uppercase tracking-[0.16em] font-black">{{ formatCategory(expense.category) }} • {{ expense.department || 'General' }}</div>
                                             <div class="text-xs text-slate-600">
@@ -528,7 +536,7 @@
                                     </td>
                                     <td>
                                         <div class="space-y-2">
-                                            <span :class="statusBadgeClass(expense.status)" class="badge-pill">{{ expense.status }}</span>
+                                            <span :class="statusBadgeClass(displayStatus(expense))" class="badge-pill">{{ displayStatus(expense) }}</span>
                                             <div class="text-xs text-slate-500">{{ expense.paymentMethod || 'Belum ditentukan' }}</div>
                                             <div v-if="expense.status === 'complete' && expense.whatsappLink" class="text-xs">
                                                 <a :href="expense.whatsappLink" target="_blank" class="font-bold text-emerald-600 hover:text-emerald-700">Buka WhatsApp Mentor</a>
@@ -1607,8 +1615,26 @@
                     return map[category] || category || 'Other';
                 };
 
+                const displayStatus = (expense) => {
+                    const normalized = String(expense.status || '').toLowerCase();
+                    if (['paid', 'complete', 'rejected'].includes(normalized)) {
+                        return expense.status;
+                    }
+                    if (expense.dueDate) {
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const due = new Date(expense.dueDate);
+                        due.setHours(0,0,0,0);
+                        if (due < today) {
+                            return 'overdue';
+                        }
+                    }
+                    return expense.status;
+                };
+
                 const statusBadgeClass = (status) => {
                     const normalized = String(status || '').toLowerCase();
+                    if (normalized === 'overdue') return 'status-overdue';
                     if (normalized === 'paid') return 'status-paid';
                     if (normalized === 'complete') return 'status-whatsapp';
                     if (normalized === 'reviewing') return 'status-reviewing';
@@ -1633,7 +1659,8 @@
                 const filteredExpenses = computed(() => {
                     const q = searchQuery.value.trim().toLowerCase();
                     const filtered = expenses.value.filter((expense) => {
-                        const matchStatus = filterStatus.value === 'all' || expense.status === filterStatus.value;
+                        const currentStatus = displayStatus(expense);
+                        const matchStatus = filterStatus.value === 'all' || currentStatus === filterStatus.value;
                         const matchCategory = filterCategory.value === 'all' || expense.category === filterCategory.value;
                         const dueDate = String(expense.dueDate || '').slice(0, 10);
                         const hasRange = !!(filterDateStart.value || filterDateEnd.value);
@@ -1676,12 +1703,17 @@
                 });
 
                 const stats = computed(() => {
-                    const pending = expenses.value.filter((item) => item.status === 'requested' || item.status === 'reviewing').length;
+                    const pending = expenses.value.filter((item) => {
+                        const stat = displayStatus(item);
+                        return stat === 'requested' || stat === 'reviewing';
+                    }).length;
+                    const overdue = expenses.value.filter((item) => displayStatus(item) === 'overdue').length;
                     const paid = expenses.value.filter((item) => item.status === 'paid' || item.status === 'complete').length;
                     const amount = expenses.value.reduce((total, item) => total + (Number(item.amount) || 0), 0);
                     return {
                         total: expenses.value.length,
                         pending,
+                        overdue,
                         paid,
                         amount
                     };
@@ -2155,6 +2187,7 @@
                     formatDateTimeLabel,
                     formatCategory,
                     statusBadgeClass,
+                    displayStatus,
                     isImageUrl,
                     toggleSort,
                     sortIcon,
