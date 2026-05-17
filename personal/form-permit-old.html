@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Izin - Team Dialogika</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        .btn-new-project-placeholder {
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            background-color: #f8fafc;
+            color: #64748b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 200px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-new-project-placeholder:hover {
+            border-color: var(--dlg-blue);
+            color: var(--dlg-blue);
+            background-color: #eff6ff;
+            transform: translateY(-5px);
+        }
+        .new-proj-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .modal-header { border-bottom: 1px solid #f3f4f6; padding: 20px 30px; }
+        .modal-body { padding: 30px; }
+        .modal-title { font-weight: 800; color: #111; font-size: 1.5rem; }
+        
+        .form-label { font-weight: 700; color: #374151; margin-bottom: 8px; font-size: 0.95rem; }
+        .form-control, .form-select {
+            padding: 10px 15px; border-radius: 6px; border: 1px solid #d1d5db;
+            font-size: 0.95rem;
+        }
+        .form-control:focus { border-color: var(--dlg-blue); box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1); }
+
+        .modal-editor-box {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .modal-editor-toolbar {
+            background: #fff; border-bottom: 1px solid #f3f4f6; padding: 5px 10px;
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .modal-editor-content {
+            min-height: 120px; padding: 15px; outline: none; background: #fff;
+        }
+
+        .form-check-input:checked {
+            background-color: #108a00;
+            border-color: #108a00;
+        }
+
+        .project-card-actions i {
+            cursor: pointer;
+        }
+        .project-card-actions .project-trash-icon {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+        .project-card:hover .project-card-actions .project-trash-icon {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .project-card-actions-unpinned i {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+        .project-card:hover .project-card-actions-unpinned i {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .permit-root {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        .permit-glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .permit-gradient-text {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .permit-btn-gradient {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            transition: all 0.3s ease;
+        }
+        .permit-btn-gradient:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="topbarContainer"></div>
+    
+    <div class="dashboard-container">
+        
+        <div id="sidebarContainer"></div>
+
+        <main class="main-content">
+            <div class="permit-root text-slate-900 py-4" style="background-color: #f1f7fd;">
+                <div class="max-w-6xl mx-auto px-3 px-md-4">
+                    <header class="mb-12 text-start md:text-left">
+                        <h1 class="text-4xl font-extrabold text-slate-900 mb-2">Form Izin Mandiri</h1><hr style="margin-bottom: 4px;;"/>
+                        <p class="text-slate-500 max-w-2xl">
+                            Ketika izin sudah di setujui maka kamu sudah boleh di izin, namun jika belum maka kamu belum boleh izin, ketika kamu melanggar maka akan menjadi catatan khusus dikami.
+                        </p>
+                    </header>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div class="lg:col-span-7">
+                            <div class="bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/60 border border-slate-100">
+                                <div class="flex items-center gap-3 mb-8">
+                                    <div class="w-2 h-8 bg-indigo-600 rounded-full"></div>
+                                    <h2 class="text-xl font-bold text-slate-800">Buat Pengajuan Baru</h2>
+                                </div>
+
+                                <form id="permitForm" class="space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div class="space-y-2">
+                                            <label for="permitCategory" class="text-sm font-semibold text-slate-700 ml-1">Kategori Urusan</label>
+                                            <select id="permitCategory" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
+                                                <option value="kampus">Urusan Kampus (Sidang/Bimbingan)</option>
+                                                <option value="sakit">Sakit (Medical Leave)</option>
+                                                <option value="mendesak">Keperluan Mendesak</option>
+                                            </select>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <label for="permitType" class="text-sm font-semibold text-slate-700 ml-1">Jenis Izin</label>
+                                            <select id="permitType" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
+                                                <option value="full">Izin Penuh (Harian)</option>
+                                                <option value="late">Setengah Hari (Datang Terlambat)</option>
+                                                <option value="early">Setengah Hari (Pulang Awal)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div class="space-y-2">
+                                            <label for="permitStartDate" class="text-sm font-semibold text-slate-700 ml-1">Mulai Tanggal</label>
+                                            <input id="permitStartDate" type="date" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
+                                        </div>
+                                        <div class="space-y-2">
+                                            <label for="permitEndDate" class="text-sm font-semibold text-slate-700 ml-1">Selesai Tanggal</label>
+                                            <input id="permitEndDate" type="date" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <label for="permitReason" class="text-sm font-semibold text-slate-700 ml-1">Alasan Detail</label>
+                                        <textarea id="permitReason" rows="4" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium placeholder:text-slate-400" placeholder="Jelaskan secara detail alasan perizinan Anda..."></textarea>
+                                    </div>
+
+                                    <div class="p-6 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50 text-center">
+                                        <input type="file" id="permitFile" class="hidden">
+                                        <label for="permitFile" class="cursor-pointer">
+                                            <svg class="w-8 h-8 text-indigo-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                            </svg>
+                                            <p class="text-sm font-medium text-slate-600">Klik untuk upload bukti dokumen (PDF/JPG)</p>
+                                            <p class="text-xs text-slate-400 mt-1">Opsional: Surat undangan kampus atau surat keterangan sakit</p>
+                                        </label>
+                                    </div>
+
+                                    <button type="submit" class="w-full btn-dlg-blue py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-indigo-100 uppercase tracking-wider">
+                                        Kirim Permohonan Izin
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-5 space-y-8">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="btn-dlg-blue p-6 rounded-3xl text-white shadow-lg shadow-indigo-200">
+                                    <p class="text-indigo-100 text-xs font-semibold uppercase tracking-wider">Izin Bulan Ini</p>
+                                    <h3 id="permitMonthlyCount" class="text-3xl font-bold mt-1">02</h3>
+                                </div>
+                                <div class="bg-white p-6 rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100">
+                                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Sisa Kuota</p>
+                                    <h3 id="permitQuotaRemaining" class="text-3xl font-bold mt-1 text-slate-800">10</h3>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+                                <div class="p-6 border-b border-slate-50 flex justify-between items-center">
+                                    <h3 class="font-bold text-slate-800">Riwayat Terakhir</h3>
+                                    <a href="#" id="permitViewAll" class="text-xs font-bold text-indigo-600 hover:underline">Lihat Semua</a>
+                                </div>
+                                
+                                <div id="permitHistoryList" class="divide-y divide-slate-50"></div>
+                            </div>
+
+                            <div class="bg-red-700 rounded-3xl p-6 text-white relative overflow-hidden shadow-xl shadow-red-200">
+                                <div class="relative z-10">
+                                    <h4 class="font-bold mb-2">Penting!</h4>
+                                    <hr style="margin-bottom: 11px;"/>
+                                    <p id="permitWarningText" class="text-xs  leading-relaxed">
+                                        Pastikan kamu sudah berdiskusi dengan mentor tim sebelum mengajukan izin agar jadwal proyek tetap terpantau.
+                                    </p>
+                                </div>
+                                <div class="absolute -right-4 -bottom-4 opacity-20">
+                                    <svg class="w-24 h-24 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { renderTopBar } from "../element/topbar.js";
+        import { renderSidebar } from "../element/sidebar.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            serverTimestamp,
+            getDocs,
+            query,
+            where,
+            orderBy,
+            limit,
+            doc,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import {
+            getStorage,
+            ref,
+            uploadBytes,
+            getDownloadURL
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com",
+            projectId: "pre-dialogika",
+            storageBucket: "pre-dialogika.firebasestorage.app",
+            messagingSenderId: "343771410480",
+            appId: "1:343771410480:web:32881c9868522090237df5",
+            measurementId: "G-SXN811P3N0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const topbarTarget = document.getElementById('topbarContainer');
+        renderTopBar(topbarTarget);
+        const sidebarTarget = document.getElementById('sidebarContainer');
+        renderSidebar(sidebarTarget);
+
+        window.app = app;
+        window.auth = auth;
+        window.db = db;
+        window.collection = collection;
+
+        window.logout = async () => {
+            await signOut(auth);
+            localStorage.removeItem('userData');
+            window.location.href = "../index.html";
+        };
+
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById('sidebarNav');
+            if (!sidebar) return;
+            const isMobile = window.innerWidth <= 991;
+            if (isMobile) {
+                sidebar.classList.toggle('show');
+            } else {
+                document.body.classList.toggle('sidebar-collapsed');
+            }
+        };
+
+        let currentUser = null;
+        let currentUserData = null;
+        let PERMIT_MONTHLY_QUOTA = 12;
+
+        async function loadPermitFormConfig() {
+            const warningEl = document.getElementById("permitWarningText");
+            const categorySelect = document.getElementById("permitCategory");
+            const typeSelect = document.getElementById("permitType");
+            try {
+                const refDoc = doc(db, "settings", "permit_form");
+                const snap = await getDoc(refDoc);
+                if (!snap.exists()) {
+                    return;
+                }
+                const data = snap.data() || {};
+                const text = (data.warning_text || "").toString().trim();
+                if (warningEl && text) {
+                    warningEl.textContent = text;
+                }
+                const quotaRaw = (data.quota_per_month !== undefined && data.quota_per_month !== null)
+                    ? data.quota_per_month
+                    : data.quota_3_months;
+                const quotaNum = typeof quotaRaw === "number" ? quotaRaw : parseInt(quotaRaw, 10);
+                if (!isNaN(quotaNum) && quotaNum > 0) {
+                    PERMIT_MONTHLY_QUOTA = quotaNum;
+                }
+                const categoryOptions = Array.isArray(data.category_options) ? data.category_options : null;
+                if (categorySelect && categoryOptions && categoryOptions.length > 0) {
+                    categorySelect.innerHTML = "";
+                    categoryOptions.forEach(opt => {
+                        const value = (opt && opt.value) ? String(opt.value) : "";
+                        const label = (opt && opt.label) ? String(opt.label) : value;
+                        if (!value && !label) return;
+                        const optionEl = document.createElement("option");
+                        optionEl.value = value;
+                        optionEl.textContent = label;
+                        categorySelect.appendChild(optionEl);
+                    });
+                }
+                const typeOptions = Array.isArray(data.type_options) ? data.type_options : null;
+                if (typeSelect && typeOptions && typeOptions.length > 0) {
+                    typeSelect.innerHTML = "";
+                    typeOptions.forEach(opt => {
+                        const value = (opt && opt.value) ? String(opt.value) : "";
+                        const label = (opt && opt.label) ? String(opt.label) : value;
+                        if (!value && !label) return;
+                        const optionEl = document.createElement("option");
+                        optionEl.value = value;
+                        optionEl.textContent = label;
+                        typeSelect.appendChild(optionEl);
+                    });
+                }
+            } catch (e) {
+                console.error("Gagal memuat konfigurasi form izin", e);
+            }
+        }
+
+        function parseDateString(value) {
+            if (!value) return null;
+            const parts = String(value).split("-");
+            if (parts.length !== 3) return null;
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const day = parseInt(parts[2], 10);
+            const d = new Date(year, month, day);
+            if (isNaN(d.getTime())) return null;
+            return d;
+        }
+
+        function formatDateLabel(value) {
+            const d = parseDateString(value);
+            if (!d) return "";
+            const namaBulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+            const day = d.getDate();
+            const month = namaBulan[d.getMonth()];
+            const year = d.getFullYear();
+            return String(day).padStart(2, "0") + " " + month + " " + year;
+        }
+
+        async function loadUserPermitSummary(userId) {
+            const countEl = document.getElementById("permitMonthlyCount");
+            const quotaEl = document.getElementById("permitQuotaRemaining");
+            if (!countEl || !quotaEl) return;
+            try {
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const permitsRef = collection(db, "permits");
+                const qPermits = query(
+                    permitsRef,
+                    where("user_id", "==", userId)
+                );
+                const snap = await getDocs(qPermits);
+                let used = 0;
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const ts = data.created_at;
+                    if (ts && typeof ts.toDate === "function") {
+                        const createdAt = ts.toDate();
+                        if (createdAt >= startOfMonth && createdAt <= now) {
+                            used += 1;
+                        }
+                    }
+                });
+                let remaining = PERMIT_MONTHLY_QUOTA - used;
+                if (remaining < 0) remaining = 0;
+                countEl.textContent = String(used).padStart(2, "0");
+                quotaEl.textContent = String(remaining).padStart(2, "0");
+            } catch (e) {
+                console.error("Gagal memuat ringkasan izin", e);
+            }
+        }
+
+        async function loadUserPermitHistory(userId, options = { all: false }) {
+            const container = document.getElementById("permitHistoryList");
+            if (!container) return;
+            container.innerHTML = "";
+            try {
+                const permitsRef = collection(db, "permits");
+                const qPermits = query(
+                    permitsRef,
+                    where("user_id", "==", userId)
+                );
+                const snap = await getDocs(qPermits);
+                const docs = [];
+                snap.forEach(docSnap => {
+                    docs.push(docSnap);
+                });
+                if (docs.length === 0) {
+                    container.innerHTML = '<div class="p-6 text-center text-xs text-slate-400">Kamu belum pernah mengajukan izin.</div>';
+                    return;
+                }
+                docs.sort((a, b) => {
+                    const da = (a.data() || {}).created_at;
+                    const dbv = (b.data() || {}).created_at;
+                    const ta = da && typeof da.toDate === "function" ? da.toDate().getTime() : 0;
+                    const tb = dbv && typeof dbv.toDate === "function" ? dbv.toDate().getTime() : 0;
+                    return tb - ta;
+                });
+                const list = options && options.all ? docs : docs.slice(0, 5);
+                list.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const reason = (data.reason || "").trim();
+                    const title = reason || "Permohonan Izin";
+                    const startRaw = data.start_date || "";
+                    const endRaw = data.end_date || data.start_date || "";
+                    const startLabel = formatDateLabel(startRaw);
+                    const endLabel = formatDateLabel(endRaw);
+                    let durasiLabel = "";
+                    const startDate = parseDateString(startRaw);
+                    const endDate = parseDateString(endRaw);
+                    if (startDate && endDate) {
+                        const ms = endDate.getTime() - startDate.getTime();
+                        const days = Math.floor(ms / 86400000) + 1;
+                        const dayCount = days > 0 ? days : 1;
+                        durasiLabel = String(dayCount) + " Hari";
+                    } else {
+                        durasiLabel = "1 Hari";
+                    }
+                    const statusRaw = String(data.status || "pending").toLowerCase();
+                    let badgeClass = "bg-amber-100 text-amber-700";
+                    let statusText = "Pending";
+                    let iconBgClass = "bg-amber-50";
+                    let iconColorClass = "text-amber-600";
+                    let iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>';
+                    if (statusRaw === "approved") {
+                        badgeClass = "bg-green-100 text-green-700";
+                        statusText = "Approved";
+                        iconBgClass = "bg-green-50";
+                        iconColorClass = "text-green-600";
+                        iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+                    } else if (statusRaw === "rejected") {
+                        badgeClass = "bg-red-100 text-red-700";
+                        statusText = "Rejected";
+                        iconBgClass = "bg-red-50";
+                        iconColorClass = "text-red-600";
+                        iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+                    }
+                    const subtitle = startLabel && durasiLabel ? startLabel + " • " + durasiLabel : durasiLabel || startLabel;
+                    const itemHtml = `
+                        <div class="p-6 flex items-center justify-between hover:bg-slate-50 transition">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 ${iconBgClass} rounded-2xl flex items-center justify-center">
+                                    <svg class="w-6 h-6 ${iconColorClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        ${iconPath}
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">${title}</p>
+                                    <p class="text-xs text-slate-500">${subtitle}</p>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 ${badgeClass} text-[10px] font-bold rounded-full uppercase">${statusText}</span>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML("beforeend", itemHtml);
+                });
+            } catch (e) {
+                console.error("Gagal memuat riwayat izin", e);
+                container.innerHTML = '<div class="p-6 text-center text-xs text-red-400">Gagal memuat riwayat izin.</div>';
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "../index.html";
+                return;
+            }
+            currentUser = user;
+            try {
+                currentUserData = JSON.parse(localStorage.getItem('userData') || 'null');
+            } catch (e) {
+                currentUserData = null;
+            }
+            try {
+                await loadPermitFormConfig();
+                await loadUserPermitSummary(user.uid);
+                await loadUserPermitHistory(user.uid, { all: false });
+            } catch (e) {
+                console.error("Gagal memuat data izin pengguna", e);
+            }
+        });
+
+        const viewAllLink = document.getElementById("permitViewAll");
+        if (viewAllLink) {
+            viewAllLink.addEventListener("click", async (e) => {
+                e.preventDefault();
+                if (!currentUser || !currentUser.uid) return;
+                try {
+                    await loadUserPermitHistory(currentUser.uid, { all: true });
+                } catch (err) {
+                    console.error("Gagal memuat semua riwayat izin", err);
+                }
+            });
+        }
+
+        const permitForm = document.getElementById('permitForm');
+        if (permitForm) {
+            permitForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (!auth.currentUser) {
+                    alert("Silakan login terlebih dahulu.");
+                    return;
+                }
+
+                const categoryInput = document.getElementById('permitCategory');
+                const typeInput = document.getElementById('permitType');
+                const startInput = document.getElementById('permitStartDate');
+                const endInput = document.getElementById('permitEndDate');
+                const reasonInput = document.getElementById('permitReason');
+                const fileInput = document.getElementById('permitFile');
+
+                const category = categoryInput ? categoryInput.value.trim() : "";
+                const type = typeInput ? typeInput.value.trim() : "";
+                const startDate = startInput ? startInput.value : "";
+                const endDate = endInput ? endInput.value : "";
+                const reason = reasonInput ? reasonInput.value.trim() : "";
+
+                if (!category || !type || !startDate || !reason) {
+                    alert("Mohon lengkapi minimal kategori, jenis izin, tanggal mulai, dan alasan.");
+                    return;
+                }
+
+                const submitBtn = permitForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = "Mengirim...";
+                }
+
+                try {
+                    let fileUrl = "";
+                    let fileName = "";
+                    if (fileInput && fileInput.files && fileInput.files[0]) {
+                        const file = fileInput.files[0];
+                        fileName = file.name;
+                        const uid = auth.currentUser.uid;
+                        const storageRef = ref(storage, `permits/${uid}/${Date.now()}-${file.name}`);
+                        await uploadBytes(storageRef, file);
+                        fileUrl = await getDownloadURL(storageRef);
+                    }
+
+                    const localData = currentUserData;
+                    const userName = (localData && localData.name) || currentUser.displayName || currentUser.email || "";
+                    const userPosition = (localData && localData.position) || "";
+                    const userPhoto = (localData && (localData.photo || localData.Photo)) || (currentUser && currentUser.photoURL) || "";
+
+                    await addDoc(collection(db, "permits"), {
+                        user_id: auth.currentUser.uid,
+                        user_name: userName,
+                        user_position: userPosition,
+                        user_photo: userPhoto,
+                        category,
+                        type,
+                        start_date: startDate || null,
+                        end_date: endDate || null,
+                        reason,
+                        attachment_name: fileName || null,
+                        attachment_url: fileUrl || null,
+                        status: "pending",
+                        created_at: serverTimestamp()
+                    });
+
+                    permitForm.reset();
+                    alert("Permohonan izin berhasil dikirim.");
+                } catch (err) {
+                    console.error("Gagal mengirim permohonan izin", err);
+                    alert("Gagal mengirim permohonan izin. Coba lagi nanti.");
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = "Kirim Permohonan Izin";
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
