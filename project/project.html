@@ -494,9 +494,51 @@
         }
     
         async function loadProjectMembers() {
-            membersLoaded = false;
-            projectMembers = [];
+            // Hanya muat user yang sudah ada di currentMemberUids
             try {
+                if (!currentMemberUids || currentMemberUids.length === 0) {
+                    renderMembers([]);
+                    return;
+                }
+                const promises = currentMemberUids.map(uid => getDoc(doc(db, "users", uid)));
+                const snaps = await Promise.all(promises);
+                
+                const loadedMembers = [];
+                snaps.forEach(docSnap => {
+                    if (docSnap.exists()) {
+                        const u = docSnap.data();
+                        loadedMembers.push({
+                            uid: docSnap.id,
+                            name: u.name || u.email || "Unknown",
+                            email: u.email || "",
+                            photo: u.photo || "",
+                            role: (u.employment && u.employment.position) || "Member"
+                        });
+                    }
+                });
+                
+                // Merge dengan projectMembers yang sudah ada agar tidak hilang
+                const newProjectMembers = [...projectMembers];
+                loadedMembers.forEach(lm => {
+                    const idx = newProjectMembers.findIndex(pm => pm.uid === lm.uid);
+                    if (idx === -1) newProjectMembers.push(lm);
+                    else newProjectMembers[idx] = lm;
+                });
+                projectMembers = newProjectMembers;
+                
+            } catch (e) {
+                console.error("Failed to load project members", e);
+            } finally {
+                renderMembers(currentMemberUids);
+            }
+        }
+
+        async function loadAllUsersForAddMemberModal() {
+            if (membersLoaded) return;
+            try {
+                const list = document.getElementById("projectMemberListScroll");
+                if (list) list.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-secondary"></div><div class="small text-muted mt-2">Loading all users...</div></div>';
+                
                 const snap = await getDocs(collection(db, "users"));
                 const allUsers = [];
                 snap.forEach(docSnap => {
@@ -522,16 +564,25 @@
                     return a.name.localeCompare(b.name);
                 });
                 projectMembers = allUsers;
-            } catch (e) {
-                console.error("Failed to load project members", e);
-            } finally {
                 membersLoaded = true;
-                renderMembers(currentMemberUids);
+            } catch (e) {
+                console.error("Failed to load all users", e);
+            } finally {
                 if (typeof window.renderProjectMemberList === "function") {
                     window.renderProjectMemberList(projectMemberSearchQuery);
                 }
             }
         }
+        
+        // Listen for modal open to trigger loading all users
+        document.addEventListener("DOMContentLoaded", () => {
+            const modalEl = document.getElementById('manageProjectMembersModal');
+            if (modalEl) {
+                modalEl.addEventListener('show.bs.modal', () => {
+                    loadAllUsersForAddMemberModal();
+                });
+            }
+        });
     
         async function loadEditDepartments() {
             const container = document.getElementById('editDepartmentOptions');
@@ -640,10 +691,7 @@
             loadProjectProgress(project.id);
     
             // C. Members (Menampilkan lingkaran avatar dari array members)
-            renderMembers(currentMemberUids);
-            if (!membersLoaded) {
-                loadProjectMembers();
-            }
+            loadProjectMembers();
 
             // D. Link Tool Card (Sesuaikan ID agar tool lain tahu project mana yang dibuka)
             document.getElementById('linkToList').href = `list.html?id=${project.id}`;

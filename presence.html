@@ -606,15 +606,13 @@
         function loadUsers() {
             const select = nameSelectEl;
             select.innerHTML = '<option value="" disabled selected>Memuat daftar nama...</option>';
-            if (unsubscribeUsersListener) {
-                unsubscribeUsersListener();
-                unsubscribeUsersListener = null;
-            }
-            // Fallback: ambil semua user, lalu filter di client-side.
+
+            // Ambil semua user sekali saja (tidak real-time), filter di client-side.
             const q = query(
                 collection(db, "users")
             );
-            unsubscribeUsersListener = onSnapshot(q, (snap) => {
+            
+            getDocs(q).then((snap) => {
                 const selectedUserId = select.value;
                 const users = [];
                 console.log('users snapshot size:', snap.size);
@@ -700,8 +698,8 @@
                     applySelectedPhoto();
                     updateSliderMode('login');
                 }
-            }, (e) => {
-                console.error("Gagal memuat users realtime", e);
+            }).catch((e) => {
+                console.error("Gagal memuat users", e);
                 select.innerHTML = '<option value="" disabled selected>Gagal memuat data</option>';
             });
         }
