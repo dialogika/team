@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="../assets/css/style.css" rel="stylesheet" />
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -150,49 +151,35 @@
                                 </div>
 
                                 <form id="permitForm" class="space-y-6">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div class="space-y-2">
-                                            <label for="permitCategory" class="text-sm font-semibold text-slate-700 ml-1">Kategori Urusan</label>
-                                            <select id="permitCategory" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
-                                                <option value="kampus">Urusan Kampus (Sidang/Bimbingan)</option>
-                                                <option value="sakit">Sakit (Medical Leave)</option>
-                                                <option value="mendesak">Keperluan Mendesak</option>
-                                            </select>
-                                        </div>
-                                        <div class="space-y-2">
-                                            <label for="permitType" class="text-sm font-semibold text-slate-700 ml-1">Jenis Izin</label>
-                                            <select id="permitType" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
-                                                <option value="full">Izin Penuh (Harian)</option>
-                                                <option value="late">Setengah Hari (Datang Terlambat)</option>
-                                                <option value="early">Setengah Hari (Pulang Awal)</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div class="space-y-2">
-                                            <label for="permitStartDate" class="text-sm font-semibold text-slate-700 ml-1">Mulai Tanggal</label>
-                                            <input id="permitStartDate" type="date" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
-                                        </div>
-                                        <div class="space-y-2">
-                                            <label for="permitEndDate" class="text-sm font-semibold text-slate-700 ml-1">Selesai Tanggal</label>
-                                            <input id="permitEndDate" type="date" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
-                                        </div>
+                                    <div class="space-y-2">
+                                        <label for="permitType" class="text-sm font-semibold text-slate-700 ml-1">Jenis Izin</label>
+                                        <select id="permitType" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium">
+                                            <option value="full">Izin Penuh (Harian)</option>
+                                            <option value="late">Setengah Hari (Datang Terlambat)</option>
+                                            <option value="early">Setengah Hari (Pulang Awal)</option>
+                                            <option value="wfh">WFH (Work From Home)</option>
+                                        </select>
                                     </div>
 
                                     <div class="space-y-2">
-                                        <label for="permitReason" class="text-sm font-semibold text-slate-700 ml-1">Alasan Detail</label>
+                                        <label for="permitDate" class="text-sm font-semibold text-slate-700 ml-1">Tanggal Izin</label>
+                                        <input id="permitDate" type="text" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium" placeholder="Pilih tanggal atau rentang tanggal..." required readonly>
+                                        <p class="text-xs text-slate-500 ml-1 mt-1">Pilih tanggal awal dan akhir. Jika hanya 1 hari, klik tanggal yang sama dua kali.</p>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <label for="permitReason" class="text-sm font-semibold text-slate-700 ml-1">Alasan Izin</label>
                                         <textarea id="permitReason" rows="4" class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 transition text-slate-700 font-medium placeholder:text-slate-400" placeholder="Jelaskan secara detail alasan perizinan Anda..."></textarea>
                                     </div>
 
                                     <div class="p-6 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50 text-center">
-                                        <input type="file" id="permitFile" class="hidden">
-                                        <label for="permitFile" class="cursor-pointer">
+                                        <input type="file" id="permitFile" class="hidden" accept=".pdf,image/*">
+                                        <label for="permitFile" class="cursor-pointer block">
                                             <svg class="w-8 h-8 text-indigo-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                                             </svg>
-                                            <p class="text-sm font-medium text-slate-600">Klik untuk upload bukti dokumen (PDF/JPG)</p>
-                                            <p class="text-xs text-slate-400 mt-1">Opsional: Surat undangan kampus atau surat keterangan sakit</p>
+                                            <p class="text-sm font-medium text-slate-600">Klik untuk upload Dokumen Pendukung (Opsional)</p>
+                                            <p class="text-xs text-slate-400 mt-1">Format gambar atau PDF (Maks 2MB)</p>
                                         </label>
                                     </div>
 
@@ -204,17 +191,6 @@
                         </div>
 
                         <div class="lg:col-span-5 space-y-8">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="btn-dlg-blue p-6 rounded-3xl text-white shadow-lg shadow-indigo-200">
-                                    <p class="text-indigo-100 text-xs font-semibold uppercase tracking-wider">Izin Bulan Ini</p>
-                                    <h3 id="permitMonthlyCount" class="text-3xl font-bold mt-1">02</h3>
-                                </div>
-                                <div class="bg-white p-6 rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100">
-                                    <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Sisa Kuota</p>
-                                    <h3 id="permitQuotaRemaining" class="text-3xl font-bold mt-1 text-slate-800">10</h3>
-                                </div>
-                            </div>
-
                             <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
                                 <div class="p-6 border-b border-slate-50 flex justify-between items-center">
                                     <h3 class="font-bold text-slate-800">Riwayat Terakhir</h3>
@@ -222,21 +198,6 @@
                                 </div>
                                 
                                 <div id="permitHistoryList" class="divide-y divide-slate-50"></div>
-                            </div>
-
-                            <div class="bg-red-700 rounded-3xl p-6 text-white relative overflow-hidden shadow-xl shadow-red-200">
-                                <div class="relative z-10">
-                                    <h4 class="font-bold mb-2">Penting!</h4>
-                                    <hr style="margin-bottom: 11px;"/>
-                                    <p id="permitWarningText" class="text-xs  leading-relaxed">
-                                        Pastikan kamu sudah berdiskusi dengan mentor tim sebelum mengajukan izin agar jadwal proyek tetap terpantau.
-                                    </p>
-                                </div>
-                                <div class="absolute -right-4 -bottom-4 opacity-20">
-                                    <svg class="w-24 h-24 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -247,6 +208,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
@@ -393,38 +355,7 @@
             return String(day).padStart(2, "0") + " " + month + " " + year;
         }
 
-        async function loadUserPermitSummary(userId) {
-            const countEl = document.getElementById("permitMonthlyCount");
-            const quotaEl = document.getElementById("permitQuotaRemaining");
-            if (!countEl || !quotaEl) return;
-            try {
-                const now = new Date();
-                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                const permitsRef = collection(db, "permits");
-                const qPermits = query(
-                    permitsRef,
-                    where("user_id", "==", userId)
-                );
-                const snap = await getDocs(qPermits);
-                let used = 0;
-                snap.forEach(docSnap => {
-                    const data = docSnap.data() || {};
-                    const ts = data.created_at;
-                    if (ts && typeof ts.toDate === "function") {
-                        const createdAt = ts.toDate();
-                        if (createdAt >= startOfMonth && createdAt <= now) {
-                            used += 1;
-                        }
-                    }
-                });
-                let remaining = PERMIT_MONTHLY_QUOTA - used;
-                if (remaining < 0) remaining = 0;
-                countEl.textContent = String(used).padStart(2, "0");
-                quotaEl.textContent = String(remaining).padStart(2, "0");
-            } catch (e) {
-                console.error("Gagal memuat ringkasan izin", e);
-            }
-        }
+        // loadUserPermitSummary functionality removed based on requirements.
 
         async function loadUserPermitHistory(userId, options = { all: false }) {
             const container = document.getElementById("permitHistoryList");
@@ -529,7 +460,6 @@
             }
             try {
                 await loadPermitFormConfig();
-                await loadUserPermitSummary(user.uid);
                 await loadUserPermitHistory(user.uid, { all: false });
             } catch (e) {
                 console.error("Gagal memuat data izin pengguna", e);
@@ -550,6 +480,29 @@
         }
 
         const permitForm = document.getElementById('permitForm');
+        
+        let selectedStartDate = '';
+        let selectedEndDate = '';
+
+        if (document.getElementById('permitDate')) {
+            flatpickr("#permitDate", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 1) {
+                        selectedStartDate = instance.formatDate(selectedDates[0], "Y-m-d");
+                        selectedEndDate = selectedStartDate;
+                    } else if (selectedDates.length === 2) {
+                        selectedStartDate = instance.formatDate(selectedDates[0], "Y-m-d");
+                        selectedEndDate = instance.formatDate(selectedDates[1], "Y-m-d");
+                    } else {
+                        selectedStartDate = '';
+                        selectedEndDate = '';
+                    }
+                }
+            });
+        }
+
         if (permitForm) {
             permitForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -559,22 +512,23 @@
                     return;
                 }
 
-                const categoryInput = document.getElementById('permitCategory');
                 const typeInput = document.getElementById('permitType');
-                const startInput = document.getElementById('permitStartDate');
-                const endInput = document.getElementById('permitEndDate');
                 const reasonInput = document.getElementById('permitReason');
                 const fileInput = document.getElementById('permitFile');
 
-                const category = categoryInput ? categoryInput.value.trim() : "";
                 const type = typeInput ? typeInput.value.trim() : "";
-                const startDate = startInput ? startInput.value : "";
-                const endDate = endInput ? endInput.value : "";
                 const reason = reasonInput ? reasonInput.value.trim() : "";
 
-                if (!category || !type || !startDate || !reason) {
-                    alert("Mohon lengkapi minimal kategori, jenis izin, tanggal mulai, dan alasan.");
+                if (!type || !selectedStartDate || !selectedEndDate || !reason) {
+                    alert("Mohon lengkapi minimal jenis izin, tanggal, dan alasan.");
                     return;
+                }
+
+                if (fileInput && fileInput.files && fileInput.files[0]) {
+                    if (fileInput.files[0].size > 2 * 1024 * 1024) {
+                        alert("Ukuran dokumen pendukung maksimal 2MB.");
+                        return;
+                    }
                 }
 
                 const submitBtn = permitForm.querySelector('button[type="submit"]');
@@ -605,10 +559,10 @@
                         user_name: userName,
                         user_position: userPosition,
                         user_photo: userPhoto,
-                        category,
+                        category: null, // deprecated
                         type,
-                        start_date: startDate || null,
-                        end_date: endDate || null,
+                        start_date: selectedStartDate || null,
+                        end_date: selectedEndDate || null,
                         reason,
                         attachment_name: fileName || null,
                         attachment_url: fileUrl || null,
