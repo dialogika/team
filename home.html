@@ -546,7 +546,7 @@
         import { renderSidebar } from "./element/sidebar.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDoc, getDocs, serverTimestamp, onSnapshot, orderBy, doc, deleteDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDoc, getDocs, serverTimestamp, onSnapshot, orderBy, doc, deleteDoc, updateDoc, setDoc, getCountFromServer, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         // 1. Konfigurasi Firebase (PASTIKAN SAMA DENGAN LOGIN/REGISTER)
@@ -711,8 +711,8 @@
                 const pinnedContainer = document.getElementById('pinnedProjectsContainer');
                 const otherContainer = document.getElementById('otherProjectsContainer');
 
-                // Query: Ambil semua project, urutkan berdasarkan waktu buat terbaru
-                const q = query(collection(db, "projects"), orderBy("created_at", "desc"));
+                // Query: Ambil semua project, urutkan berdasarkan waktu buat terbaru (max 50)
+                const q = query(collection(db, "projects"), orderBy("created_at", "desc"), limit(50));
 
                 // onSnapshot membuat data terupdate otomatis jika ada perubahan di database
                 onSnapshot(q, (snapshot) => {
@@ -722,6 +722,9 @@
                         projects.push({ id: doc.id, ...doc.data() });
                     });
                     renderProjects(projects);
+                    
+                    // Fetch task counts non-realtime to save reads
+                    fetchTaskStatsForProjects(projects);
                 }, (error) => {
                     console.error("Failed to listen to projects:", error);
                     // Retry with exponential backoff if connection was aborted or unavailable
@@ -737,87 +740,44 @@
             }
         }
 
-        // --- 3B. AMBIL STATISTIK TASK PER PROJECT (Real-time) ---
-        let listenToTasksRetryCount = 0;
-        let unsubscribeTasks = null;
-        function listenToTasks() {
+        // --- 3B. AMBIL STATISTIK TASK PER PROJECT (Non real-time count) ---
+        async function fetchTaskStatsForProjects(projects) {
             try {
-                if (unsubscribeTasks) {
-                    unsubscribeTasks();
+                let totalAll = 0;
+                const stats = {};
+                for (const p of projects) {
+                    const pid = p.id;
+                    if (!pid) continue;
+                    try {
+                        const totalSnap = await getCountFromServer(query(collection(db, "tasks"), where("project_id", "==", pid)));
+                        const total = totalSnap.data().count;
+
+                        const completeSnap = await getCountFromServer(query(collection(db, "tasks"), where("project_id", "==", pid), where("status", "in", ["complete", "done", "Complete", "Done"])));
+                        const complete = completeSnap.data().count;
+
+                        stats[pid] = { total, complete };
+                        totalAll += total;
+                    } catch (e) {
+                        console.warn("Count query failed for project", pid, e);
+                        stats[pid] = { total: 0, complete: 0 };
+                    }
                 }
-                const q = query(collection(db, "tasks"));
-                unsubscribeTasks = onSnapshot(q, { includeMetadataChanges: false }, (snapshot) => {
-                    listenToTasksRetryCount = 0; // Reset retry count on success
-                    const stats = {};
-                    snapshot.forEach((docSnap) => {
-                        const data = docSnap.data() || {};
-                        const pid = data.project_id || data.projectId || "";
-                        if (!pid) return;
-                        if (!stats[pid]) {
-                            stats[pid] = { total: 0, complete: 0 };
-                        }
-                        stats[pid].total += 1;
-                        let statusRaw = "";
-                        if (typeof data.status === "string") {
-                            statusRaw = data.status;
-                        } else if (data.status && typeof data.status === "object") {
-                            statusRaw = data.status.name || data.status.label || "";
-                        }
-                        const normalized = String(statusRaw || "").trim().toLowerCase();
-                        const isDone = normalized === "complete" || normalized === "done";
-                        if (isDone) {
-                            stats[pid].complete += 1;
-                        }
-                    });
 
-                    let totalAll = 0;
-                    Object.keys(stats).forEach(pid => {
-                        const s = stats[pid] || {};
-                        totalAll += s.total || 0;
-                    });
-
-                    globalProjectTasksTotal = totalAll;
-                    const projectCountEl = document.getElementById('projectTasksTotalCount');
-                    if (projectCountEl) {
-                        projectCountEl.innerText = String(totalAll);
-                    }
-                    projectTaskStats = stats;
-                    renderProjects(cachedProjects);
-
-                    // Trigger sidebar refresh if available
-                    if (window.refreshSidebarCounts) {
-                        window.refreshSidebarCounts(snapshot);
-                    }
-                }, (error) => {
-                    console.error("Firestore Tasks Listener Error:", error);
-
-                    // Handle quota exceeded or other fatal errors
-                    if (error.code === 'resource-exhausted') {
-                        console.error("Firestore quota exceeded. Stopping listener.");
-                        return;
-                    }
-
-                    // Retry with exponential backoff if connection was aborted or unavailable
-                    const isRetryable = error.code === 'unavailable' ||
-                        error.code === 'cancelled' ||
-                        error.code === 'deadline-exceeded' ||
-                        error.message.toLowerCase().includes('abort') ||
-                        error.message.toLowerCase().includes('failed to get document');
-
-                    if (isRetryable) {
-                        listenToTasksRetryCount++;
-                        const delay = Math.min(1000 * Math.pow(2, listenToTasksRetryCount), 30000);
-                        console.log(`Attempting to reconnect tasks listener in ${delay}ms (attempt ${listenToTasksRetryCount})...`);
-                        setTimeout(() => {
-                            if (auth.currentUser) {
-                                listenToTasks();
-                            }
-                        }, delay);
-                    }
-                });
+                globalProjectTasksTotal = totalAll;
+                const projectCountEl = document.getElementById('projectTasksTotalCount');
+                if (projectCountEl) {
+                    projectCountEl.innerText = String(totalAll);
+                }
+                projectTaskStats = stats;
+                renderProjects(cachedProjects); // Re-render to update progress bars
             } catch (e) {
-                console.error("Exception in listenToTasks", e);
+                console.error("Exception in fetchTaskStatsForProjects", e);
             }
+        }
+
+        // Dummy function left to prevent undefined errors if called elsewhere
+        function listenToTasks() {
+            console.log("listenToTasks disabled to save reads. Using fetchTaskStatsForProjects instead.");
         }
 
         function startPresenceTracking() {
@@ -1059,7 +1019,7 @@
                 clearInterval(menuBadgeIntervalId);
             }
             refreshMenuBadges();
-            menuBadgeIntervalId = setInterval(refreshMenuBadges, 60000);
+            // menuBadgeIntervalId = setInterval(refreshMenuBadges, 60000); // Interval dihapus untuk menghemat reads
         }
 
         async function refreshMenuBadges() {
@@ -1067,12 +1027,12 @@
             const cutoffMs = Date.now() - (5 * 24 * 60 * 60 * 1000);
 
             try {
-                const candidateDocs = await fetchDocsByCutoff('interns_screening', cutoffMs, { allowFullScan: true });
+                const candidateDocs = await fetchDocsByCutoff('interns_screening', cutoffMs, { allowFullScan: false });
                 setMenuBadge('candidate-internship', candidateDocs.filter(ds => isRecentByFields(ds.data() || {}, cutoffMs)).length);
 
                 const expenseDocs = await fetchDocsByCutoff('operational_expenses', cutoffMs, {
                     whereFilters: [where('status', 'in', ['requested', 'reviewing'])],
-                    allowFullScan: true
+                    allowFullScan: false
                 });
                 const expenseCount = expenseDocs.filter(ds => {
                     const data = ds.data() || {};
@@ -1081,7 +1041,7 @@
                 }).length;
                 setMenuBadge('operational-expenses', expenseCount);
 
-                const invoiceDocs = await fetchDocsByCutoff('invoices', cutoffMs, { allowFullScan: true });
+                const invoiceDocs = await fetchDocsByCutoff('invoices', cutoffMs, { allowFullScan: false });
                 const invoiceCount = invoiceDocs.filter(ds => {
                     const data = ds.data() || {};
                     if (!isRecentByFields(data, cutoffMs)) return false;
@@ -1091,10 +1051,10 @@
                 }).length;
                 setMenuBadge('create-invoice', invoiceCount);
 
-                const classAvailableDocs = await fetchDocsByCutoff('class_availability', cutoffMs, { allowFullScan: true });
+                const classAvailableDocs = await fetchDocsByCutoff('class_availability', cutoffMs, { allowFullScan: false });
                 setMenuBadge('class-available', classAvailableDocs.filter(ds => isRecentByFields(ds.data() || {}, cutoffMs)).length);
 
-                const mailingDocs = await fetchDocsByCutoff('subscription_email', cutoffMs, { allowFullScan: true });
+                const mailingDocs = await fetchDocsByCutoff('subscription_email', cutoffMs, { allowFullScan: false });
                 setMenuBadge('mailing-list', mailingDocs.filter(ds => isRecentByFields(ds.data() || {}, cutoffMs)).length);
 
                 const referralSnap = await getDocsFromPaths([
@@ -1118,7 +1078,7 @@
                     setMenuBadge('referral-kelas', 0);
                 }
 
-                const classAvailabilityAll = await fetchDocsByStatus('class_availability', ['Stall', 'Soon', 'Running', 'Graduate'], { allowFullScan: true });
+                const classAvailabilityAll = await fetchDocsByStatus('class_availability', ['Stall', 'Soon', 'Running', 'Graduate'], { allowFullScan: false });
                 const todayStart = new Date();
                 todayStart.setHours(0, 0, 0, 0);
                 const todayMs = todayStart.getTime();
