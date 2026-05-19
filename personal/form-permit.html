@@ -180,10 +180,10 @@
         <div id="sidebarContainer"></div>
 
         <main class="main-content">
-            <div class="permit-root text-slate-900 py-4" style="background-color: #f1f7fd;">
-                <div class="max-w-6xl mx-auto px-3 px-md-4">
-                    <header class="mb-12 text-start md:text-left">
-                        <h1 class="text-4xl font-extrabold text-slate-900 mb-2">Form Izin Mandiri</h1>
+            <div class="permit-root text-slate-900 py-4 sm:py-6" style="background-color: #f1f7fd;">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <header class="mb-8 md:mb-10 text-start md:text-left">
+                        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 mb-2">Form Izin Mandiri</h1>
                         <hr style="margin-bottom: 4px;;" />
                         <p class="text-slate-500 max-w-2xl">
                             Ketika izin sudah di setujui maka kamu sudah boleh di izin, namun jika belum maka kamu belum
@@ -191,9 +191,9 @@
                         </p>
                     </header>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
                         <div class="lg:col-span-7">
-                            <div class="bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/60 border border-slate-100">
+                            <div class="bg-white rounded-3xl p-5 sm:p-6 lg:p-8 shadow-xl shadow-slate-200/60 border border-slate-100">
                                 <div class="flex items-center gap-3 mb-8">
                                     <div class="w-2 h-8 bg-indigo-600 rounded-full"></div>
                                     <h2 class="text-xl font-bold text-slate-800">Buat Pengajuan Baru</h2>
@@ -211,7 +211,7 @@
                                         </select>
                                     </div>
 
-                                    <div id="hoursWrapper" class="hidden grid-cols-2 gap-4">
+                                    <div id="hoursWrapper" class="hidden grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div class="space-y-2">
                                             <label for="permitStartHour"
                                                 class="text-sm font-semibold text-slate-700 ml-1">Mulai Jam</label>
@@ -267,17 +267,17 @@
                                     </div>
 
                                     <button type="submit"
-                                        class="w-full btn-dlg-blue py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-indigo-100 uppercase tracking-wider">
+                                        class="w-full btn-dlg-blue py-3 sm:py-4 rounded-2xl text-white font-bold text-base sm:text-lg shadow-lg shadow-indigo-100 uppercase tracking-wider">
                                         Kirim Permohonan Izin
                                     </button>
                                 </form>
                             </div>
                         </div>
 
-                        <div class="lg:col-span-5 space-y-8">
+                        <div class="lg:col-span-5 space-y-6">
                             <div
                                 class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
-                                <div class="p-6 border-b border-slate-50 flex justify-between items-center">
+                                <div class="p-5 sm:p-6 border-b border-slate-50 flex justify-between items-center">
                                     <h3 class="font-bold text-slate-800">Riwayat Terakhir</h3>
                                     <a href="#" id="permitViewAll"
                                         class="text-xs font-bold text-indigo-600 hover:underline">Lihat Semua</a>
@@ -309,9 +309,7 @@
             query,
             where,
             orderBy,
-            limit,
-            doc,
-            getDoc
+            limit
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import {
             getStorage,
@@ -364,59 +362,22 @@
 
         let currentUser = null;
         let currentUserData = null;
-        let PERMIT_MONTHLY_QUOTA = 12;
 
-        async function loadPermitFormConfig() {
-            const warningEl = document.getElementById("permitWarningText");
-            const categorySelect = document.getElementById("permitCategory");
+        function initPermitTypeOptions() {
             const typeSelect = document.getElementById("permitType");
-            try {
-                const refDoc = doc(db, "settings", "permit_form");
-                const snap = await getDoc(refDoc);
-                if (!snap.exists()) {
-                    return;
-                }
-                const data = snap.data() || {};
-                const text = (data.warning_text || "").toString().trim();
-                if (warningEl && text) {
-                    warningEl.textContent = text;
-                }
-                const quotaRaw = (data.quota_per_month !== undefined && data.quota_per_month !== null)
-                    ? data.quota_per_month
-                    : data.quota_3_months;
-                const quotaNum = typeof quotaRaw === "number" ? quotaRaw : parseInt(quotaRaw, 10);
-                if (!isNaN(quotaNum) && quotaNum > 0) {
-                    PERMIT_MONTHLY_QUOTA = quotaNum;
-                }
-                const categoryOptions = Array.isArray(data.category_options) ? data.category_options : null;
-                if (categorySelect && categoryOptions && categoryOptions.length > 0) {
-                    categorySelect.innerHTML = "";
-                    categoryOptions.forEach(opt => {
-                        const value = (opt && opt.value) ? String(opt.value) : "";
-                        const label = (opt && opt.label) ? String(opt.label) : value;
-                        if (!value && !label) return;
-                        const optionEl = document.createElement("option");
-                        optionEl.value = value;
-                        optionEl.textContent = label;
-                        categorySelect.appendChild(optionEl);
-                    });
-                }
-                const typeOptions = Array.isArray(data.type_options) ? data.type_options : null;
-                if (typeSelect && typeOptions && typeOptions.length > 0) {
-                    typeSelect.innerHTML = "";
-                    typeOptions.forEach(opt => {
-                        const value = (opt && opt.value) ? String(opt.value) : "";
-                        const label = (opt && opt.label) ? String(opt.label) : value;
-                        if (!value && !label) return;
-                        const optionEl = document.createElement("option");
-                        optionEl.value = value;
-                        optionEl.textContent = label;
-                        typeSelect.appendChild(optionEl);
-                    });
-                }
-            } catch (e) {
-                console.error("Gagal memuat konfigurasi form izin", e);
-            }
+            if (!typeSelect) return;
+            if (typeSelect.options && typeSelect.options.length > 0) return;
+            const options = [
+                { value: "full-day", label: "Full Day" },
+                { value: "setengah-hari", label: "Setengah Hari" },
+                { value: "work-from-home", label: "Work From Home" }
+            ];
+            options.forEach(opt => {
+                const optionEl = document.createElement("option");
+                optionEl.value = opt.value;
+                optionEl.textContent = opt.label;
+                typeSelect.appendChild(optionEl);
+            });
         }
 
         function parseDateString(value) {
@@ -545,7 +506,7 @@
                 currentUserData = null;
             }
             try {
-                await loadPermitFormConfig();
+                initPermitTypeOptions();
                 await loadUserPermitHistory(user.uid, { all: false });
             } catch (e) {
                 console.error("Gagal memuat data izin pengguna", e);
