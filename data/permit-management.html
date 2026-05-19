@@ -36,67 +36,34 @@
                         <p class="text-xs text-slate-500 font-medium">Panel Kontrol Konfigurasi & Persetujuan Intern</p>
                     </div>
                 </div>
+
+                    <!-- Modal kecil untuk menambah opsi (kategori) -->
+                    <div id="addOptionModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+                        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-slate-100 relative">
+                            <button id="addOptionModalCancel" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">&times;</button>
+                            <h3 id="addOptionModalTitle" class="text-lg font-bold mb-3">Tambah Opsi</h3>
+                            <input id="addOptionModalInput" type="text" class="w-full border border-slate-200 rounded-xl px-4 py-2" placeholder="Masukkan nilai opsi">
+                            <input type="hidden" id="addOptionModalVariant" value="">
+                            <div class="mt-4 flex justify-end gap-2">
+                                <button id="addOptionModalSave" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold">Simpan</button>
+                                <button type="button" class="bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-medium text-slate-600" onclick="document.getElementById('addOptionModal').classList.add('hidden')">Batal</button>
+                            </div>
+                        </div>
+                    </div>
             </nav>
 
             <main class="max-w-7xl mx-auto px-8 space-y-8">
         
-        <!-- SECTION 1: KONFIGURASI FORM (UPGRADED) -->
-        <section class="card-elite rounded-[2rem] p-8">
-            <div class="flex justify-between items-start mb-8">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="settings-2" class="w-5 h-5 text-indigo-600"></i>
-                        Konfigurasi Form Izin
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-1">Atur pilihan kategori, jenis izin, dan kuota untuk user secara dinamis.</p>
-                </div>
-                <button id="saveConfigBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-indigo-200">
-                    Simpan Konfigurasi
+        <!-- SECTION 1: KONFIGURASI FORM (COMPACT) -->
+        <section class="card-elite rounded-[2rem] p-6 flex items-center justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">Konfigurasi Form Izin</h2>
+                <p class="text-sm text-slate-500 mt-1">Atur pilihan kategori izin secara dinamis melalui popup.</p>
+            </div>
+            <div>
+                <button id="openConfigModalBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-indigo-200">
+                    Konfigurasi Form
                 </button>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <!-- Kategori Urusan Manager -->
-                <div class="space-y-4">
-                    <label class="text-sm font-bold text-slate-700 flex justify-between items-center">
-                        Kategori Urusan
-                        <span class="text-[10px] text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-wider">Dropdown Options</span>
-                    </label>
-                    <div class="space-y-2 border border-slate-100 p-3 rounded-2xl bg-slate-50/50">
-                        <div id="configCategoriesList" class="space-y-2"></div>
-                        <button id="addCategoryBtn" class="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-xs font-bold hover:bg-white hover:border-indigo-300 hover:text-indigo-600 transition flex items-center justify-center gap-2">
-                            <i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah Kategori Baru
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Jenis Izin Manager -->
-                <div class="space-y-4">
-                    <label class="text-sm font-bold text-slate-700 flex justify-between items-center">
-                        Jenis Izin
-                        <span class="text-[10px] text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md uppercase tracking-wider">Duration Policy</span>
-                    </label>
-                    <div class="space-y-2 border border-slate-100 p-3 rounded-2xl bg-slate-50/50">
-                        <div id="configTypesList" class="space-y-2"></div>
-                        <button id="addTypeBtn" class="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-xs font-bold hover:bg-white hover:border-emerald-300 hover:text-emerald-600 transition flex items-center justify-center gap-2">
-                            <i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah Jenis Izin
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-8 pt-6 border-t border-slate-50 flex items-center gap-8">
-                <div class="flex-1 max-w-xs">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Kuota Izin Per Bulan</label>
-                    <div class="relative">
-                        <input id="configQuota" type="number" value="3" class="w-full pl-4 pr-12 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-indigo-500 font-bold text-lg">
-                        <span class="absolute right-4 top-3.5 text-xs text-slate-400 font-medium">Hari</span>
-                    </div>
-                </div>
-                <div class="flex-1 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3">
-                    <i data-lucide="info" class="w-5 h-5 text-amber-600 shrink-0"></i>
-                    <p class="text-xs text-amber-800 leading-relaxed"><strong>Catatan:</strong> Perubahan konfigurasi akan langsung berdampak pada pilihan yang muncul di form pengajuan internship secara realtime.</p>
-                </div>
             </div>
         </section>
 
@@ -138,7 +105,7 @@
                         <tr class="bg-slate-50/50">
                             <th class="px-8 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">User Intern</th>
                             <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center">Tanggal</th>
-                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Kategori & Jenis</th>
+                            <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Kategori</th>
                             <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
                             <th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Lampiran</th>
                             <th class="px-8 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-right">Aksi</th>
@@ -153,33 +120,72 @@
         </section>
             </main>
 
-            <div id="addOptionModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-                <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100">
-                    <h3 id="addOptionModalTitle" class="text-lg font-bold text-slate-900 mb-4">Tambah Opsi</h3>
-                    <input
-                        type="text"
-                        id="addOptionModalInput"
-                        class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                        placeholder="Masukkan nama opsi"
-                    >
-                    <input type="hidden" id="addOptionModalVariant">
-                    <div class="mt-6 flex gap-3">
-                        <button
-                            id="addOptionModalCancel"
-                            class="flex-1 py-2.5 border border-slate-200 rounded-2xl text-slate-600 text-sm font-bold hover:bg-slate-50 transition"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            id="addOptionModalSave"
-                            class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-bold shadow-md shadow-indigo-200 transition"
-                        >
-                            Simpan
-                        </button>
+            
+
+            <!-- Modal untuk konfigurasi form izin -->
+            <div id="configModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+                <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100 relative">
+                    <button id="closeConfigModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                        &times;
+                    </button>
+                    <h2 class="text-lg font-bold mb-4">Konfigurasi Form Izin</h2>
+                    <div class="space-y-4">
+                        <!-- Kategori Urusan -->
+                        <div>
+                            <label for="configCategoriesList" class="block text-sm font-medium text-slate-700">Kategori Urusan</label>
+                            <div id="configCategoriesList" class="mt-2 space-y-2">
+                                <!-- Kategori akan dirender di sini -->
+                            </div>
+                            <button id="addCategoryBtn" class="mt-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded text-sm font-medium">
+                                Tambah Kategori
+                            </button>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
+                            <button id="saveConfigModalBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold">Simpan</button>
+                            <button type="button" id="cancelConfigModalBtn" class="bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-medium text-slate-600" onclick="closeConfigModal()">Tutup</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <script>
+                // Referensi elemen modal dan tombol
+                const openConfigModalBtn = document.getElementById("openConfigModalBtn");
+                const configModal = document.getElementById("configModal");
+                const closeConfigModalBtn = document.getElementById("closeConfigModalBtn");
+
+                // Fungsi untuk membuka modal
+                function openConfigModal() {
+                    if (configModal) {
+                        configModal.classList.remove("hidden");
+                    }
+                }
+
+                // Fungsi untuk menutup modal
+                function closeConfigModal() {
+                    if (configModal) {
+                        configModal.classList.add("hidden");
+                    }
+                }
+
+                // Event listener untuk membuka dan menutup modal
+                if (openConfigModalBtn) {
+                    openConfigModalBtn.addEventListener("click", openConfigModal);
+                }
+
+                if (closeConfigModalBtn) {
+                    closeConfigModalBtn.addEventListener("click", closeConfigModal);
+                }
+
+                if (configModal) {
+                    configModal.addEventListener("click", function (event) {
+                        if (event.target === configModal) {
+                            closeConfigModal();
+                        }
+                    });
+                }
+            </script>
         </main>
     </div>
 
@@ -251,11 +257,8 @@
         const permitSearchInput = document.getElementById("permitSearchInput");
         const permitStatusFilter = document.getElementById("permitStatusFilter");
         const configCategoriesList = document.getElementById("configCategoriesList");
-        const configTypesList = document.getElementById("configTypesList");
         const addCategoryBtn = document.getElementById("addCategoryBtn");
-        const addTypeBtn = document.getElementById("addTypeBtn");
-        const saveConfigBtn = document.getElementById("saveConfigBtn");
-        const configQuotaInput = document.getElementById("configQuota");
+        const saveConfigModalBtn = document.getElementById("saveConfigModalBtn");
         const addOptionModal = document.getElementById("addOptionModal");
         const addOptionModalTitle = document.getElementById("addOptionModalTitle");
         const addOptionModalInput = document.getElementById("addOptionModalInput");
@@ -263,7 +266,6 @@
         const addOptionModalCancel = document.getElementById("addOptionModalCancel");
         const addOptionModalSave = document.getElementById("addOptionModalSave");
         let categoryOptionsState = [];
-        let typeOptionsState = [];
         let allPermits = [];
         let currentSearchTerm = "";
         let currentStatusFilter = "";
@@ -336,7 +338,7 @@
                         "</td>" +
                         '<td class="px-6 py-5">' +
                             '<div class="flex flex-col">' +
-                                '<span class="text-sm font-bold text-slate-800">' + kategori + ' <span class="text-slate-300 mx-1">•</span> ' + jenis + "</span>" +
+                                '<span class="text-sm font-bold text-slate-800">' + kategori + "</span>" +
                                 '<span class="text-xs text-slate-400 italic">"' + (reasonShort || "-") + '"</span>' +
                             "</div>" +
                         "</td>" +
@@ -458,42 +460,23 @@
                 const refDoc = doc(db, "settings", "permit_form");
                 const snap = await getDoc(refDoc);
                 if (!snap.exists()) {
-                    if (configQuotaInput && !configQuotaInput.value) {
-                        configQuotaInput.value = "3";
-                    }
                     categoryOptionsState = [];
-                    typeOptionsState = [];
                     renderOptionCards(configCategoriesList, categoryOptionsState, "category");
-                    renderOptionCards(configTypesList, typeOptionsState, "type");
                     return;
                 }
                 const data = snap.data() || {};
                 const categories = Array.isArray(data.category_options) ? data.category_options : [];
-                const types = Array.isArray(data.type_options) ? data.type_options : [];
                 categoryOptionsState = categories.slice();
-                typeOptionsState = types.slice();
-                const quotaRaw = data.quota_per_month !== undefined && data.quota_per_month !== null ? data.quota_per_month : data.quota_3_months;
-                const quotaNum = typeof quotaRaw === "number" ? quotaRaw : parseInt(quotaRaw, 10);
                 renderOptionCards(configCategoriesList, categoryOptionsState, "category");
-                renderOptionCards(configTypesList, typeOptionsState, "type");
-                if (configQuotaInput && !isNaN(quotaNum) && quotaNum > 0) {
-                    configQuotaInput.value = String(quotaNum);
-                }
             } catch (e) {
                 console.error("Gagal memuat konfigurasi form izin", e);
             }
         }
         async function savePermitSettingsConfig() {
-            const quotaRaw = configQuotaInput ? configQuotaInput.value : "";
-            const quotaNum = parseInt(quotaRaw, 10);
-            const quotaValue = !isNaN(quotaNum) && quotaNum > 0 ? quotaNum : 3;
             const refDoc = doc(db, "settings", "permit_form");
             try {
                 await setDoc(refDoc, {
-                    category_options: categoryOptionsState,
-                    type_options: typeOptionsState,
-                    quota_per_month: quotaValue,
-                    quota_3_months: quotaValue
+                    category_options: categoryOptionsState
                 }, { merge: true });
                 alert("Konfigurasi form izin berhasil disimpan.");
             } catch (e) {
@@ -588,13 +571,13 @@
                     const name = (p.user_name || "").toLowerCase();
                     const position = (p.user_position || "").toLowerCase();
                     const category = (p.category || "").toLowerCase();
-                    const type = (p.type || "").toLowerCase();
+                    // type removed from filtering because jenis izin no longer configurable
+                    // const type = (p.type || "").toLowerCase();
                     const reason = (p.reason || "").toLowerCase();
                     return (
                         name.includes(term) ||
                         position.includes(term) ||
                         category.includes(term) ||
-                        type.includes(term) ||
                         reason.includes(term)
                     );
                 });
@@ -637,11 +620,7 @@
                 openAddOptionModal("category");
             });
         }
-        if (addTypeBtn) {
-            addTypeBtn.addEventListener("click", function () {
-                openAddOptionModal("type");
-            });
-        }
+        
         if (addOptionModalCancel) {
             addOptionModalCancel.addEventListener("click", function () {
                 closeAddOptionModal();
@@ -656,10 +635,6 @@
                     const value = generateOptionId(label, categoryOptionsState);
                     categoryOptionsState.push({ value, label });
                     renderOptionCards(configCategoriesList, categoryOptionsState, "category");
-                } else if (currentOptionVariant === "type") {
-                    const value = generateOptionId(label, typeOptionsState);
-                    typeOptionsState.push({ value, label });
-                    renderOptionCards(configTypesList, typeOptionsState, "type");
                 }
                 closeAddOptionModal();
             });
@@ -679,32 +654,14 @@
                 const value = btn.getAttribute("data-value");
                 if (!variant || !value) return;
                 if (!confirm("Hapus opsi ini?")) return;
+                // only category variant is relevant now
                 if (variant === "category") {
                     categoryOptionsState = categoryOptionsState.filter(opt => String(opt.value) !== value);
                     renderOptionCards(configCategoriesList, categoryOptionsState, "category");
-                } else if (variant === "type") {
-                    typeOptionsState = typeOptionsState.filter(opt => String(opt.value) !== value);
-                    renderOptionCards(configTypesList, typeOptionsState, "type");
                 }
             });
         }
-        if (configTypesList) {
-            configTypesList.addEventListener("click", function (ev) {
-                const btn = ev.target.closest("[data-action=\"delete-option\"]");
-                if (!btn) return;
-                const variant = btn.getAttribute("data-variant");
-                const value = btn.getAttribute("data-value");
-                if (!variant || !value) return;
-                if (!confirm("Hapus opsi ini?")) return;
-                if (variant === "category") {
-                    categoryOptionsState = categoryOptionsState.filter(opt => String(opt.value) !== value);
-                    renderOptionCards(configCategoriesList, categoryOptionsState, "category");
-                } else if (variant === "type") {
-                    typeOptionsState = typeOptionsState.filter(opt => String(opt.value) !== value);
-                    renderOptionCards(configTypesList, typeOptionsState, "type");
-                }
-            });
-        }
+        
         if (permitSearchInput) {
             permitSearchInput.addEventListener("input", function (ev) {
                 currentSearchTerm = ev.target.value || "";
@@ -717,10 +674,11 @@
                 applyPermitFilters();
             });
         }
-        if (saveConfigBtn) {
-            saveConfigBtn.addEventListener("click", function (ev) {
+        if (saveConfigModalBtn) {
+            saveConfigModalBtn.addEventListener("click", function (ev) {
                 ev.preventDefault();
                 savePermitSettingsConfig();
+                closeConfigModal();
             });
         }
         if (permitTableBody) {
