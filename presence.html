@@ -97,6 +97,50 @@
             box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
         }
 
+        .select-with-avatar {
+            --avatar-size: 53px;
+            position: relative;
+        }
+
+        .select-with-avatar .custom-select {
+            min-height: 62px;
+            padding-top: 14px;
+            padding-bottom: 14px;
+        }
+
+        .select-with-avatar .custom-select.has-avatar {
+            padding-left: calc(var(--avatar-size) + 28px);
+        }
+
+        .select-with-avatar .avatar-mask {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: var(--avatar-size);
+            height: var(--avatar-size);
+            border-radius: 50%;
+            overflow: hidden;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .select-with-avatar .avatar-mask img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .select-with-avatar .avatar-mask.is-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .slider-wrapper {
             position: relative;
             background: #ffffff;
@@ -300,7 +344,10 @@
             <div class="text-left mb-3">
                 <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Pilih Nama
                     Anggota</label>
-                <div class="relative">
+                <div class="relative select-with-avatar">
+                    <div class="avatar-mask is-hidden" id="selectedAvatarMask">
+                        <img id="selectedAvatar" alt="Selected member avatar" />
+                    </div>
                     <select id="nameSelect" class="custom-select">
                         <option value="" disabled selected>Silahkan pilih nama...</option>
                     </select>
@@ -611,7 +658,7 @@
             const q = query(
                 collection(db, "users")
             );
-            
+
             getDocs(q).then((snap) => {
                 const selectedUserId = select.value;
                 const users = [];
@@ -707,15 +754,17 @@
         function applySelectedPhoto() {
             const option = nameSelectEl.options[nameSelectEl.selectedIndex];
             const photo = option ? option.dataset.photo : "";
+            const avatarMask = document.getElementById('selectedAvatarMask');
+            const avatarImg = document.getElementById('selectedAvatar');
+
             if (photo) {
-                nameSelectEl.style.backgroundImage = `url(${photo})`;
-                nameSelectEl.style.backgroundRepeat = "no-repeat";
-                nameSelectEl.style.backgroundPosition = "12px center";
-                nameSelectEl.style.backgroundSize = "32px 32px";
-                nameSelectEl.style.paddingLeft = "56px";
+                avatarImg.src = photo;
+                avatarMask.classList.remove('is-hidden');
+                nameSelectEl.classList.add('has-avatar');
             } else {
-                nameSelectEl.style.backgroundImage = "none";
-                nameSelectEl.style.paddingLeft = "";
+                avatarImg.removeAttribute('src');
+                avatarMask.classList.add('is-hidden');
+                nameSelectEl.classList.remove('has-avatar');
             }
         }
 
