@@ -62,14 +62,6 @@
 									class="pl-10 pr-4 py-2 text-sm rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-64"
 								>
 							</div>
-							<select
-								id="reimburseStatusFilter"
-								class="text-sm bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-500 font-medium text-slate-600 cursor-pointer w-full sm:w-auto"
-							>
-								<option value="">Semua Status</option>
-								<option value="pending">Pending</option>
-								<option value="completed">Completed</option>
-							</select>
 						</div>
 					</div>
 
@@ -81,7 +73,6 @@
 									<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Nama</th>
 									<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Total Hari</th>
 									<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Total Jam</th>
-									<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
 									<th class="px-6 py-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-right">Aksi</th>
 								</tr>
 							</thead>
@@ -164,21 +155,12 @@
 		const reimburseTableBody = document.getElementById("reimburseTableBody");
 		const reimburseSummary = document.getElementById("reimburseSummary");
 		const reimburseSearch = document.getElementById("reimburseSearch");
-		const reimburseStatusFilter = document.getElementById("reimburseStatusFilter");
-
+		let currentUser = null;
+		let currentUserData = null;
 		let allReimburse = [];
 		let groupedReimburse = [];
 		let currentSearch = "";
-		let currentStatus = "";
 		const userPhotoCache = {};
-
-		function renderStatusBadge(statusRaw) {
-			const value = String(statusRaw || "pending").toLowerCase();
-			if (value === "completed") {
-				return '<span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-extrabold rounded-full uppercase tracking-tighter border border-emerald-100">Completed</span>';
-			}
-			return '<span class="px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-extrabold rounded-full uppercase tracking-tighter border border-amber-100">Pending</span>';
-		}
 
 		function formatDateRange(start, end) {
 			if (!start && !end) return "-";
@@ -197,6 +179,14 @@
 		function getAvatarUrl(name) {
 			const safe = encodeURIComponent(name || "User");
 			return `https://ui-avatars.com/api/?name=${safe}&background=4F46E5&color=fff`;
+		}
+
+		function getActorName() {
+			const localName = currentUserData && currentUserData.name ? currentUserData.name : "";
+			if (localName) return localName;
+			if (currentUser && currentUser.displayName) return currentUser.displayName;
+			if (currentUser && currentUser.email) return currentUser.email;
+			return "";
 		}
 
 		async function resolveUserPhoto(userId) {
@@ -228,18 +218,28 @@
 						user_name: item.user_name || "-",
 						user_photo: item.user_photo || "",
 						items: [],
-						total_days: 0,
-						total_hours: 0,
+						pending_items: [],
+						completed_items: [],
+						pending_days: 0,
+						pending_hours: 0,
+						completed_days: 0,
+						completed_hours: 0,
 						status: "completed"
 					});
 				}
 				const group = map.get(key);
 				const days = Number(item.total_days ?? item.days ?? 0) || 0;
 				const hours = Number(item.total_hours ?? item.hours ?? 0) || 0;
-				group.total_days += days;
-				group.total_hours += hours;
 				group.items.push(item);
-				if (String(item.status || "pending").toLowerCase() !== "completed") {
+				const statusVal = String(item.status || "pending").toLowerCase();
+				if (statusVal === "completed") {
+					group.completed_items.push(item);
+					group.completed_days += days;
+					group.completed_hours += hours;
+				} else {
+					group.pending_items.push(item);
+					group.pending_days += days;
+					group.pending_hours += hours;
 					group.status = "pending";
 				}
 			});
@@ -249,16 +249,12 @@
 		function renderTable(records) {
 			if (!reimburseTableBody) return;
 			if (!records.length) {
-				reimburseTableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-6 text-center text-xs text-slate-400">Belum ada data reimburse.</td></tr>';
+				reimburseTableBody.innerHTML = '<tr><td colspan="5" class="px-6 py-6 text-center text-xs text-slate-400">Belum ada data reimburse.</td></tr>';
 				if (reimburseSummary) reimburseSummary.textContent = "Total: 0";
 				return;
 			}
 			const rows = records.map(item => {
-				const statusBadge = renderStatusBadge(item.status);
 				const avatar = item.user_photo || getAvatarUrl(item.user_name);
-				const actionBtn = (String(item.status || "pending").toLowerCase() === "pending")
-					? '<button data-action="complete" data-id="' + item.key + '" class="px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-xl">Set Completed</button>'
-					: '<span class="text-[11px] text-slate-400">-</span>';
 				const detailBtn = '<button data-action="detail" data-id="' + item.key + '" class="px-3 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl">Detail</button>';
 				return (
 					'<tr class="hover:bg-slate-50/50 transition" data-id="' + item.key + '">' +
@@ -266,12 +262,10 @@
 							'<img src="' + avatar + '" class="avatar-img" onerror="this.onerror=null;this.src=\'' + getAvatarUrl(item.user_name) + '\';" alt="Avatar">' +
 						'</td>' +
 						'<td class="px-6 py-5 text-sm font-semibold text-slate-800">' + (item.user_name || '-') + '</td>' +
-						'<td class="px-6 py-5 text-sm text-slate-700">' + formatNumber(item.total_days) + '</td>' +
-						'<td class="px-6 py-5 text-sm text-slate-700">' + formatNumber(item.total_hours) + '</td>' +
-						'<td class="px-6 py-5">' + statusBadge + '</td>' +
+						'<td class="px-6 py-5 text-sm text-slate-700">' + formatNumber(item.pending_days) + '</td>' +
+						'<td class="px-6 py-5 text-sm text-slate-700">' + formatNumber(item.pending_hours) + '</td>' +
 						'<td class="px-6 py-5 text-right">' +
 							'<div class="flex items-center justify-end gap-2">' +
-								actionBtn +
 								detailBtn +
 							'</div>' +
 						'</td>' +
@@ -288,12 +282,8 @@
 		function applyFilters() {
 			let filtered = groupedReimburse.slice();
 			const term = String(currentSearch || "").toLowerCase().trim();
-			const statusVal = String(currentStatus || "").toLowerCase().trim();
 			if (term) {
 				filtered = filtered.filter(item => (item.user_name || '').toLowerCase().includes(term));
-			}
-			if (statusVal) {
-				filtered = filtered.filter(item => String(item.status || '').toLowerCase() === statusVal);
 			}
 			renderTable(filtered);
 		}
@@ -313,14 +303,16 @@
 			setTimeout(()=> { el.classList.remove('toast-enter'); el.classList.add('toast-leave'); setTimeout(()=>el.remove(),300); }, ttl);
 		}
 
-		async function markCompleted(key) {
-			if (!key) return;
-			const group = groupedReimburse.find(item => item.key === key);
-			if (!group) return;
+		async function markCompletedById(id) {
+			if (!id) return;
 			try {
-				const targets = group.items.filter(it => String(it.status || 'pending').toLowerCase() !== 'completed');
-				await Promise.all(targets.map(it => updateDoc(doc(db, 'reimburse', it.id), { status: 'completed' })));
-				showToast('Status reimburse diperbarui.', 'success');
+				await updateDoc(doc(db, 'reimburse', id), {
+					status: 'completed',
+					completed_by: currentUser ? currentUser.uid : null,
+					completed_by_name: getActorName(),
+					completed_at: new Date().toISOString()
+				});
+				showToast('Reimburse ditandai completed.', 'success');
 			} catch (e) {
 				console.error('Gagal mengubah status reimburse', e);
 				showToast('Gagal mengubah status reimburse.', 'error');
@@ -338,39 +330,56 @@
 			const timeline = document.getElementById('detailTimeline');
 			if (!modal || !timeline) return;
 			if (title) title.textContent = `Detail Reimburse - ${group.user_name}`;
-			if (subtitle) subtitle.textContent = `Total akumulasi dari ${group.items.length} pengajuan`;
-			if (totalDays) totalDays.textContent = formatNumber(group.total_days);
-			if (totalHours) totalHours.textContent = formatNumber(group.total_hours);
-			const itemsHtml = group.items
+			if (subtitle) subtitle.textContent = `Pending: ${group.pending_items.length} • Completed: ${group.completed_items.length}`;
+			if (totalDays) totalDays.textContent = formatNumber(group.pending_days);
+			if (totalHours) totalHours.textContent = formatNumber(group.pending_hours);
+			const renderItem = (item, dotClass, isPending) => {
+				const dateLabel = formatDateRange(item.start_date, item.end_date);
+				const jenis = (item.related && item.related.type) ? item.related.type : (item.type || '-');
+				const reason = (item.related && item.related.reason) ? item.related.reason : (item.reason || '-');
+				const days = formatNumber(item.total_days ?? item.days ?? 0);
+				const hours = formatNumber(item.total_hours ?? item.hours ?? 0);
+				const completedBy = item.completed_by_name ? `Diselesaikan oleh ${item.completed_by_name}` : '';
+				const actionBtn = isPending
+					? '<button data-action="complete-item" data-id="' + item.id + '" class="px-3 py-1.5 bg-emerald-600 text-white text-[11px] font-bold rounded-lg">Complete</button>'
+					: '<span class="text-[11px] text-slate-400">Completed</span>';
+				return (
+					'<div class="flex gap-4 py-4 border-b border-slate-100 last:border-b-0">' +
+						'<div class="mt-1">' +
+							'<div class="w-3 h-3 rounded-full ' + dotClass + '"></div>' +
+							'<div class="w-px h-full bg-indigo-100 mx-auto"></div>' +
+						'</div>' +
+						'<div class="flex-1">' +
+							'<div class="flex flex-wrap items-center gap-2">' +
+								'<span class="text-sm font-semibold text-slate-800">' + dateLabel + '</span>' +
+								'<span class="px-2 py-0.5 text-[10px] bg-slate-100 text-slate-600 rounded-full">' + jenis + '</span>' +
+							'</div>' +
+							'<p class="text-xs text-slate-500 mt-1">' + reason + '</p>' +
+							( completedBy ? ('<p class="text-[11px] text-slate-400 mt-1">' + completedBy + '</p>') : '' ) +
+							'<div class="mt-2 flex flex-wrap items-center gap-4 text-xs text-slate-600">' +
+								'<span>Hari: <strong class="text-slate-800">' + days + '</strong></span>' +
+								'<span>Jam: <strong class="text-slate-800">' + hours + '</strong></span>' +
+								'<span class="ml-auto">' + actionBtn + '</span>' +
+							'</div>' +
+						'</div>' +
+					'</div>'
+				);
+			};
+			const pendingList = group.pending_items
 				.slice()
 				.sort((a, b) => String(b.start_date || '').localeCompare(String(a.start_date || '')))
-				.map(item => {
-					const dateLabel = formatDateRange(item.start_date, item.end_date);
-					const jenis = (item.related && item.related.type) ? item.related.type : (item.type || '-');
-					const reason = (item.related && item.related.reason) ? item.related.reason : (item.reason || '-');
-					const days = formatNumber(item.total_days ?? item.days ?? 0);
-					const hours = formatNumber(item.total_hours ?? item.hours ?? 0);
-					return (
-						'<div class="flex gap-4 py-4 border-b border-slate-100 last:border-b-0">' +
-							'<div class="mt-1">' +
-								'<div class="w-3 h-3 rounded-full bg-indigo-500"></div>' +
-								'<div class="w-px h-full bg-indigo-100 mx-auto"></div>' +
-							'</div>' +
-							'<div class="flex-1">' +
-								'<div class="flex flex-wrap items-center gap-2">' +
-									'<span class="text-sm font-semibold text-slate-800">' + dateLabel + '</span>' +
-									'<span class="px-2 py-0.5 text-[10px] bg-slate-100 text-slate-600 rounded-full">' + jenis + '</span>' +
-								'</div>' +
-								'<p class="text-xs text-slate-500 mt-1">' + reason + '</p>' +
-								'<div class="mt-2 flex gap-4 text-xs text-slate-600">' +
-									'<span>Hari: <strong class="text-slate-800">' + days + '</strong></span>' +
-									'<span>Jam: <strong class="text-slate-800">' + hours + '</strong></span>' +
-								'</div>' +
-							'</div>' +
-						'</div>'
-					);
-				}).join('');
-			timeline.innerHTML = itemsHtml || '<p class="text-sm text-slate-400">Belum ada detail reimburse.</p>';
+				.map(item => renderItem(item, 'bg-amber-500', true))
+				.join('');
+			const completedList = group.completed_items
+				.slice()
+				.sort((a, b) => String(b.start_date || '').localeCompare(String(a.start_date || '')))
+				.map(item => renderItem(item, 'bg-emerald-500', false))
+				.join('');
+			const pendingHeader = '<div class="mt-5 mb-2 flex items-center justify-between"><h4 class="text-sm font-bold text-slate-800">Pending Reimburse</h4><span class="text-xs text-slate-500">Total Hari: ' + formatNumber(group.pending_days) + ' • Total Jam: ' + formatNumber(group.pending_hours) + '</span></div>';
+			const completedHeader = '<div class="mt-6 mb-2 flex items-center justify-between"><h4 class="text-sm font-bold text-slate-800">Completed Reimburse</h4><span class="text-xs text-slate-500">Total Hari: ' + formatNumber(group.completed_days) + ' • Total Jam: ' + formatNumber(group.completed_hours) + '</span></div>';
+			const pendingBlock = pendingList || '<p class="text-xs text-slate-400">Tidak ada pending reimburse.</p>';
+			const completedBlock = completedList || '<p class="text-xs text-slate-400">Belum ada reimburse completed.</p>';
+			timeline.innerHTML = pendingHeader + pendingBlock + completedHeader + completedBlock;
 			modal.classList.remove('hidden');
 			modal.classList.add('modal-open');
 		}
@@ -400,7 +409,9 @@
 						status: d.status || 'pending',
 						related: d.related || {},
 						reason: d.reason || '',
-						type: d.type || ''
+						type: d.type || '',
+						completed_by: d.completed_by || '',
+						completed_by_name: d.completed_by_name || ''
 					};
 					rows.push(row);
 					if (!row.user_photo && row.user_id) {
@@ -428,25 +439,29 @@
 				applyFilters();
 			});
 		}
-		if (reimburseStatusFilter) {
-			reimburseStatusFilter.addEventListener('change', ev => {
-				currentStatus = ev.target.value || '';
-				applyFilters();
-			});
-		}
 
 		if (reimburseTableBody) {
 			reimburseTableBody.addEventListener('click', ev => {
-				const btn = ev.target.closest('[data-action="complete"]');
-				if (btn) {
-					const key = btn.getAttribute('data-id');
-					markCompleted(key);
-					return;
-				}
 				const detailBtn = ev.target.closest('[data-action="detail"]');
 				if (!detailBtn) return;
 				const key = detailBtn.getAttribute('data-id');
 				openDetailModal(key);
+			});
+		}
+
+		const detailTimeline = document.getElementById('detailTimeline');
+		if (detailTimeline) {
+			detailTimeline.addEventListener('click', ev => {
+				const btn = ev.target.closest('[data-action="complete-item"]');
+				if (!btn) return;
+				if (btn.disabled || btn.dataset.completed === '1') return;
+				btn.disabled = true;
+				btn.textContent = 'Completed';
+				btn.classList.remove('bg-emerald-600');
+				btn.classList.add('bg-slate-200', 'text-slate-500');
+				btn.dataset.completed = '1';
+				const id = btn.getAttribute('data-id');
+				markCompletedById(id);
 			});
 		}
 
@@ -459,6 +474,12 @@
 
 		onAuthStateChanged(auth, user => {
 			if (user) {
+				currentUser = user;
+				try {
+					currentUserData = JSON.parse(localStorage.getItem('userData') || 'null');
+				} catch (e) {
+					currentUserData = null;
+				}
 				listenToReimburse();
 			} else {
 				window.location.href = "../index.html";
