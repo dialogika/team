@@ -258,6 +258,8 @@
         const permitTableBody = document.getElementById("permitTableBody");
         const permitSearchInput = document.getElementById("permitSearchInput");
         const permitStatusFilter = document.getElementById("permitStatusFilter");
+        let currentUser = null;
+        let currentUserData = null;
         let allPermits = [];
         let currentSearchTerm = "";
         let currentStatusFilter = "";
@@ -308,6 +310,40 @@
                 return "";
             }
         }
+        function formatDateSlash(value) {
+            if (!value) return "";
+            try {
+                let d;
+                if (value && typeof value.toDate === 'function') {
+                    d = value.toDate();
+                } else if (typeof value === 'number') {
+                    d = new Date(value);
+                } else if (String(value).includes('-')) {
+                    const parts = String(value).split('-');
+                    if (parts.length === 3) {
+                        d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                    } else {
+                        d = new Date(String(value));
+                    }
+                } else {
+                    d = new Date(String(value));
+                }
+                if (isNaN(d.getTime())) return "";
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return `${day}/${month}/${year}`;
+            } catch (e) {
+                return "";
+            }
+        }
+        function getActorName() {
+            const localName = currentUserData && currentUserData.name ? currentUserData.name : "";
+            if (localName) return localName;
+            if (currentUser && currentUser.displayName) return currentUser.displayName;
+            if (currentUser && currentUser.email) return currentUser.email;
+            return "";
+        }
         function renderPermitTable(records) {
             if (!permitTableBody) return;
             if (!records.length) {
@@ -320,6 +356,10 @@
             const rowsHtml = records.map(p => {
                 const statusVal = String(p.status || "pending").toLowerCase();
                 const statusBadge = renderStatusBadge(statusVal);
+                const approverName = (statusVal === "approved") ? (p.approved_by_name || "") : "";
+                const rejectorName = (statusVal === "rejected") ? (p.rejected_by_name || "") : "";
+                const statusMeta = approverName || rejectorName;
+                const statusMetaHtml = statusMeta ? ('<div class="mt-1 text-[10px] text-slate-400">by ' + escapeHtml(statusMeta) + '</div>') : '';
                 const submissionLabel = formatFullDate(p.created_at || "");
                 const startFull = formatFullDate(p.start_date);
                 const endFull = formatFullDate(p.end_date || p.start_date);
@@ -359,7 +399,6 @@
                                 avatarImg +
                                 '<div>' +
                                     '<p class="text-sm font-bold text-slate-900">' + (p.user_name || "Tanpa Nama") + "</p>" +
-                                    '<p class="text-[10px] font-medium text-indigo-500 uppercase tracking-tighter">' + (p.user_position || "-") + "</p>" +
                                 "</div>" +
                             "</div>" +
                         "</td>" +
@@ -375,6 +414,7 @@
                         '</td>' +
                         '<td class="px-6 py-5">' +
                             statusBadge +
+                            statusMetaHtml +
                         '</td>' +
                         '<td class="px-8 py-5">' +
                             actionHtml +
@@ -447,7 +487,13 @@
                                 attachment_name: d.attachment_name || "",
                                 attachment_url: d.attachment_url || "",
                                 status: d.status || "pending",
-                                created_at: d.created_at || null
+                                created_at: d.created_at || null,
+                                approved_by: d.approved_by || "",
+                                approved_by_name: d.approved_by_name || "",
+                                rejected_by: d.rejected_by || "",
+                                rejected_by_name: d.rejected_by_name || "",
+                                approved_at: d.approved_at || "",
+                                rejected_at: d.rejected_at || ""
                             });
                         })());
                     });
@@ -549,11 +595,11 @@
             currentActionPermitId = id;
             const p = allPermits.find(x => x.id === id) || {};
             const name = p.user_name || '';
-            const submission = formatFullDate(p.created_at || '');
             const jenis = p.type || '-';
-            const izinDate = (formatFullDate(p.start_date) || '-') + (p.end_date && p.end_date !== p.start_date ? (' - ' + formatFullDate(p.end_date)) : '');
-            const keperluan = p.reason || '';
-            const tpl = `Halo ${name},\n\nPengajuan izin masuk kantor Anda pada tanggal ${submission} BELUM DAPAT DISETUJUI.\n\nDetail:\n• Jenis izin: ${jenis}\n• Tanggal izin: ${izinDate}\n• Keperluan: ${keperluan}\n\nTerima kasih atas pengertiannya.\n\nHormat kami,\nDialogika`;
+            const startSlash = formatDateSlash(p.start_date) || '-';
+            const endSlash = formatDateSlash(p.end_date || p.start_date) || startSlash;
+            const izinDate = startSlash + ' s/d ' + endSlash;
+            const tpl = `Hai ${name},\n\nMohon maaf, permohonan izin kamu belum bisa kami setujui. Berikut detailnya:\n\n• Jenis izin       : ${jenis}\n• Tanggal           : ${izinDate}\n• Alasan penolakan : [isi jika diperlukan]\n\nKalau ada yang ingin didiskusikan, kamu bisa langsung hubungi tim HR ya.\n\nSalam,\nHR Dialogika`;
             const ta = document.getElementById('rejectEmailTextarea');
             if (ta) ta.value = tpl;
             const modal = document.getElementById('rejectEmailModal');
@@ -591,11 +637,19 @@
                     return;
                 }
                 console.log('✓ Email recipient:', to);
-                const subject = 'Penolakan Pengajuan Izin';
+                const startSlash = formatDateSlash(p.start_date) || '-';
+                const endSlash = formatDateSlash(p.end_date || p.start_date) || startSlash;
+                const subject = `Izin Kamu Belum Disetujui – ${p.user_name || ''} | ${startSlash}`.trim();
                 const mailto = buildMailtoUrl(to, subject, body);
                 openMailClient(mailto);
                 const rejReason = extractRejectionReason(body) || '';
-                await updateDoc(doc(db, 'permits', currentActionPermitId), { status: 'rejected', rejection_reason: rejReason });
+                await updateDoc(doc(db, 'permits', currentActionPermitId), {
+                    status: 'rejected',
+                    rejection_reason: rejReason,
+                    rejected_by: currentUser ? currentUser.uid : null,
+                    rejected_by_name: getActorName(),
+                    rejected_at: new Date().toISOString()
+                });
                 setModalSending('rejectEmailModal', false);
                 closeRejectModal();
                 showToast('Draft email penolakan terbuka — status diperbarui.', 'success');
@@ -636,11 +690,14 @@
         function openApproveEmailModal() {
             const p = allPermits.find(x => x.id === currentActionPermitId) || {};
             const name = p.user_name || '';
-            const submission = formatFullDate(p.created_at || '');
-            const jenis = p.type || '-';
-            const izinDate = (formatFullDate(p.start_date) || '-') + (p.end_date && p.end_date !== p.start_date ? (' - ' + formatFullDate(p.end_date)) : '');
-            const keperluan = p.reason || '';
-            const tpl = `Halo ${name},\n\nPengajuan izin masuk kantor yang Anda ajukan pada tanggal ${submission} telah kami tinjau dan dinyatakan DISETUJUI.\n\nDetail pengajuan:\n\n• Jenis izin : ${jenis}\n• Tanggal izin : ${izinDate}\n• Keperluan : ${keperluan}\n\nSilakan menyesuaikan aktivitas kerja sesuai dengan izin yang telah diberikan.\n\nTerima kasih atas perhatian dan kerja samanya.\n\nHormat kami,\n\nDialogika`;
+            const alasan = p.reason || '-';
+            const startSlash = formatDateSlash(p.start_date) || '-';
+            const endSlash = formatDateSlash(p.end_date || p.start_date) || startSlash;
+            const izinDate = startSlash + ' s/d ' + endSlash;
+            const startCalc = parseDateForCalc(p.start_date);
+            const endCalc = parseDateForCalc(p.end_date || p.start_date);
+            const durasi = Math.max(1, dayDiffInclusive(startCalc, endCalc));
+            const tpl = `Hai ${name},\n\nIzin kamu sudah kami setujui. Berikut detailnya:\n\n• Alasan izin  : ${alasan}\n• Tanggal      : ${izinDate}\n• Durasi        : ${durasi} hari kerja\n\nIzin ini termasuk yang mendapat reimbursement dan akan langsung diproses oleh tim HR.\n\nSalam,\nHR Dialogika`;
             const ta = document.getElementById('approveEmailTextarea');
             if (ta) ta.value = tpl;
             const modal = document.getElementById('approveEmailModal');
@@ -680,7 +737,8 @@
                     return;
                 }
                 console.log('✓ Email recipient:', to);
-                const subject = 'Persetujuan Pengajuan Izin';
+                const startSlash = formatDateSlash(p.start_date) || '-';
+                const subject = `Izin Approved – ${p.user_name || ''} | ${startSlash}`.trim();
                 const mailto = buildMailtoUrl(to, subject, body);
                 openMailClient(mailto);
                 let createdReimburseIdLocal = null;
@@ -692,7 +750,12 @@
                         console.error('Gagal membuat reimburse', e);
                     }
                 }
-                const updatePayload = { status: 'approved' };
+                const updatePayload = {
+                    status: 'approved',
+                    approved_by: currentUser ? currentUser.uid : null,
+                    approved_by_name: getActorName(),
+                    approved_at: new Date().toISOString()
+                };
                 if (createdReimburseIdLocal) updatePayload.reimburse_id = createdReimburseIdLocal;
                 await updateDoc(doc(db, 'permits', currentActionPermitId), updatePayload);
                 pendingReimburseData = null;
@@ -1000,6 +1063,12 @@
         if (reimburseDetailEl) reimburseDetailEl.addEventListener('click', function(ev){ if (ev.target === reimburseDetailEl) closeReimburseDetailModal(); });
         onAuthStateChanged(auth, async user => {
             if (user) {
+                currentUser = user;
+                try {
+                    currentUserData = JSON.parse(localStorage.getItem('userData') || 'null');
+                } catch (e) {
+                    currentUserData = null;
+                }
                 listenToPermits();
             } else {
                 window.location.href = "../index.html";

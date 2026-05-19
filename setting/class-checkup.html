@@ -450,8 +450,7 @@
                 </div>
                 <div class="detail-comments">
                     <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Comment</div>
-                    <div id="commentsView" class="mt-2 comment-thread"></div>
-                    <div class="comment-composer mt-3">
+                    <div class="comment-composer mt-2">
                         <div id="commentComposerAvatar" class="comment-avatar">U</div>
                         <div class="comment-composer-body">
                             <textarea id="commentInput" rows="2" class="comment-composer-textarea" placeholder="Tulis komentar..."></textarea>
@@ -461,6 +460,7 @@
                             </div>
                         </div>
                     </div>
+                    <div id="commentsView" class="mt-3 comment-thread"></div>
                 </div>
             </div>
         </div>
@@ -1023,6 +1023,16 @@
             return detailCommentsState.find((item) => item.id === commentId);
         }
 
+        function updateCommentText(commentId, newText) {
+            const idx = detailCommentsState.findIndex((item) => item.id === commentId);
+            if (idx < 0) return false;
+            detailCommentsState[idx] = {
+                ...detailCommentsState[idx],
+                text: newText
+            };
+            return true;
+        }
+
         function syncCommentComposerAvatar(author) {
             const avatar = document.getElementById("commentComposerAvatar");
             if (!avatar) return;
@@ -1389,7 +1399,7 @@
                             showToast("Komentar tidak boleh kosong", "error");
                             return;
                         }
-                        item.text = newText;
+                        updateCommentText(item.id, newText);
                         commentEditId = "";
                         renderCommentsView(detailCommentsState);
                         persistCommentChanges();
