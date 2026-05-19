@@ -333,7 +333,7 @@
     <script type="module">
         // 1. Import Firebase Functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // 2. Konfigurasi Firebase Anda (PASTIKAN SAMA DENGAN REGISTER.HTML)
@@ -406,7 +406,13 @@
                         window.location.href = "home.html";
                     }, 800);
                 } else {
-                    throw new Error("Data profil tidak ditemukan di database.");
+                    const pendingDoc = await getDoc(doc(db, "pending_users", user.uid));
+                    if (pendingDoc.exists()) {
+                        await signOut(auth);
+                        throw new Error("pending_approval");
+                    } else {
+                        throw new Error("Data profil tidak ditemukan di database.");
+                    }
                 }
 
             } catch (error) {
@@ -417,6 +423,7 @@
                 if (error.code === 'auth/user-not-found') pesan = "Akun tidak terdaftar.";
                 if (error.code === 'auth/wrong-password') pesan = "Password salah.";
                 if (error.code === 'auth/invalid-credential') pesan = "Email atau Password salah.";
+                if (error.message === 'pending_approval') pesan = "Akun Anda sedang menunggu persetujuan Administrator.";
                 if (error.code === 'permission-denied') {
                     pesan = "Login berhasil, tetapi akun ini belum punya izin akses data di sistem. Hubungi admin untuk diberikan akses.";
                 }
