@@ -215,8 +215,8 @@
                             <table class="table-modern text-left">
                                 <thead>
                                     <tr>
-                                        <th>Nama</th>
                                         <th>Tanggal Pengajuan</th>
+                                        <th>Nama</th>
                                         <th>Tanggal Izin</th>
                                         <th>Alasan</th>
                                         <th>Status</th>
@@ -684,15 +684,15 @@
                     return (
                         '<tr class="' + rowBgClass + ' table-row" data-id="' + p.id + '">' +
                             '<td>' +
+                                '<div>' + (submissionLabel || "-") + "</div>" +
+                            "</td>" +
+                            '<td>' +
                                 '<div class="name-cell">' +
                                     avatarImg +
                                     '<div class="name-text">' +
                                         '<span class="primary">' + (p.user_name || "Tanpa Nama") + "</span>" +
                                     "</div>" +
                                 "</div>" +
-                            "</td>" +
-                            '<td>' +
-                                '<div>' + (submissionLabel || "-") + "</div>" +
                             "</td>" +
                             '<td>' +
                                 '<div>' + izinLabel + "</div>" +
@@ -1115,9 +1115,12 @@
             }
 
             async function handleApproveReimburseChoice(choiceYes) {
+                const isStatusChangeFlow = approveFlowMode === "status-change";
                 closeApproveReimburseModal();
-                if (approveFlowMode === "status-change") {
+                if (isStatusChangeFlow) {
                     if (!choiceYes) {
+                        reimburseChosen = false;
+                        pendingReimburseData = null;
                         statusChangeReimburseData = null;
                         applyStatusChangeApprove(null);
                         return;
@@ -1161,6 +1164,7 @@
                 if (modal) modal.classList.add("hidden");
                 if (modal) modal.classList.remove("modal-open");
                 currentActionPermitId = null;
+                approveFlowMode = "normal";
                 reimburseChosen = false;
                 pendingReimburseData = null;
             }
@@ -1172,7 +1176,9 @@
                 try {
                     setModalSending("approveEmailModal", true);
                     const p = allPermits.find(x => x.id === currentActionPermitId) || {};
-                    if (String(p.status || "pending").toLowerCase() !== "pending") {
+                    const currentStatus = String(p.status || "pending").toLowerCase();
+                    const allowedStatuses = ["pending", "rejected"];
+                    if (!allowedStatuses.includes(currentStatus)) {
                         setModalSending("approveEmailModal", false);
                         showToast("Status sudah ditetapkan. Tidak dapat diubah.", "error");
                         closeApproveEmailModal();
@@ -1205,7 +1211,13 @@
                     };
                     if (createdReimburseIdLocal) updatePayload.reimburse_id = createdReimburseIdLocal;
                     await updateDoc(doc(db, "permits", currentActionPermitId), updatePayload);
+                    p.status = "approved";
+                    p.approved_by = updatePayload.approved_by;
+                    p.approved_by_name = updatePayload.approved_by_name;
+                    p.approved_at = updatePayload.approved_at;
+                    if (createdReimburseIdLocal) p.reimburse_id = createdReimburseIdLocal;
                     pendingReimburseData = null;
+                    applyPermitFilters();
                     setModalSending("approveEmailModal", false);
                     closeApproveEmailModal();
                     showToast("Draft email persetujuan terbuka - status diperbarui.", "success");
@@ -1410,9 +1422,10 @@
                         related: { reason: p.reason || "", type: p.type || "" }
                     };
                     if (approveFlowMode === "status-change") {
-                        statusChangeReimburseData = reimbursePayload;
+                        pendingReimburseData = reimbursePayload;
+                        reimburseChosen = true;
                         closePermitReimburseDetailModal();
-                        applyStatusChangeApprove(statusChangeReimburseData);
+                        openApproveEmailModal();
                         return;
                     }
                     pendingReimburseData = reimbursePayload;
