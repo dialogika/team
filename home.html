@@ -264,15 +264,10 @@
                             <div class="app-title">Operational Expenses</div>
                             <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="operational-expenses"></span>
                         </a></div>
-                    <div class="col"><a href="data/permit-management.html" class="app-box">
+                    <div class="col"><a href="data/permit-reimburse-management.html" class="app-box">
                             <div class="app-icon-wrapper grad-blue"><i class="bi bi-clipboard-check-fill"></i></div>
-                            <div class="app-title">Permit Management</div>
-                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="permit-management"></span>
-                        </a></div>
-                    <div class="col"><a href="data/reimburse.html" class="app-box">
-                            <div class="app-icon-wrapper grad-green"><i class="bi bi-cash-coin"></i></div>
-                            <div class="app-title">Reimburse</div>
-                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="reimburse"></span>
+                            <div class="app-title">Permit-Reimburse</div>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="permit-reimburse"></span>
                         </a></div>
                     <div class="col"><a href="data/presence-team.html" class="app-box"><div class="app-icon-wrapper grad-red"><i class="bi bi-clock-history"></i></div><div class="app-title">Team Presence</div></a></div>
 
@@ -1068,10 +1063,8 @@
                 setMenuBadge('mailing-list', mailingDocs.filter(ds => isRecentByFields(ds.data() || {}, cutoffMs)).length);
 
                 const permitDocs = await fetchDocsByStatus('permits', ['pending', 'Pending'], { allowFullScan: false });
-                setMenuBadge('permit-management', permitDocs.length);
-
                 const reimburseDocs = await fetchDocsByStatus('reimburse', ['pending', 'Pending'], { allowFullScan: false });
-                setMenuBadge('reimburse', reimburseDocs.length);
+                setMenuBadge('permit-reimburse', permitDocs.length + reimburseDocs.length);
 
                 const referralSnap = await getDocsFromPaths([
                     ['settings', 'referrals'],
