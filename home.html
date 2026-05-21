@@ -180,6 +180,36 @@
                 <button class="btn btn-dlg-blue px-4 d-none d-sm-block rounded-pill">Details</button>
             </div>
 
+            <!-- PENDING APPROVALS SECTION (Admin Only) -->
+            <div id="pendingApprovalsSection" class="mb-5" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-dark">📋 Pending Registrations</h5>
+                </div>
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Position</th>
+                                        <th>Registered At</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingUsersTableBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Loading pending registrations...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- PINNED PROJECTS SECTION -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="fw-bold mb-0 text-dark">📌 Pinned Projects</h5>
@@ -244,7 +274,8 @@
                     <div class="col"><a href="data/candidate-internship.html" class="app-box">
                             <div class="app-icon-wrapper grad-green"><i class="bi bi-clipboard-data-fill"></i></div>
                             <div class="app-title">Candidate Internship</div>
-                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="candidate-internship"></span>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden"
+                                data-menu-badge="candidate-internship"></span>
                         </a></div>
                     <div class="col"><a href="data/candidate-mentor.html" class="app-box">
                             <div class="app-icon-wrapper grad-blue"><i class="bi bi-cart-fill"></i></div>
@@ -262,14 +293,25 @@
                     <div class="col"><a href="setting/operational-expenses.html" class="app-box">
                             <div class="app-icon-wrapper grad-red"><i class="bi bi-wallet2"></i></div>
                             <div class="app-title">Operational Expenses</div>
-                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="operational-expenses"></span>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden"
+                                data-menu-badge="operational-expenses"></span>
                         </a></div>
                     <div class="col"><a href="data/permit-reimburse-management.html" class="app-box">
                             <div class="app-icon-wrapper grad-blue"><i class="bi bi-clipboard-check-fill"></i></div>
                             <div class="app-title">Permit-Reimburse</div>
-                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="permit-reimburse"></span>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden"
+                                data-menu-badge="permit-reimburse"></span>
                         </a></div>
-                    <div class="col"><a href="data/presence-team.html" class="app-box"><div class="app-icon-wrapper grad-red"><i class="bi bi-clock-history"></i></div><div class="app-title">Team Presence</div></a></div>
+                    <div class="col"><a href="data/reimburse.html" class="app-box">
+                            <div class="app-icon-wrapper grad-green"><i class="bi bi-cash-coin"></i></div>
+                            <div class="app-title">Reimburse</div>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden"
+                                data-menu-badge="reimburse"></span>
+                        </a></div>
+                    <div class="col"><a href="data/presence-team.html" class="app-box">
+                            <div class="app-icon-wrapper grad-red"><i class="bi bi-clock-history"></i></div>
+                            <div class="app-title">Team Presence</div>
+                        </a></div>
 
                 </div>
 
@@ -285,17 +327,20 @@
                     <div class="col"><a href="setting/invoice-management.html" class="app-box">
                             <div class="app-icon-wrapper grad-purple"><i class="bi bi-kanban-fill"></i></div>
                             <div class="app-title">Create Invoice</div>
-                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="create-invoice"></span>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden"
+                                data-menu-badge="create-invoice"></span>
                         </a></div>
                     <div class="col"><a href="data/class-available.html" class="app-box">
                             <div class="app-icon-wrapper grad-blue"><i class="bi bi-check-circle-fill"></i></div>
                             <div class="app-title">Class Available</div>
-                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="class-available"></span>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden"
+                                data-menu-badge="class-available"></span>
                         </a></div>
                     <div class="col"><a href="setting/referral-dashboard.html" class="app-box">
                             <div class="app-icon-wrapper grad-green"><i class="bi bi-ticket-perforated-fill"></i></div>
                             <div class="app-title">Referal Kelas</div>
-                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="referral-kelas"></span>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden"
+                                data-menu-badge="referral-kelas"></span>
                         </a></div>
                     <div class="col"><a href="setting/leads-management.html" class="app-box">
                             <div class="app-icon-wrapper grad-yellow"><i class="bi bi-graph-up-arrow"></i></div>
@@ -308,7 +353,8 @@
                     <div class="col"><a href="data/mailing-list.html" class="app-box">
                             <div class="app-icon-wrapper grad-purple"><i class="bi bi-envelope-paper-fill"></i></div>
                             <div class="app-title">Mailing List</div>
-                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="mailing-list"></span>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden"
+                                data-menu-badge="mailing-list"></span>
                         </a></div>
                 </div>
 
@@ -337,7 +383,8 @@
                         <a href="setting/class-management.html" class="app-box">
                             <div class="app-icon-wrapper grad-blue"><i class="bi bi-bar-chart-steps"></i></div>
                             <div class="app-title">Class Management</div>
-                            <span class="menu-badge menu-badge-floating menu-badge-hidden" data-menu-badge="class-management"></span>
+                            <span class="menu-badge menu-badge-floating menu-badge-hidden"
+                                data-menu-badge="class-management"></span>
                         </a>
                     </div>
                     <div class="col">
@@ -629,11 +676,104 @@
                 startPresenceTracking();
                 listenToOnlineUsers();
                 startMenuBadgeRefresh();
+
+                try {
+                    const userDocSnap = await getDoc(doc(db, "users", user.uid));
+                    if (userDocSnap.exists()) {
+                        const data = userDocSnap.data();
+                        const role = data.access?.role_id;
+                        if (['staff', 'internship'].includes(role)) {
+                            loadPendingApprovals();
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error checking user role for approvals", e);
+                }
             } else {
                 // Jika tidak login, lempar ke halaman login
                 window.location.href = "index.html";
             }
         });
+
+        async function loadPendingApprovals() {
+            const section = document.getElementById('pendingApprovalsSection');
+            const tbody = document.getElementById('pendingUsersTableBody');
+            section.style.display = 'block';
+
+            try {
+                const q = query(collection(db, "pending_users"), where("is_approved", "==", false));
+                onSnapshot(q, (snapshot) => {
+                    tbody.innerHTML = '';
+                    if (snapshot.empty) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No pending registrations.</td></tr>';
+                        return;
+                    }
+
+                    snapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        const id = docSnap.id;
+                        let regDate = "-";
+                        if (data.registered_at) {
+                            regDate = data.registered_at.toDate().toLocaleString('id-ID');
+                        }
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="${data.photo || 'https://i.pravatar.cc/150'}" class="rounded-circle me-2" width="35" height="35" style="object-fit: cover;">
+                                    <strong>${data.name || 'No Name'}</strong>
+                                </div>
+                            </td>
+                            <td>${data.email || '-'}</td>
+                            <td><span class="badge bg-secondary">${data.employment?.position || '-'}</span></td>
+                            <td class="small text-muted">${regDate}</td>
+                            <td>
+                                <button class="btn btn-sm btn-success rounded-pill px-3" onclick="approveUser('${id}')">Approve</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }, (error) => {
+                    console.error("Error loading pending users:", error);
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">Failed to load data.</td></tr>';
+                });
+            } catch (error) {
+                console.error("Failed to setup listener:", error);
+            }
+        }
+
+        window.approveUser = async (userId) => {
+            if (!confirm("Are you sure you want to approve this user?")) return;
+
+            try {
+                const pendingRef = doc(db, "pending_users", userId);
+                const pendingSnap = await getDoc(pendingRef);
+
+                if (!pendingSnap.exists()) {
+                    alert("User not found in pending list.");
+                    return;
+                }
+
+                const userData = pendingSnap.data();
+                userData.is_approved = true;
+                userData.approved_by = {
+                    uid: currentUser.uid,
+                    name: JSON.parse(localStorage.getItem('userData'))?.name || currentUser.email,
+                    timestamp: serverTimestamp()
+                };
+
+                const userRef = doc(db, "users", userId);
+                await setDoc(userRef, userData);
+
+                await deleteDoc(pendingRef);
+
+                alert("User approved successfully!");
+            } catch (error) {
+                console.error("Error approving user:", error);
+                alert("Failed to approve user: " + error.message);
+            }
+        };
 
         async function loadDepartments() {
             const container = document.getElementById('departmentOptions');
@@ -727,7 +867,7 @@
                         projects.push({ id: doc.id, ...doc.data() });
                     });
                     renderProjects(projects);
-                    
+
                     // Fetch task counts non-realtime to save reads
                     fetchTaskStatsForProjects(projects);
                 }, (error) => {
