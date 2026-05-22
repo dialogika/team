@@ -284,17 +284,9 @@ export function renderSidebar(target) {
 </div>
 
 
-            <!-- PENDING WIDGET (Pinned di Bawah, di luar scroll wrapper) -->
-            <div class="pending-widget" style="background-color: #1c83e368; color:#fff;margin-bottom: -17px;">
-                <div class="fire-icon-wrapper shadow-purple" style="border: 0.4px solid rgba(114, 4, 207, 1);"><i class="bi bi-fire fire-icon"></i></div>
-                <h6 class="fw-bold" style="color:#0B2B6A; margin-bottom: 5px;">Pending Reports</h6>
-                <p class="small text-muted mb-3">You have <span id="reportPendingApprovalCount">0</span> reports waiting.</p>
-                <button class="btn-review btn-dlg-blue shadow-none" style="margin-bottom:14px;">Review Now</button>
-                
-                <!-- COPYRIGHT (Muncul hanya saat scroll mentok bawah) -->
-                <div class="sidebarCopyright fw-semibold" style="font-size: 12px;">
-                    &copy; Copyright 2025<br/> PT Dialogika Persona Indonesia
-                </div>
+            <!-- COPYRIGHT (Pinned di bawah sidebar) -->
+            <div class="sidebarCopyright fw-semibold" style="font-size: 12px; margin: 12px 16px 16px;">
+                &copy; Copyright 2025<br/> PT Dialogika Persona Indonesia
             </div>
 
         </aside>
