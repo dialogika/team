@@ -105,13 +105,13 @@ export function renderTopBar(target) {
                 if (dropdownPhoto) dropdownPhoto.src = photoUrl;
             }
         }
-    } catch (e) {}
+    } catch (e) { }
 
     // Async update for position name if it looks like an ID
     (async function updatePositionName() {
         const roleDisplay = target.querySelector('#user-role-display');
         if (!roleDisplay) return;
-        
+
         // Wait for window.db to be ready if it's not immediately available
         const waitForDb = () => new Promise(resolve => {
             if (window.db || window.dlgDb) return resolve(window.db || window.dlgDb);
@@ -134,11 +134,11 @@ export function renderTopBar(target) {
             try {
                 // Dynamically import Firestore SDK to avoid module issues if not already imported
                 const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-                
+
                 // Try 'position' collection first
                 let ref = doc(db, "position", currentRole);
                 let snap = await getDoc(ref);
-                
+
                 // Fallback to 'positions' if not found
                 if (!snap.exists()) {
                     ref = doc(db, "positions", currentRole);
@@ -180,7 +180,7 @@ export function renderTopBar(target) {
             } else {
                 try {
                     localStorage.removeItem('userData');
-                } catch (e) {}
+                } catch (e) { }
                 window.location.href = 'index.html';
             }
         });
