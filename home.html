@@ -640,11 +640,6 @@
         let cachedProjects = [];
         let presenceIntervalId = null;
         let menuBadgeIntervalId = null;
-        const PENDING_APPROVAL_ALLOWED_EMAILS = new Set([
-            "elsa@dialogika.co",
-            "ashrovy@dialogika.co"
-        ]);
-        let canManagePendingApprovals = false;
 
         // --- 2. PROTEKSI HALAMAN (Cek Login) ---
         onAuthStateChanged(auth, async (user) => {
@@ -680,13 +675,9 @@
                     const userDocSnap = await getDoc(doc(db, "users", user.uid));
                     if (userDocSnap.exists()) {
                         const data = userDocSnap.data();
-                        const userEmail = (data.email || user.email || "").toLowerCase();
-                        canManagePendingApprovals = PENDING_APPROVAL_ALLOWED_EMAILS.has(userEmail);
-                        if (canManagePendingApprovals) {
+                        const role = data.access?.role_id;
+                        if (['staff'].includes(role)) {
                             loadPendingApprovals();
-                        } else {
-                            const section = document.getElementById('pendingApprovalsSection');
-                            if (section) section.style.display = 'none';
                         }
                     }
                 } catch (e) {
@@ -701,11 +692,6 @@
         async function loadPendingApprovals() {
             const section = document.getElementById('pendingApprovalsSection');
             const tbody = document.getElementById('pendingUsersTableBody');
-            if (!canManagePendingApprovals) {
-                section.style.display = 'none';
-                tbody.innerHTML = '';
-                return;
-            }
             section.style.display = 'block';
 
             try {
@@ -752,10 +738,6 @@
         }
 
         window.approveUser = async (userId) => {
-            if (!canManagePendingApprovals) {
-                alert("You are not authorized to approve users.");
-                return;
-            }
             if (!confirm("Are you sure you want to approve this user?")) return;
 
             try {
