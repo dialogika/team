@@ -769,6 +769,7 @@
 
                 const userData = pendingSnap.data();
                 userData.is_approved = true;
+                userData.status = "Active";
                 userData.approved_by = {
                     uid: currentUser.uid,
                     name: JSON.parse(localStorage.getItem('userData'))?.name || currentUser.email,
