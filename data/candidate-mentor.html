@@ -4310,8 +4310,9 @@
                         internship.portfolio_link ||
                         data.portfolio_url ||
                         data.portfolio_link ||
+                        (data.mentor && data.mentor.portfolio_url) ||
                         "";
-                    const resumeUrl = internship.resume_url || data.resume_url || "";
+                    const resumeUrl = internship.resume_url || data.resume_url || (data.mentor && data.mentor.resume_url) || "";
                     const address = internship.address || contact.address || "";
                     const condition = internship.condition || data.condition || "";
                     const campus = internship.campus || education.campus || education.university || "";

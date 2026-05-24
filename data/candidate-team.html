@@ -1340,7 +1340,7 @@
                     const whatsapp = contact.whatsapp || contact.phone || internship.whatsapp || "";
                     const email = contact.email || basic.email || internship.email || "";
 
-                    const resumeUrl = internship.resume_url || data.resume_url || "";
+                    const resumeUrl = internship.resume_url || data.resume_url || (data.mentor && data.mentor.resume_url) || "";
 
                     const interviewers = Array.isArray(data.interviewers)
                         ? data.interviewers.filter(Boolean)
