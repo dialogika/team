@@ -3100,10 +3100,10 @@
             const platform = internship.platform || scouting.channel_type || "-";
             const instagram = normalizeExternalUrl(internship.instagram || contact.instagram || "");
             const linkedin = normalizeExternalUrl(internship.linkedin || contact.linkedin || scouting.channel_url || "");
-            const resumeUrl = internship.resume_url || data.resume_url || "";
+            const resumeUrl = internship.resume_url || data.resume_url || (data.mentor && data.mentor.resume_url) || "";
             const portfolioLinkText = getPortfolioLinkText(data, internship);
             const portfolioLinkUrl = normalizeExternalUrl(portfolioLinkText);
-            const portfolioFileUrl = internship.portfolio_url || data.portfolio_url || "";
+            const portfolioFileUrl = internship.portfolio_url || data.portfolio_url || (data.mentor && data.mentor.portfolio_url) || "";
             const shortDescription = profiling.short_description || data.short_description || "-";
             const experience = internship.experience || data.experience?.text || data.experience?.summary || "-";
             const choose = internship.choose || profiling.choose || "-";
@@ -3558,7 +3558,7 @@
                                     '<div class="min-w-0">' +
                                          '<h1 class="detail-name">' + escapeHtml(vm.name) + '</h1>' +
                                          '<div class="detail-chip-row">' +
-                                             '<span class="detail-role-chip">' + escapeHtml(vm.position || "-") + '</span>' +
+                                             '<span class="detail-role-chip">' + escapeHtml(vm.position || "") + '</span>' +
                                              statusBadge +
                                              workModeBadge +
                                              decisionBadge +
@@ -5636,9 +5636,9 @@
                 syncAcceptedWhatsappTemplate(true);
             });
             document.getElementById("confirmAcceptedWhatsappCheckbox").addEventListener("change", (event) => {
-                if (!acceptedWhatsappPayload || !acceptedWhatsappLastAttemptAt) {
+                if (!acceptedWhatsappPayload) {
                     event.currentTarget.checked = false;
-                    setAcceptedWhatsappValidation("Kirim acceptance letter WhatsApp terlebih dahulu sebelum melakukan konfirmasi.", "warning");
+                    setAcceptedWhatsappValidation("Siapkan acceptance letter WhatsApp terlebih dahulu sebelum melakukan konfirmasi.", "warning");
                     return;
                 }
                 acceptedWhatsappConfirmedAt = event.currentTarget.checked ? new Date().toISOString() : null;
@@ -5704,7 +5704,7 @@
                 syncmicro_teachingWhatsappTemplate(true);
             });
             document.getElementById("confirmmicro_teachingWhatsappCheckbox").addEventListener("change", (event) => {
-                if (!micro_teachingWhatsappPayload || !micro_teachingWhatsappPayload.deepLink) {
+                if (!micro_teachingWhatsappPayload) {
                     event.currentTarget.checked = false;
                     setmicro_teachingWhatsappValidation("Siapkan template dan link WhatsApp micro_teaching terlebih dahulu sebelum melakukan konfirmasi.", "warning");
                     return;
@@ -5732,9 +5732,9 @@
                 syncRejectionWhatsappTemplate(true);
             });
             document.getElementById("confirmRejectionWhatsappCheckbox").addEventListener("change", (event) => {
-                if (!rejectionWhatsappPayload || !rejectionWhatsappLastAttemptAt) {
+                if (!rejectionWhatsappPayload) {
                     event.currentTarget.checked = false;
-                    setRejectionWhatsappValidation("Kirim pesan WhatsApp penolakan terlebih dahulu sebelum melakukan konfirmasi.", "warning");
+                    setRejectionWhatsappValidation("Siapkan pesan WhatsApp penolakan terlebih dahulu sebelum melakukan konfirmasi.", "warning");
                     return;
                 }
                 rejectionWhatsappConfirmedAt = event.currentTarget.checked ? new Date().toISOString() : null;

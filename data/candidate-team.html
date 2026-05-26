@@ -4301,57 +4301,23 @@
 
                     const createdRaw = data.created_at || data.createdAt || data.created || null;
                     const createdText = formatCreatedDate(createdRaw);
-                    const createdSortValue = getCreatedTimestamp(createdRaw);
 
-                    const mode = internship.mode || availability.mode || "";
-                    const platform = internship.platform || scouting.channel_type || "";
-                    const portfolioUrl =
-                        internship.portfolio_url ||
-                        internship.portfolio_link ||
-                        data.portfolio_url ||
-                        data.portfolio_link ||
-                        "";
-                    const resumeUrl = internship.resume_url || data.resume_url || "";
-                    const address = internship.address || contact.address || "";
-                    const condition = internship.condition || data.condition || "";
-                    const campus = internship.campus || education.campus || education.university || "";
-                    const instagramUrl = internship.instagram || contact.instagram || "";
-                    const linkedinUrl = internship.linkedin || contact.linkedin || scouting.channel_url || "";
-                    const email = internship.email || contact.email || basic.email || "";
-                    const whatsapp = internship.whatsapp || contact.whatsapp || contact.phone || "";
-
-                    const expObj = data.experience || {};
-                    const experienceText = internship.experience || expObj.text || expObj.summary || "";
-
-                    const profiling = data.profiling || {};
-                    const reasonText = internship.reason || profiling.reason || "";
-                    const hopeText = internship.hope || profiling.hope || "";
-                    const otherText = internship.other || profiling.other || "";
-                    const chooseText = internship.choose || profiling.choose || "";
-
-                    const recruitment = data.recruitment_status || data.recruitment_system || {};
-                    const currentStatus = resolveDisplayStatus(recruitment);
-                    const dueDateRaw = recruitment.interview_schedule || recruitment.due_date || null;
+                    const dueDateRaw = recruitment.due_date || null;
                     const dueDateInputValue = formatDueDateForInput(dueDateRaw);
-                    const interviewScheduleRaw = formatScheduleSortValue(dueDateRaw);
-                    const interviewerIds = Array.isArray(data.interviewers) ? data.interviewers : [];
-                    const interviewerDetails = getInterviewerDetailsFromIds(interviewerIds);
 
-                    if (interviewScheduleRaw) {
-                        const scheduleStatus = getInterviewScheduleStatus(interviewScheduleRaw);
-                        interviewScheduleEntries.push({
-                            candidateId: docSnap.id,
-                            candidateName: name,
-                            positionName: positionName || "-",
-                            interviewerNames: interviewerDetails.length
-                                ? interviewerDetails.map(item => item.name)
-                                : ["Belum Ditentukan"],
-                            scheduleAt: interviewScheduleRaw,
-                            scheduleStatus
-                        });
-                    }
+                    const instagramUrl = contact.instagram || internship.instagram || "";
+                    const linkedinUrl = contact.linkedin || internship.linkedin || "";
+                    const address = contact.address || internship.address || "";
+                    const whatsapp = contact.whatsapp || contact.phone || internship.whatsapp || "";
+                    const email = contact.email || basic.email || internship.email || "";
 
-                    appendCandidateToUI({
+                    const resumeUrl = internship.resume_url || data.resume_url || (data.mentor && data.mentor.resume_url) || "";
+
+                    const interviewers = Array.isArray(data.interviewers)
+                        ? data.interviewers.filter(Boolean)
+                        : [];
+
+                    appendTeamToTable({
                         name,
                         positionName,
                         avatarUrl,
