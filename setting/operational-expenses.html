@@ -1005,6 +1005,17 @@
                 const filterDate = ref('');
                 const filterDateStart = ref('');
                 const filterDateEnd = ref('');
+                
+                watch(filterStatus, (newVal) => {
+                    if (newVal === 'overdue') {
+                        searchQuery.value = '';
+                        filterCategory.value = 'all';
+                        filterDate.value = '';
+                        filterDateStart.value = '';
+                        filterDateEnd.value = '';
+                    }
+                });
+
                 const dateAnchor = ref(new Date());
                 const sortKey = ref('');
                 const sortDirection = ref('asc');
