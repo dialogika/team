@@ -4834,6 +4834,9 @@
             document.querySelectorAll(".decision-section").forEach((section) => {
                 section.classList.remove("is-active");
             });
+            // Show "Pilih Keputusan" section by default
+            const modeSelector = document.getElementById("decisionModeSelectorCard");
+            if (modeSelector) modeSelector.classList.remove("d-none");
             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
             if (micro_teachingPicker) {
                 micro_teachingPicker.clear();
@@ -4953,7 +4956,7 @@
             syncDecisionSubmitState();
         }
 
-        async function openDecisionModal() {
+        async function openDecisionModal(skipToReject = false) {
             if (!(await ensureCandidateActiveForProgress("open_decision_modal"))) return;
             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
             if (!vm || !(vm.displayStatus === "interview" || vm.displayStatus === "micro_teaching")) {
@@ -4963,6 +4966,16 @@
             decisionModalContext = vm.displayStatus === "micro_teaching" ? "interview" : "interview"; // Let's set to "interview" context to show reject options
             resetDecisionModal();
             syncDecisionModalContextUi();
+            if (skipToReject) {
+                // Hide the "Pilih Keputusan" section
+                const modeSelector = document.getElementById("decisionModeSelectorCard");
+                if (modeSelector) modeSelector.classList.add("d-none");
+                setDecisionAction("rejected");
+            } else {
+                // Show the "Pilih Keputusan" section
+                const modeSelector = document.getElementById("decisionModeSelectorCard");
+                if (modeSelector) modeSelector.classList.remove("d-none");
+            }
             decisionModal.show();
         }
 
@@ -5531,7 +5544,9 @@
                 openInterviewBtn.addEventListener("click", () => openInterviewModal("schedule"));
             }
             if (openDecisionBtn) {
-                openDecisionBtn.addEventListener("click", () => openDecisionModal(vm));
+                // If candidate is in interview stage, skip directly to rejection
+                const isInterviewStage = vm && vm.displayStatus === "interview";
+                openDecisionBtn.addEventListener("click", () => openDecisionModal(isInterviewStage));
             }
             if (editInterviewBtn) {
                 editInterviewBtn.addEventListener("click", async () => {
