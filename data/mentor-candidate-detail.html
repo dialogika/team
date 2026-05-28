@@ -3084,6 +3084,7 @@
             const internship = data.internship || data.internship_info || {};
             const scouting = data.scouting_info || {};
             const recruitment = data.recruitment_status || data.recruitment_system || {};
+            const mentor = data.mentor || {};
 
             const name = basic.full_name || scouting.full_name || data.full_name || "Tanpa Nama";
             const avatarUrl = basic.avatar_url || "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=800";
@@ -3142,6 +3143,8 @@
             const screeningByResolvedName = screeningByNameLooksEmail
                 ? (screeningByUid ? (usersMap[screeningByUid]?.name || "") : "")
                 : screeningByName;
+            const wifiProvider = mentor.wifi_provider || data.wifi_provider || profiling.wifi_provider || basic.wifi_provider || (data.device_info && data.device_info.wifi_provider) || (data.device && data.device.wifi_provider) || "-";
+            const laptopBrand = mentor.laptop_brand || data.laptop_brand || profiling.laptop_brand || basic.laptop_brand || (data.device_info && data.device_info.laptop_brand) || (data.device && data.device.laptop_brand) || "-";
             const inactiveRecord = isInactiveCandidateRecord(data);
 
             return {
@@ -3171,6 +3174,8 @@
                 reason,
                 hope,
                 other,
+                wifiProvider,
+                laptopBrand,
                 createdAt,
                 currentStatus,
                 displayStatus,
@@ -3430,7 +3435,6 @@
             const screeningAtDisplay = vm.screeningAt ? formatDateTime(vm.screeningAt) : "";
             const statusBadge = '<span class="' + getStatusBadgeClasses(vm.displayStatus) + '">' + escapeHtml(getStatusLabel(vm.displayStatus)) + '</span>';
             const decisionBadge = getDecisionBadgeHtml(vm.finalDecision);
-            const workModeBadge = '<span class="work-mode-badge ' + escapeHtml(vm.workModeClass || "work-mode-unknown") + '"><i class="fa-solid fa-briefcase"></i>' + escapeHtml(vm.workModeLabel || "Belum Ditentukan") + '</span>';
             const contactChips = [
                 hasMeaningfulValue(vm.email) ? '<span class="detail-meta-chip"><i class="fa-regular fa-envelope"></i>' + escapeHtml(vm.email) + '</span>' : "",
                 hasMeaningfulValue(vm.whatsapp) ? '<span class="detail-meta-chip"><i class="fa-solid fa-phone"></i>' + escapeHtml(vm.whatsapp) + '</span>' : "",
@@ -3443,7 +3447,8 @@
                 buildKvItem("Universitas / Jurusan", [vm.campus, vm.major].filter(hasMeaningfulValue).join(" / ")),
                 buildKvItem("Tanggal Apply", formatDate(vm.createdAt)),
                 buildKvItem("Posisi Dilamar", vm.position),
-                buildKvItem("Metode Kerja", vm.workModeLabel),
+                buildKvItem("Provider Wifi", vm.wifiProvider),
+                buildKvItem("Brand Laptop", vm.laptopBrand),
                 buildKvItem("Status Saat Ini", getStatusLabel(vm.displayStatus)),
                 buildKvItem("CV / Portfolio", (vm.resumeUrl || vm.portfolioFileUrl) ? ((vm.resumeUrl ? "CV tersedia" : "") + (vm.resumeUrl && vm.portfolioFileUrl ? " | " : "") + (vm.portfolioFileUrl ? "Portfolio tersedia" : "")) : ""),
                 buildKvLinkItem("Link Portofolio", vm.portfolioLinkText || "", vm.portfolioLinkUrl)
@@ -3560,7 +3565,6 @@
                                          '<div class="detail-chip-row">' +
                                              '<span class="detail-role-chip">' + escapeHtml(vm.position || "") + '</span>' +
                                              statusBadge +
-                                             workModeBadge +
                                              decisionBadge +
                                          '</div>' +
                                          (contactChips ? '<div class="detail-chip-row">' + contactChips + '</div>' : '') +
