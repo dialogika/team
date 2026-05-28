@@ -120,8 +120,7 @@
         }
 
         .status-badge-modern::before,
-        .decision-badge::before,
-        .work-mode-badge::before {
+        .decision-badge::before {
             content: "";
             width: 8px;
             height: 8px;
@@ -130,43 +129,6 @@
             opacity: 0.85;
         }
 
-        .work-mode-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            min-height: 38px;
-            padding: 8px 14px;
-            border-radius: 999px;
-            font-size: 0.76rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            border: 1px solid transparent;
-        }
-
-        .work-mode-wfo {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border-color: #93c5fd;
-        }
-
-        .work-mode-wfh {
-            background: #f5f3ff;
-            color: #6d28d9;
-            border-color: #c4b5fd;
-        }
-
-        .work-mode-hybrid {
-            background: #ecfeff;
-            color: #0e7490;
-            border-color: #67e8f9;
-        }
-
-        .work-mode-unknown {
-            background: #f8fafc;
-            color: #64748b;
-            border-color: #cbd5e1;
-        }
 
         .status-screening {
             background: #f1f5f9;
@@ -1971,7 +1933,7 @@
                             <div class="modal-section-card d-none mt-3" id="on_job_trainingSetupCard">
                                 <div class="modal-section-header">
                                     <div>
-                                        <h6 class="modal-section-title">Pengaturan on_job_training</h6>
+                                        <h6 class="modal-section-title">Pengaturan On Job Training</h6>
                                     </div>
                                     <div class="modal-section-icon"><i class="fa-regular fa-circle-check"></i></div>
                                 </div>
@@ -1981,18 +1943,18 @@
                                             <label for="on_job_trainingStartInput"
                                                 class="form-label form-label-soft">Tanggal Mulai</label>
                                             <input type="text" class="form-control" id="on_job_trainingStartInput"
-                                                placeholder="Pilih tanggal on_job_training">
-                                            <div class="invalid-feedback">Tanggal mulai on_job_training wajib diisi.
+                                                placeholder="Pilih tanggal On Job Training">
+                                            <div class="invalid-feedback">Tanggal mulai On Job Training wajib diisi.
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="modal-field-shell is-highlight">
                                             <label for="on_job_trainingTimeInput"
-                                                class="form-label form-label-soft">Waktu on_job_training</label>
+                                                class="form-label form-label-soft">Waktu On Job Training</label>
                                             <input type="time" class="form-control" id="on_job_trainingTimeInput"
                                                 step="900" value="14:00">
-                                            <div class="invalid-feedback">Waktu on_job_training wajib diisi.</div>
+                                            <div class="invalid-feedback">Waktu On Job Training wajib diisi.</div>
                                         </div>
                                     </div>
                                     <div class="col-md-4 d-none">
@@ -2044,12 +2006,12 @@
                                     id="on_job_trainingWhatsappValidationMessage"></div>
                                 <div class="action-cta mt-3">
                                     <button type="button" class="btn btn-outline-primary"
-                                        id="prepareon_job_trainingWhatsappButton">Atur Jadwal on_job_training</button>
+                                        id="prepareon_job_trainingWhatsappButton">Atur Jadwal On Job Training</button>
                                 </div>
                                 <div class="whatsapp-preview-shell d-none mt-3" id="on_job_trainingWhatsappShell">
                                     <div class="whatsapp-preview-header">
                                         <div>
-                                            <div class="whatsapp-preview-title">Undangan on_job_training WhatsApp</div>
+                                            <div class="whatsapp-preview-title">Undangan On Job Training WhatsApp</div>
                                             <div class="whatsapp-preview-subtitle"
                                                 id="on_job_trainingWhatsappTargetInfo">Nomor kandidat belum tersedia.
                                             </div>
@@ -2076,7 +2038,7 @@
                                         <input class="form-check-input" type="checkbox" value=""
                                             id="confirmon_job_trainingWhatsappCheckbox" disabled>
                                         <label class="form-check-label" for="confirmon_job_trainingWhatsappCheckbox">
-                                            Sudah mengirim pesan undangan on_job_training ke kandidat.
+                                            Sudah mengirim pesan undangan On Job Training ke kandidat.
                                         </label>
                                     </div>
                                 </div>
@@ -2566,9 +2528,14 @@
         function getPortfolioLinkText(data, internship) {
             const source = data || {};
             const internshipData = internship || {};
+            const teamData = Array.isArray(source.team) ? (source.team[0] || {}) : (source.team || {});
             const candidates = [
                 internshipData.portfolio_link,
-                source.portfolio_link
+                source.portfolio_link,
+                internshipData.portofolio_link,
+                source.portofolio_link,
+                teamData.portfolio_link,
+                teamData.portofolio_link
             ];
             for (const item of candidates) {
                 const raw = (item || "").toString().trim();
@@ -2732,23 +2699,6 @@
             return index === -1 ? 0 : index;
         }
 
-        function normalizeWorkMode(modeValue) {
-            const raw = (modeValue || "").toString().trim();
-            if (!raw) {
-                return { value: "unknown", label: "Belum Ditentukan", cssClass: "work-mode-unknown" };
-            }
-            const normalized = raw.toLowerCase();
-            if (normalized === "wfo" || normalized.includes("work from office") || normalized.includes("kantor")) {
-                return { value: "wfo", label: "WFO", cssClass: "work-mode-wfo" };
-            }
-            if (normalized === "wfh" || normalized.includes("work from home") || normalized.includes("rumah")) {
-                return { value: "wfh", label: "WFH", cssClass: "work-mode-wfh" };
-            }
-            if (normalized === "hybrid" || normalized === "hybrid office") {
-                return { value: "hybrid", label: "Hybrid", cssClass: "work-mode-hybrid" };
-            }
-            return { value: "unknown", label: raw.toUpperCase(), cssClass: "work-mode-unknown" };
-        }
 
         function parseDateValue(raw) {
             if (!raw) return null;
@@ -3099,10 +3049,11 @@
             return paragraphs.map(part => '<p>' + escapeHtml(part) + '</p>').join("");
         }
 
-        function buildTextPanel(title, value) {
+        function buildTextPanel(title, value, isFullWidth = false) {
             if (!hasMeaningfulValue(value)) return "";
+            const styleAttr = isFullWidth ? ' style="grid-column: 1 / -1;"' : '';
             return (
-                '<div class="text-panel answer-card">' +
+                '<div class="text-panel answer-card"' + styleAttr + '>' +
                 '<div class="text-panel-title">' + escapeHtml(title || "-") + '</div>' +
                 '<div class="text-panel-value">' + formatAnswerContentHtml(value) + '</div>' +
                 '</div>'
@@ -3223,17 +3174,22 @@
             const whatsapp = extractPhoneNumber(whatsappRaw) || "-";
             const whatsappLink = buildWhatsAppLink(whatsappRaw);
             const address = internship.address || contact.address || "-";
+            const teamData = Array.isArray(data.team) ? (data.team[0] || {}) : (data.team || {});
+            const formatBooleanToText = (val) => val === true || String(val).toLowerCase() === "true" || String(val).toLowerCase() === "ya" ? "Ya" : (val === false || String(val).toLowerCase() === "false" || String(val).toLowerCase() === "tidak" ? "Tidak" : "Tidak (Belum Diisi)");
+            const rawLaptop = teamData.has_laptop !== undefined ? teamData.has_laptop : (internship.has_laptop !== undefined ? internship.has_laptop : data.has_laptop);
+            const rawVehicle = teamData.has_vehicle !== undefined ? teamData.has_vehicle : (internship.has_vehicle !== undefined ? internship.has_vehicle : data.has_vehicle);
+            const hasLaptop = formatBooleanToText(rawLaptop);
+            const hasVehicle = formatBooleanToText(rawVehicle);
             const campus = internship.campus || education.campus || education.university || contact.campus || "-";
             const major = internship.major || education.major || education.department || education.faculty || "-";
             const modeRaw = internship.mode || data.mode || "";
-            const modeMeta = normalizeWorkMode(modeRaw);
             const platform = internship.platform || scouting.channel_type || "-";
             const instagram = normalizeExternalUrl(internship.instagram || contact.instagram || "");
             const linkedin = normalizeExternalUrl(internship.linkedin || contact.linkedin || scouting.channel_url || "");
-            const resumeUrl = internship.resume_url || data.resume_url || "";
+            const resumeUrl = teamData.resume_url || internship.resume_url || data.resume_url || "";
             const portfolioLinkText = getPortfolioLinkText(data, internship);
             const portfolioLinkUrl = normalizeExternalUrl(portfolioLinkText);
-            const portfolioFileUrl = internship.portfolio_url || data.portfolio_url || "";
+            const portfolioFileUrl = teamData.portfolio_url || teamData.portofolio_url || internship.portfolio_url || data.portfolio_url || "";
             const shortDescription = profiling.short_description || data.short_description || "-";
             const experience = internship.experience || data.experience?.text || data.experience?.summary || "-";
             const choose = internship.choose || profiling.choose || "-";
@@ -3283,11 +3239,11 @@
                 whatsapp,
                 whatsappLink,
                 address,
+                hasLaptop,
+                hasVehicle,
                 campus,
                 major,
                 mode: modeRaw || "",
-                workModeLabel: modeMeta.label,
-                workModeClass: modeMeta.cssClass,
                 platform,
                 instagram,
                 linkedin,
@@ -3560,31 +3516,23 @@
             const screeningAtDisplay = vm.screeningAt ? formatDateTime(vm.screeningAt) : "";
             const statusBadge = '<span class="' + getStatusBadgeClasses(vm.displayStatus) + '">' + escapeHtml(getStatusLabel(vm.displayStatus)) + '</span>';
             const decisionBadge = getDecisionBadgeHtml(vm.finalDecision);
-            const workModeBadge = '<span class="work-mode-badge ' + escapeHtml(vm.workModeClass || "work-mode-unknown") + '"><i class="fa-solid fa-briefcase"></i>' + escapeHtml(vm.workModeLabel || "Belum Ditentukan") + '</span>';
             const contactChips = [
                 hasMeaningfulValue(vm.email) ? '<span class="detail-meta-chip"><i class="fa-regular fa-envelope"></i>' + escapeHtml(vm.email) + '</span>' : "",
                 hasMeaningfulValue(vm.whatsapp) ? '<span class="detail-meta-chip"><i class="fa-solid fa-phone"></i>' + escapeHtml(vm.whatsapp) + '</span>' : "",
                 hasMeaningfulValue(vm.campus) ? '<span class="detail-meta-chip"><i class="fa-solid fa-building-columns"></i>' + escapeHtml(vm.campus) + '</span>' : ""
             ].filter(Boolean).join("");
             const kvItems = [
-                buildKvItem("Nama Lengkap", vm.name),
+                buildKvItem("Nama", vm.name),
+                buildKvItem("Posisi", vm.position),
+                buildKvItem("No WA", vm.whatsapp),
                 buildKvItem("Email", vm.email),
-                buildKvItem("Nomor Telepon", vm.whatsapp),
-                buildKvItem("Universitas / Jurusan", [vm.campus, vm.major].filter(hasMeaningfulValue).join(" / ")),
-                buildKvItem("Tanggal Apply", formatDate(vm.createdAt)),
-                buildKvItem("Posisi Dilamar", vm.position),
-                buildKvItem("Metode Kerja", vm.workModeLabel),
-                buildKvItem("Status Saat Ini", getStatusLabel(vm.displayStatus)),
-                buildKvItem("CV / Portfolio", (vm.resumeUrl || vm.portfolioFileUrl) ? ((vm.resumeUrl ? "CV tersedia" : "") + (vm.resumeUrl && vm.portfolioFileUrl ? " | " : "") + (vm.portfolioFileUrl ? "Portfolio tersedia" : "")) : ""),
-                buildKvLinkItem("Link Portofolio", vm.portfolioLinkText || "", vm.portfolioLinkUrl)
+                buildKvItem("Domisili", vm.address),
+                buildKvLinkItem("Link Portofolio", vm.portfolioLinkUrl ? "Lihat Portofolio" : "", vm.portfolioLinkUrl),
+                buildKvItem("Punya Laptop", vm.hasLaptop),
+                buildKvItem("Punya Kendaraan", vm.hasVehicle)
             ].filter(Boolean).join("");
             const answerItems = [
-                buildTextPanel("Tentang Diri Anda", vm.shortDescription),
-                buildTextPanel("Alasan Mendaftar", vm.choose),
-                buildTextPanel("Pengalaman Sebelumnya", vm.experience),
-                buildTextPanel("Harapan Bergabung Dialogika", vm.hope),
-                buildTextPanel("Preferensi Perusahaan", vm.reason),
-                buildTextPanel("Pendaftaran di Perusahaan Lain", vm.other)
+                buildTextPanel("Deskripsi Diri", vm.shortDescription, true)
             ].filter(Boolean).join("");
             const processRows = [
                 hasMeaningfulValue(vm.interviewSchedule)
@@ -3690,7 +3638,6 @@
                 '<div class="detail-chip-row">' +
                 '<span class="detail-role-chip">' + escapeHtml(vm.position || "-") + '</span>' +
                 statusBadge +
-                workModeBadge +
                 decisionBadge +
                 '</div>' +
                 (contactChips ? '<div class="detail-chip-row">' + contactChips + '</div>' : '') +
@@ -3698,7 +3645,7 @@
                 '</div>' +
                 '<div>' +
                 '<div class="doc-links">' +
-                '<button type="button" class="doc-link" id="btnDownloadCv" ' + (vm.resumeUrl ? "" : "disabled") + '><i class="fa-solid fa-file-arrow-down"></i><span>Download CV</span></button>' +
+                '<button type="button" class="doc-link" id="btnDownloadCv" ' + (vm.resumeUrl ? "" : "disabled") + '><i class="fa-solid fa-file-arrow-down"></i><span>Download Resume</span></button>' +
                 '<button type="button" class="doc-link" id="btnDownloadPortfolio" ' + (vm.portfolioFileUrl ? "" : "disabled") + '><i class="fa-solid fa-file-arrow-down"></i><span>Download Portofolio</span></button>' +
                 '</div>' +
                 '<div class="icon-link-row">' +
@@ -3746,7 +3693,7 @@
             if (decisionStatusHint) {
                 decisionStatusHint.textContent = vm.isInactive
                     ? 'Kandidat sedang nonaktif. Pulihkan dulu dari menu Kandidat Nonaktif sebelum keputusan interview dapat dikirim.'
-                    : 'Status kandidat saat ini: ' + getStatusLabel(vm.displayStatus) + '. Keputusan interview hanya dapat dikirim saat tahap interview, dan on_job_training hanya dapat diatur saat tahap accepted.';
+                    : 'Status kandidat saat ini: ' + getStatusLabel(vm.displayStatus) + '. Keputusan interview hanya dapat dikirim saat tahap interview, dan On Job Training hanya dapat diatur saat tahap accepted.';
             }
         }
 
@@ -4425,11 +4372,11 @@
 
             return buildonJobTrainingMessage({
                 candidateName: vm && vm.name ? vm.name : "Kandidat",
-                onJobTrainingDate: dateText,
-                onJobTrainingTime: timeText,
+                microTeachingDate: dateText,
+                microTeachingTime: timeText,
                 mode,
                 meetingLink,
-                onJobTrainingLocation: location
+                microTeachingLocation: location
             });
         }
 
@@ -4487,7 +4434,7 @@
                 retryButton.disabled = true;
                 confirmCheckbox.checked = false;
                 confirmCheckbox.disabled = true;
-                hint.textContent = "Lengkapi tanggal, mode, dan detail On Job Training terlebih dahulu, lalu klik `Atur Jadwal on_job_training` untuk menyiapkan undangan WhatsApp.";
+                hint.textContent = "Lengkapi tanggal, mode, dan detail On Job Training terlebih dahulu, lalu klik `Atur Jadwal On Job Training` untuk menyiapkan undangan WhatsApp.";
                 scheduleWhatsappPopupSizingSync();
                 return;
             }
@@ -4528,7 +4475,7 @@
                 const timeValue = document.getElementById("on_job_trainingTimeInput") ? document.getElementById("on_job_trainingTimeInput").value : "";
                 const scheduleState = getonJobTrainingScheduleState();
                 const onJobTrainingMessage = document.getElementById("on_job_trainingWhatsappText") ? (document.getElementById("on_job_trainingWhatsappText").value || "").trim() : "";
-                submitButton.textContent = "Submit on_job_training";
+                submitButton.textContent = "Submit On Job Training";
                 submitButton.disabled = !startDate || !timeValue || !scheduleState.isMeetingLinkValid || !scheduleState.isLocationValid || !on_job_trainingWhatsappConfirmedAt || !onJobTrainingMessage;
                 return;
             }
@@ -4624,7 +4571,7 @@
             on_job_trainingWhatsappConfirmedAt = null;
             on_job_trainingWhatsappRetryCount = 0;
             on_job_trainingWhatsappLastAttemptAt = null;
-            seton_job_trainingWhatsappValidation("Template on_job_training siap. Anda dapat mengedit isi pesan, kirim ke WhatsApp, lalu centang checkbox konfirmasi.", "success");
+            seton_job_trainingWhatsappValidation("Template On Job Training siap. Anda dapat mengedit isi pesan, kirim ke WhatsApp, lalu centang checkbox konfirmasi.", "success");
             seton_job_trainingWhatsappPreviewState(on_job_trainingWhatsappPayload);
             syncDecisionSubmitState();
             return on_job_trainingWhatsappPayload;
@@ -5012,16 +4959,16 @@
             if (acceptCard) acceptCard.classList.toggle("d-none", !isInterviewMode);
             if (on_job_trainingCard) on_job_trainingCard.classList.toggle("d-none", isInterviewMode);
             if (rejectSection) rejectSection.classList.toggle("d-none", !isInterviewMode);
-            if (modalLabel) modalLabel.textContent = isInterviewMode ? "Keputusan Interview Kandidat" : "Pengaturan on_job_training";
+            if (modalLabel) modalLabel.textContent = isInterviewMode ? "Keputusan Interview Kandidat" : "Pengaturan On Job Training";
             if (modalSubtitle) {
                 modalSubtitle.textContent = isInterviewMode
                     ? "Pilih aksi akhir setelah interview. Recruiter wajib menyiapkan dan mengonfirmasi WhatsApp sebelum submit."
-                    : "Lengkapi tanggal on_job_training dan departemen, lalu kirim undangan WhatsApp on_job_training sebelum submit.";
+                    : "Lengkapi tanggal On Job Training dan departemen, lalu kirim undangan WhatsApp On Job Training sebelum submit.";
             }
             if (statusHint) {
                 statusHint.textContent = isInterviewMode
                     ? "Status kandidat saat ini: On Job Training. Pilih accepted atau rejected lalu kirim template WhatsApp terkait."
-                    : "Status kandidat saat ini: Interview. Lanjutkan ke on_job_training dengan pengaturan jadwal dan undangan WhatsApp.";
+                    : "Status kandidat saat ini: Interview. Lanjutkan ke On Job Training dengan pengaturan jadwal dan undangan WhatsApp.";
             }
         }
 
@@ -5053,7 +5000,7 @@
             document.getElementById("decisionRejectSection").classList.toggle("is-active", action === "rejected");
             document.getElementById("decisionStatusHint").textContent = action === "accepted"
                 ? (decisionModalContext === "on_job_training"
-                    ? "Lengkapi pengaturan on_job_training, kirim undangan WhatsApp on_job_training, lalu submit."
+                    ? "Lengkapi pengaturan On Job Training, kirim undangan WhatsApp On Job Training, lalu submit."
                     : "Saat kandidat diterima, recruiter perlu menyiapkan dan mengonfirmasi pengiriman Acceptance Letter WhatsApp sebelum submit.")
                 : "Saat kandidat ditolak, recruiter perlu menyiapkan dan mengonfirmasi pengiriman WhatsApp penolakan sebelum submit.";
             if (action === "accepted" && decisionModalContext === "interview") {
@@ -5095,7 +5042,7 @@
             if (!(await ensureCandidateActiveForProgress("open_on_job_training_modal"))) return;
             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
             if (!vm || vm.displayStatus !== "interview") {
-                showWarning("Pengaturan on_job_training hanya dapat dibuka saat status kandidat berada pada tahap interview.");
+                showWarning("Pengaturan On Job Training hanya dapat dibuka saat status kandidat berada pada tahap interview.");
                 return;
             }
             decisionModalContext = "on_job_training";
@@ -5318,7 +5265,7 @@
                 renderCandidateDetail();
                 showWarning(
                     decisionModalContext === "on_job_training"
-                        ? "Status kandidat berubah. Pengaturan on_job_training hanya dapat dilakukan saat kandidat berada di tahap interview."
+                        ? "Status kandidat berubah. Pengaturan On Job Training hanya dapat dilakukan saat kandidat berada di tahap interview."
                         : "Status kandidat berubah. Proses keputusan final hanya bisa dilakukan saat kandidat berada di tahap On Job Training."
                 );
                 return;
@@ -5424,7 +5371,7 @@
                         return;
                     }
                     if (!on_job_trainingWhatsappPayload || !on_job_trainingWhatsappConfirmedAt || !on_job_trainingMessage) {
-                        seton_job_trainingWhatsappValidation("Undangan on_job_training WhatsApp wajib disiapkan, dikirim, dan dikonfirmasi sebelum submit on_job_training.", "warning");
+                        seton_job_trainingWhatsappValidation("Undangan on_job_training WhatsApp wajib disiapkan, dikirim, dan dikonfirmasi sebelum submit On Job Training.", "warning");
                         syncDecisionSubmitState();
                         return;
                     }
@@ -5523,12 +5470,12 @@
                     });
 
                     decisionModal.hide();
-                    showSuccess("Kandidat berhasil diproses ke tahap on_job_training.");
+                    showSuccess("Kandidat berhasil diproses ke tahap On Job Training.");
                     return;
                 }
 
                 if (decisionModalContext === "on_job_training" && activeDecisionAction !== "accepted") {
-                    showWarning("Mode on_job_training hanya mendukung submit status on_job_training.");
+                    showWarning("Mode On Job Training hanya mendukung submit status On Job Training.");
                     return;
                 }
 
@@ -5842,7 +5789,7 @@
                 on_job_trainingWhatsappConfirmedAt = event.currentTarget.checked ? new Date().toISOString() : null;
                 seton_job_trainingWhatsappValidation(
                     event.currentTarget.checked
-                        ? "Konfirmasi WhatsApp on_job_training tercatat. Tombol submit on_job_training sudah aktif."
+                        ? "Konfirmasi WhatsApp on_job_training tercatat. Tombol submit On Job Training sudah aktif."
                         : "Konfirmasi WhatsApp on_job_training dibatalkan. Silakan centang kembali jika pesan sudah benar-benar terkirim.",
                     event.currentTarget.checked ? "success" : "warning"
                 );

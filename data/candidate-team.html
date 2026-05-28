@@ -2267,10 +2267,10 @@
                         <div class="pipeline-stat-card pipeline-stat-accepted">
                             <div class="pipeline-stat-label">Accepted</div>
                             <div class="pipeline-stat-value">0</div>
-                            <div class="pipeline-stat-note">Kandidat lolos seleksi dan menunggu on_job_training.</div>
+                            <div class="pipeline-stat-note">Kandidat lolos seleksi dan menunggu On Job Training.</div>
                         </div>
                         <div class="pipeline-stat-card pipeline-stat-on_job_training">
-                            <div class="pipeline-stat-label">on_job_training</div>
+                            <div class="pipeline-stat-label">On Job Training</div>
                             <div class="pipeline-stat-value">0</div>
                             <div class="pipeline-stat-note">Kandidat siap masuk proses intern management.</div>
                         </div>
@@ -3628,7 +3628,7 @@
                     
                 '</div>' +
                 '<div class="pipeline-stat-card pipeline-stat-on_job_training">' +
-                    '<div class="pipeline-stat-label">on_job_training</div>' +
+                    '<div class="pipeline-stat-label">On Job Training</div>' +
                     '<div class="pipeline-stat-value">' + (counts.on_job_training || 0) + '</div>' +
                     
                 '</div>' +
@@ -4300,50 +4300,39 @@
                     const avatarUrl = basic.avatar_url || null;
 
                     const createdRaw = data.created_at || data.createdAt || data.created || null;
-                    const createdText = formatCreatedDate(createdRaw);
+                    const createdSortValue = getCreatedTimestamp(createdRaw);
 
+                    const recruitment = data.recruitment_status || data.recruitment_system || {};
+                    const currentStatus = resolveDisplayStatus(recruitment);
+                    
                     const dueDateRaw = recruitment.due_date || null;
                     const dueDateInputValue = formatDueDateForInput(dueDateRaw);
 
-                    const instagramUrl = contact.instagram || internship.instagram || "";
-                    const linkedinUrl = contact.linkedin || internship.linkedin || "";
                     const address = contact.address || internship.address || "";
-                    const whatsapp = contact.whatsapp || contact.phone || internship.whatsapp || "";
                     const email = contact.email || basic.email || internship.email || "";
-
-                    const resumeUrl = internship.resume_url || data.resume_url || (data.mentor && data.mentor.resume_url) || "";
-
+                    const campus = internship.campus || education.campus || education.university || "";
+                    const mode = internship.mode || "";
+                    
                     const interviewers = Array.isArray(data.interviewers)
                         ? data.interviewers.filter(Boolean)
                         : [];
+                    const interviewerIds = interviewers;
+                    const interviewScheduleRaw = data.interview_schedule || "";
 
-                    appendTeamToTable({
+                    appendCandidateToUI({
                         name,
                         positionName,
                         avatarUrl,
-                        createdText,
                         mode,
-                        platform,
-                        portfolioUrl,
-                        resumeUrl,
                         address,
-                        condition,
-                        campus,
-                        instagramUrl,
-                        linkedinUrl,
                         email,
-                        whatsapp,
-                        experienceText,
-                        reasonText,
-                        hopeText,
-                        otherText,
-                        chooseText,
+                        campus,
                         talentId: docSnap.id,
                         status: currentStatus,
-                        createdSortValue,
                         dueDateInputValue,
                         interviewScheduleRaw,
-                        interviewerIds
+                        interviewerIds,
+                        createdSortValue
                     });
                     found += 1;
                 });
