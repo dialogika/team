@@ -52,14 +52,46 @@ export function buildInterviewMessage(options = {}) {
 }
 
 /**
- * Build micro teaching WhatsApp message
+ * Build On Job Training (OJT) WhatsApp message
  * @param {Object} options - Build options
  * @param {string} options.candidateName - Candidate name
- * @param {string} options.microTeachingDate - Formatted micro teaching date
- * @param {string} options.microTeachingTime - Micro teaching time
+ * @param {string} options.ojtDate - Formatted OJT date (range)
+ * @param {string} options.ojtTime - OJT time
  * @param {string} options.mode - 'online' or 'offline'
  * @param {string} options.meetingLink - Meeting link (for online)
- * @param {string} options.microTeachingLocation - Micro teaching location (for offline)
+ * @param {string} options.ojtLocation - OJT location (for offline)
+ * @returns {string|null} Generated WhatsApp message
+ */
+export function buildOnJobTrainingMessage(options = {}) {
+    const {
+        candidateName = "Kandidat",
+        ojtDate = "-",
+        ojtTime = "-",
+        mode = "online",
+        meetingLink = "",
+        ojtLocation = ""
+    } = options;
+
+    const templateId = getTemplateIdForStageMode("on_job_training", mode);
+    if (!templateId) {
+        console.warn("No template found for On Job Training mode:", mode);
+        return null;
+    }
+
+    const tokens = {
+        candidate_name: candidateName,
+        ojt_date: ojtDate,
+        ojt_time: ojtTime,
+        meeting_link: meetingLink,
+        ojt_location: ojtLocation
+    };
+
+    return buildMessageFromTemplate(templateId, tokens);
+}
+
+/**
+ * Build micro teaching WhatsApp message (backward-compatible wrapper)
+ * @param {Object} options - Build options
  * @returns {string|null} Generated WhatsApp message
  */
 export function buildMicroTeachingMessage(options = {}) {
@@ -72,21 +104,14 @@ export function buildMicroTeachingMessage(options = {}) {
         microTeachingLocation = ""
     } = options;
 
-    const templateId = getTemplateIdForStageMode("micro_teaching", mode);
-    if (!templateId) {
-        console.warn("No template found for micro teaching mode:", mode);
-        return null;
-    }
-
-    const tokens = {
-        candidate_name: candidateName,
-        micro_teaching_date: microTeachingDate,
-        micro_teaching_time: microTeachingTime,
-        meeting_link: meetingLink,
-        micro_teaching_location: microTeachingLocation
-    };
-
-    return buildMessageFromTemplate(templateId, tokens);
+    return buildOnJobTrainingMessage({
+        candidateName,
+        ojtDate: microTeachingDate,
+        ojtTime: microTeachingTime,
+        mode,
+        meetingLink,
+        ojtLocation: microTeachingLocation
+    });
 }
 
 /**
@@ -140,8 +165,10 @@ export function getMessageBuilders() {
     return {
         interview_online: (options) => buildInterviewMessage({ ...options, mode: "online" }),
         interview_offline: (options) => buildInterviewMessage({ ...options, mode: "offline" }),
-        micro_teaching_online: (options) => buildMicroTeachingMessage({ ...options, mode: "online" }),
-        micro_teaching_offline: (options) => buildMicroTeachingMessage({ ...options, mode: "offline" }),
+        micro_teaching_online: (options) => buildOnJobTrainingMessage({ ...options, mode: "online" }),
+        micro_teaching_offline: (options) => buildOnJobTrainingMessage({ ...options, mode: "offline" }),
+        on_job_training_online: (options) => buildOnJobTrainingMessage({ ...options, mode: "online" }),
+        on_job_training_offline: (options) => buildOnJobTrainingMessage({ ...options, mode: "offline" }),
         accepted: buildAcceptedMessage,
         rejected: buildRejectedMessage,
         custom: buildCustomMessage
@@ -163,6 +190,9 @@ export function previewTemplate(templateId, sampleTokens = {}) {
         interview_time: "HH:MM",
         interview_location: "Alamat Lokasi",
         meeting_link: "https://meet.example.com/xyz",
+        ojt_date: "Hari, Tanggal Bulan Tahun",
+        ojt_time: "HH:MM",
+        ojt_location: "Alamat Lokasi",
         micro_teaching_date: "Hari, Tanggal Bulan Tahun",
         micro_teaching_time: "HH:MM",
         micro_teaching_location: "Alamat Lokasi"

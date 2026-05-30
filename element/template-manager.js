@@ -27,22 +27,22 @@ export const TEMPLATE_DEFINITIONS = [
         defaultTemplate: "*[REKRUTMEN DIALOGIKA]*\n\nHalo Kak {candidate_name}!\n\nTerima kasih sudah mengikuti tahapan rekrutmen di Dialogika dengan antusias. Selanjutnya kami ucapkan selamat karena telah lolos pada tahap screening!\n\nMaka dari itu, kami akan mengundang kakak untuk mengikuti tahapan selanjutnya, yaitu tahap wawancara dan verifikasi jadwal. Pelaksanaan wawancara akan dilakukan secara offline pada:\n\n*Tanggal* : {interview_date}\n*Waktu*   : {interview_time} WIB\n*Lokasi*  : {interview_location}\n\nKandidat dimohon untuk hadir maksimal 5 menit sebelum jadwal wawancara serta menggunakan pakaian yang sopan dan rapi, serta membawa laptop.\n\nTerima kasih atas perhatiannya\n\nSalam,\nHuman Resource Dialogika\n\nMohon untuk konfirmasi kehadiran dengan membalas pesan ini. Terima kasih.\n*reschedule hanya bisa dilakukan 1x maksimal H-1"
     },
     {
-        id: "micro_teaching_online",
-        title: "Micro Teaching Online",
-        description: "Template untuk undangan micro teaching online.",
-        stage: "micro_teaching",
+        id: "on_job_training_online",
+        title: "On Job Training Online",
+        description: "Template untuk undangan On Job Training online.",
+        stage: "on_job_training",
         mode: "online",
-        requiredTokens: ["{candidate_name}", "{micro_teaching_date}", "{micro_teaching_time}", "{meeting_link}"],
-        defaultTemplate: "*[RECRUITMENT MENTOR DIALOGIKA - MICRO TEACHING ONLINE]*\n\nHalo Kak {candidate_name}!\n\nSelamat! Setelah melalui tahapan interview, kami dengan senang hati menginformasikan bahwa Kakak lolos ke tahap selanjutnya, yaitu *micro teaching* untuk posisi Mentor di Dialogika.\n\nPelaksanaan micro teaching akan dilakukan secara online pada:\n\n*Tanggal* : {micro_teaching_date}\n*Waktu*   : {micro_teaching_time} WIB\n*Link Meeting* : {meeting_link}\n\nMohon untuk bergabung maksimal 5 menit sebelum sesi dimulai, menggunakan pakaian yang sopan dan rapi, serta memastikan koneksi internet dalam kondisi stabil.\n\nSilakan mempersiapkan materi micro teaching sesuai arahan yang telah diberikan sebelumnya.\n\nJika terdapat kendala atau pertanyaan terkait jadwal, jangan ragu untuk menghubungi tim HR melalui WhatsApp ini.\n\nTerima kasih dan sampai bertemu di sesi micro teaching.\n\nSalam hangat,\nHR Dialogika"
+        requiredTokens: ["{candidate_name}", "{ojt_date}", "{ojt_time}", "{meeting_link}"],
+        defaultTemplate: "*[REKRUTMEN DIALOGIKA]*\n\nHalo Kak {candidate_name}!\n\nTerima kasih telah mengikuti seluruh tahapan rekrutmen Mentor di Dialogika dengan antusias. Kami mengucapkan selamat karena Kakak telah dinyatakan lolos ke tahap berikutnya, yaitu *On Job Training (OJT)*.\n\nMelalui pesan ini, kami mengundang Kakak untuk mengikuti program OJT yang akan dilaksanakan selama *3 hari* sebagai bagian dari proses penilaian dan pengenalan lingkungan kerja di Dialogika.\n\n*Periode OJT* : {ojt_date}\n*Waktu*       : {ojt_time} WIB\n*Lokasi*      : {meeting_link}\n\nSelama pelaksanaan OJT, peserta diharapkan hadir tepat waktu, menggunakan pakaian yang sopan dan rapi, serta membawa laptop untuk mendukung kegiatan pelatihan dan praktik kerja.\n\nKehadiran dan performa selama OJT akan menjadi salah satu pertimbangan dalam proses evaluasi akhir rekrutmen.\n\nTerima kasih atas perhatian dan kerja samanya.\n\nSalam,\nHuman Resource Dialogika\n\nMohon untuk mengonfirmasi kehadiran dengan membalas pesan ini.\n\n*Reschedule  maksimal H-1 sebelum hari pertama OJT.*"
     },
     {
-        id: "micro_teaching_offline",
-        title: "Micro Teaching Offline",
-        description: "Template untuk undangan micro teaching offline.",
-        stage: "micro_teaching",
+        id: "on_job_training_offline",
+        title: "On Job Training Offline",
+        description: "Template untuk undangan On Job Training offline.",
+        stage: "on_job_training",
         mode: "offline",
-        requiredTokens: ["{candidate_name}", "{micro_teaching_date}", "{micro_teaching_time}", "{micro_teaching_location}"],
-        defaultTemplate: "*[RECRUITMENT MENTOR DIALOGIKA - MICRO TEACHING OFFLINE]*\n\nHalo Kak {candidate_name}!\n\nSelamat! Setelah melalui tahapan interview, kami dengan senang hati menginformasikan bahwa Kakak lolos ke tahap selanjutnya, yaitu *micro teaching* untuk posisi Mentor di Dialogika.\n\nPelaksanaan micro teaching akan dilakukan secara offline pada:\n\n*Tanggal* : {micro_teaching_date}\n*Waktu*   : {micro_teaching_time} WIB\n*Tempat*  : {micro_teaching_location}\n\nMohon hadir maksimal 5 menit sebelum sesi dimulai, menggunakan pakaian yang sopan dan rapi, serta membawa laptop apabila diperlukan.\n\nSilakan mempersiapkan materi micro teaching sesuai arahan yang telah diberikan sebelumnya.\n\nJika terdapat kendala atau pertanyaan terkait jadwal, jangan ragu untuk menghubungi tim HR melalui WhatsApp ini.\n\nTerima kasih dan sampai bertemu di sesi micro teaching.\n\nSalam hangat,\nHR Dialogika"
+        requiredTokens: ["{candidate_name}", "{ojt_date}", "{ojt_time}", "{ojt_location}"],
+        defaultTemplate: "*[REKRUTMEN DIALOGIKA]*\n\nHalo Kak {candidate_name}!\n\nTerima kasih telah mengikuti seluruh tahapan rekrutmen Mentor di Dialogika dengan antusias. Kami mengucapkan selamat karena Kakak telah dinyatakan lolos ke tahap berikutnya, yaitu *On Job Training (OJT)*.\n\nMelalui pesan ini, kami mengundang Kakak untuk mengikuti program OJT yang akan dilaksanakan selama *3 hari* sebagai bagian dari proses penilaian dan pengenalan lingkungan kerja di Dialogika.\n\n*Periode OJT* : {ojt_date}\n*Waktu*       : {ojt_time} WIB\n*Lokasi*      : {ojt_location}\n\nSelama pelaksanaan OJT, peserta diharapkan hadir tepat waktu, menggunakan pakaian yang sopan dan rapi, serta membawa laptop untuk mendukung kegiatan pelatihan dan praktik kerja.\n\nKehadiran dan performa selama OJT akan menjadi salah satu pertimbangan dalam proses evaluasi akhir rekrutmen.\n\nTerima kasih atas perhatian dan kerja samanya.\n\nSalam,\nHuman Resource Dialogika\n\nMohon untuk mengonfirmasi kehadiran dengan membalas pesan ini.\n\n*Reschedule  maksimal H-1 sebelum hari pertama OJT.*"
     },
     {
         id: "accepted",
@@ -50,7 +50,7 @@ export const TEMPLATE_DEFINITIONS = [
         description: "Template untuk notifikasi kandidat diterima.",
         stage: "decision",
         requiredTokens: ["{candidate_name}"],
-        defaultTemplate: "*[Acceptance Letter]*\n\nHalo {candidate_name}!\n\nTerima kasih atas partisipasi dan antusiasmenya dalam mengikuti proses rekrutmen Tim Dialogika.\n\nSetelah melalui proses seleksi dan evaluasi, kami dengan senang hati menginformasikan bahwa Kakak diterima sebagai Tim di Dialogika.\nSelamat bergabung bersama tim!\n\nInformasi mengenai jadwal micro teaching dan kelengkapan administrasi akan kami kirimkan dalam waktu dekat.\n\nTerima kasih dan sampai jumpa di hari pertama magang.\n\nSalam hormat,\nHR Dialogika"
+        defaultTemplate: "*[Acceptance Letter]*\n\nHalo {candidate_name}!\n\nTerima kasih atas partisipasi dan antusiasmenya dalam mengikuti proses rekrutmen Tim Dialogika.\n\nSetelah melalui proses seleksi dan evaluasi, kami dengan senang hati menginformasikan bahwa Kakak diterima sebagai Tim di Dialogika.\nSelamat bergabung bersama tim!\n\nInformasi mengenai jadwal On Job Training dan kelengkapan administrasi akan kami kirimkan dalam waktu dekat.\n\nTerima kasih dan sampai jumpa di hari pertama magang.\n\nSalam hormat,\nHR Dialogika"
     },
     {
         id: "rejected",
@@ -98,6 +98,15 @@ export function getStoredTemplates() {
         if (!raw) return defaults;
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== "object") return defaults;
+        
+        // Migrate legacy micro_teaching templates to on_job_training if present
+        if (parsed.micro_teaching_online && !parsed.on_job_training_online) {
+            parsed.on_job_training_online = parsed.micro_teaching_online;
+        }
+        if (parsed.micro_teaching_offline && !parsed.on_job_training_offline) {
+            parsed.on_job_training_offline = parsed.micro_teaching_offline;
+        }
+
         Object.keys(defaults).forEach((key) => {
             const value = (parsed[key] || "").toString().trim();
             if (value) defaults[key] = value;
@@ -181,15 +190,15 @@ export function buildMessageFromTemplate(templateId, tokens) {
 
 /**
  * Get template for specific stage and mode
- * @param {string} stage - Stage name (interview, micro_teaching, decision)
+ * @param {string} stage - Stage name (interview, micro_teaching, on_job_training, decision)
  * @param {string} mode - Mode name (online, offline) - optional
  * @returns {string|null} Template ID or null
  */
 export function getTemplateIdForStageMode(stage, mode) {
     if (stage === "interview" && mode === "online") return "interview_online";
     if (stage === "interview" && mode === "offline") return "interview_offline";
-    if (stage === "micro_teaching" && mode === "online") return "micro_teaching_online";
-    if (stage === "micro_teaching" && mode === "offline") return "micro_teaching_offline";
+    if ((stage === "on_job_training" || stage === "micro_teaching") && mode === "online") return "on_job_training_online";
+    if ((stage === "on_job_training" || stage === "micro_teaching") && mode === "offline") return "on_job_training_offline";
     if (stage === "decision" && mode === "accepted") return "accepted";
     if (stage === "decision" && mode === "rejected") return "rejected";
     return null;
