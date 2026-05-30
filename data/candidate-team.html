@@ -530,7 +530,7 @@
 
         .pipeline-summary-grid {
             display: grid;
-            grid-template-columns: repeat(6, minmax(0, 1fr));
+            grid-template-columns: repeat(7, minmax(0, 1fr));
             gap: 16px;
             margin: 1.5rem 0 2rem;
         }
@@ -586,7 +586,11 @@
         }
 
         .pipeline-stat-rejected {
-            border-top: 4px solid #dc2626;
+            border-top: 4px solid #ef4444;
+        }
+
+        .pipeline-stat-withdrawn {
+            border-top: 4px solid #fcd34d;
         }
 
         .schedule-launcher {
@@ -1052,6 +1056,12 @@
             background: #fef2f2;
             color: #b91c1c;
             border-color: #fca5a5;
+        }
+
+        .status-withdrawn {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fcd34d;
         }
 
         .pipeline-stepper {
@@ -3409,6 +3419,28 @@
             return weekday + ", " + day + "-" + month + "-" + year;
         }
 
+        function formatOjtDateRangeCompact(startDate, endDate) {
+            const startObj = toDateObject(startDate);
+            const endObj = toDateObject(endDate);
+            if (!startObj) return "-";
+            
+            const startText = startObj.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            });
+            
+            if (!endObj) return startText;
+            
+            const endText = endObj.toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            });
+            
+            return startText + " - " + endText;
+        }
+
         function normalizeExternalUrl(value) {
             const raw = (value || "").toString().trim();
             if (!raw) return "";
@@ -3537,6 +3569,12 @@
                 label: "Rejected",
                 badgeClass: "status-rejected",
                 caption: "Tidak diterima"
+            },
+            {
+                value: "withdrawn",
+                label: "Mengundurkan Diri",
+                badgeClass: "status-withdrawn",
+                caption: "Mengundurkan diri"
             }
         ];
 
@@ -3546,6 +3584,7 @@
             if (raw === "accept" || raw === "accepted" || raw === "decision") return "accepted";
             if (raw === "on_job_training") return "on_job_training";
             if (raw === "rejected" || raw === "reject") return "rejected";
+            if (raw === "withdrawn" || raw === "mengundurkan_diri" || raw === "mengundurkan diri") return "withdrawn";
             return "screening";
         }
 
@@ -3553,6 +3592,7 @@
             const raw = value ? value.toString().trim().toLowerCase() : "";
             if (raw === "accepted" || raw === "accept") return "accepted";
             if (raw === "rejected" || raw === "reject") return "rejected";
+            if (raw === "withdrawn" || raw === "mengundurkan_diri" || raw === "mengundurkan diri") return "withdrawn";
             return "";
         }
 
@@ -3561,6 +3601,7 @@
             const normalizedCurrent = normalizeStatus(state.current || "screening");
             const finalDecision = normalizeDecision(state.final_decision || state.finalDecision || "");
             if (finalDecision === "rejected") return "rejected";
+            if (finalDecision === "withdrawn") return "withdrawn";
             if (finalDecision === "accepted" && normalizedCurrent !== "on_job_training") return "accepted";
             return normalizedCurrent;
         }
@@ -3605,7 +3646,7 @@
         function updatePipelineSummary(counts) {
             const summaryEl = document.getElementById("candidatePipelineSummary");
             if (!summaryEl) return;
-            const total = (counts.screening || 0) + (counts.interview || 0) + (counts.accepted || 0) + (counts.on_job_training || 0) + (counts.rejected || 0);
+            const total = (counts.screening || 0) + (counts.interview || 0) + (counts.accepted || 0) + (counts.on_job_training || 0) + (counts.rejected || 0) + (counts.withdrawn || 0);
             summaryEl.innerHTML =
                 '<div class="pipeline-stat-card pipeline-stat-total">' +
                     '<div class="pipeline-stat-label">Total Kandidat</div>' +
@@ -3636,6 +3677,11 @@
                     '<div class="pipeline-stat-label">Rejected</div>' +
                     '<div class="pipeline-stat-value">' + (counts.rejected || 0) + '</div>' +
                     
+                '</div>' +
+                '<div class="pipeline-stat-card pipeline-stat-withdrawn">' +
+                    '<div class="pipeline-stat-label">Mengundurkan Diri</div>' +
+                    '<div class="pipeline-stat-value">' + (counts.withdrawn || 0) + '</div>' +
+                    
                 '</div>';
         }
 
@@ -3645,7 +3691,8 @@
                 interview: 0,
                 accepted: 0,
                 on_job_training: 0,
-                rejected: 0
+                rejected: 0,
+                withdrawn: 0
             };
             document.querySelectorAll(".candidate-item").forEach(item => {
                 const normalized = normalizeStatus(item.dataset.status || "");
@@ -3980,6 +4027,22 @@
             const statusLabel = getStatusLabel(currentStatus);
             const statusBadgeClasses = getStatusBadgeClasses(currentStatus);
             const statusStepperHtml = buildStatusStepperHtml(currentStatus);
+            const onJobTrainingStartDate = recruitment.on_job_training_start_date || null;
+            const onJobTrainingEndDate = recruitment.on_job_training_end_date || null;
+
+            // Prepare status details section (for OJT schedule)
+            let ojtDetailsHtml = '';
+            if (onJobTrainingStartDate) {
+                const ojtDateText = formatOjtDateRangeCompact(onJobTrainingStartDate, onJobTrainingEndDate);
+                ojtDetailsHtml =
+                    '<div class="py-4 border-b border-slate-50 mb-6">' +
+                        '<p class="text-[10px] uppercase font-bold text-slate-400 mb-1">Jadwal On Job Training</p>' +
+                        '<div class="flex items-center gap-2">' +
+                            '<i class="fa-solid fa-graduation-cap text-emerald-500"></i>' +
+                            '<p class="text-sm text-slate-600 font-bold leading-relaxed">' + escapeHtml(ojtDateText) + '</p>' +
+                        '</div>' +
+                    '</div>';
+            }
 
             container.innerHTML =
                 '<div class="candidate-profile-wrapper py-6 px-4 md:px-6 flex justify-center" >' +
@@ -4048,6 +4111,7 @@
                                         '</div>' +
                                     '</div>' +
                                 '</div>' +
+                                ojtDetailsHtml +
                                 '<div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">' +
                                     '<div>' +
                                         '<h4 class="text-xs font-bold text-slate-800 mb-2 flex items-center gap-2">' +
@@ -4089,6 +4153,12 @@
             const interviewScheduleRaw = params.interviewScheduleRaw || "";
             const interviewerIds = Array.isArray(params.interviewerIds) ? params.interviewerIds : [];
             const createdSortValue = Number(params.createdSortValue || 0);
+            const finalDecisionAt = params.finalDecisionAt || null;
+            const rejectionReason = escapeHtml(params.rejectionReason || "");
+            const rejectionNotes = escapeHtml(params.rejectionNotes || "");
+            const withdrawnNotes = escapeHtml(params.withdrawnNotes || "");
+            const onJobTrainingStartDate = params.onJobTrainingStartDate || null;
+            const onJobTrainingEndDate = params.onJobTrainingEndDate || null;
 
             const gridContainer = document.getElementById('gridView');
             const listTbody = document.querySelector('#listView tbody');
@@ -4109,6 +4179,35 @@
                     positionHtml +
                     '<span class="' + statusBadgeClasses + '">' + statusLabel + '</span>' +
                 '</div>';
+
+            // Prepare status details section (for rejected/withdrawn)
+            let statusDetailsHtml = '';
+            if (currentStatus === 'rejected' || currentStatus === 'withdrawn') {
+                const dateText = finalDecisionAt ? formatCreatedDate(finalDecisionAt) : '-';
+                let notesText = '';
+                if (currentStatus === 'rejected') {
+                    notesText = rejectionReason || rejectionNotes;
+                } else {
+                    notesText = withdrawnNotes;
+                }
+                const notesDisplay = notesText
+                    ? '<div class="candidate-detail-value essay-clamp" title="' + notesText + '">' + notesText + '</div>'
+                    : '<div class="candidate-detail-value text-muted">-</div>';
+                statusDetailsHtml =
+                    '<div class="candidate-selection-meta mt-3 pt-3 border-t border-slate-100">' +
+                        '<div class="candidate-interview-meta" style="gap: 12px;">' +
+                            '<div class="candidate-extra-item">' +
+                                '<div class="candidate-extra-label">Tanggal</div>' +
+                                '<div class="candidate-detail-value text-sm">' + escapeHtml(dateText) + '</div>' +
+                            '</div>' +
+                            '<div class="candidate-extra-item">' +
+                                '<div class="candidate-extra-label">Catatan</div>' +
+                                notesDisplay +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+            }
+
             const detailListHtml =
                 '<div class="candidate-details-list">' +
                     '<div class="candidate-detail-item detail-email">' +
@@ -4139,6 +4238,7 @@
                 ? interviewerDetails.map(item => item.name).join(", ")
                 : "-";
             const interviewDateCompact = formatInterviewDayDateCompact(interviewScheduleRaw);
+            const ojtDateCompact = onJobTrainingStartDate ? formatOjtDateRangeCompact(onJobTrainingStartDate, onJobTrainingEndDate) : "-";
             const interviewerAvailabilitySummary = getInterviewerAvailabilitySummary(interviewerDetails);
             const interviewerGridHtml = interviewerDetails.length
                 ? interviewerDetails.map(item => {
@@ -4180,12 +4280,33 @@
                     '</div>' +
                 '</div>' +
                 '</div>';
+
+            const ojtSectionHtml = onJobTrainingStartDate ?
+                '<div class="candidate-selection-meta mt-2">' +
+                '<div class="candidate-interview-meta">' +
+                    '<div class="candidate-extra-item candidate-extra-item-schedule" style="border-left: 3px solid #10b981;">' +
+                        '<div class="schedule-compact-header">' +
+                            '<i class="fa-solid fa-graduation-cap"></i>' +
+                            '<span>Jadwal OJT</span>' +
+                        '</div>' +
+                        '<div class="schedule-compact-date">' +
+                            escapeHtml(ojtDateCompact) +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '</div>' : '';
             const actionButtonsHtml =
                 '<div class="candidate-card-head-actions">' +
                     '<button type="button" class="candidate-inline-action action-trash internship-delete-btn" title="Pindahkan ke Sampah" aria-label="Pindahkan kandidat ' + name + ' ke sampah">' +
                         '<i class="fa-solid fa-trash-can"></i>' +
                     '</button>' +
                 '</div>';
+
+            // Combine sections
+            let bodyContent = detailListHtml;
+            if (statusDetailsHtml) {
+                bodyContent += statusDetailsHtml;
+            }
 
             const gridHtml =
                 '<div class="candidate-item" data-name="' + name + '" data-position="' + position + '" data-email="' + emailValue + '" data-campus="' + campusValue + '" data-avatar="' + avatarAttr + '" data-status-label="' + escapeHtml(statusLabel) + '" data-talent-id="' + talentId + '" data-status="' + currentStatus + '" data-created="' + createdSortValue + '" data-due-date="' + escapeHtml(dueDateInputValue) + '" data-interview-status="' + interviewStatus + '" data-interviewer-availability="' + interviewerAvailabilitySummary + '" tabindex="0" role="link" aria-label="Buka detail kandidat ' + name + '">' +
@@ -4199,10 +4320,10 @@
                                 '</div>' +
                             '</div>' +
                             actionButtonsHtml +
-                            interviewSectionHtml +
+                            (statusDetailsHtml ? '' : (interviewSectionHtml + ojtSectionHtml)) +
                         '</div>' +
                         '<div class="candidate-card-body">' +
-                            detailListHtml +
+                            bodyContent +
                         '</div>' +
                     '</div>' +
                 '</div>';
@@ -4224,7 +4345,7 @@
                                         '<i class="fa-solid fa-trash-can"></i>' +
                                     '</button>' +
                                 '</div>' +
-                                interviewSectionHtml +
+                                (statusDetailsHtml ? statusDetailsHtml : (interviewSectionHtml + ojtSectionHtml)) +
                                 detailListHtml +
                             '</div>' +
                         '</div>' +
@@ -4317,7 +4438,14 @@
                         ? data.interviewers.filter(Boolean)
                         : [];
                     const interviewerIds = interviewers;
-                    const interviewScheduleRaw = data.interview_schedule || "";
+                    const interviewScheduleRaw = recruitment.interview_schedule || recruitment.due_date || data.interview_schedule || "";
+
+                    const finalDecisionAt = recruitment.final_decision_at || null;
+                    const rejectionReason = recruitment.rejection_reason || "";
+                    const rejectionNotes = recruitment.rejection_notes || "";
+                    const withdrawnNotes = recruitment.withdrawn_notes || "";
+                    const onJobTrainingStartDate = recruitment.on_job_training_start_date || null;
+                    const onJobTrainingEndDate = recruitment.on_job_training_end_date || null;
 
                     appendCandidateToUI({
                         name,
@@ -4332,7 +4460,13 @@
                         dueDateInputValue,
                         interviewScheduleRaw,
                         interviewerIds,
-                        createdSortValue
+                        createdSortValue,
+                        finalDecisionAt,
+                        rejectionReason,
+                        rejectionNotes,
+                        withdrawnNotes,
+                        onJobTrainingStartDate,
+                        onJobTrainingEndDate
                     });
                     found += 1;
                 });

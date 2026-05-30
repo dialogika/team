@@ -151,7 +151,13 @@
         .status-On-job-training {
             background: #ecfdf5;
             color: #047857;
-            border-color: #6ee7b7;
+            border-color: #86efac;
+        }
+
+        .status-withdrawn {
+            background: #fff7ed;
+            color: #c2410c;
+            border-color: #fdba74;
         }
 
         .decision-accepted {
@@ -1876,6 +1882,11 @@
                                     <div class="small text-muted">Pilih alasan penolakan dan tambahkan keterangan
                                         pendukung.</div>
                                 </button>
+                                <button type="button" class="decision-toggle-btn" data-decision-action="withdrawn"
+                                    id="decisionWithdrawnToggle">
+                                    <div class="fw-bold mb-1">Mengundurkan Diri</div>
+                                    <div class="small text-muted">Tandai kandidat mengundurkan diri dan tambahkan keterangan.</div>
+                                </button>
                             </div>
                         </div>
 
@@ -1945,6 +1956,16 @@
                                             <input type="text" class="form-control" id="on_job_trainingStartInput"
                                                 placeholder="Pilih tanggal On Job Training">
                                             <div class="invalid-feedback">Tanggal mulai On Job Training wajib diisi.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="modal-field-shell is-highlight">
+                                            <label for="on_job_trainingEndInput"
+                                                class="form-label form-label-soft">Tanggal Selesai</label>
+                                            <input type="text" class="form-control" id="on_job_trainingEndInput"
+                                                placeholder="Pilih tanggal selesai On Job Training">
+                                            <div class="invalid-feedback">Tanggal selesai On Job Training wajib diisi.
                                             </div>
                                         </div>
                                     </div>
@@ -2130,6 +2151,26 @@
                             </div>
                         </div>
 
+                        <div class="decision-section" id="decisionWithdrawnSection">
+                            <div class="modal-section-card">
+                                <div class="modal-section-header">
+                                    <div>
+                                        <h6 class="modal-section-title">Detail Pengunduran Diri</h6>
+                                    </div>
+                                    <div class="modal-section-icon"><i class="fa-solid fa-sign-out-alt"></i></div>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <div class="modal-field-shell">
+                                            <label for="withdrawnNotesInput" class="form-label form-label-soft">Keterangan Pengunduran Diri</label>
+                                            <textarea class="form-control" id="withdrawnNotesInput" rows="4" maxlength="500" placeholder="Tuliskan keterangan mengenai pengunduran diri kandidat..."></textarea>
+                                            <div class="text-counter"><span id="withdrawnNotesCounter">0</span>/500</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="status-empty-note mt-3" id="decisionStatusHint">
                             Status kandidat diverifikasi kembali secara real-time sebelum keputusan interview disimpan.
                         </div>
@@ -2226,7 +2267,8 @@
             { value: "interview", label: "Interview", caption: "", badgeClass: "status-interview" },
             { value: "on_job_training", label: "On Job Training", caption: "", badgeClass: "status-On-job-training" },
             { value: "accepted", label: "Accepted", caption: "", badgeClass: "status-accepted" },
-            { value: "rejected", label: "Rejected", caption: "", badgeClass: "decision-rejected" }
+            { value: "rejected", label: "Rejected", caption: "", badgeClass: "decision-rejected" },
+            { value: "withdrawn", label: "Mengundurkan Diri", caption: "", badgeClass: "status-withdrawn" }
         ];
 
         const app = initializeApp(firebaseConfig);
@@ -2670,6 +2712,7 @@
             if (raw === "accepted" || raw === "accept" || raw === "decision") return "accepted";
             if (raw === "rejected" || raw === "reject") return "rejected";
             if (raw === "on_job_training") return "on_job_training";
+            if (raw === "withdrawn" || raw === "mengundurkan_diri" || raw === "mengundurkan diri") return "withdrawn";
             return "screening";
         }
 
@@ -2677,6 +2720,7 @@
             const raw = (value || "").toString().trim().toLowerCase();
             if (raw === "accepted" || raw === "accept") return "accepted";
             if (raw === "rejected" || raw === "reject") return "rejected";
+            if (raw === "withdrawn" || raw === "mengundurkan_diri" || raw === "mengundurkan diri") return "withdrawn";
             return "";
         }
 
@@ -2917,6 +2961,11 @@
             const parsed = parseDateValue(inputEl ? inputEl.value : "");
             return parsed || null;
         }
+        function geton_job_trainingEndDateFromInput() {
+            const inputEl = document.getElementById("on_job_trainingEndInput");
+            const parsed = parseDateValue(inputEl ? inputEl.value : "");
+            return parsed || null;
+        }
 
         function getInterviewScheduleValidationState() {
             const dateInput = document.getElementById("interviewDateTimeInput");
@@ -2983,6 +3032,12 @@
                 if (status === "rejected") {
                     if (step.value === "rejected") {
                         classes += " is-active is-rejected";
+                    } else if (step.value === "screening" || step.value === "interview") {
+                        classes += " is-complete";
+                    }
+                } else if (status === "withdrawn") {
+                    if (step.value === "withdrawn") {
+                        classes += " is-active";
                     } else if (step.value === "screening" || step.value === "interview") {
                         classes += " is-complete";
                     }
@@ -3074,6 +3129,9 @@
             }
             if (normalized === "rejected") {
                 return '<span class="decision-badge decision-rejected">Tidak Diterima</span>';
+            }
+            if (normalized === "withdrawn") {
+                return '<span class="decision-badge decision-withdrawn">Mengundurkan Diri</span>';
             }
             return "";
         }
@@ -3207,8 +3265,9 @@
             const finalDecisionAt = recruitment.final_decision_at || null;
             const interviewerIds = Array.isArray(data.interviewers) ? data.interviewers : [];
             const history = Array.isArray(recruitment.history) ? recruitment.history.slice() : [];
-            const displayStatus = finalDecision === "rejected" ? "rejected" : currentStatus;
+            const displayStatus = finalDecision === "rejected" ? "rejected" : currentStatus === "withdrawn" ? "withdrawn" : currentStatus;
             const on_job_trainingStartDate = recruitment.on_job_training_start_date || data.on_job_training_start_date || null;
+            const on_job_trainingEndDate = recruitment.on_job_training_end_date || data.on_job_training_end_date || null;
             const on_job_trainingMode = normalizeInterviewMode(recruitment.on_job_training_mode || data.on_job_training_mode || "offline");
             const on_job_trainingMeetingLink = recruitment.on_job_training_meeting_link || data.on_job_training_meeting_link || "";
             const on_job_trainingLocation = recruitment.on_job_training_location || data.on_job_training_location || on_job_training_LOCATION_URL;
@@ -3216,6 +3275,7 @@
             const teamId = recruitment.team_id || data.team_id || "";
             const rejectionReason = recruitment.rejection_reason || "";
             const rejectionNotes = recruitment.rejection_notes || "";
+            const withdrawnNotes = recruitment.withdrawn_notes || "";
             const screeningHistoryEntry = history
                 .slice()
                 .sort((a, b) => (parseDateValue(b.date)?.getTime() || 0) - (parseDateValue(a.date)?.getTime() || 0))
@@ -3274,6 +3334,7 @@
                 screeningByUid,
                 screeningAt,
                 on_job_trainingStartDate,
+                on_job_trainingEndDate,
                 on_job_trainingMode,
                 on_job_trainingMeetingLink,
                 on_job_trainingLocation,
@@ -3281,6 +3342,7 @@
                 teamId,
                 rejectionReason,
                 rejectionNotes,
+                withdrawnNotes,
                 isInactive: inactiveRecord,
                 raw: data
             };
@@ -3482,6 +3544,9 @@
                 if (item.on_job_trainingStart) {
                     detailLines.push('<div><strong>Tanggal Mulai:</strong> ' + escapeHtml(formatDate(item.on_job_trainingStart)) + '</div>');
                 }
+                if (item.on_job_trainingEnd) {
+                    detailLines.push('<div><strong>Tanggal Selesai:</strong> ' + escapeHtml(formatDate(item.on_job_trainingEnd)) + '</div>');
+                }
                 if (item.department) {
                     detailLines.push('<div><strong>Departemen:</strong> ' + escapeHtml(item.department) + '</div>');
                 }
@@ -3590,6 +3655,7 @@
                     '<div class="action-panel-note">Button hanya aktif selama status kandidat masih berada di tahap screening dan divalidasi ulang dari backend secara real-time.</div>' +
                     '<div class="action-cta">' +
                     '<button type="button" class="btn btn-primary" id="btnOpenInterviewModal"><i class="fa-solid fa-calendar-check me-2"></i>Lanjutkan ke Proses Interview</button>' +
+                    '<button type="button" class="btn btn-danger" id="btnOpenDecisionModal"><i class="fa-solid fa-xmark me-2"></i>Tolak / Tanggapi Pengunduran Diri</button>' +
                     '</div>' +
                     '</div>';
             } else if (vm.displayStatus === "interview") {
@@ -3600,6 +3666,7 @@
                     '<div class="action-cta">' +
                     '<button type="button" class="btn btn-outline-primary" id="btnEditInterviewSchedule"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Jadwal</button>' +
                     '<button type="button" class="btn btn-success" id="btnOpenon_job_trainingModal"><i class="fa-solid fa-clipboard-check me-2"></i>Jadwalkan On Job Training</button>' +
+                    '<button type="button" class="btn btn-danger" id="btnOpenDecisionModal"><i class="fa-solid fa-xmark me-2"></i>Tolak/Pengunduran Diri</button>' +
                     '</div>' +
                     '</div>';
             } else if (vm.displayStatus === "accepted") {
@@ -3617,6 +3684,9 @@
             } else if (vm.displayStatus === "rejected") {
                 actionHtml =
                     '<div class="status-empty-note">Kandidat telah ditandai rejected dan tidak memiliki aksi lanjutan pada halaman ini.</div>';
+            } else if (vm.displayStatus === "withdrawn") {
+                actionHtml =
+                    '<div class="status-empty-note">Kandidat telah ditandai mengundurkan diri dan tidak memiliki aksi lanjutan pada halaman ini.</div>';
             }
             detailRoot.innerHTML =
                 '<div class="section-stack">' +
@@ -3974,6 +4044,12 @@
             } else {
                 on_job_trainingPicker.set("minDate", minTomorrow);
             }
+            flatpickr("#on_job_trainingEndInput", {
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d/m/Y",
+                minDate: minTomorrow
+            });
         }
 
         function setWhatsappValidation(message, tone) {
@@ -4360,7 +4436,11 @@
         }
 
         function buildon_job_trainingWhatsappMessage(scheduleDate) {
-            const dateText = formatInterviewDateForMessage(scheduleDate);
+            const startDate = geton_job_trainingStartDateFromInput();
+            const endDate = geton_job_trainingEndDateFromInput();
+            const dateText = startDate && endDate
+                ? `${formatDate(startDate)} - ${formatDate(endDate)}`
+                : formatInterviewDateForMessage(scheduleDate);
             const timeText = formatInterviewTimeForMessage(scheduleDate);
             const modeSelect = document.getElementById("on_job_trainingModeSelect");
             const meetingLinkInput = document.getElementById("on_job_trainingMeetingLinkInput");
@@ -4472,11 +4552,12 @@
             }
             if (activeDecisionAction === "accepted" && decisionModalContext === "on_job_training") {
                 const startDate = geton_job_trainingStartDateFromInput();
+                const endDate = geton_job_trainingEndDateFromInput();
                 const timeValue = document.getElementById("on_job_trainingTimeInput") ? document.getElementById("on_job_trainingTimeInput").value : "";
                 const scheduleState = getonJobTrainingScheduleState();
                 const onJobTrainingMessage = document.getElementById("on_job_trainingWhatsappText") ? (document.getElementById("on_job_trainingWhatsappText").value || "").trim() : "";
                 submitButton.textContent = "Submit On Job Training";
-                submitButton.disabled = !startDate || !timeValue || !scheduleState.isMeetingLinkValid || !scheduleState.isLocationValid || !on_job_trainingWhatsappConfirmedAt || !onJobTrainingMessage;
+                submitButton.disabled = !startDate || !endDate || endDate.getTime() < startDate.getTime() || !timeValue || !scheduleState.isMeetingLinkValid || !scheduleState.isLocationValid || !on_job_trainingWhatsappConfirmedAt || !onJobTrainingMessage;
                 return;
             }
             if (activeDecisionAction === "rejected") {
@@ -4484,6 +4565,11 @@
                 const rejectionMessage = document.getElementById("rejectionWhatsappText") ? (document.getElementById("rejectionWhatsappText").value || "").trim() : "";
                 submitButton.disabled = !rejectionReason || !rejectionWhatsappPayload || !rejectionWhatsappConfirmedAt || !rejectionMessage;
                 submitButton.textContent = "Submit Penolakan";
+                return;
+            }
+            if (activeDecisionAction === "withdrawn") {
+                submitButton.textContent = "Submit Pengunduran Diri";
+                submitButton.disabled = false;
                 return;
             }
             const startDate = on_job_trainingPicker && on_job_trainingPicker.selectedDates ? on_job_trainingPicker.selectedDates[0] : null;
@@ -4496,10 +4582,12 @@
 
         function geton_job_trainingSetupSignature() {
             const startDate = geton_job_trainingStartDateFromInput();
+            const endDate = geton_job_trainingEndDateFromInput();
             const timeValue = document.getElementById("on_job_trainingTimeInput") ? document.getElementById("on_job_trainingTimeInput").value : "";
             const scheduleState = getonJobTrainingScheduleState();
             const startIso = startDate ? new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()).toISOString().slice(0, 10) : "";
-            return [startIso, timeValue || "", scheduleState.mode || "", scheduleState.meetingLink || "", scheduleState.location || ""].join("|");
+            const endIso = endDate ? new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()).toISOString().slice(0, 10) : "";
+            return [startIso, endIso, timeValue || "", scheduleState.mode || "", scheduleState.meetingLink || "", scheduleState.location || ""].join("|");
         }
 
         function markon_job_trainingWhatsappPending(options) {
@@ -4526,11 +4614,13 @@
         function prepareon_job_trainingWhatsappPreview() {
             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
             const startDate = geton_job_trainingStartDateFromInput();
+            const endDate = geton_job_trainingEndDateFromInput();
             const timeValue = document.getElementById("on_job_trainingTimeInput").value;
             const scheduleState = getonJobTrainingScheduleState();
             const on_job_trainingDateTime = combineDateAndTime(startDate, timeValue);
 
             document.getElementById("on_job_trainingStartInput").classList.toggle("is-invalid", !startDate);
+            document.getElementById("on_job_trainingEndInput").classList.toggle("is-invalid", !endDate || (startDate && endDate && endDate.getTime() < startDate.getTime()));
             document.getElementById("on_job_trainingTimeInput").classList.toggle("is-invalid", !timeValue);
             const meetingLinkInput = document.getElementById("on_job_trainingMeetingLinkInput");
             const locationInput = document.getElementById("on_job_trainingLocationInput");
@@ -4541,7 +4631,7 @@
                 seton_job_trainingWhatsappValidation("Data kandidat tidak tersedia.", "danger");
                 return null;
             }
-            if (!startDate || !timeValue || !on_job_trainingDateTime || !scheduleState.isMeetingLinkValid || !scheduleState.isLocationValid) {
+            if (!startDate || !endDate || endDate.getTime() < startDate.getTime() || !timeValue || !on_job_trainingDateTime || !scheduleState.isMeetingLinkValid || !scheduleState.isLocationValid) {
                 seton_job_trainingWhatsappValidation("Lengkapi tanggal, waktu, mode, serta detail online/offline On Job Training sebelum menyiapkan pesan WhatsApp.", "warning");
                 return null;
             }
@@ -4902,6 +4992,7 @@
             if (form) form.classList.remove("was-validated");
             document.querySelectorAll(".decision-toggle-btn").forEach((button) => {
                 button.classList.remove("is-active");
+                button.style.display = "block";
             });
             document.querySelectorAll(".decision-section").forEach((section) => {
                 section.classList.remove("is-active");
@@ -4911,6 +5002,11 @@
                 on_job_trainingPicker.clear();
             }
             document.getElementById("on_job_trainingStartInput").classList.remove("is-invalid");
+            const onJobTrainingEndInput = document.getElementById("on_job_trainingEndInput");
+            if (onJobTrainingEndInput) {
+                onJobTrainingEndInput.classList.remove("is-invalid");
+                onJobTrainingEndInput.value = vm && vm.on_job_trainingEndDate ? formatDate(vm.on_job_trainingEndDate) : "";
+            }
             document.getElementById("on_job_trainingTimeInput").value = vm && vm.on_job_trainingStartDate ? formatDateTimeLocalInputValue(vm.on_job_trainingStartDate).slice(11, 16) : "14:00";
             document.getElementById("on_job_trainingTimeInput").classList.remove("is-invalid");
             const onJobTrainingModeSelect = document.getElementById("on_job_trainingModeSelect");
@@ -4930,6 +5026,7 @@
             document.getElementById("rejectionNotesInput").value = vm ? vm.rejectionNotes || "" : "";
             document.getElementById("rejectionReasonSelect").classList.remove("is-invalid");
             document.getElementById("rejectionNotesInput").classList.remove("is-invalid");
+            document.getElementById("withdrawnNotesInput").value = "";
             const acceptedWhatsappText = document.getElementById("acceptedWhatsappText");
             if (acceptedWhatsappText) acceptedWhatsappText.value = "";
             document.getElementById("on_job_trainingWhatsappText").value = "";
@@ -4942,6 +5039,7 @@
             markRejectionWhatsappPending({ silent: true });
             setRejectionWhatsappValidation("", "");
             updateCounter("rejectionNotesInput", "rejectionNotesCounter");
+            updateCounter("withdrawnNotesInput", "withdrawnNotesCounter");
             syncDecisionSubmitState();
         }
 
@@ -4998,11 +5096,16 @@
             });
             document.getElementById("decisionAcceptSection").classList.toggle("is-active", action === "accepted");
             document.getElementById("decisionRejectSection").classList.toggle("is-active", action === "rejected");
-            document.getElementById("decisionStatusHint").textContent = action === "accepted"
-                ? (decisionModalContext === "on_job_training"
+            document.getElementById("decisionWithdrawnSection").classList.toggle("is-active", action === "withdrawn");
+            if (action === "accepted") {
+                document.getElementById("decisionStatusHint").textContent = decisionModalContext === "on_job_training"
                     ? "Lengkapi pengaturan On Job Training, kirim undangan WhatsApp On Job Training, lalu submit."
-                    : "Saat kandidat diterima, recruiter perlu menyiapkan dan mengonfirmasi pengiriman Acceptance Letter WhatsApp sebelum submit.")
-                : "Saat kandidat ditolak, recruiter perlu menyiapkan dan mengonfirmasi pengiriman WhatsApp penolakan sebelum submit.";
+                    : "Saat kandidat diterima, recruiter perlu menyiapkan dan mengonfirmasi pengiriman Acceptance Letter WhatsApp sebelum submit.";
+            } else if (action === "rejected") {
+                document.getElementById("decisionStatusHint").textContent = "Saat kandidat ditolak, recruiter perlu menyiapkan dan mengonfirmasi pengiriman WhatsApp penolakan sebelum submit.";
+            } else if (action === "withdrawn") {
+                document.getElementById("decisionStatusHint").textContent = "Isi keterangan pengunduran diri lalu submit.";
+            }
             if (action === "accepted" && decisionModalContext === "interview") {
                 if (!acceptedWhatsappPayload) {
                     prepareAcceptedWhatsappPreview();
@@ -5025,15 +5128,26 @@
             syncDecisionSubmitState();
         }
 
-        async function openDecisionModal() {
+        async function openDecisionModal(isRejectionOnly = false) {
             if (!(await ensureCandidateActiveForProgress("open_decision_modal"))) return;
             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
-            if (!vm || vm.displayStatus !== "on_job_training") {
-                showWarning("Keputusan final hanya dapat diproses saat status kandidat berada pada tahap On Job Training.");
+            if (!vm || !(vm.displayStatus === "screening" || vm.displayStatus === "interview" || vm.displayStatus === "on_job_training")) {
+                showWarning("Keputusan (reject/withdraw) hanya dapat diproses saat status kandidat berada pada tahap Screening, Interview, atau On Job Training.");
                 return;
             }
             decisionModalContext = "interview";
             resetDecisionModal();
+
+            // Handle rejection-only mode
+            const acceptToggle = document.getElementById("decisionAcceptToggle");
+            if (acceptToggle) {
+                if (isRejectionOnly) {
+                    acceptToggle.style.display = "none";
+                } else {
+                    acceptToggle.style.display = "block";
+                }
+            }
+
             syncDecisionModalContextUi();
             decisionModal.show();
         }
@@ -5254,27 +5368,90 @@
             form.classList.add("was-validated");
 
             if (!activeDecisionAction) {
-                showWarning("Pilih aksi Terima atau Tolak terlebih dahulu.");
+                showWarning("Pilih aksi Terima, Tolak, atau Mengundurkan Diri terlebih dahulu.");
                 return;
             }
 
             const latestVm = await getLatestCandidateSnapshot(currentCandidate.id);
-            const expectedStatus = decisionModalContext === "on_job_training" ? "interview" : "on_job_training";
-            if (latestVm.displayStatus !== expectedStatus) {
-                decisionModal.hide();
-                renderCandidateDetail();
-                showWarning(
-                    decisionModalContext === "on_job_training"
-                        ? "Status kandidat berubah. Pengaturan On Job Training hanya dapat dilakukan saat kandidat berada di tahap interview."
-                        : "Status kandidat berubah. Proses keputusan final hanya bisa dilakukan saat kandidat berada di tahap On Job Training."
-                );
-                return;
+            
+            if (activeDecisionAction === "accepted") {
+                const expectedStatus = decisionModalContext === "on_job_training" ? "interview" : "on_job_training";
+                if (latestVm.displayStatus !== expectedStatus) {
+                    decisionModal.hide();
+                    renderCandidateDetail();
+                    showWarning(
+                        decisionModalContext === "on_job_training"
+                            ? "Status kandidat berubah. Pengaturan On Job Training hanya dapat dilakukan saat kandidat berada di tahap interview."
+                            : "Status kandidat berubah. Proses keputusan final hanya bisa dilakukan saat kandidat berada di tahap On Job Training."
+                    );
+                    return;
+                }
+            } else if (activeDecisionAction === "rejected" || activeDecisionAction === "withdrawn") {
+                const allowedStatuses = ["screening", "interview", "on_job_training"];
+                if (!allowedStatuses.includes(latestVm.displayStatus)) {
+                    decisionModal.hide();
+                    renderCandidateDetail();
+                    showWarning("Status kandidat berubah. Penolakan/Pengunduran Diri hanya dapat dilakukan saat status kandidat berada pada tahap Screening, Interview, atau On Job Training.");
+                    return;
+                }
             }
 
             const actor = getActor();
             const nowIso = new Date().toISOString();
 
             try {
+                if (activeDecisionAction === "withdrawn") {
+                    const withdrawnNotes = (document.getElementById("withdrawnNotesInput").value || "").trim();
+                    
+                    const auditReason = latestVm.displayStatus === "screening" ? "Kandidat mengundurkan diri saat screening" : 
+                                        latestVm.displayStatus === "interview" ? "Kandidat mengundurkan diri saat interview" : 
+                                        "Kandidat mengundurkan diri saat On Job Training";
+                    const auditEntry = {
+                        ...getAuditBase(actor, latestVm.displayStatus, "withdrawn", auditReason, withdrawnNotes),
+                        timestamp: nowIso,
+                        withdrawnNotes
+                    };
+                    const firestorePayload = {
+                        "recruitment_status.current": "withdrawn",
+                        "recruitment_status.final_decision": "withdrawn",
+                        "recruitment_status.final_decision_at": nowIso,
+                        "recruitment_status.rejection_reason": null,
+                        "recruitment_status.rejection_notes": null,
+                        "recruitment_status.withdrawn_notes": withdrawnNotes,
+                        "recruitment_status.history": arrayUnion({
+                            status: "withdrawn",
+                            previousStatus: latestVm.displayStatus,
+                            date: nowIso,
+                            note: withdrawnNotes,
+                            by: actor.name
+                        }),
+                        "audit_trail": arrayUnion(auditEntry),
+                        logs: arrayUnion({
+                            action: "team_status_change",
+                            decision: "withdrawn",
+                            from: latestVm.displayStatus,
+                            to: "withdrawn",
+                            by: actor.name,
+                            uid: actor.id,
+                            date: nowIso,
+                            withdrawnNotes
+                        })
+                    };
+
+                    await persistCandidateUpdate(currentCandidate.id, firestorePayload, "POST", {
+                        action: "withdraw-candidate",
+                        decision: "withdrawn",
+                        candidateId: currentCandidate.id,
+                        statusFrom: latestVm.displayStatus,
+                        statusTo: "withdrawn",
+                        withdrawnNotes,
+                        actor
+                    });
+                    decisionModal.hide();
+                    showSuccess("Kandidat berhasil ditandai mengundurkan diri.");
+                    return;
+                }
+                
                 if (activeDecisionAction === "accepted" && decisionModalContext === "interview") {
                     const acceptedMessage = normalizeWhatsappMessage((document.getElementById("acceptedWhatsappText").value || "").trim());
                     if (!acceptedWhatsappPayload || !acceptedWhatsappConfirmedAt || !acceptedMessage) {
@@ -5355,19 +5532,21 @@
 
                 if (activeDecisionAction === "accepted" && decisionModalContext === "on_job_training") {
                     const startDate = geton_job_trainingStartDateFromInput();
+                    const endDate = geton_job_trainingEndDateFromInput();
                     const timeValue = document.getElementById("on_job_trainingTimeInput").value;
                     const scheduleState = getonJobTrainingScheduleState();
                     const on_job_trainingMessage = normalizeWhatsappMessage((document.getElementById("on_job_trainingWhatsappText").value || "").trim());
                     const on_job_trainingDateTime = combineDateAndTime(startDate, timeValue);
 
                     document.getElementById("on_job_trainingStartInput").classList.toggle("is-invalid", !startDate);
+                    document.getElementById("on_job_trainingEndInput").classList.toggle("is-invalid", !endDate || (startDate && endDate && endDate.getTime() < startDate.getTime()));
                     document.getElementById("on_job_trainingTimeInput").classList.toggle("is-invalid", !timeValue);
                     const meetingLinkInput = document.getElementById("on_job_trainingMeetingLinkInput");
                     const locationInput = document.getElementById("on_job_trainingLocationInput");
                     if (meetingLinkInput) meetingLinkInput.classList.toggle("is-invalid", !scheduleState.isMeetingLinkValid);
                     if (locationInput) locationInput.classList.toggle("is-invalid", !scheduleState.isLocationValid);
 
-                    if (!startDate || !timeValue || !on_job_trainingDateTime || !scheduleState.isMeetingLinkValid || !scheduleState.isLocationValid) {
+                    if (!startDate || !endDate || endDate.getTime() < startDate.getTime() || !timeValue || !on_job_trainingDateTime || !scheduleState.isMeetingLinkValid || !scheduleState.isLocationValid) {
                         return;
                     }
                     if (!on_job_trainingWhatsappPayload || !on_job_trainingWhatsappConfirmedAt || !on_job_trainingMessage) {
@@ -5385,6 +5564,7 @@
                         ...getAuditBase(actor, "interview", "on_job_training", "Lanjutkan kandidat ke tahap on_job_training", ""),
                         timestamp: nowIso,
                         on_job_trainingStart: on_job_trainingDateTime.toISOString(),
+                        on_job_trainingEnd: endDate.toISOString(),
                         on_job_trainingMode: scheduleState.mode,
                         on_job_trainingMeetingLink: scheduleState.meetingLink || "",
                         on_job_trainingLocation: scheduleState.mode === "offline" ? (scheduleState.location || on_job_training_LOCATION_URL) : "",
@@ -5398,6 +5578,7 @@
                         "recruitment_status.final_decision": null,
                         "recruitment_status.final_decision_at": nowIso,
                         "recruitment_status.on_job_training_start_date": on_job_trainingDateTime.toISOString(),
+                        "recruitment_status.on_job_training_end_date": endDate.toISOString(),
                         "recruitment_status.on_job_training_mode": scheduleState.mode,
                         "recruitment_status.on_job_training_meeting_link": scheduleState.mode === "online" ? (scheduleState.meetingLink || "") : "",
                         "recruitment_status.on_job_training_location": scheduleState.mode === "offline" ? (scheduleState.location || on_job_training_LOCATION_URL) : "",
@@ -5416,6 +5597,7 @@
                             previousStatus: "interview",
                             date: nowIso,
                             on_job_trainingStart: on_job_trainingDateTime.toISOString(),
+                            on_job_trainingEnd: endDate.toISOString(),
                             on_job_trainingMode: scheduleState.mode,
                             on_job_trainingMeetingLink: scheduleState.mode === "online" ? (scheduleState.meetingLink || "") : "",
                             on_job_trainingLocation: scheduleState.mode === "offline" ? (scheduleState.location || on_job_training_LOCATION_URL) : "",
@@ -5433,6 +5615,7 @@
                             date: nowIso,
                             department: departmentName,
                             on_job_trainingStart: on_job_trainingDateTime.toISOString(),
+                            on_job_trainingEnd: endDate.toISOString(),
                             on_job_trainingMode: scheduleState.mode,
                             on_job_trainingMeetingLink: scheduleState.mode === "online" ? (scheduleState.meetingLink || "") : "",
                             on_job_trainingLocation: scheduleState.mode === "offline" ? (scheduleState.location || on_job_training_LOCATION_URL) : ""
@@ -5458,6 +5641,7 @@
                         statusFrom: "interview",
                         statusTo: "on_job_training",
                         on_job_trainingStart: on_job_trainingDateTime.toISOString(),
+                        on_job_trainingEnd: endDate.toISOString(),
                         on_job_trainingMode: scheduleState.mode,
                         on_job_trainingMeetingLink: scheduleState.mode === "online" ? (scheduleState.meetingLink || "") : "",
                         on_job_trainingLocation: scheduleState.mode === "offline" ? (scheduleState.location || on_job_training_LOCATION_URL) : "",
@@ -5498,8 +5682,11 @@
                 rejectionWhatsappPayload.message = rejectionMessage;
                 rejectionWhatsappPayload.deepLink = buildWhatsAppDeepLink(rejectionWhatsappPayload.phoneNumber, rejectionMessage);
 
+                const auditReason = latestVm.displayStatus === "screening" ? "Kandidat ditolak saat screening" : 
+                                    latestVm.displayStatus === "interview" ? "Kandidat ditolak saat interview" : 
+                                    "Kandidat ditolak setelah On Job Training";
                 const auditEntry = {
-                    ...getAuditBase(actor, "on_job_training", "rejected", "Kandidat ditolak setelah On Job Training", rejectionNotes),
+                    ...getAuditBase(actor, latestVm.displayStatus, "rejected", auditReason, rejectionNotes),
                     timestamp: nowIso,
                     rejectionReason,
                     rejectionNotes,
@@ -5521,7 +5708,7 @@
                     "recruitment_status.rejection_whatsapp_message_preview": rejectionMessage,
                     "recruitment_status.history": arrayUnion({
                         status: "rejected",
-                        previousStatus: "on_job_training",
+                        previousStatus: latestVm.displayStatus,
                         date: nowIso,
                         reason: rejectionReason,
                         note: rejectionNotes,
@@ -5529,9 +5716,9 @@
                     }),
                     "audit_trail": arrayUnion(auditEntry),
                     logs: arrayUnion({
-                        action: "internship_decision",
+                        action: "team_status_change",
                         decision: "rejected",
-                        from: "on_job_training",
+                        from: latestVm.displayStatus,
                         to: "rejected",
                         by: actor.name,
                         uid: actor.id,
@@ -5557,7 +5744,7 @@
                     action: "interview-decision",
                     decision: "rejected",
                     candidateId: currentCandidate.id,
-                    statusFrom: "on_job_training",
+                    statusFrom: latestVm.displayStatus,
                     statusTo: "rejected",
                     rejectionReason,
                     rejectionNotes,
@@ -5587,7 +5774,8 @@
                 openInterviewBtn.addEventListener("click", () => openInterviewModal("schedule"));
             }
             if (openDecisionBtn) {
-                openDecisionBtn.addEventListener("click", () => openDecisionModal(vm));
+                const isRejectionOnly = (vm.displayStatus === "screening" || vm.displayStatus === "interview");
+                openDecisionBtn.addEventListener("click", () => openDecisionModal(isRejectionOnly));
             }
             if (editInterviewBtn) {
                 editInterviewBtn.addEventListener("click", async () => {
@@ -5628,6 +5816,7 @@
             refreshInterviewerDropdown([]);
             updateInterviewerResultsMeta();
             updateCounter("rejectionNotesInput", "rejectionNotesCounter");
+            updateCounter("withdrawnNotesInput", "withdrawnNotesCounter");
             synconJobTrainingModeFields();
 
             document.getElementById("interviewForm").addEventListener("submit", submitInterviewForm);
@@ -5696,6 +5885,11 @@
                 document.getElementById("rejectionNotesInput").classList.remove("is-invalid");
                 syncDecisionSubmitState();
             });
+            document.getElementById("withdrawnNotesInput").addEventListener("input", () => {
+                updateCounter("withdrawnNotesInput", "withdrawnNotesCounter");
+                document.getElementById("withdrawnNotesInput").classList.remove("is-invalid");
+                syncDecisionSubmitState();
+            });
             document.getElementById("rejectionReasonSelect").addEventListener("change", () => {
                 document.getElementById("rejectionReasonSelect").classList.remove("is-invalid");
                 syncDecisionSubmitState();
@@ -5730,6 +5924,13 @@
             });
             document.getElementById("on_job_trainingStartInput").addEventListener("change", () => {
                 document.getElementById("on_job_trainingStartInput").classList.remove("is-invalid");
+                if (activeDecisionAction === "accepted" && decisionModalContext === "on_job_training") {
+                    markon_job_trainingWhatsappPending({ preserveIfUnchanged: true });
+                    syncDecisionSubmitState();
+                }
+            });
+            document.getElementById("on_job_trainingEndInput").addEventListener("change", () => {
+                document.getElementById("on_job_trainingEndInput").classList.remove("is-invalid");
                 if (activeDecisionAction === "accepted" && decisionModalContext === "on_job_training") {
                     markon_job_trainingWhatsappPending({ preserveIfUnchanged: true });
                     syncDecisionSubmitState();
