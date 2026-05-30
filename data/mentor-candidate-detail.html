@@ -3522,11 +3522,12 @@
             } else if (vm.displayStatus === "interview") {
                 actionHtml =
                     '<div class="action-panel">' +
-                        '<div class="action-panel-title">Lanjutkan ke Micro Teaching</div>' +
-                        '<div class="action-panel-note">Saat status berada di tahap interview, recruiter perlu menjadwalkan micro teaching sebagai tahapan lanjutan.</div>' +
+                        '<div class="action-panel-title">Proses Interview</div>' +
+                        '<div class="action-panel-note">Saat status berada di tahap interview, recruiter dapat menjadwalkan micro teaching atau menolak kandidat.</div>' +
                         '<div class="action-cta">' +
                             '<button type="button" class="btn btn-outline-primary" id="btnEditInterviewSchedule"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Jadwal</button>' +
                             '<button type="button" class="btn btn-success" id="btnOpenmicro_teachingModal"><i class="fa-solid fa-clipboard-check me-2"></i>Jadwalkan Micro Teaching</button>' +
+                            '<button type="button" class="btn btn-danger" id="btnOpenDecisionModal"><i class="fa-solid fa-xmark me-2"></i>Tolak Kandidat</button>' +
                         '</div>' +
                     '</div>';
             } else if (vm.displayStatus === "accepted") {
@@ -4833,6 +4834,9 @@
             document.querySelectorAll(".decision-section").forEach((section) => {
                 section.classList.remove("is-active");
             });
+            // Show "Pilih Keputusan" section by default
+            const modeSelector = document.getElementById("decisionModeSelectorCard");
+            if (modeSelector) modeSelector.classList.remove("d-none");
             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
             if (micro_teachingPicker) {
                 micro_teachingPicker.clear();
@@ -4952,16 +4956,26 @@
             syncDecisionSubmitState();
         }
 
-        async function openDecisionModal() {
+        async function openDecisionModal(skipToReject = false) {
             if (!(await ensureCandidateActiveForProgress("open_decision_modal"))) return;
             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
-            if (!vm || vm.displayStatus !== "micro_teaching") {
-                showWarning("Keputusan final hanya dapat diproses saat status kandidat berada pada tahap micro teaching.");
+            if (!vm || !(vm.displayStatus === "interview" || vm.displayStatus === "micro_teaching")) {
+                showWarning("Keputusan hanya dapat diproses saat status kandidat berada pada tahap interview atau micro teaching.");
                 return;
             }
-            decisionModalContext = "interview";
+            decisionModalContext = vm.displayStatus === "micro_teaching" ? "interview" : "interview"; // Let's set to "interview" context to show reject options
             resetDecisionModal();
             syncDecisionModalContextUi();
+            if (skipToReject) {
+                // Hide the "Pilih Keputusan" section
+                const modeSelector = document.getElementById("decisionModeSelectorCard");
+                if (modeSelector) modeSelector.classList.add("d-none");
+                setDecisionAction("rejected");
+            } else {
+                // Show the "Pilih Keputusan" section
+                const modeSelector = document.getElementById("decisionModeSelectorCard");
+                if (modeSelector) modeSelector.classList.remove("d-none");
+            }
             decisionModal.show();
         }
 
@@ -5186,8 +5200,11 @@
             }
 
             const latestVm = await getLatestCandidateSnapshot(currentCandidate.id);
+            const isRejection = activeDecisionAction === "rejected";
             const expectedStatus = decisionModalContext === "micro_teaching" ? "interview" : "micro_teaching";
-            if (latestVm.displayStatus !== expectedStatus) {
+            
+            // For rejection, we allow both interview and micro_teaching
+            if (!isRejection && latestVm.displayStatus !== expectedStatus) {
                 decisionModal.hide();
                 renderCandidateDetail();
                 showWarning(
@@ -5195,6 +5212,14 @@
                         ? "Status kandidat berubah. Pengaturan micro_teaching hanya dapat dilakukan saat kandidat berada di tahap interview."
                         : "Status kandidat berubah. Proses keputusan final hanya bisa dilakukan saat kandidat berada di tahap micro teaching."
                 );
+                return;
+            }
+
+            // For rejection, make sure status is either interview or micro_teaching
+            if (isRejection && !(latestVm.displayStatus === "interview" || latestVm.displayStatus === "micro_teaching")) {
+                decisionModal.hide();
+                renderCandidateDetail();
+                showWarning("Status kandidat berubah. Penolakan hanya dapat dilakukan saat kandidat berada di tahap interview atau micro teaching.");
                 return;
             }
 
@@ -5425,8 +5450,13 @@
                 rejectionWhatsappPayload.message = rejectionMessage;
                 rejectionWhatsappPayload.deepLink = buildWhatsAppDeepLink(rejectionWhatsappPayload.phoneNumber, rejectionMessage);
 
+                const previousStatus = latestVm.displayStatus;
+                const auditReason = previousStatus === "interview" 
+                    ? "Kandidat ditolak setelah interview" 
+                    : "Kandidat ditolak setelah micro teaching";
+
                 const auditEntry = {
-                    ...getAuditBase(actor, "micro_teaching", "rejected", "Kandidat ditolak setelah micro teaching", rejectionNotes),
+                    ...getAuditBase(actor, previousStatus, "rejected", auditReason, rejectionNotes),
                     timestamp: nowIso,
                     rejectionReason,
                     rejectionNotes,
@@ -5448,7 +5478,7 @@
                     "recruitment_status.rejection_whatsapp_message_preview": rejectionMessage,
                     "recruitment_status.history": arrayUnion({
                         status: "rejected",
-                        previousStatus: "micro_teaching",
+                        previousStatus: previousStatus,
                         date: nowIso,
                         reason: rejectionReason,
                         note: rejectionNotes,
@@ -5456,9 +5486,9 @@
                     }),
                     "audit_trail": arrayUnion(auditEntry),
                     logs: arrayUnion({
-                        action: "internship_decision",
+                        action: "mentor_status_change",
                         decision: "rejected",
-                        from: "micro_teaching",
+                        from: previousStatus,
                         to: "rejected",
                         by: actor.name,
                         uid: actor.id,
@@ -5484,7 +5514,7 @@
                     action: "interview-decision",
                     decision: "rejected",
                     candidateId: currentCandidate.id,
-                    statusFrom: "micro_teaching",
+                    statusFrom: previousStatus,
                     statusTo: "rejected",
                     rejectionReason,
                     rejectionNotes,
@@ -5514,7 +5544,9 @@
                 openInterviewBtn.addEventListener("click", () => openInterviewModal("schedule"));
             }
             if (openDecisionBtn) {
-                openDecisionBtn.addEventListener("click", () => openDecisionModal(vm));
+                // If candidate is in interview stage, skip directly to rejection
+                const isInterviewStage = vm && vm.displayStatus === "interview";
+                openDecisionBtn.addEventListener("click", () => openDecisionModal(isInterviewStage));
             }
             if (editInterviewBtn) {
                 editInterviewBtn.addEventListener("click", async () => {
