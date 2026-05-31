@@ -3051,19 +3051,13 @@
             const dateFilter = interviewScheduleModalDateFilterInput ? interviewScheduleModalDateFilterInput.value : "";
             const sort = interviewScheduleModalSortSelect ? interviewScheduleModalSortSelect.value : "nearest";
             const statusFilter = interviewScheduleModalStatusFilterInput ? (interviewScheduleModalStatusFilterInput.value || "").toLowerCase() : "";
-            const nowTime = Date.now();
             const filtered = filterAndSortInterviewSchedules(interviewScheduleState.entries, {
                 query,
                 date: dateFilter,
                 sort: sort || "nearest"
             });
-            const upcomingOnly = filtered.filter((item) => {
-                const scheduleAt = toDateObject(item.scheduleAt || item.scheduleIso || "");
-                if (!scheduleAt) return false;
-                return scheduleAt.getTime() >= nowTime;
-            });
-            if (!statusFilter) return upcomingOnly;
-            return upcomingOnly.filter(item => ((item.scheduleStatus || "").toLowerCase() === statusFilter));
+            if (!statusFilter) return filtered;
+            return filtered.filter(item => ((item.scheduleStatus || "").toLowerCase() === statusFilter));
         }
 
         function renderInterviewScheduleModalTable() {
@@ -3413,10 +3407,18 @@
             const dateObj = toDateObject(raw);
             if (!dateObj) return "-";
             const weekday = new Intl.DateTimeFormat("id-ID", { weekday: "long" }).format(dateObj);
-            const day = String(dateObj.getDate()).padStart(2, "0");
-            const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-            const year = dateObj.getFullYear();
-            return weekday + ", " + day + "-" + month + "-" + year;
+            const dateText = new Intl.DateTimeFormat("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric"
+            }).format(dateObj);
+            const timeText = new Intl.DateTimeFormat("id-ID", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+            }).format(dateObj);
+            const normalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+            return normalizedWeekday + ", " + dateText + ", " + timeText + " WIB";
         }
 
         function formatOjtDateRangeCompact(startDate, endDate) {
