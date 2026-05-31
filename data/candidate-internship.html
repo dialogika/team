@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candidate Team</title>
+    <title>Candidate Internship</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -2171,7 +2171,7 @@
                         <div class="hero-actions d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-4">
                             <div class="hero-copy">
                                 <span class="hero-kicker"><i class="fa-solid fa-sparkles"></i> Internship Recruitment Pipeline</span>
-                                <h1 class="hero-title">Candidate Team</h1>
+                                <h1 class="hero-title">Candidate Internship</h1>
                                 <!-- <p class="hero-subtitle">Kelola seluruh kandidat internship dalam satu dashboard. Setiap kandidat sekarang mengikuti pipeline yang jelas: Screening, Interview, dan Onboarding.</p> -->
                             </div>
                             <div class="hero-action-stack d-flex flex-column align-items-stretch align-items-lg-end gap-2">
@@ -3091,19 +3091,13 @@
             const dateFilter = interviewScheduleModalDateFilterInput ? interviewScheduleModalDateFilterInput.value : "";
             const sort = interviewScheduleModalSortSelect ? interviewScheduleModalSortSelect.value : "nearest";
             const statusFilter = interviewScheduleModalStatusFilterInput ? (interviewScheduleModalStatusFilterInput.value || "").toLowerCase() : "";
-            const nowTime = Date.now();
             const filtered = filterAndSortInterviewSchedules(interviewScheduleState.entries, {
                 query,
                 date: dateFilter,
                 sort: sort || "nearest"
             });
-            const upcomingOnly = filtered.filter((item) => {
-                const scheduleAt = toDateObject(item.scheduleAt || item.scheduleIso || "");
-                if (!scheduleAt) return false;
-                return scheduleAt.getTime() >= nowTime;
-            });
-            if (!statusFilter) return upcomingOnly;
-            return upcomingOnly.filter(item => ((item.scheduleStatus || "").toLowerCase() === statusFilter));
+            if (!statusFilter) return filtered;
+            return filtered.filter(item => ((item.scheduleStatus || "").toLowerCase() === statusFilter));
         }
 
         function renderInterviewScheduleModalTable() {
@@ -3453,10 +3447,18 @@
             const dateObj = toDateObject(raw);
             if (!dateObj) return "-";
             const weekday = new Intl.DateTimeFormat("id-ID", { weekday: "long" }).format(dateObj);
-            const day = String(dateObj.getDate()).padStart(2, "0");
-            const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-            const year = dateObj.getFullYear();
-            return weekday + ", " + day + "-" + month + "-" + year;
+            const dateText = new Intl.DateTimeFormat("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric"
+            }).format(dateObj);
+            const timeText = new Intl.DateTimeFormat("id-ID", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+            }).format(dateObj);
+            const normalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+            return normalizedWeekday + ", " + dateText + ", " + timeText + " WIB";
         }
 
         function normalizeExternalUrl(value) {
