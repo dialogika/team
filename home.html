@@ -726,7 +726,10 @@
                             <td><span class="badge bg-secondary">${data.employment?.position || '-'}</span></td>
                             <td class="small text-muted">${regDate}</td>
                             <td>
-                                <button class="btn btn-sm btn-success rounded-pill px-3" onclick="approveUser('${id}')">Approve</button>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-success rounded-pill px-3" onclick="approveUser('${id}')">Approve</button>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="rejectUser('${id}')">Reject</button>
+                                </div>
                             </td>
                         `;
                         tbody.appendChild(tr);
@@ -770,6 +773,26 @@
             } catch (error) {
                 console.error("Error approving user:", error);
                 alert("Failed to approve user: " + error.message);
+            }
+        };
+
+        window.rejectUser = async (userId) => {
+            if (!confirm("Are you sure you want to reject this user? Data will be deleted.")) return;
+
+            try {
+                const pendingRef = doc(db, "pending_users", userId);
+                const pendingSnap = await getDoc(pendingRef);
+
+                if (!pendingSnap.exists()) {
+                    alert("User not found in pending list.");
+                    return;
+                }
+
+                await deleteDoc(pendingRef);
+                alert("User rejected and deleted successfully.");
+            } catch (error) {
+                console.error("Error rejecting user:", error);
+                alert("Failed to reject user: " + error.message);
             }
         };
 
