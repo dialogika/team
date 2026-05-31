@@ -516,7 +516,6 @@
         let usersState = [];
         let mentorsState = [];
         const CLASS_SOURCE_PLANNING = "class_planning";
-        const CLASS_SOURCE_AVAILABILITY = "class_availability";
         const userMultiSearchState = {
             editSupervisorUsers: "",
             editAdminUsers: "",
@@ -2918,11 +2917,6 @@
                     merged.push(c);
                     if (c.id) seenIds.add(String(c.id));
                 });
-                availabilityDocs.forEach((c) => {
-                    const key = c.id ? String(c.id) : "";
-                    if (key && seenIds.has(key)) return;
-                    merged.push(c);
-                });
                 classesState = merged;
             }
 
@@ -2940,19 +2934,11 @@
             }
 
             try {
-                const [planningSnap, availabilitySnap] = await Promise.all([
-                    getDocs(collection(db, CLASS_SOURCE_PLANNING)),
-                    getDocs(collection(db, CLASS_SOURCE_AVAILABILITY))
-                ]);
+                const planningSnap = await getDocs(collection(db, CLASS_SOURCE_PLANNING));
 
                 planningSnap.forEach((doc) => {
                     const item = mapAvailabilityDocToClass(doc, CLASS_SOURCE_PLANNING);
                     planningDocs.set(doc.id, item);
-                });
-
-                availabilitySnap.forEach((doc) => {
-                    const item = mapAvailabilityDocToClass(doc, CLASS_SOURCE_AVAILABILITY);
-                    availabilityDocs.set(doc.id, item);
                 });
 
                 _initialLoadDone = true;

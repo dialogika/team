@@ -80,6 +80,16 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                             Add Batch
                         </button>
+                        <button 
+                            type="button"
+                            class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition font-bold text-sm"
+                            :disabled="selectedClasses.length === 0"
+                            :class="{'opacity-50 cursor-not-allowed': selectedClasses.length === 0}"
+                            @click="openPlanModal()"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            Tambah ke Perencanaan
+                        </button>
                     </div>
                 </header>
 
@@ -150,7 +160,10 @@
                         <p class="text-slate-400 text-sm mb-4">Silakan tambahkan batch baru untuk memulai.</p>
                     </div>
 
-                    <div class="px-8 py-3 flex items-center text-[11px] font-black uppercase tracking-[0.2em] text-slate-400" x-show="!loading && filteredClasses.length > 0">
+                    <div class="px-4 py-3 flex items-center text-[11px] font-black uppercase tracking-[0.2em] text-slate-400" x-show="!loading && filteredClasses.length > 0">
+                        <div class="w-8 flex justify-center">
+                            <input type="checkbox" :checked="selectAll" @change="toggleSelectAll" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                        </div>
                         <div class="w-32 text-center">Available</div>
                         <div class="flex-grow ml-4">Class Details</div>
                         <div class="w-32 text-center">Type</div>
@@ -164,6 +177,9 @@
                             class="row-transition bg-white border border-slate-200 rounded-[24px] p-2 flex items-center shadow-sm hover:shadow-xl hover:border-indigo-200 group"
                             :class="(isBatchClosed(item) || item.current_joined >= item.max_seat) ? 'opacity-50 grayscale bg-slate-50' : ''"
                         >
+                            <div class="w-10 flex justify-center pl-2">
+                                <input type="checkbox" :value="item.id" x-model="selectedClasses" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" :disabled="item.is_planned">
+                            </div>
                             <div class="w-32 h-24 flex flex-col items-center justify-center rounded-[20px] transition group-hover:scale-105"
                                 :class="{
                                     'bg-emerald-50 text-emerald-600': (item.max_seat - item.current_joined) > 2 && !isBatchClosed(item),
@@ -189,6 +205,9 @@
                                 <div class="mt-1 text-[11px] font-semibold text-slate-400 flex items-center gap-1.5" x-show="item.product_name || item.product_id">
                                     <span class="uppercase tracking-[0.16em]">Product</span>
                                     <span class="mono text-[10px] text-slate-500" x-text="item.product_name || item.product_id"></span>
+                                </div>
+                                <div class="mt-2" x-show="item.is_planned">
+                                    <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-bold uppercase tracking-widest border border-indigo-100">Sudah Masuk Perencanaan</span>
                                 </div>
                             </div>
 
@@ -302,7 +321,12 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Mentor</label>
-                                        <input type="text" class="form-control" x-model="editBatchMentor">
+                                        <select class="form-select" x-model="editBatchMentor">
+                                            <option value="Unknown">Unknown (Pilih Nanti)</option>
+                                            <template x-for="m in mentors" :key="'edit-mentor-'+m.id">
+                                                <option :value="m.name" x-text="m.name"></option>
+                                            </template>
+                                        </select>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Start Date</label>
@@ -401,7 +425,12 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Mentor</label>
-                                        <input type="text" class="form-control" placeholder="Nama mentor" x-model="newBatchMentor">
+                                        <select class="form-select" x-model="newBatchMentor">
+                                            <option value="Unknown">Unknown (Pilih Nanti)</option>
+                                            <template x-for="m in mentors" :key="'new-mentor-'+m.id">
+                                                <option :value="m.name" x-text="m.name"></option>
+                                            </template>
+                                        </select>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Start Date</label>
@@ -419,6 +448,44 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
                                 <button type="button" class="btn btn-primary" @click="addBatch()">Add Batch</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan Confirmation Modal -->
+                <div class="modal fade" id="planConfirmModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Konfirmasi Perencanaan Kelas</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-info mb-4" x-show="planSummary.valid.length > 0">
+                                    <strong><span x-text="planSummary.valid.length"></span> Kelas Valid</strong> siap untuk dipindahkan ke Perencanaan Kelas.
+                                </div>
+                                <div class="alert alert-danger mb-4" x-show="planSummary.invalid.length > 0">
+                                    <strong><span x-text="planSummary.invalid.length"></span> Kelas Tidak Valid</strong> dan tidak dapat dipindahkan. Pastikan Data Mentor, Tanggal Mulai (bukan Flexible), dan Kapasitas (Max Seat) sudah terisi dengan benar.
+                                </div>
+                                <div class="max-h-60 overflow-y-auto border rounded-xl p-3">
+                                    <h6 class="font-bold text-sm mb-2 text-emerald-700" x-show="planSummary.valid.length > 0">Valid:</h6>
+                                    <ul class="list-disc pl-5 text-sm mb-3" x-show="planSummary.valid.length > 0">
+                                        <template x-for="c in planSummary.valid" :key="c.id">
+                                            <li x-text="c.name + ' (' + c.mentor_name + ')'"></li>
+                                        </template>
+                                    </ul>
+                                    <h6 class="font-bold text-sm mb-2 text-rose-700" x-show="planSummary.invalid.length > 0">Invalid:</h6>
+                                    <ul class="list-disc pl-5 text-sm" x-show="planSummary.invalid.length > 0">
+                                        <template x-for="c in planSummary.invalid" :key="c.id">
+                                            <li x-text="c.name + ' - Alasan: ' + c.reason" class="text-rose-600"></li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                <button type="button" class="btn btn-primary" :disabled="planSummary.valid.length === 0" @click="confirmPlanMove()">Pindahkan <span x-text="planSummary.valid.length"></span> Kelas</button>
                             </div>
                         </div>
                     </div>
@@ -528,8 +595,11 @@
                 editBatchLocation: "",
                 newBatchDp: 0,
                 editBatchDp: 0,
+                selectedClasses: [],
+                planSummary: { valid: [], invalid: [] },
                 classes: [],
                 products: [],
+                mentors: [],
                 async init() {
                     // Tunggu Firebase siap (polling 10x @ 500ms)
                     let attempts = 0;
@@ -562,7 +632,7 @@
                             const d = docSnap.data() || {};
                             console.log("Loaded doc:", d);
                             items.push({
-                                id: d.id || idx++,
+                                id: String(d.id || idx++),
                                 docId: docSnap.id,
                                 name: d.name || "Unnamed Class",
                                 type: d.type || "Offline",
@@ -573,18 +643,117 @@
                                 product_id: d.productId || d.product_id || null,
                                 product_name: d.productName || d.product_name || null,
                                 location: d.location || "",
-                                down_payment: Number(d.down_payment || 0)
+                                down_payment: Number(d.down_payment || 0),
+                                is_planned: d.is_planned || false
                             });
                         });
                         this.classes = items;
 
                         await this.loadProducts();
+                        await this.loadMentors();
                     } catch (e) {
                         console.error("Gagal memuat class_availability dari Firestore (Network Error/Aborted):", e);
                         this.useFallbackData();
                         console.log("Menggunakan data fallback/local karena koneksi Firestore terputus.");
                     } finally {
                         this.loading = false;
+                    }
+                },
+                
+                get selectAll() {
+                    const availableToSelect = this.filteredClasses.filter(c => !c.is_planned);
+                    return availableToSelect.length > 0 && this.selectedClasses.length === availableToSelect.length;
+                },
+                toggleSelectAll() {
+                    const availableToSelect = this.filteredClasses.filter(c => !c.is_planned);
+                    if (this.selectedClasses.length === availableToSelect.length) {
+                        this.selectedClasses = [];
+                    } else {
+                        this.selectedClasses = availableToSelect.map(c => c.id);
+                    }
+                },
+                openPlanModal() {
+                    this.planSummary = { valid: [], invalid: [] };
+                    this.selectedClasses.forEach(id => {
+                        const c = this.classes.find(cls => cls.id === id);
+                        if (!c) return;
+                        let invalidReasons = [];
+                        if (!c.name || c.name.trim() === "" || c.name === "Unnamed Class") invalidReasons.push("Nama kelas kosong");
+                        if (!c.mentor_name || c.mentor_name.trim() === "") invalidReasons.push("Mentor tidak valid");
+                        if (!c.start_date || c.start_date === "Flexible" || c.start_date.trim() === "") invalidReasons.push("Jadwal Flexible/Kosong");
+                        if (!c.max_seat || c.max_seat <= 0) invalidReasons.push("Kapasitas kelas <= 0");
+                        
+                        if (invalidReasons.length > 0) {
+                            this.planSummary.invalid.push({ ...c, reason: invalidReasons.join(", ") });
+                        } else {
+                            this.planSummary.valid.push(c);
+                        }
+                    });
+                    const modalEl = document.getElementById("planConfirmModal");
+                    if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+                        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                    }
+                },
+                async confirmPlanMove() {
+                    if (this.planSummary.valid.length === 0) return;
+                    
+                    for (const c of this.planSummary.valid) {
+                        try {
+                            const dateStr = String(c.start_date).trim();
+                            const parts = dateStr.split("T");
+                            let dateKey = "";
+                            let timeKey = "";
+                            if (parts.length > 1) {
+                                const dObj = new Date(parts[0]);
+                                if (!isNaN(dObj.getTime())) {
+                                    dateKey = dObj.getFullYear() + "-" + String(dObj.getMonth() + 1).padStart(2, "0") + "-" + String(dObj.getDate()).padStart(2, "0");
+                                }
+                                timeKey = parts[1].slice(0, 5);
+                            } else {
+                                const parsed = new Date(dateStr);
+                                if (!isNaN(parsed.getTime())) {
+                                    dateKey = parsed.getFullYear() + "-" + String(parsed.getMonth() + 1).padStart(2, "0") + "-" + String(parsed.getDate()).padStart(2, "0");
+                                    timeKey = String(parsed.getHours()).padStart(2, "0") + ":" + String(parsed.getMinutes()).padStart(2, "0");
+                                }
+                            }
+                            
+                            const payload = {
+                                availabilityId: c.docId || "",
+                                name: c.name,
+                                mentor: c.mentor_name,
+                                type: c.type,
+                                max_seat: c.max_seat,
+                                current_joined: c.current_joined,
+                                duration: 1.5,
+                                room: "",
+                                note: "",
+                                date: dateKey,
+                                time: timeKey,
+                                productId: c.product_id || "",
+                                productName: c.product_name || "",
+                                location: c.location || "",
+                                down_payment: c.down_payment || 0,
+                                createdAt: window.serverTimestamp()
+                            };
+                            await window.addDoc(window.collection(window.db, "class_planning"), payload);
+                            
+                            // Mark as planned in class_availability
+                            if (c.docId) {
+                                await window.updateDoc(window.doc(window.db, "class_availability", c.docId), {
+                                    is_planned: true
+                                });
+                                c.is_planned = true;
+                            }
+                        } catch (e) {
+                            console.error("Failed to move class to planning:", c.name, e);
+                        }
+                    }
+                    
+                    alert("Berhasil memindahkan " + this.planSummary.valid.length + " kelas ke Perencanaan.");
+                    this.selectedClasses = [];
+                    const modalEl = document.getElementById("planConfirmModal");
+                    if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+                        bootstrap.Modal.getOrCreateInstance(modalEl).hide();
                     }
                 },
                 
@@ -625,6 +794,31 @@
                     } catch (e) {
                         console.error("Gagal memuat products untuk dropdown batch:", e);
                         this.products = [];
+                    }
+                },
+                async loadMentors() {
+                    if (!(window.db && window.collection && window.getDocs)) {
+                        this.mentors = [];
+                        return;
+                    }
+                    try {
+                        const snap = await window.getDocs(window.collection(window.db, "mentor"));
+                        const list = [];
+                        snap.forEach((docSnap) => {
+                            const d = docSnap.data() || {};
+                            const id = docSnap.id;
+                            if (d.fullName) {
+                                list.push({
+                                    id,
+                                    name: d.fullName
+                                });
+                            }
+                        });
+                        list.sort((a, b) => a.name.localeCompare(b.name, "id"));
+                        this.mentors = list;
+                    } catch (e) {
+                        console.error("Gagal memuat mentors:", e);
+                        this.mentors = [];
                     }
                 },
                 formatCurrency(val) {
@@ -889,7 +1083,7 @@
                         : (productRef ? productRef.name : null);
 
                     const newItem = {
-                        id: nextId,
+                        id: String(nextId),
                         name,
                         type,
                         max_seat: maxSeat,

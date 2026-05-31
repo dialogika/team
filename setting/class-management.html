@@ -1428,7 +1428,7 @@
                 return;
             }
             try {
-                const snap = await getDocs(collection(db, "class_availability"));
+                const snap = await getDocs(collection(db, "class_planning"));
                 const loaded = [];
                 let idx = 1;
                 snap.forEach((docSnap) => {
@@ -1436,7 +1436,7 @@
                 });
                 classesState = loaded.length > 0 ? loaded : dummyClassesState.slice();
             } catch (e) {
-                console.error("Gagal memuat data kelas dari Firestore (class_availability):", e);
+                console.error("Gagal memuat data kelas dari Firestore (class_planning):", e);
                 classesState = dummyClassesState.slice();
             }
             populateFilterOptions(classesState);
