@@ -310,6 +310,14 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label small fw-bold">Jenis Kontrak</label>
+                                <select id="teamMemberContractType" class="form-select form-select-custom">
+                                    <option value="PKWT">PKWT</option>
+                                    <option value="PKWTT">PKWTT</option>
+                                    <option value="Freelance">Freelance</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label small fw-bold">Start Date</label>
                                 <input type="date" id="teamMemberStartDate" class="form-control form-control-custom">
                             </div>
@@ -442,6 +450,13 @@
             "Resigned"
         ];
 
+        const CONTRACT_TYPES = ["PKWT", "PKWTT", "Freelance"];
+        const CONTRACT_COLORS = {
+            PKWT: "badge bg-primary text-white",
+            PKWTT: "badge bg-success text-white",
+            Freelance: "badge bg-warning text-dark"
+        };
+
         const state = {
             members: [],
             editingId: "",
@@ -498,6 +513,12 @@
             }
         }
 
+        function getContractBadgeHtml(member) {
+            const contractType = member.contractType || "PKWT";
+            const badgeClass = CONTRACT_COLORS[contractType] || "badge bg-secondary text-white";
+            return '<span class="' + badgeClass + '" style="font-size: 0.78rem; font-weight: 600;">' + escapeHtml(contractType) + '</span>';
+        }
+
         function getDocumentBadgeHtml(member) {
             const docs = (member.documents && Array.isArray(member.documents)) ? member.documents : [];
             console.log(
@@ -538,6 +559,7 @@
                 // Determine headers based on whether it's special division
                 let headers = '<th>Nama</th>' +
                               '<th>Status</th>' +
+                              '<th>Kontrak</th>' +
                               '<th>PKWT</th>' +
                               '<th>Dokumen Tim</th>' +
                               '<th>WhatsApp</th>' +
@@ -548,11 +570,12 @@
                               '<th>Nomor Rekening</th>' +
                               '<th>Price / Fee</th>' +
                               '<th class="text-end">Action</th>';
-                
+
                 if (isSpecial) {
                     headers = '<th>Nama</th>' +
                               '<th>Divisi Asal</th>' +
                               '<th>Status</th>' +
+                              '<th>Kontrak</th>' +
                               '<th>PKWT</th>' +
                               '<th>Dokumen Tim</th>' +
                               '<th>WhatsApp</th>' +
@@ -630,6 +653,7 @@
                             '<td><span class="member-name">' + escapeHtml(member.name || "-") + '</span></td>' +
                             '<td>' + escapeHtml(originalDiv) + '</td>' +
                             '<td><span class="status-pill ' + getStatusClass(member.status) + '">' + escapeHtml(member.status || "-") + '</span></td>' +
+                            '<td>' + getContractBadgeHtml(member) + '</td>' +
                             '<td>' + getPkwtBadgeHtml(member) + '</td>' +
                             '<td>' + getDocumentBadgeHtml(member) + '</td>' +
                             '<td>' + escapeHtml(member.whatsapp || "-") + '</td>' +
@@ -652,6 +676,7 @@
                         tr.innerHTML =
                             '<td><span class="member-name">' + escapeHtml(member.name || "-") + '</span></td>' +
                             '<td><span class="status-pill ' + getStatusClass(member.status) + '">' + escapeHtml(member.status || "-") + '</span></td>' +
+                            '<td>' + getContractBadgeHtml(member) + '</td>' +
                             '<td>' + getPkwtBadgeHtml(member) + '</td>' +
                             '<td>' + getDocumentBadgeHtml(member) + '</td>' +
                             '<td>' + escapeHtml(member.whatsapp || "-") + '</td>' +
@@ -682,6 +707,7 @@
             state.activeDivision = normalizeDivision(division) || DIVISIONS[0];
             document.getElementById("teamMemberId").value = "";
             document.getElementById("teamMemberStatus").value = "Active";
+            document.getElementById("teamMemberContractType").value = "PKWT";
             document.getElementById("teamMemberPkwtFile").value = "";
             document.getElementById("pkwtFileStatus").innerHTML = "";
             document.getElementById("teamMemberDocuments").value = "";
@@ -713,6 +739,7 @@
             document.getElementById("teamMemberId").value = id;
             document.getElementById("teamMemberName").value = member.name || "";
             document.getElementById("teamMemberStatus").value = member.status || "Active";
+            document.getElementById("teamMemberContractType").value = member.contractType || "PKWT";
             document.getElementById("teamMemberWhatsapp").value = member.whatsapp || "";
             document.getElementById("teamMemberEmail").value = member.email || "";
             document.getElementById("teamMemberInstagram").value = member.instagram || "";
@@ -750,6 +777,7 @@
                 name: document.getElementById("teamMemberName").value.trim(),
                 division: normalizeDivision(state.activeDivision) || DIVISIONS[0],
                 status: document.getElementById("teamMemberStatus").value,
+                contractType: document.getElementById("teamMemberContractType").value,
                 whatsapp: document.getElementById("teamMemberWhatsapp").value.trim(),
                 email: document.getElementById("teamMemberEmail").value.trim(),
                 instagram: document.getElementById("teamMemberInstagram").value.trim(),
@@ -980,6 +1008,7 @@
                         division: divisionToSave,
                         originalDivision: originalDivisionToSave,
                         status: newStatus,
+                        contractType: payload.contractType,
                         whatsapp: payload.whatsapp,
                         email: payload.email,
                         instagram: payload.instagram,
@@ -1014,6 +1043,7 @@
                         division: divisionToSave,
                         originalDivision: originalDivisionToSave,
                         status: status,
+                        contractType: payload.contractType,
                         whatsapp: payload.whatsapp,
                         email: payload.email,
                         instagram: payload.instagram,
