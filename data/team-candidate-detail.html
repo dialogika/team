@@ -1898,6 +1898,21 @@
                                     </div>
                                     <div class="modal-section-icon"><i class="fa-regular fa-circle-check"></i></div>
                                 </div>
+                                <div class="row g-3 mt-3 mb-3">
+                                    <div class="col-md-12">
+                                        <div class="modal-field-shell is-highlight">
+                                            <label for="acceptedDivisionSelect" class="form-label form-label-soft">Divisi Team</label>
+                                            <select class="form-select" id="acceptedDivisionSelect">
+                                                <option value="">Pilih divisi team</option>
+                                                <option value="Human Resources">Human Resources</option>
+                                                <option value="Marketing">Marketing</option>
+                                                <option value="Client & Product">Client & Product</option>
+                                                <option value="Branding">Branding</option>
+                                            </select>
+                                            <div class="invalid-feedback">Silakan pilih divisi team terlebih dahulu.</div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="status-empty-note mt-3" id="acceptedWhatsappStatusHint">
                                     Klik `Siapkan Acceptance Letter` untuk menyiapkan pesan WhatsApp kandidat yang
                                     diterima.
@@ -4552,7 +4567,8 @@
             }
             if (activeDecisionAction === "accepted" && decisionModalContext === "interview") {
                 const acceptanceMessage = document.getElementById("acceptedWhatsappText") ? (document.getElementById("acceptedWhatsappText").value || "").trim() : "";
-                submitButton.disabled = !acceptedWhatsappPayload || !acceptedWhatsappConfirmedAt || !acceptanceMessage;
+                const selectedDivision = document.getElementById("acceptedDivisionSelect") ? (document.getElementById("acceptedDivisionSelect").value || "").trim() : "";
+                submitButton.disabled = !acceptedWhatsappPayload || !acceptedWhatsappConfirmedAt || !acceptanceMessage || !selectedDivision;
                 submitButton.textContent = "Submit Accepted";
                 return;
             }
@@ -5033,6 +5049,11 @@
             document.getElementById("rejectionReasonSelect").classList.remove("is-invalid");
             document.getElementById("rejectionNotesInput").classList.remove("is-invalid");
             document.getElementById("withdrawnNotesInput").value = "";
+            const divisionSelect = document.getElementById("acceptedDivisionSelect");
+            if (divisionSelect) {
+                divisionSelect.value = "";
+                divisionSelect.classList.remove("is-invalid");
+            }
             const acceptedWhatsappText = document.getElementById("acceptedWhatsappText");
             if (acceptedWhatsappText) acceptedWhatsappText.value = "";
             document.getElementById("on_job_trainingWhatsappText").value = "";
@@ -5460,6 +5481,14 @@
                 
                 if (activeDecisionAction === "accepted" && decisionModalContext === "interview") {
                     const acceptedMessage = normalizeWhatsappMessage((document.getElementById("acceptedWhatsappText").value || "").trim());
+                    const selectedTeamDivision = (document.getElementById("acceptedDivisionSelect").value || "").trim();
+                    if (!selectedTeamDivision) {
+                        document.getElementById("acceptedDivisionSelect").classList.add("is-invalid");
+                        showWarning("Silakan pilih divisi team terlebih dahulu.");
+                        syncDecisionSubmitState();
+                        return;
+                    }
+                    document.getElementById("acceptedDivisionSelect").classList.remove("is-invalid");
                     if (!acceptedWhatsappPayload || !acceptedWhatsappConfirmedAt || !acceptedMessage) {
                         setAcceptedWhatsappValidation("Acceptance letter WhatsApp wajib disiapkan, dikirim, dan dikonfirmasi sebelum submit accepted.", "warning");
                         syncDecisionSubmitState();
@@ -5467,11 +5496,6 @@
                     }
                     acceptedWhatsappPayload.message = acceptedMessage;
                     acceptedWhatsappPayload.deepLink = buildWhatsAppDeepLink(acceptedWhatsappPayload.phoneNumber, acceptedMessage);
-                    const selectedTeamDivision = await promptTeamDivision();
-                    if (!selectedTeamDivision) {
-                        showWarning("Pilih divisi team terlebih dahulu untuk melanjutkan proses Accepted.");
-                        return;
-                    }
                     const auditEntry = {
                         ...getAuditBase(actor, "on_job_training", "accepted", "Kandidat diterima setelah On Job Training", ""),
                         timestamp: nowIso,
@@ -5909,6 +5933,13 @@
                 document.getElementById("rejectionReasonSelect").classList.remove("is-invalid");
                 syncDecisionSubmitState();
             });
+            const acceptedDivisionSelect = document.getElementById("acceptedDivisionSelect");
+            if (acceptedDivisionSelect) {
+                acceptedDivisionSelect.addEventListener("change", () => {
+                    acceptedDivisionSelect.classList.remove("is-invalid");
+                    syncDecisionSubmitState();
+                });
+            }
             document.getElementById("prepareAcceptedWhatsappButton").addEventListener("click", () => {
                 prepareAcceptedWhatsappPreview();
             });

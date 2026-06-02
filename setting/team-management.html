@@ -500,6 +500,12 @@
 
         function getDocumentBadgeHtml(member) {
             const docs = (member.documents && Array.isArray(member.documents)) ? member.documents : [];
+            console.log(
+                "TEAM DOC DEBUG",
+                member.name,
+                member.documents,
+                member.documents?.length
+            );
             if (docs.length > 0) {
                 return '<button type="button" class="btn btn-sm btn-outline-primary team-documents-btn" data-id="' + escapeHtml(member.id) + '" style="padding: 4px 8px; font-size: 0.75rem;">' +
                        '<i class="fas fa-folder me-1"></i>' + docs.length + ' ' + (docs.length === 1 ? 'File' : 'Files') + '</button>';
@@ -787,7 +793,32 @@
         }
 
         function getDocumentKey(doc) {
-            return (doc && (doc.filePath || doc.fileUrl || doc.fileName)) || "";
+            return (doc && (doc.fileUrl || doc.filePath || doc.fileName)) || "";
+        }
+
+        function deduplicateDocuments(docs) {
+            const seen = new Set();
+            const result = [];
+            const inputArray = Array.isArray(docs) ? docs : [];
+            console.log("DEDUPLICATE INPUT", inputArray.length, inputArray);
+            inputArray.forEach((doc) => {
+                const key = getDocumentKey(doc);
+                console.log("  DOC KEY", key, doc);
+                if (!key || seen.has(key)) {
+                    console.log("  SKIPPING DUPLICATE", key);
+                    return;
+                }
+                seen.add(key);
+                result.push(doc);
+            });
+            console.log("DEDUPLICATE RESULT", result.length, result);
+            return result;
+        }
+
+        function isPendingFileDuplicate(newFile) {
+            return state.pendingDocuments.some(existing => 
+                existing.name === newFile.name && existing.size === newFile.size
+            );
         }
 
         function isAllowedDocumentFile(file) {
@@ -882,7 +913,7 @@
         function handleDocumentInputChange(event) {
             const files = Array.from(event.target.files || []);
             files.forEach((file) => {
-                if (isAllowedDocumentFile(file)) {
+                if (isAllowedDocumentFile(file) && !isPendingFileDuplicate(file)) {
                     state.pendingDocuments.push(file);
                 }
             });
@@ -924,7 +955,7 @@
                     await deleteRemovedDocuments(existingDocuments);
                     const keptDocuments = existingDocuments.filter(doc => !state.removedDocumentKeys.has(getDocumentKey(doc)));
                     const uploadedDocuments = await uploadTeamDocuments(state.editingId, state.pendingDocuments);
-                    const documentsArray = keptDocuments.concat(uploadedDocuments);
+                    const documentsArray = deduplicateDocuments(keptDocuments.concat(uploadedDocuments));
 
                     let divisionToSave = payload.division;
                     let originalDivisionToSave = existingMember?.originalDivision || payload.division;
@@ -1012,7 +1043,8 @@
                         pkwtFileName = fileResult.fileName;
                         pkwtFilePath = fileResult.filePath;
                     }
-                    const documentsArray = await uploadTeamDocuments(memberRef.id, state.pendingDocuments);
+                    const uploadedDocuments = await uploadTeamDocuments(memberRef.id, state.pendingDocuments);
+                    const documentsArray = deduplicateDocuments(uploadedDocuments);
                     if (pkwtFileUrl || documentsArray.length) {
                         await updateDoc(memberRef, {
                             pkwtFileUrl,
@@ -1084,9 +1116,18 @@
             }
             unsubscribeTeamManagement = onSnapshot(collection(db, TEAM_COLLECTION), (snapshot) => {
                 state.members = snapshot.docs.map((docSnap) => {
+                    const data = docSnap.data() || {};
+                    console.log(
+                        "FIRESTORE DOCS",
+                        docSnap.id,
+                        data.documents
+                    );
+                    if (Array.isArray(data.documents)) {
+                        data.documents = deduplicateDocuments(data.documents);
+                    }
                     return {
                         id: docSnap.id,
-                        ...(docSnap.data() || {})
+                        ...data
                     };
                 });
                 renderMembers();
