@@ -1527,6 +1527,32 @@
             line-height: 1.3;
         }
 
+        .schedule-compact-details {
+            display: grid;
+            gap: 0.45rem;
+            margin-top: 0.45rem;
+        }
+
+        .schedule-compact-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            font-size: 0.82rem;
+            line-height: 1.35;
+        }
+
+        .schedule-compact-row > span:first-child {
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .schedule-compact-row strong {
+            color: #0f172a;
+            font-weight: 800;
+            text-align: right;
+        }
+
         .candidate-extra-meta {
             display: flex;
             align-items: center;
@@ -3152,6 +3178,10 @@
             if (openInterviewScheduleModalBtn) {
                 openInterviewScheduleModalBtn.addEventListener("click", () => {
                     interviewScheduleState.page = 1;
+                    if (interviewScheduleModalSearchInput) interviewScheduleModalSearchInput.value = "";
+                    if (interviewScheduleModalDateFilterInput) interviewScheduleModalDateFilterInput.value = "";
+                    if (interviewScheduleModalStatusFilterInput) interviewScheduleModalStatusFilterInput.value = "";
+                    if (interviewScheduleModalSortSelect) interviewScheduleModalSortSelect.value = "nearest";
                     renderInterviewScheduleModalTable();
                     if (interviewScheduleModalInstance) {
                         interviewScheduleModalInstance.show();
@@ -3353,6 +3383,21 @@
             const hour = String(dateObj.getHours()).padStart(2, "0");
             const minute = String(dateObj.getMinutes()).padStart(2, "0");
             return year + "-" + month + "-" + day + "T" + hour + ":" + minute;
+        }
+
+        function buildInterviewScheduleEntry(params) {
+            const scheduleDate = toDateObject(params.scheduleRaw);
+            if (!scheduleDate) return null;
+            const interviewerDetails = getInterviewerDetailsFromIds(params.interviewerIds);
+            return {
+                candidateId: params.candidateId || "",
+                candidateName: params.candidateName || "Tanpa Nama",
+                positionName: params.positionName || "-",
+                interviewerNames: interviewerDetails.map(item => item.name).filter(Boolean),
+                scheduleAt: scheduleDate,
+                scheduleIso: scheduleDate.toISOString(),
+                scheduleStatus: getInterviewScheduleStatus(scheduleDate)
+            };
         }
 
         function normalizeInterviewerAvailability(raw, fallback) {
@@ -4234,12 +4279,15 @@
                         '</div>' +
                     '</div>' +
                 '</div>';
-            const interviewStatus = getInterviewScheduleStatus(interviewScheduleRaw);
+            const hasInterviewSchedule = !!toDateObject(interviewScheduleRaw);
+            const interviewStatus = hasInterviewSchedule ? getInterviewScheduleStatus(interviewScheduleRaw) : "";
             const interviewerDetails = getInterviewerDetailsFromIds(interviewerIds);
             const interviewerNamesText = interviewerDetails.length
                 ? interviewerDetails.map(item => item.name).join(", ")
                 : "-";
-            const interviewDateCompact = formatInterviewDayDateCompact(interviewScheduleRaw);
+            const interviewDateOnly = hasInterviewSchedule ? formatInterviewDateOnly(interviewScheduleRaw) : "-";
+            const interviewTimeOnly = hasInterviewSchedule ? formatInterviewTimeOnly(interviewScheduleRaw) : "-";
+            const interviewStatusBadge = hasInterviewSchedule ? getInterviewScheduleBoardBadgeMeta(interviewStatus) : null;
             const ojtDateCompact = onJobTrainingStartDate ? formatOjtDateRangeCompact(onJobTrainingStartDate, onJobTrainingEndDate) : "-";
             const interviewerAvailabilitySummary = getInterviewerAvailabilitySummary(interviewerDetails);
             const interviewerGridHtml = interviewerDetails.length
@@ -4276,8 +4324,10 @@
                             '<i class="fa-regular fa-calendar-days"></i>' +
                             '<span>Jadwal Interview</span>' +
                         '</div>' +
-                        '<div class="schedule-compact-date">' +
-                            escapeHtml(interviewDateCompact) +
+                        '<div class="schedule-compact-details">' +
+                            '<div class="schedule-compact-row"><span>Tanggal</span><strong>' + escapeHtml(interviewDateOnly) + '</strong></div>' +
+                            '<div class="schedule-compact-row"><span>Jam</span><strong>' + escapeHtml(interviewTimeOnly) + '</strong></div>' +
+                            '<div class="schedule-compact-row"><span>Status</span><strong>' + (interviewStatusBadge ? '<span class="' + interviewStatusBadge.className + '">' + escapeHtml(interviewStatusBadge.label) + '</span>' : '-') + '</strong></div>' +
                         '</div>' +
                     '</div>' +
                 '</div>' +
@@ -4441,6 +4491,16 @@
                         : [];
                     const interviewerIds = interviewers;
                     const interviewScheduleRaw = recruitment.interview_schedule || recruitment.due_date || data.interview_schedule || "";
+                    const interviewScheduleEntry = buildInterviewScheduleEntry({
+                        candidateId: docSnap.id,
+                        candidateName: name,
+                        positionName,
+                        interviewerIds,
+                        scheduleRaw: interviewScheduleRaw
+                    });
+                    if (interviewScheduleEntry) {
+                        interviewScheduleEntries.push(interviewScheduleEntry);
+                    }
 
                     const finalDecisionAt = recruitment.final_decision_at || null;
                     const rejectionReason = recruitment.rejection_reason || "";

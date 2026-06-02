@@ -522,6 +522,38 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="promoteToTeamModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Promosikan ke Team</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="promoteToTeamForm">
+                    <input type="hidden" id="promoteUserId">
+                    <div class="modal-body">
+                        <p class="text-muted mb-3">Pilih divisi tujuan untuk mempromosikan peserta internship ke tim.</p>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Divisi Tujuan</label>
+                            <select id="promoteDivisionSelect" class="form-select form-select-custom" required>
+                                <option value="">-- Pilih Divisi --</option>
+                                <option value="Human Resources">Human Resources</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Client & Product">Client & Product</option>
+                                <option value="Branding">Branding</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary-custom">Promosikan ke Team</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
@@ -914,6 +946,13 @@
                 const addressShort = internshipTruncate(u.address || "-", 20);
                 const positionBadgeClass = "badge-soft-primary";
                 const departmentBadgeClass = "badge-soft-secondary";
+                
+                // Check if promoted to team
+                const isPromotedToTeam = u.promotedToTeam === true || u.promotedToTeam === "true";
+                const promoteButtonHtml = isPromotedToTeam 
+                    ? '<span class="badge bg-success" style="font-size: 0.75rem;"><i class="fas fa-check me-1"></i>Team Member</span>'
+                    : '<button class="btn-action shadow-sm internship-promote-btn" data-user-id="' + u.id + '" title="Promosikan ke Team"><i class="fas fa-arrow-up"></i></button>';
+                
                 tr.innerHTML = `
                     <td class="ps-4 internship-col-name">
                         <div class="d-flex align-items-center gap-3">
@@ -951,6 +990,7 @@
                     <td>${liShort}</td>
                     <td class="text-end pe-4">
                         <div class="d-flex justify-content-end gap-2">
+                            ${promoteButtonHtml}
                             <button class="btn-action shadow-sm internship-edit-btn" data-user-id="${u.id}"><i class="fas fa-edit"></i></button>
                             <button class="btn-action shadow-sm text-danger internship-delete-btn" data-user-id="${u.id}"><i class="fas fa-trash-alt"></i></button>
                         </div>
@@ -1286,6 +1326,110 @@
             }
         }
 
+        async function promoteInternshipToTeam(userId, division) {
+            if (!userId || !division) {
+                alert("Data tidak lengkap untuk promosi.");
+                return;
+            }
+
+            const user = internshipUsersAll.find(u => u.id === userId);
+            if (!user) {
+                alert("Data peserta internship tidak ditemukan.");
+                return;
+            }
+
+            try {
+                // Check if already promoted
+                const teamSnapshot = await getDocs(
+                    query(collection(db, "team_management"), where("userId", "==", userId))
+                );
+                if (!teamSnapshot.empty) {
+                    alert("Peserta internship ini sudah menjadi anggota tim.");
+                    return;
+                }
+
+                // Prepare team management document
+                const teamData = {
+                    name: user.name || "",
+                    email: user.email || "",
+                    whatsapp: user.phone || "",
+                    instagram: user.instagram || "",
+                    linkedin: user.linkedin || "",
+                    address: user.address || "",
+                    birthDate: user.birthDateObj instanceof Date && !isNaN(user.birthDateObj.getTime()) 
+                        ? user.birthDateObj.toISOString().split('T')[0] 
+                        : "",
+                    division: division,
+                    originalDivision: division,
+                    status: "Active",
+                    startDate: user.startDateObj instanceof Date && !isNaN(user.startDateObj.getTime()) 
+                        ? user.startDateObj.toISOString().split('T')[0] 
+                        : "",
+                    endDate: "",
+                    bank: "",
+                    accountNumber: "",
+                    fee: "",
+                    pkwtFileName: "",
+                    pkwtFileUrl: "",
+                    source: "internship",
+                    internshipId: userId,
+                    userId: userId,
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+
+                // Create team management record
+                await addDoc(collection(db, "team_management"), teamData);
+
+                // Update user role from internship to staff
+                await updateDoc(doc(db, "users", userId), {
+                    role_id: "staff",
+                    promotedToTeam: true,
+                    promotedAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+
+                alert("Peserta internship berhasil dipromosikan menjadi anggota tim!");
+                await loadInternshipUsers();
+                renderInternshipTable();
+                
+                const modal = bootstrap.Modal.getInstance(document.getElementById("promoteToTeamModal"));
+                if (modal) modal.hide();
+            } catch (error) {
+                console.error("Error promoting internship user to team", error);
+                alert("Gagal mempromosikan peserta internship: " + error.message);
+            }
+        }
+
+        function openPromoteToTeamModal(userId) {
+            const user = internshipUsersAll.find(u => u.id === userId);
+            if (!user) return;
+
+            const modalEl = document.getElementById("promoteToTeamModal");
+            const userIdInput = document.getElementById("promoteUserId");
+            const divisionSelect = document.getElementById("promoteDivisionSelect");
+            const form = document.getElementById("promoteToTeamForm");
+
+            if (!modalEl || !userIdInput || !divisionSelect || !form) return;
+
+            userIdInput.value = userId;
+            divisionSelect.value = "";
+
+            // Update form submit handler
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const selectedDivision = divisionSelect.value;
+                if (!selectedDivision) {
+                    alert("Pilih divisi tujuan!");
+                    return;
+                }
+                await promoteInternshipToTeam(userId, selectedDivision);
+            };
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const rowsSelect = document.getElementById("internshipRowsPerPage");
             const searchInput = document.getElementById("internshipSearchInput");
@@ -1391,6 +1535,16 @@
                 table.addEventListener("click", async (e) => {
                     const editBtn = e.target.closest(".internship-edit-btn");
                     const deleteBtn = e.target.closest(".internship-delete-btn");
+                    const promoteBtn = e.target.closest(".internship-promote-btn");
+                    
+                    if (promoteBtn) {
+                        const userId = promoteBtn.getAttribute("data-user-id");
+                        if (userId) {
+                            openPromoteToTeamModal(userId);
+                        }
+                        return;
+                    }
+                    
                     if (editBtn) {
                         const userId = editBtn.getAttribute("data-user-id");
                         if (userId) {
@@ -1398,6 +1552,7 @@
                         }
                         return;
                     }
+                    
                     if (deleteBtn) {
                         const userId = deleteBtn.getAttribute("data-user-id");
                         if (!userId) return;
