@@ -289,6 +289,12 @@
                                 </div>
                             </div>
 
+                            <!-- Reference Email -->
+                            <div class="mb-6">
+                                <label class="form-label-custom">Email Referensi</label>
+                                <input type="email" id="referenceEmail" class="form-input-custom" placeholder="Masukkan email referensi (jika ada)">
+                            </div>
+
                             <!-- Talent Notes -->
                             <div class="mb-6">
                                 <label class="form-label-custom">Talent Notes</label>
@@ -557,6 +563,9 @@
                     // Teks
                     document.getElementById("talentNotes").value = app.talentNotes || "";
                     document.getElementById("talentAchievement").value = app.talentAchievement || "";
+                    if (document.getElementById("referenceEmail")) {
+                        document.getElementById("referenceEmail").value = app.referenceEmail || "";
+                    }
                     
                     // NTI
                     if (app.needToImprove && Array.isArray(app.needToImprove)) {
@@ -645,6 +654,7 @@
                 // Collect texts
                 const talentNotes = document.getElementById("talentNotes").value.trim();
                 const talentAchievement = document.getElementById("talentAchievement").value.trim();
+                const referenceEmail = document.getElementById("referenceEmail") ? document.getElementById("referenceEmail").value.trim() : "";
 
                 const appraisalData = {
                     core,
@@ -652,6 +662,7 @@
                     needToImprove,
                     talentNotes,
                     talentAchievement,
+                    referenceEmail,
                     evaluatedAt: new Date(),
                     evaluatedBy: auth.currentUser.uid
                 };
