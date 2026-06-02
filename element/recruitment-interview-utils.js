@@ -114,6 +114,14 @@ function getScheduleTimeValue(input) {
     return dateObj.getTime();
 }
 
+function isSameOrAfterToday(dateObj, nowInput) {
+    if (!dateObj) return false;
+    const now = toDate(nowInput) || new Date();
+    const targetDay = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return targetDay.getTime() >= today.getTime();
+}
+
 export function formatInterviewScheduleDateTimeLabel(input) {
     const dateObj = toDate(input);
     if (!dateObj) return "-";
@@ -146,7 +154,8 @@ export function filterAndSortInterviewSchedules(entriesInput, optionsInput) {
         const searchHaystack = normalizeTextToken(candidateName + " " + interviewerNames.join(" "));
         const matchesQuery = !query || searchHaystack.includes(query);
         const matchesDate = !dateFilter || toDateKey(scheduleDate) === dateFilter;
-        return matchesQuery && matchesDate;
+        const matchesDefaultDateWindow = !!dateFilter || isSameOrAfterToday(scheduleDate, options.now);
+        return matchesQuery && matchesDate && matchesDefaultDateWindow;
     });
 
     const compareByName = (a, b, desc) => {

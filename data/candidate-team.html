@@ -1064,6 +1064,21 @@
             border-color: #fcd34d;
         }
 
+        .team-member-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #047857;
+            background: #ecfdf5;
+            border: 1px solid #6ee7b7;
+        }
+
         .pipeline-stepper {
             display: flex;
             align-items: center;
@@ -1525,6 +1540,32 @@
             font-weight: 700;
             color: #0f172a;
             line-height: 1.3;
+        }
+
+        .schedule-compact-details {
+            display: grid;
+            gap: 0.45rem;
+            margin-top: 0.45rem;
+        }
+
+        .schedule-compact-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            font-size: 0.82rem;
+            line-height: 1.35;
+        }
+
+        .schedule-compact-row > span:first-child {
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .schedule-compact-row strong {
+            color: #0f172a;
+            font-weight: 800;
+            text-align: right;
         }
 
         .candidate-extra-meta {
@@ -2705,6 +2746,7 @@
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
@@ -2714,6 +2756,10 @@
             getInterviewScheduleStatus,
             filterAndSortInterviewSchedules
         } from "../element/recruitment-interview-utils.js";
+        import {
+            promptTeamDivision,
+            syncAcceptedCandidateToTeamManagement
+        } from "../element/team-management-sync.js";
         import {
             TEMPLATE_DEFINITIONS,
             TEMPLATE_STORAGE_KEY,
@@ -3152,6 +3198,10 @@
             if (openInterviewScheduleModalBtn) {
                 openInterviewScheduleModalBtn.addEventListener("click", () => {
                     interviewScheduleState.page = 1;
+                    if (interviewScheduleModalSearchInput) interviewScheduleModalSearchInput.value = "";
+                    if (interviewScheduleModalDateFilterInput) interviewScheduleModalDateFilterInput.value = "";
+                    if (interviewScheduleModalStatusFilterInput) interviewScheduleModalStatusFilterInput.value = "";
+                    if (interviewScheduleModalSortSelect) interviewScheduleModalSortSelect.value = "nearest";
                     renderInterviewScheduleModalTable();
                     if (interviewScheduleModalInstance) {
                         interviewScheduleModalInstance.show();
@@ -3353,6 +3403,21 @@
             const hour = String(dateObj.getHours()).padStart(2, "0");
             const minute = String(dateObj.getMinutes()).padStart(2, "0");
             return year + "-" + month + "-" + day + "T" + hour + ":" + minute;
+        }
+
+        function buildInterviewScheduleEntry(params) {
+            const scheduleDate = toDateObject(params.scheduleRaw);
+            if (!scheduleDate) return null;
+            const interviewerDetails = getInterviewerDetailsFromIds(params.interviewerIds);
+            return {
+                candidateId: params.candidateId || "",
+                candidateName: params.candidateName || "Tanpa Nama",
+                positionName: params.positionName || "-",
+                interviewerNames: interviewerDetails.map(item => item.name).filter(Boolean),
+                scheduleAt: scheduleDate,
+                scheduleIso: scheduleDate.toISOString(),
+                scheduleStatus: getInterviewScheduleStatus(scheduleDate)
+            };
         }
 
         function normalizeInterviewerAvailability(raw, fallback) {
@@ -4161,6 +4226,7 @@
             const withdrawnNotes = escapeHtml(params.withdrawnNotes || "");
             const onJobTrainingStartDate = params.onJobTrainingStartDate || null;
             const onJobTrainingEndDate = params.onJobTrainingEndDate || null;
+            const isTeamMember = !!params.isTeamMember;
 
             const gridContainer = document.getElementById('gridView');
             const listTbody = document.querySelector('#listView tbody');
@@ -4180,6 +4246,7 @@
                 '<div class="candidate-header-chips">' +
                     positionHtml +
                     '<span class="' + statusBadgeClasses + '">' + statusLabel + '</span>' +
+                    (isTeamMember ? '<span class="team-member-badge"><i class="fa-solid fa-user-check"></i>Team Member</span>' : '') +
                 '</div>';
 
             // Prepare status details section (for rejected/withdrawn)
@@ -4234,12 +4301,15 @@
                         '</div>' +
                     '</div>' +
                 '</div>';
-            const interviewStatus = getInterviewScheduleStatus(interviewScheduleRaw);
+            const hasInterviewSchedule = !!toDateObject(interviewScheduleRaw);
+            const interviewStatus = hasInterviewSchedule ? getInterviewScheduleStatus(interviewScheduleRaw) : "";
             const interviewerDetails = getInterviewerDetailsFromIds(interviewerIds);
             const interviewerNamesText = interviewerDetails.length
                 ? interviewerDetails.map(item => item.name).join(", ")
                 : "-";
-            const interviewDateCompact = formatInterviewDayDateCompact(interviewScheduleRaw);
+            const interviewDateOnly = hasInterviewSchedule ? formatInterviewDateOnly(interviewScheduleRaw) : "-";
+            const interviewTimeOnly = hasInterviewSchedule ? formatInterviewTimeOnly(interviewScheduleRaw) : "-";
+            const interviewStatusBadge = hasInterviewSchedule ? getInterviewScheduleBoardBadgeMeta(interviewStatus) : null;
             const ojtDateCompact = onJobTrainingStartDate ? formatOjtDateRangeCompact(onJobTrainingStartDate, onJobTrainingEndDate) : "-";
             const interviewerAvailabilitySummary = getInterviewerAvailabilitySummary(interviewerDetails);
             const interviewerGridHtml = interviewerDetails.length
@@ -4276,8 +4346,10 @@
                             '<i class="fa-regular fa-calendar-days"></i>' +
                             '<span>Jadwal Interview</span>' +
                         '</div>' +
-                        '<div class="schedule-compact-date">' +
-                            escapeHtml(interviewDateCompact) +
+                        '<div class="schedule-compact-details">' +
+                            '<div class="schedule-compact-row"><span>Tanggal</span><strong>' + escapeHtml(interviewDateOnly) + '</strong></div>' +
+                            '<div class="schedule-compact-row"><span>Jam</span><strong>' + escapeHtml(interviewTimeOnly) + '</strong></div>' +
+                            '<div class="schedule-compact-row"><span>Status</span><strong>' + (interviewStatusBadge ? '<span class="' + interviewStatusBadge.className + '">' + escapeHtml(interviewStatusBadge.label) + '</span>' : '-') + '</strong></div>' +
                         '</div>' +
                     '</div>' +
                 '</div>' +
@@ -4441,6 +4513,16 @@
                         : [];
                     const interviewerIds = interviewers;
                     const interviewScheduleRaw = recruitment.interview_schedule || recruitment.due_date || data.interview_schedule || "";
+                    const interviewScheduleEntry = buildInterviewScheduleEntry({
+                        candidateId: docSnap.id,
+                        candidateName: name,
+                        positionName,
+                        interviewerIds,
+                        scheduleRaw: interviewScheduleRaw
+                    });
+                    if (interviewScheduleEntry) {
+                        interviewScheduleEntries.push(interviewScheduleEntry);
+                    }
 
                     const finalDecisionAt = recruitment.final_decision_at || null;
                     const rejectionReason = recruitment.rejection_reason || "";
@@ -4448,6 +4530,7 @@
                     const withdrawnNotes = recruitment.withdrawn_notes || "";
                     const onJobTrainingStartDate = recruitment.on_job_training_start_date || null;
                     const onJobTrainingEndDate = recruitment.on_job_training_end_date || null;
+                    const isTeamMember = !!(data.isTeamMember || data.is_team_member || data.teamManagementId || recruitment.is_team_member || recruitment.team_management_id);
 
                     appendCandidateToUI({
                         name,
@@ -4468,7 +4551,8 @@
                         rejectionNotes,
                         withdrawnNotes,
                         onJobTrainingStartDate,
-                        onJobTrainingEndDate
+                        onJobTrainingEndDate,
+                        isTeamMember
                     });
                     found += 1;
                 });
@@ -4922,16 +5006,65 @@
             }
             const newVal = statusSelect.value || "";
             const normalized = normalizeStatus(newVal || "");
+            const previousStatusNode = talentId
+                ? document.querySelector('.candidate-item[data-talent-id="' + talentId + '"], tr.candidate-row-main[data-talent-id="' + talentId + '"]')
+                : null;
+            const previousStatus = normalizeStatus(
+                statusSelect.dataset.previousStatus ||
+                statusSelect.getAttribute("data-current-status") ||
+                (previousStatusNode && previousStatusNode.dataset ? previousStatusNode.dataset.status : "")
+            );
             let actorName = "";
             if (window.auth && window.auth.currentUser) {
                 actorName = window.auth.currentUser.displayName || window.auth.currentUser.email || "";
             }
             if (talentId && normalized) {
+                let selectedTeamDivision = "";
+                if (normalized === "accepted") {
+                    selectedTeamDivision = await promptTeamDivision();
+                    if (!selectedTeamDivision) {
+                        statusSelect.value = previousStatus || (statusSelect.dataset.previousValue || "screening");
+                        return;
+                    }
+                }
                 const updated = await updateInternshipStatus(talentId, normalized, actorName);
                 if (!updated) {
                     await loadInternshipCandidates();
                     alert("Gagal memperbarui status kandidat.");
                     return;
+                }
+                if (normalized === "accepted") {
+                    try {
+                        const syncResult = await syncAcceptedCandidateToTeamManagement({
+                            db,
+                            candidateCollection: INTERNSHIP_CANDIDATES_COLLECTION,
+                            candidateId: talentId,
+                            division: selectedTeamDivision,
+                            source: "candidate-team"
+                        });
+                        if (window.Swal && typeof window.Swal.fire === "function") {
+                            window.Swal.fire({
+                                icon: syncResult.status === "duplicate" ? "info" : "success",
+                                title: syncResult.status === "duplicate" ? "Sudah Menjadi Anggota Tim" : "Ditambahkan ke Team Management",
+                                text: syncResult.status === "duplicate"
+                                    ? "Kandidat ini sudah tercatat sebagai anggota tim."
+                                    : "Data kandidat berhasil masuk ke Team Management.",
+                                timer: 1800,
+                                showConfirmButton: false
+                            });
+                        }
+                    } catch (error) {
+                        console.error("Failed to sync accepted candidate to team management", error);
+                        if (window.Swal && typeof window.Swal.fire === "function") {
+                            window.Swal.fire({
+                                icon: "error",
+                                title: "Sinkronisasi Gagal",
+                                text: "Status Accepted tersimpan, tetapi data belum masuk Team Management: " + (error.message || "Terjadi kesalahan.")
+                            });
+                        } else {
+                            alert("Status Accepted tersimpan, tetapi data belum masuk Team Management.");
+                        }
+                    }
                 }
                 updateCandidateStatusUI(talentId, normalized);
             }
