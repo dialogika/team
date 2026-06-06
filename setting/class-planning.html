@@ -353,12 +353,17 @@
 
         function buildPlanningItemFromClassPlanning(docSnap) {
             const d = docSnap.data() || {};
+            const isRemedial = d.is_remedial === true || d.isRemedial === true || String(d.variant || "").toLowerCase() === "remedial";
             return {
                 id: CLASS_SOURCE_PLANNING + ":" + docSnap.id,
                 sourceCollection: CLASS_SOURCE_PLANNING,
                 sourceDocId: docSnap.id,
                 classId: d.id || "",
                 name: d.name || "",
+                variant: d.variant || (isRemedial ? "remedial" : "regular"),
+                isRemedial,
+                parentClassDocId: d.parent_class_doc_id || d.parentClassDocId || "",
+                parentClassName: d.parent_class_name || d.parentClassName || "",
                 mentor: d.mentor || d.mentor_name || "",
                 duration: typeof d.duration === "number" ? d.duration : 1,
                 type: d.type || "Online",
@@ -373,12 +378,17 @@
         function buildPlanningItemFromAvailability(docSnap) {
             const d = docSnap.data() || {};
             const schedule = splitAvailabilitySchedule(d);
+            const isRemedial = d.is_remedial === true || d.isRemedial === true || String(d.variant || "").toLowerCase() === "remedial";
             return {
                 id: CLASS_SOURCE_AVAILABILITY + ":" + docSnap.id,
                 sourceCollection: CLASS_SOURCE_AVAILABILITY,
                 sourceDocId: docSnap.id,
                 classId: d.id || "",
                 name: d.name || d.class_name || "",
+                variant: d.variant || (isRemedial ? "remedial" : "regular"),
+                isRemedial,
+                parentClassDocId: d.parent_class_doc_id || d.parentClassDocId || "",
+                parentClassName: d.parent_class_name || d.parentClassName || "",
                 mentor: d.mentor_name || d.mentor || "",
                 duration: typeof d.duration === "number" ? d.duration : 1,
                 type: d.type || "Online",
@@ -507,8 +517,14 @@
                 card.className = "planning-card" + (roomClass ? " " + roomClass : "");
                 card.draggable = true;
                 card.dataset.planId = plan.id;
+                const remedialInfo = plan.isRemedial
+                    ? "<div class=\"planning-card-meta\"><span style=\"font-weight:800;color:#0369a1;\">Remedial</span>" +
+                    (plan.parentClassName ? " | Parent: " + plan.parentClassName : "") +
+                    "</div>"
+                    : "";
                 card.innerHTML =
                     "<div>" + (plan.name || "-") + "</div>" +
+                    remedialInfo +
                     "<div class=\"planning-card-meta\">" +
                     (plan.mentor ? "Mentor: " + plan.mentor + " • " : "") +
                     (plan.duration ? (Math.round(plan.duration * 60) + " menit • ") : "") +
@@ -637,8 +653,14 @@
                             if (plan.mentor) metaParts.push("Mentor: " + plan.mentor);
                             if (plan.duration) metaParts.push(Math.round(plan.duration * 60) + " menit");
                             if (plan.room) metaParts.push("Ruang " + plan.room);
+                            const remedialInfo = plan.isRemedial
+                                ? "<div class=\"planning-card-meta\"><span style=\"font-weight:800;color:#0369a1;\">Remedial</span>" +
+                                (plan.parentClassName ? " | Parent: " + plan.parentClassName : "") +
+                                "</div>"
+                                : "";
                             card.innerHTML =
                                 "<div>" + (plan.name || "-") + "</div>" +
+                                remedialInfo +
                                 "<div class=\"planning-card-meta\">" +
                                 metaParts.join(" • ") +
                                 "</div>";

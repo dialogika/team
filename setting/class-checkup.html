@@ -844,6 +844,7 @@
 
         function mapAvailabilityDocToClass(docSnap, sourceCollection) {
             const d = docSnap.data() || {};
+            const isRemedial = d.is_remedial === true || d.isRemedial === true || String(d.variant || "").toLowerCase() === "remedial";
             const mentorName = d.mentor_name || d.mentor || "";
             const mentors = [];
             if (typeof mentorName === "string" && mentorName.trim() !== "") {
@@ -878,6 +879,13 @@
                 docId: docSnap.id,
                 sourceCollection: sourceCollection || CLASS_SOURCE_PLANNING,
                 name: d.name || d.class_name || "Unnamed Class",
+                variant: d.variant || (isRemedial ? "remedial" : "regular"),
+                isRemedial,
+                parentClassDocId: d.parent_class_doc_id || d.parentClassDocId || "",
+                parentClassName: d.parent_class_name || d.parentClassName || "",
+                rootClassDocId: d.root_class_doc_id || d.rootClassDocId || "",
+                remedialLevel: typeof d.remedial_level === "number" ? d.remedial_level : (typeof d.remedialLevel === "number" ? d.remedialLevel : 0),
+                remedialReason: d.remedial_reason || d.remedialReason || "",
                 status,
                 startDate: toDateString(d.date || d.start_date || d.startDate),
                 startTime: d.time || d.start_time || d.startTime || d.class_time || d.classTime || d.jam || "",
@@ -1943,7 +1951,10 @@
             const typeEl = document.getElementById("editType");
             const meetingDoneEl = document.getElementById("editMeetingDone");
             const meetingTotalEl = document.getElementById("editMeetingTotal");
-            if (subEl) subEl.textContent = "ID: " + (c.id || "-");
+            if (subEl) {
+                subEl.textContent = "ID: " + (c.id || "-") +
+                    (c.isRemedial && c.parentClassName ? " | Parent: " + c.parentClassName : "");
+            }
             if (nameEl) nameEl.value = c.name || "";
             if (statusEl) statusEl.value = c.status || "Soon";
             if (startEl) startEl.value = c.startDate || "";
@@ -2523,6 +2534,11 @@
                 const title = document.createElement("div");
                 title.className = "cal-card-title";
                 title.textContent = c.name || "-";
+                const remedialInfo = document.createElement("div");
+                remedialInfo.className = "cal-card-time";
+                remedialInfo.textContent = c.isRemedial
+                    ? "Remedial" + (c.parentClassName ? " | Parent: " + c.parentClassName : "")
+                    : "";
                 const time = document.createElement("div");
                 time.className = "cal-card-time";
                 time.textContent = c.startTime ? String(c.startTime) : "-";
@@ -2584,6 +2600,7 @@
                 rowType.appendChild(typePill);
 
                 card.appendChild(title);
+                if (remedialInfo.textContent) card.appendChild(remedialInfo);
                 card.appendChild(time);
                 card.appendChild(rowMeeting);
                 card.appendChild(rowMentor);
