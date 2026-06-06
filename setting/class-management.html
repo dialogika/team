@@ -528,7 +528,7 @@
               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white hover:bg-sky-700"
             >
               <i data-lucide="edit-3" class="w-4 h-4"></i>
-              Kelas Remidial
+              Kelas Remedial
             </button>
             <a
               href="./class-checkup.html"
@@ -1653,7 +1653,7 @@
             </div>
             <div>
               <div class="text-sm font-semibold text-slate-900">
-                Tambah Kelas Remidial
+                Tambah Kelas Remedial
               </div>
               <div class="text-[11px] text-slate-500">
                 Isi detail remedial dan simpan ke kelas yang dipilih.
@@ -1731,42 +1731,102 @@
                   ></p>
                 </div>
               </div>
-              <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <div class="flex items-center justify-between mb-3">
-                  <div>
-                    <div class="text-[10px] font-bold text-slate-500 uppercase">
-                      Member Remidial
-                    </div>
-                  </div>
-                  <button
-                    id="btnShowMemberInput"
-                    class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Product Name</label
                   >
-                    <span>+ Tambah Member</span>
-                  </button>
-                </div>
-                <div
-                  id="remedialMemberInputContainer"
-                  class="hidden gap-2 items-center"
-                >
                   <input
-                    id="remedialMemberInput"
+                    id="remedialProductName"
                     type="text"
-                    class="flex-1 text-xs rounded-xl border border-slate-200 px-3 py-2 bg-white"
-                    placeholder="Masukkan nama member"
+                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-100 text-slate-500"
+                    readonly
                   />
-                  <button
-                    id="btnAddRemedialMember"
-                    class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white hover:bg-sky-700"
-                  >
-                    Tambah
-                  </button>
                 </div>
-                <p
-                  id="remedialMembersError"
-                  class="field-error-text hidden"
-                ></p>
-                <div id="remedialMemberList" class="mt-3 space-y-2"></div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Product ID</label
+                  >
+                  <input
+                    id="remedialProductId"
+                    type="text"
+                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-100 text-slate-500"
+                    readonly
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Start Date</label
+                  >
+                  <input
+                    id="remedialStartDate"
+                    type="date"
+                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Total Meeting</label
+                  >
+                  <input
+                    id="remedialMeetingTotal"
+                    type="number"
+                    min="0"
+                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
+                    placeholder="Contoh: 4"
+                  />
+                  <p
+                    id="remedialMeetingTotalError"
+                    class="field-error-text hidden"
+                  ></p>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Type</label
+                  >
+                  <select
+                    id="remedialType"
+                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
+                  >
+                    <option value="Online">Online</option>
+                    <option value="Offline">Offline</option>
+                    <option value="Hybrid">Hybrid</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                    >Location</label
+                  >
+                  <input
+                    id="remedialLocation"
+                    type="text"
+                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
+                    placeholder="Online / Jakarta / Hybrid"
+                  />
+                </div>
+              </div>
+              <div>
+                <label
+                  class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
+                  >Alasan Remedial</label
+                >
+                <textarea
+                  id="remedialReason"
+                  class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
+                  rows="3"
+                  placeholder="Contoh: Peserta perlu mengulang materi final assessment"
+                ></textarea>
+                <p id="remedialReasonError" class="field-error-text hidden"></p>
               </div>
             </div>
             <div
@@ -2476,16 +2536,55 @@
       let mentorsData = [];
       let selectedRemedialClass = null;
       let selectedRemedialMentor = null;
-      let remedialMembers = [];
 
       function getRemedialClassLabel(item) {
         if (!item || !item.data) return "Tidak diketahui";
         return (
           item.data.name ||
+          item.data.class_name ||
           item.data.productName ||
           item.data.className ||
           "Kelas tanpa nama"
         );
+      }
+
+      function getRemedialProductName(item) {
+        if (!item || !item.data) return "";
+        return (
+          item.data.productName ||
+          item.data.product_name ||
+          item.data.product ||
+          item.data.programName ||
+          item.data.program_name ||
+          ""
+        );
+      }
+
+      function getRemedialProductId(item) {
+        if (!item || !item.data) return "";
+        return (
+          item.data.productId ||
+          item.data.product_id ||
+          item.data.productCode ||
+          item.data.product_code ||
+          ""
+        );
+      }
+
+      function fillRemedialParentFields(item) {
+        const productName = document.getElementById("remedialProductName");
+        const productId = document.getElementById("remedialProductId");
+        const typeEl = document.getElementById("remedialType");
+        const locationEl = document.getElementById("remedialLocation");
+        const nameEl = document.getElementById("remedialClassName");
+        const d = item && item.data ? item.data : {};
+        if (productName) productName.value = getRemedialProductName(item);
+        if (productId) productId.value = getRemedialProductId(item);
+        if (typeEl && d.type) typeEl.value = d.type;
+        if (locationEl && d.location) locationEl.value = d.location;
+        if (nameEl && !nameEl.value.trim()) {
+          nameEl.value = getRemedialClassLabel(item) + " - Remedial 1";
+        }
       }
 
       function getMentorLabel(item) {
@@ -2519,6 +2618,7 @@
             }
             if (listElement.id === "remedialClassList") {
               selectedRemedialClass = item;
+              fillRemedialParentFields(item);
               document
                 .getElementById("remedialClassError")
                 .classList.add("hidden");
@@ -2537,13 +2637,13 @@
       async function loadRemedialLookups() {
         if (!db) return;
         try {
-          const classSnap = await getDocs(collection(db, "class_availability"));
+          const classSnap = await getDocs(collection(db, "class_planning"));
           remedialClassesData = classSnap.docs.map((docSnap) => ({
             id: docSnap.id,
             data: docSnap.data() || {},
           }));
         } catch (e) {
-          console.error("Gagal memuat data class_availability:", e);
+          console.error("Gagal memuat data class_planning:", e);
         }
         try {
           const mentorSnap = await getDocs(collection(db, "mentor"));
@@ -2556,56 +2656,27 @@
         }
       }
 
-      function renderRemedialMemberList() {
-        const list = document.getElementById("remedialMemberList");
-        if (!list) return;
-        list.innerHTML = "";
-        if (!remedialMembers.length) {
-          const empty = document.createElement("div");
-          empty.className = "text-[11px] text-slate-400";
-          empty.textContent = "Belum ada member remedial.";
-          list.appendChild(empty);
-          return;
-        }
-        remedialMembers.forEach((member, index) => {
-          const row = document.createElement("div");
-          row.className =
-            "flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-[11px]";
-          const name = document.createElement("div");
-          name.textContent = member;
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.className =
-            "text-[10px] font-semibold text-rose-600 px-2 py-1 rounded-xl bg-rose-50 hover:bg-rose-100";
-          remove.textContent = "Hapus";
-          remove.addEventListener("click", () => {
-            remedialMembers = remedialMembers.filter((_, idx) => idx !== index);
-            renderRemedialMemberList();
-          });
-          row.appendChild(name);
-          row.appendChild(remove);
-          list.appendChild(row);
-        });
-      }
-
       function resetRemedialForm() {
         selectedRemedialClass = null;
         selectedRemedialMentor = null;
-        remedialMembers = [];
         const classInput = document.getElementById("remedialClassSearch");
         const mentorInput = document.getElementById("remedialMentorSearch");
         const nameInput = document.getElementById("remedialClassName");
-        const memberInput = document.getElementById("remedialMemberInput");
-        const memberInputContainer = document.getElementById(
-          "remedialMemberInputContainer",
-        );
+        const productName = document.getElementById("remedialProductName");
+        const productId = document.getElementById("remedialProductId");
+        const startDate = document.getElementById("remedialStartDate");
+        const meetingTotal = document.getElementById("remedialMeetingTotal");
+        const typeEl = document.getElementById("remedialType");
+        const locationEl = document.getElementById("remedialLocation");
+        const reasonEl = document.getElementById("remedialReason");
         const classList = document.getElementById("remedialClassList");
         const mentorList = document.getElementById("remedialMentorList");
         [
           "remedialClassNameError",
           "remedialClassError",
           "remedialMentorError",
-          "remedialMembersError",
+          "remedialMeetingTotalError",
+          "remedialReasonError",
         ].forEach((id) => {
           const el = document.getElementById(id);
           if (el) {
@@ -2616,11 +2687,15 @@
         if (classInput) classInput.value = "";
         if (mentorInput) mentorInput.value = "";
         if (nameInput) nameInput.value = "";
-        if (memberInput) memberInput.value = "";
-        if (memberInputContainer) memberInputContainer.classList.add("hidden");
+        if (productName) productName.value = "";
+        if (productId) productId.value = "";
+        if (startDate) startDate.value = "";
+        if (meetingTotal) meetingTotal.value = "";
+        if (typeEl) typeEl.value = "Online";
+        if (locationEl) locationEl.value = "";
+        if (reasonEl) reasonEl.value = "";
         if (classList) classList.classList.add("hidden");
         if (mentorList) mentorList.classList.add("hidden");
-        renderRemedialMemberList();
       }
 
       async function openRemedialModal() {
@@ -2641,19 +2716,27 @@
       function validateRemedialForm() {
         let valid = true;
         const nameInput = document.getElementById("remedialClassName");
+        const meetingTotalInput = document.getElementById("remedialMeetingTotal");
+        const reasonInput = document.getElementById("remedialReason");
         const classError = document.getElementById("remedialClassError");
         const mentorError = document.getElementById("remedialMentorError");
         const nameError = document.getElementById("remedialClassNameError");
-        const membersError = document.getElementById("remedialMembersError");
+        const meetingTotalError = document.getElementById("remedialMeetingTotalError");
+        const reasonError = document.getElementById("remedialReasonError");
         if (
           !nameInput ||
+          !meetingTotalInput ||
+          !reasonInput ||
           !classError ||
           !mentorError ||
           !nameError ||
-          !membersError
+          !meetingTotalError ||
+          !reasonError
         )
           return false;
         const remedialName = nameInput.value.trim();
+        const meetingTotal = parseInt(meetingTotalInput.value || "0", 10) || 0;
+        const remedialReason = reasonInput.value.trim();
         if (!remedialName) {
           nameError.textContent = "Nama kelas wajib diisi";
           nameError.classList.remove("hidden");
@@ -2675,12 +2758,19 @@
         } else {
           mentorError.classList.add("hidden");
         }
-        if (!remedialMembers.length) {
-          membersError.textContent = "Minimal 1 member harus ditambahkan";
-          membersError.classList.remove("hidden");
+        if (meetingTotal < 0) {
+          meetingTotalError.textContent = "Total meeting tidak boleh negatif";
+          meetingTotalError.classList.remove("hidden");
           valid = false;
         } else {
-          membersError.classList.add("hidden");
+          meetingTotalError.classList.add("hidden");
+        }
+        if (!remedialReason) {
+          reasonError.textContent = "Alasan remedial wajib diisi";
+          reasonError.classList.remove("hidden");
+          valid = false;
+        } else {
+          reasonError.classList.add("hidden");
         }
         return valid;
       }
@@ -2693,51 +2783,99 @@
         if (!nameInput || !selectedRemedialClass || !selectedRemedialMentor)
           return;
         const remedialName = nameInput.value.trim();
+        const parentData = selectedRemedialClass.data || {};
+        const mentorName = getMentorLabel(selectedRemedialMentor);
+        const startDate = (document.getElementById("remedialStartDate")?.value || "").trim();
+        const type = (document.getElementById("remedialType")?.value || "Online").trim();
+        const location = (document.getElementById("remedialLocation")?.value || "").trim();
+        const meetingTotal = parseInt(document.getElementById("remedialMeetingTotal")?.value || "0", 10) || 0;
+        const remedialReason = (document.getElementById("remedialReason")?.value || "").trim();
+        const productName = (document.getElementById("remedialProductName")?.value || "").trim();
+        const productId = (document.getElementById("remedialProductId")?.value || "").trim();
+        const parentClassName = getRemedialClassLabel(selectedRemedialClass);
+        const parentLevel = parseInt(parentData.remedial_level || parentData.remedialLevel || "0", 10) || 0;
+        const remedialLevel = parentLevel + 1;
+        const rootClassDocId =
+          parentData.root_class_doc_id ||
+          parentData.rootClassDocId ||
+          selectedRemedialClass.id;
         saveButton.disabled = true;
         saveButton.textContent = "Menyimpan...";
         try {
-          // extra runtime checks
           if (!selectedRemedialClass.id)
             throw new Error("ID kelas tidak valid");
-          if (typeof arrayUnion !== "function")
-            throw new Error("arrayUnion tidak tersedia");
-          console.debug(
-            "Menyimpan remedial untuk class id=",
-            selectedRemedialClass.id,
-            {
-              remedialClassName: remedialName,
-              mentorId: selectedRemedialMentor.id,
-              mentorName: getMentorLabel(selectedRemedialMentor),
-              members: remedialMembers.slice(),
-            },
-          );
-
-          // Firestore rejects serverTimestamp() nested inside arrayUnion() in some SDKs/environments.
-          // Use a client-side ISO timestamp for the remedial entry to ensure reliable writes.
-          const remedialEntry = {
-            remedialClassName: remedialName,
+          const mentorInitials = mentorName
+            .split(" ")
+            .filter(Boolean)
+            .map((part) => part.charAt(0))
+            .join("")
+            .toUpperCase()
+            .slice(0, 2);
+          const payload = {
+            name: remedialName,
+            class_name: remedialName,
+            variant: "remedial",
+            is_remedial: true,
+            parent_class_doc_id: selectedRemedialClass.id,
+            parent_class_name: parentClassName,
+            root_class_doc_id: rootClassDocId,
+            remedial_level: remedialLevel,
+            remedial_reason: remedialReason,
+            productName,
+            product_name: productName,
+            productId,
+            product_id: productId,
             mentorId: selectedRemedialMentor.id,
-            mentorName: getMentorLabel(selectedRemedialMentor),
-            members: remedialMembers.slice(),
+            mentor_id: selectedRemedialMentor.id,
+            mentorName,
+            mentor_name: mentorName,
+            mentor: mentorName,
+            mentors: [{ id: selectedRemedialMentor.id, name: mentorName, initials: mentorInitials }],
+            status: "Soon",
+            class_status: "Soon",
+            meeting_done: 0,
+            meeting_total: meetingTotal,
+            meetingDone: 0,
+            meetingTotal,
+            current_joined: 0,
+            type,
+            location,
+            date: startDate,
+            start_date: startDate,
+            startDate,
+            time: "",
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          };
+          const docRef = await addDoc(collection(db, "class_planning"), payload);
+
+          const remedialEntry = {
+            remedialClassDocId: docRef.id,
+            remedialClassName: remedialName,
+            parentClassDocId: selectedRemedialClass.id,
+            parentClassName,
+            rootClassDocId,
+            remedialLevel,
             createdAt: new Date().toISOString(),
           };
           await updateDoc(
-            doc(db, "class_availability", selectedRemedialClass.id),
+            doc(db, "class_planning", selectedRemedialClass.id),
             {
               remedials: arrayUnion(remedialEntry),
+              updatedAt: serverTimestamp(),
             },
           );
 
-          showPlanningToast("Kelas remidial berhasil disimpan.", "success");
+          showPlanningToast("Kelas remedial berhasil dibuat.", "success");
           closeRemedialModal();
-          // refresh lookup cache and UI
           await loadRemedialLookups();
+          await loadClassesFromFirestore();
           updateAll();
         } catch (e) {
           console.error("Gagal menyimpan remedial:", e);
           const msg =
-            e && e.message ? e.message : "Gagal menyimpan kelas remidial.";
-          showPlanningToast("Gagal menyimpan kelas remidial: " + msg, "error");
+            e && e.message ? e.message : "Gagal menyimpan kelas remedial.";
+          showPlanningToast("Gagal menyimpan kelas remedial: " + msg, "error");
         } finally {
           saveButton.disabled = false;
           if (saveButton) saveButton.textContent = "Simpan";
@@ -2755,6 +2893,7 @@
         renderSearchDropdown(list, filtered, getRemedialClassLabel);
         list.classList.remove("hidden");
         selectedRemedialClass = null;
+        fillRemedialParentFields(null);
       }
 
       function filterRemedialMentorResults(value) {
@@ -2772,29 +2911,6 @@
         const statusText = document.getElementById("remedialStatusText");
         if (!statusText) return;
         statusText.textContent = message;
-      }
-
-      function showRemedialMemberInput() {
-        const container = document.getElementById(
-          "remedialMemberInputContainer",
-        );
-        if (container) container.classList.remove("hidden");
-      }
-
-      function addRemedialMember() {
-        const input = document.getElementById("remedialMemberInput");
-        const membersError = document.getElementById("remedialMembersError");
-        if (!input || !membersError) return;
-        const name = input.value.trim();
-        if (!name) {
-          membersError.textContent = "Nama member tidak boleh kosong";
-          membersError.classList.remove("hidden");
-          return;
-        }
-        remedialMembers.push(name);
-        input.value = "";
-        membersError.classList.add("hidden");
-        renderRemedialMemberList();
       }
 
       function clearSearchDropdownsOnClickOutside(event) {
@@ -2843,8 +2959,8 @@
       function mapAvailabilityDocToClass(docSnap, idx) {
         const d = docSnap.data() || {};
         const id = d.id || docSnap.id || `c${idx}`;
-        const startRaw = d.start_date || d.startDate || "";
-        const mentorName = d.mentor_name || "";
+        const startRaw = d.date || d.start_date || d.startDate || "";
+        const mentorName = d.mentor_name || d.mentor || "";
         const mentors = [];
         if (typeof mentorName === "string" && mentorName.trim() !== "") {
           mentorName.split(",").forEach((part) => {
@@ -2907,14 +3023,41 @@
         const rescheduleCount =
           typeof d.rescheduleCount === "number" ? d.rescheduleCount : 0;
         const meetingDone =
-          typeof d.meeting_done === "number" ? d.meeting_done : 0;
+          typeof d.meeting_done === "number"
+            ? d.meeting_done
+            : typeof d.meetingDone === "number"
+              ? d.meetingDone
+              : 0;
         const meetingTotal =
-          typeof d.meeting_total === "number" ? d.meeting_total : 0;
+          typeof d.meeting_total === "number"
+            ? d.meeting_total
+            : typeof d.meetingTotal === "number"
+              ? d.meetingTotal
+              : 0;
+        const isRemedial =
+          d.is_remedial === true ||
+          d.isRemedial === true ||
+          String(d.variant || "").toLowerCase() === "remedial";
 
         return {
           id,
           docId: docSnap.id,
           name: d.name || d.class_name || "Unnamed Class",
+          className: d.class_name || d.name || "Unnamed Class",
+          variant: d.variant || (isRemedial ? "remedial" : "regular"),
+          isRemedial,
+          parentClassDocId: d.parent_class_doc_id || d.parentClassDocId || "",
+          parentClassName: d.parent_class_name || d.parentClassName || "",
+          rootClassDocId: d.root_class_doc_id || d.rootClassDocId || "",
+          remedialLevel:
+            typeof d.remedial_level === "number"
+              ? d.remedial_level
+              : typeof d.remedialLevel === "number"
+                ? d.remedialLevel
+                : 0,
+          remedialReason: d.remedial_reason || d.remedialReason || "",
+          productName: d.productName || d.product_name || "",
+          productId: d.productId || d.product_id || "",
           status: deriveStatusFromAvailability(d),
           startDate: startRaw,
           dates: Array.isArray(d.dates) ? d.dates : [],
@@ -2932,7 +3075,7 @@
             typeof d.current_joined === "number" ? d.current_joined : 0,
           memberRefs: [],
           files: Array.isArray(d.files) ? d.files : [],
-          comment: d.comment || "",
+          comment: d.comment || d.remedial_reason || "",
           attendanceRate,
           delayCount,
           rescheduleCount,
@@ -2947,7 +3090,7 @@
           return;
         }
         try {
-          const snap = await getDocs(collection(db, "class_availability"));
+          const snap = await getDocs(collection(db, "class_planning"));
           const loaded = [];
           let idx = 1;
           snap.forEach((docSnap) => {
@@ -2956,7 +3099,7 @@
           classesState = loaded.length > 0 ? loaded : dummyClassesState.slice();
         } catch (e) {
           console.error(
-            "Gagal memuat data kelas dari Firestore (class_availability):",
+            "Gagal memuat data kelas dari Firestore (class_planning):",
             e,
           );
           classesState = dummyClassesState.slice();
@@ -3134,10 +3277,26 @@
           const nameEl = document.createElement("div");
           nameEl.className = "text-xs font-semibold text-slate-900";
           nameEl.textContent = c.name || "-";
+          const badgeRow = document.createElement("div");
+          badgeRow.className = "flex items-center gap-1 flex-wrap mt-1";
+          if (c.isRemedial) {
+            const remedialBadge = document.createElement("span");
+            remedialBadge.className =
+              "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-100";
+            remedialBadge.textContent = "Remedial";
+            badgeRow.appendChild(remedialBadge);
+            if (c.parentClassName) {
+              const parentInfo = document.createElement("span");
+              parentInfo.className = "text-[10px] text-slate-500";
+              parentInfo.textContent = "Parent: " + c.parentClassName;
+              badgeRow.appendChild(parentInfo);
+            }
+          }
           const metaEl = document.createElement("div");
           metaEl.className = "text-[10px] text-slate-400";
           metaEl.textContent = (c.location || "-") + " • " + (c.type || "-");
           nameCol.appendChild(nameEl);
+          if (badgeRow.children.length) nameCol.appendChild(badgeRow);
           nameCol.appendChild(metaEl);
           tdName.appendChild(nameCol);
 
@@ -3745,6 +3904,10 @@
         if (className) className.textContent = c.name || "-";
         if (subtitle)
           subtitle.textContent = (c.location || "-") + " • " + (c.type || "-");
+        if (subtitle && c.isRemedial && c.parentClassName) {
+          subtitle.textContent =
+            subtitle.textContent + " | Parent: " + c.parentClassName;
+        }
         if (statusBadge) {
           statusBadge.innerHTML = "";
           const span = document.createElement("span");
@@ -4454,11 +4617,6 @@
         const btnOpenRemedial = document.getElementById("btnOpenRemedial");
         const remedialModal = document.getElementById("remedialModal");
         const btnCloseRemedial = document.getElementById("btnCloseRemedial");
-        const btnShowMemberInput =
-          document.getElementById("btnShowMemberInput");
-        const btnAddRemedialMember = document.getElementById(
-          "btnAddRemedialMember",
-        );
         const remedialClassSearch = document.getElementById(
           "remedialClassSearch",
         );
@@ -4479,16 +4637,6 @@
           remedialModal.addEventListener("click", (e) => {
             if (e.target === remedialModal) closeRemedialModal();
           });
-        }
-        if (btnShowMemberInput) {
-          btnShowMemberInput.addEventListener("click", () =>
-            showRemedialMemberInput(),
-          );
-        }
-        if (btnAddRemedialMember) {
-          btnAddRemedialMember.addEventListener("click", () =>
-            addRemedialMember(),
-          );
         }
         if (remedialClassSearch) {
           remedialClassSearch.addEventListener("input", () => {
