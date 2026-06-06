@@ -1898,6 +1898,21 @@
                                     </div>
                                     <div class="modal-section-icon"><i class="fa-regular fa-circle-check"></i></div>
                                 </div>
+                                <div class="row g-3 mt-3 mb-3">
+                                    <div class="col-md-12">
+                                        <div class="modal-field-shell is-highlight">
+                                            <label for="acceptedDivisionSelect" class="form-label form-label-soft">Divisi Team</label>
+                                            <select class="form-select" id="acceptedDivisionSelect">
+                                                <option value="">Pilih divisi team</option>
+                                                <option value="Human Resources">Human Resources</option>
+                                                <option value="Marketing">Marketing</option>
+                                                <option value="Client & Product">Client & Product</option>
+                                                <option value="Branding">Branding</option>
+                                            </select>
+                                            <div class="invalid-feedback">Silakan pilih divisi team terlebih dahulu.</div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="status-empty-note mt-3" id="acceptedWhatsappStatusHint">
                                     Klik `Siapkan Acceptance Letter` untuk menyiapkan pesan WhatsApp kandidat yang
                                     diterima.
@@ -2200,8 +2215,6 @@
             buildInterviewLocationLine
         } from "../element/recruitment-interview-utils.js";
         import {
-            getStoredTemplates,
-            setTemplatesLastModified,
             TEMPLATE_STORAGE_KEY
         } from "../element/template-manager.js";
         import {
@@ -2210,6 +2223,10 @@
             buildAcceptedMessage,
             buildRejectedMessage
         } from "../element/whatsapp-message-builder.js";
+        import {
+            promptTeamDivision,
+            syncAcceptedCandidateToTeamManagement
+        } from "../element/team-management-sync.js";
         const renderBreadcrumb = (container, config) => {
             if (!container) return;
             const items = (config && Array.isArray(config.items)) ? config.items : [];
@@ -2238,7 +2255,6 @@
             getDoc,
             getDocs,
             addDoc,
-            setDoc,
             updateDoc,
             arrayUnion,
             onSnapshot,
@@ -3276,6 +3292,8 @@
             const rejectionReason = recruitment.rejection_reason || "";
             const rejectionNotes = recruitment.rejection_notes || "";
             const withdrawnNotes = recruitment.withdrawn_notes || "";
+            const isTeamMember = !!(data.isTeamMember || data.is_team_member || data.teamManagementId || recruitment.is_team_member || recruitment.team_management_id);
+            const teamMemberDivision = data.teamMemberDivision || recruitment.team_member_division || "";
             const screeningHistoryEntry = history
                 .slice()
                 .sort((a, b) => (parseDateValue(b.date)?.getTime() || 0) - (parseDateValue(a.date)?.getTime() || 0))
@@ -3343,6 +3361,8 @@
                 rejectionReason,
                 rejectionNotes,
                 withdrawnNotes,
+                isTeamMember,
+                teamMemberDivision,
                 isInactive: inactiveRecord,
                 raw: data
             };
@@ -3580,6 +3600,9 @@
             const screeningByDisplay = vm.screeningByName || "";
             const screeningAtDisplay = vm.screeningAt ? formatDateTime(vm.screeningAt) : "";
             const statusBadge = '<span class="' + getStatusBadgeClasses(vm.displayStatus) + '">' + escapeHtml(getStatusLabel(vm.displayStatus)) + '</span>';
+            const teamMemberBadge = vm.isTeamMember
+                ? '<span class="detail-meta-chip text-success"><i class="fa-solid fa-user-check"></i>Team Member' + (vm.teamMemberDivision ? ' - ' + escapeHtml(vm.teamMemberDivision) : '') + '</span>'
+                : '';
             const decisionBadge = getDecisionBadgeHtml(vm.finalDecision);
             const contactChips = [
                 hasMeaningfulValue(vm.email) ? '<span class="detail-meta-chip"><i class="fa-regular fa-envelope"></i>' + escapeHtml(vm.email) + '</span>' : "",
@@ -3708,6 +3731,7 @@
                 '<div class="detail-chip-row">' +
                 '<span class="detail-role-chip">' + escapeHtml(vm.position || "-") + '</span>' +
                 statusBadge +
+                teamMemberBadge +
                 decisionBadge +
                 '</div>' +
                 (contactChips ? '<div class="detail-chip-row">' + contactChips + '</div>' : '') +
@@ -3815,17 +3839,14 @@
             return { source: "firestore" };
         }
 
-        async function syncAcceptedTeamCopy(candidateId) {
-            const snap = await getDoc(doc(db, INTERNSHIP_CANDIDATES_COLLECTION, candidateId));
-            if (!snap.exists()) return;
-            const sourceData = snap.data() || {};
-            const copyPayload = {
-                ...sourceData,
-                source_candidate_id: candidateId,
-                source_collection: INTERNSHIP_CANDIDATES_COLLECTION,
-                copied_to_team_at: new Date().toISOString()
-            };
-            await setDoc(doc(db, "teams", candidateId), copyPayload, { merge: true });
+        async function syncAcceptedTeamCopy(candidateId, division) {
+            return syncAcceptedCandidateToTeamManagement({
+                db,
+                candidateCollection: INTERNSHIP_CANDIDATES_COLLECTION,
+                candidateId,
+                division,
+                source: "candidate-team"
+            });
         }
 
         async function loadCandidateDetail() {
@@ -4546,7 +4567,8 @@
             }
             if (activeDecisionAction === "accepted" && decisionModalContext === "interview") {
                 const acceptanceMessage = document.getElementById("acceptedWhatsappText") ? (document.getElementById("acceptedWhatsappText").value || "").trim() : "";
-                submitButton.disabled = !acceptedWhatsappPayload || !acceptedWhatsappConfirmedAt || !acceptanceMessage;
+                const selectedDivision = document.getElementById("acceptedDivisionSelect") ? (document.getElementById("acceptedDivisionSelect").value || "").trim() : "";
+                submitButton.disabled = !acceptedWhatsappPayload || !acceptedWhatsappConfirmedAt || !acceptanceMessage || !selectedDivision;
                 submitButton.textContent = "Submit Accepted";
                 return;
             }
@@ -5027,6 +5049,11 @@
             document.getElementById("rejectionReasonSelect").classList.remove("is-invalid");
             document.getElementById("rejectionNotesInput").classList.remove("is-invalid");
             document.getElementById("withdrawnNotesInput").value = "";
+            const divisionSelect = document.getElementById("acceptedDivisionSelect");
+            if (divisionSelect) {
+                divisionSelect.value = "";
+                divisionSelect.classList.remove("is-invalid");
+            }
             const acceptedWhatsappText = document.getElementById("acceptedWhatsappText");
             if (acceptedWhatsappText) acceptedWhatsappText.value = "";
             document.getElementById("on_job_trainingWhatsappText").value = "";
@@ -5454,6 +5481,14 @@
                 
                 if (activeDecisionAction === "accepted" && decisionModalContext === "interview") {
                     const acceptedMessage = normalizeWhatsappMessage((document.getElementById("acceptedWhatsappText").value || "").trim());
+                    const selectedTeamDivision = (document.getElementById("acceptedDivisionSelect").value || "").trim();
+                    if (!selectedTeamDivision) {
+                        document.getElementById("acceptedDivisionSelect").classList.add("is-invalid");
+                        showWarning("Silakan pilih divisi team terlebih dahulu.");
+                        syncDecisionSubmitState();
+                        return;
+                    }
+                    document.getElementById("acceptedDivisionSelect").classList.remove("is-invalid");
                     if (!acceptedWhatsappPayload || !acceptedWhatsappConfirmedAt || !acceptedMessage) {
                         setAcceptedWhatsappValidation("Acceptance letter WhatsApp wajib disiapkan, dikirim, dan dikonfirmasi sebelum submit accepted.", "warning");
                         syncDecisionSubmitState();
@@ -5524,9 +5559,13 @@
                         acceptedWhatsappRetryCount: acceptedWhatsappRetryCount,
                         actor
                     });
-                    await syncAcceptedTeamCopy(currentCandidate.id);
+                    const syncResult = await syncAcceptedTeamCopy(currentCandidate.id, selectedTeamDivision);
                     decisionModal.hide();
-                    showSuccess("Kandidat berhasil ditandai accepted.");
+                    showSuccess(
+                        syncResult.status === "duplicate"
+                            ? "Kandidat berhasil ditandai accepted. Data kandidat sudah tercatat sebagai anggota tim."
+                            : "Kandidat berhasil ditandai accepted dan ditambahkan ke Team Management."
+                    );
                     return;
                 }
 
@@ -5894,6 +5933,13 @@
                 document.getElementById("rejectionReasonSelect").classList.remove("is-invalid");
                 syncDecisionSubmitState();
             });
+            const acceptedDivisionSelect = document.getElementById("acceptedDivisionSelect");
+            if (acceptedDivisionSelect) {
+                acceptedDivisionSelect.addEventListener("change", () => {
+                    acceptedDivisionSelect.classList.remove("is-invalid");
+                    syncDecisionSubmitState();
+                });
+            }
             document.getElementById("prepareAcceptedWhatsappButton").addEventListener("click", () => {
                 prepareAcceptedWhatsappPreview();
             });
@@ -6080,7 +6126,7 @@
         });
 
         window.addEventListener("storage", (e) => {
-            if (e.key === CHAT_TEMPLATE_STORAGE_KEY) {
+            if (e.key === TEMPLATE_STORAGE_KEY) {
                 handleTemplatesUpdated();
             }
         });

@@ -267,7 +267,6 @@
         let editingPlanId = null;
         let mentorsState = [];
         const CLASS_SOURCE_PLANNING = "class_planning";
-        const CLASS_SOURCE_AVAILABILITY = "class_availability";
 
         function startOfWeek(d) {
             const date = new Date(d);
@@ -366,7 +365,8 @@
                 note: d.note || "",
                 room: d.room || "",
                 date: normalizeDateKey(d.date || d.start_date || d.startDate || ""),
-                time: normalizeTimeLabel(d.time || d.start_time || d.startTime || d.class_time || d.classTime || d.jam || "")
+                time: normalizeTimeLabel(d.time || d.start_time || d.startTime || d.class_time || d.classTime || d.jam || ""),
+                availabilityId: d.availabilityId || ""
             };
         }
 
@@ -385,7 +385,8 @@
                 note: d.note || d.comment || "",
                 room: d.room || "",
                 date: schedule.date,
-                time: schedule.time
+                time: schedule.time,
+                availabilityId: docSnap.id
             };
         }
 
@@ -687,23 +688,11 @@
 
         async function loadPlanning() {
             try {
-                const [planningSnap, availabilitySnap] = await Promise.all([
-                    getDocs(collection(db, CLASS_SOURCE_PLANNING)),
-                    getDocs(collection(db, CLASS_SOURCE_AVAILABILITY))
-                ]);
+                const planningSnap = await getDocs(collection(db, CLASS_SOURCE_PLANNING));
                 const unscheduled = [];
                 const scheduled = [];
-                const existingClassIds = new Set();
                 planningSnap.forEach((docSnap) => {
                     const item = buildPlanningItemFromClassPlanning(docSnap);
-                    if (item.classId) existingClassIds.add(String(item.classId));
-                    if (item.date && item.time) scheduled.push(item);
-                    else unscheduled.push(item);
-                });
-                availabilitySnap.forEach((docSnap) => {
-                    const item = buildPlanningItemFromAvailability(docSnap);
-                    const classIdKey = item.classId ? String(item.classId) : "";
-                    if (classIdKey && existingClassIds.has(classIdKey)) return;
                     if (item.date && item.time) scheduled.push(item);
                     else unscheduled.push(item);
                 });
@@ -716,78 +705,6 @@
             }
             renderUnscheduled();
             renderCalendar();
-        }
-
-        async function syncAvailabilityToPlanning() {
-            try {
-                if (!db || !collection || !getDocs || !addDoc) return;
-                const existing = new Set();
-                planningUnscheduled.forEach((p) => {
-                    if (p.availabilityId) existing.add(String(p.availabilityId));
-                });
-                planningScheduled.forEach((p) => {
-                    if (p.availabilityId) existing.add(String(p.availabilityId));
-                });
-
-                const snap = await getDocs(collection(db, "class_availability"));
-                const newItems = [];
-                const now = new Date();
-
-                const tasks = [];
-                snap.forEach((docSnap) => {
-                    const d = docSnap.data() || {};
-                    const availId = docSnap.id;
-                    if (existing.has(availId)) return;
-
-                    const rawStart = d.start_date || d.startDate || d.date || "";
-                    if (rawStart && rawStart !== "Flexible") {
-                        const ts = new Date(rawStart).getTime();
-                        if (Number.isFinite(ts) && ts < now.getTime()) {
-                            return;
-                        }
-                    }
-
-                    const name = d.name || "Unnamed Class";
-                    const mentor = d.mentor_name || "";
-                    const type = d.type || "Offline";
-
-                    const payload = {
-                        name,
-                        mentor,
-                        duration: 1.5,
-                        type,
-                        room: "",
-                        note: "",
-                        date: "",
-                        time: "",
-                        availabilityId: availId
-                    };
-
-                    const task = addDoc(collection(db, "class_planning"), payload)
-                        .then((ref) => {
-                            newItems.push({
-                                id: ref.id,
-                                ...payload
-                            });
-                        })
-                        .catch((err) => {
-                            console.error("Gagal sinkron kelas dari class_availability:", err);
-                        });
-
-                    tasks.push(task);
-                });
-
-                if (tasks.length) {
-                    await Promise.all(tasks);
-                    if (newItems.length) {
-                        planningUnscheduled = planningUnscheduled.concat(newItems);
-                        renderUnscheduled();
-                        renderCalendar();
-                    }
-                }
-            } catch (e) {
-                console.error("Gagal sinkron kelas availability ke planning:", e);
-            }
         }
 
         function renderMentorOptions(selectedName) {
@@ -978,22 +895,9 @@
                             return;
                         }
                     }
-                    const targetCollection = existing && existing.sourceCollection ? existing.sourceCollection : CLASS_SOURCE_PLANNING;
+                    const targetCollection = CLASS_SOURCE_PLANNING;
                     const targetDocId = existing && existing.sourceDocId ? existing.sourceDocId : editingPlanId;
-                    const updatePayload = targetCollection === CLASS_SOURCE_AVAILABILITY
-                        ? {
-                            name,
-                            class_name: name,
-                            mentor_name: mentor,
-                            mentor,
-                            type,
-                            room,
-                            note,
-                            comment: note,
-                            duration
-                        }
-                        : payload;
-                    await updateDoc(doc(db, targetCollection, targetDocId), updatePayload);
+                    await updateDoc(doc(db, targetCollection, targetDocId), payload);
                     let item = planningUnscheduled.find(p => p.id === editingPlanId);
                     if (!item) {
                         item = planningScheduled.find(p => p.id === editingPlanId);
@@ -1074,24 +978,10 @@
             renderUnscheduled();
             renderCalendar();
             try {
-                if (isAvailabilityPlan(item)) {
-                    await updateDoc(doc(db, CLASS_SOURCE_AVAILABILITY, item.sourceDocId), {
-                        date: dateKey,
-                        time: time,
-                        start_date: dateKey + "T" + time,
-                        startDate: dateKey + "T" + time,
-                        start_time: time,
-                        startTime: time,
-                        class_time: time,
-                        classTime: time,
-                        jam: time
-                    });
-                } else {
-                    await updateDoc(doc(db, CLASS_SOURCE_PLANNING, item.sourceDocId), {
-                        date: dateKey,
-                        time: time
-                    });
-                }
+                await updateDoc(doc(db, CLASS_SOURCE_PLANNING, item.sourceDocId), {
+                    date: dateKey,
+                    time: time
+                });
                 showToast("Jadwal diperbarui: " + dateKey + " • " + time, "success");
             } catch (e) {
                 console.error("Gagal menyimpan jadwal perencanaan kelas:", e);
@@ -1153,9 +1043,8 @@
             }
             loadMentorsForPlanning()
                 .then(() => loadPlanning())
-                .then(() => syncAvailabilityToPlanning())
                 .catch(() => {
-                    loadPlanning().then(() => syncAvailabilityToPlanning());
+                    loadPlanning();
                 });
         });
     </script>
