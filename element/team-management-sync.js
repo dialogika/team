@@ -18,6 +18,12 @@ export const TEAM_MEMBER_DIVISIONS = [
     "Branding"
 ];
 
+const ROLE_NAME_TO_DIVISION = {
+    "branding/social media specialist": "Branding",
+    "admin marketing": "Marketing",
+    "client & product/admin kelas": "Client & Product"
+};
+
 const TEAM_COLLECTION = "team_management";
 const USER_COLLECTION_CANDIDATES = ["users", "user"];
 
@@ -37,6 +43,27 @@ function asArray(value) {
 function normalizeTeamDivision(value) {
     const raw = (value || "").toString().trim();
     return TEAM_MEMBER_DIVISIONS.includes(raw) ? raw : "";
+}
+
+function normalizeRoleName(value) {
+    return (value || "").toString().trim().toLowerCase();
+}
+
+export function resolveDivisionFromRoleName(roleName) {
+    const normalized = normalizeRoleName(roleName);
+    if (!normalized) return "";
+    return ROLE_NAME_TO_DIVISION[normalized] || "";
+}
+
+export async function resolveCandidateDivision(db, candidateCollection, candidateId, fallbackDivision = "") {
+    if (!db || !candidateCollection || !candidateId) return normalizeTeamDivision(fallbackDivision);
+    const candidateSnap = await getDoc(doc(db, candidateCollection, candidateId));
+    if (!candidateSnap.exists()) return normalizeTeamDivision(fallbackDivision);
+    const sourceData = candidateSnap.data() || {};
+    const internship = sourceData.internship || sourceData.internship_info || {};
+    const scouting = sourceData.scouting_info || {};
+    const roleName = firstValue(sourceData.role_name, internship.role_name, scouting.role_name);
+    return resolveDivisionFromRoleName(roleName) || normalizeTeamDivision(fallbackDivision);
 }
 
 function buildDocumentList(sourceData, internship, teamData) {
@@ -91,7 +118,8 @@ export function buildTeamMemberPayload(sourceData = {}, candidateId, division, s
     const scouting = sourceData.scouting_info || {};
     const profiling = sourceData.profiling || {};
     const teamData = Array.isArray(sourceData.team) ? (sourceData.team[0] || {}) : (sourceData.team || {});
-    const selectedDivision = normalizeTeamDivision(division);
+    const roleName = firstValue(sourceData.role_name, internship.role_name, scouting.role_name);
+    const selectedDivision = resolveDivisionFromRoleName(roleName) || normalizeTeamDivision(division);
     const userId = getCandidateUserId(sourceData);
 
     return {
@@ -101,9 +129,11 @@ export function buildTeamMemberPayload(sourceData = {}, candidateId, division, s
         email: firstValue(internship.email, contact.email, basic.email, sourceData.email),
         whatsapp: firstValue(internship.whatsapp, contact.whatsapp, contact.phone, sourceData.whatsapp, sourceData.phone),
         division: selectedDivision,
+        department: selectedDivision,
         originalDivision: selectedDivision,
         status: "Active",
         source,
+        role_name: roleName,
         address: firstValue(internship.address, contact.address, sourceData.address),
         birthDate: firstValue(basic.birthDate, basic.birth_date, contact.birthDate, contact.birth_date, internship.birthDate, internship.birth_date, sourceData.birthDate, sourceData.birth_date),
         startDate: "",
@@ -115,7 +145,7 @@ export function buildTeamMemberPayload(sourceData = {}, candidateId, division, s
         fee: "",
         campus: firstValue(internship.campus, education.campus, education.university, contact.campus),
         major: firstValue(internship.major, education.major, education.department, education.faculty),
-        roleName: firstValue(sourceData.role_name, internship.role_name, scouting.role_name),
+        roleName,
         portfolioUrl: firstValue(teamData.portfolio_url, teamData.portofolio_url, internship.portfolio_url, sourceData.portfolio_url),
         portfolioLink: firstValue(internship.portfolio_link, sourceData.portfolio_link, teamData.portfolio_link, teamData.portofolio_link),
         resumeUrl: firstValue(teamData.resume_url, internship.resume_url, sourceData.resume_url, sourceData.cv_url),
@@ -174,10 +204,12 @@ async function markCandidateAsTeamMember(db, candidateCollection, candidateId, m
         isTeamMember: true,
         teamManagementId: memberId || "",
         teamMemberDivision: division || "",
+        teamMemberDepartment: division || "",
         teamMemberAddedAt: serverTimestamp(),
         "recruitment_status.is_team_member": true,
         "recruitment_status.team_management_id": memberId || "",
-        "recruitment_status.team_member_division": division || ""
+        "recruitment_status.team_member_division": division || "",
+        "recruitment_status.team_member_department": division || ""
     });
 }
 
@@ -222,10 +254,6 @@ export async function syncAcceptedCandidateToTeamManagement({
     if (!db || !candidateCollection || !candidateId) {
         throw new Error("Data kandidat belum lengkap untuk sinkronisasi Team Management.");
     }
-    const selectedDivision = normalizeTeamDivision(division);
-    if (!selectedDivision) {
-        throw new Error("Divisi Team wajib dipilih.");
-    }
 
     const candidateRef = doc(db, candidateCollection, candidateId);
     const candidateSnap = await getDoc(candidateRef);
@@ -235,6 +263,13 @@ export async function syncAcceptedCandidateToTeamManagement({
 
     const sourceData = candidateSnap.data() || {};
     const userId = getCandidateUserId(sourceData);
+    const roleName = firstValue(
+        sourceData.role_name,
+        sourceData.internship && sourceData.internship.role_name,
+        sourceData.internship_info && sourceData.internship_info.role_name,
+        sourceData.scouting_info && sourceData.scouting_info.role_name
+    );
+    const selectedDivision = resolveDivisionFromRoleName(roleName) || normalizeTeamDivision(division);
     const existing = await findExistingTeamMember(db, candidateId, userId);
     if (existing) {
         const existingData = existing.data() || {};
@@ -244,6 +279,10 @@ export async function syncAcceptedCandidateToTeamManagement({
             memberId: existing.id,
             division: existingData.division || selectedDivision
         };
+    }
+
+    if (!selectedDivision) {
+        throw new Error("Department Team tidak dapat ditentukan dari role kandidat.");
     }
 
     const payload = buildTeamMemberPayload(sourceData, candidateId, selectedDivision, source);

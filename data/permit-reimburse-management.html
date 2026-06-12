@@ -221,6 +221,7 @@
                                         <th>Tanggal Pengajuan</th>
                                         <th>Nama</th>
                                         <th>Tanggal Izin</th>
+                                        <th>Jenis Izin</th>
                                         <th>Alasan</th>
                                         <th>Status</th>
                                         <th class="text-right">Aksi</th>
@@ -636,6 +637,58 @@
                 });
             }
 
+            function normalizePermitType(value) {
+                const raw = String(value || "").toLowerCase().trim();
+                if (raw === "setengah-hari" || raw === "half-day" || raw === "half day") return "half-day";
+                return "full-day";
+            }
+
+            function formatTimeToken(value) {
+                return String(value || "").trim().replace(/\./g, ":");
+            }
+
+            function formatPermitHoursLabel(permit) {
+                const hoursRaw = String(permit && (permit.permit_hours || permit.permit_time_range || "")).trim();
+                if (!hoursRaw) {
+                    const start = formatTimeToken(permit && permit.permit_start_hour);
+                    const end = formatTimeToken(permit && permit.permit_end_hour);
+                    if (start && end) return start + " - " + end;
+                    return "";
+                }
+                const cleaned = hoursRaw.replace(/\./g, ":");
+                const parts = cleaned.split(/\s*-\s*/).map(s => s.trim()).filter(Boolean);
+                if (parts.length >= 2) {
+                    return formatTimeToken(parts[0]) + " - " + formatTimeToken(parts[1]);
+                }
+                return cleaned;
+            }
+
+            function getPermitJenisLabel(permit) {
+                const hours = formatPermitHoursLabel(permit);
+                const type = normalizePermitType(permit && (permit.permit_type || permit.type));
+                if (type === "half-day" || hours) {
+                    return hours ? "Half Day (" + hours + ")" : "Half Day";
+                }
+                return "Full Day";
+            }
+
+            function buildApproveEmailTemplate(permit, includeReimburse) {
+                const p = permit || {};
+                const name = p.user_name || "";
+                const alasan = p.reason || "-";
+                const jenis = getPermitJenisLabel(p);
+                const startSlash = formatDateSlash(p.start_date) || "-";
+                const endSlash = formatDateSlash(p.end_date || p.start_date) || startSlash;
+                const izinDate = startSlash + " s/d " + endSlash;
+                const startCalc = parseDateForCalc(p.start_date);
+                const endCalc = parseDateForCalc(p.end_date || p.start_date);
+                const durasi = Math.max(1, dayDiffInclusive(startCalc, endCalc));
+                const reimbursementText = includeReimburse
+                    ? "Izin ini termasuk yang mendapat reimbursement dan akan langsung diproses oleh tim HR."
+                    : "Izin ini tidak mendapatkan reimbursement.";
+                return `Hai ${name},\n\nIzin kamu sudah kami setujui. Berikut detailnya:\n\n- Jenis izin   : ${jenis}\n- Alasan izin  : ${alasan}\n- Tanggal      : ${izinDate}\n- Durasi       : ${durasi} hari kerja\n\n${reimbursementText}\n\nSalam,\nHR Dialogika`;
+            }
+
             function renderPermitTable(records) {
                 if (!permitTableBody) return;
                 if (!records.length) {
@@ -683,6 +736,7 @@
                     const endFull = formatFullDate(p.end_date || p.start_date);
                     let izinLabel = startFull || "-";
                     if (startFull && endFull && endFull !== startFull) izinLabel = startFull + " - " + endFull;
+                    const jenisIzinLabel = getPermitJenisLabel(p);
                     const reasonFull = (p.reason || "-");
                     const attachmentHtml = p.attachment_url ? ('<div class="mt-1 text-xs"><a href="' + p.attachment_url + '" target="_blank" class="underline">Lampiran</a></div>') : "";
                     const avatarName = p.user_name || "User";
@@ -726,6 +780,9 @@
                             "</td>" +
                             '<td>' +
                                 '<div>' + izinLabel + "</div>" +
+                            "</td>" +
+                            '<td>' +
+                                '<div>' + escapeHtml(jenisIzinLabel) + "</div>" +
                             "</td>" +
                             '<td>' +
                                 '<div>' + escapeHtml(reasonFull) + "</div>" +
@@ -793,9 +850,12 @@
                                     photo,
                                     category: d.category || "",
                                     type: d.type || "",
+                                    permit_type: d.permit_type || d.type || "",
                                     start_date: d.start_date || "",
                                     end_date: d.end_date || "",
                                     permit_hours: d.permit_hours || "",
+                                    permit_start_hour: d.permit_start_hour || "",
+                                    permit_end_hour: d.permit_end_hour || "",
                                     reason: d.reason || "",
                                     attachment_name: d.attachment_name || "",
                                     attachment_url: d.attachment_url || "",
@@ -846,11 +906,15 @@
                         const name = (p.user_name || "").toLowerCase();
                         const position = (p.user_position || "").toLowerCase();
                         const category = (p.category || "").toLowerCase();
+                        const permitType = (p.permit_type || p.type || "").toLowerCase();
+                        const permitHours = (p.permit_hours || "").toLowerCase();
                         const reason = (p.reason || "").toLowerCase();
                         return (
                             name.includes(term) ||
                             position.includes(term) ||
                             category.includes(term) ||
+                            permitType.includes(term) ||
+                            permitHours.includes(term) ||
                             reason.includes(term)
                         );
                     });
@@ -878,7 +942,7 @@
                 currentActionPermitId = id;
                 const p = allPermits.find(x => x.id === id) || {};
                 const name = p.user_name || "";
-                const jenis = p.type || "-";
+                const jenis = getPermitJenisLabel(p);
                 const startSlash = formatDateSlash(p.start_date) || "-";
                 const endSlash = formatDateSlash(p.end_date || p.start_date) || startSlash;
                 const izinDate = startSlash + " s/d " + endSlash;
@@ -1173,15 +1237,7 @@
 
             function openApproveEmailModal() {
                 const p = allPermits.find(x => x.id === currentActionPermitId) || {};
-                const name = p.user_name || "";
-                const alasan = p.reason || "-";
-                const startSlash = formatDateSlash(p.start_date) || "-";
-                const endSlash = formatDateSlash(p.end_date || p.start_date) || startSlash;
-                const izinDate = startSlash + " s/d " + endSlash;
-                const startCalc = parseDateForCalc(p.start_date);
-                const endCalc = parseDateForCalc(p.end_date || p.start_date);
-                const durasi = Math.max(1, dayDiffInclusive(startCalc, endCalc));
-                const tpl = `Hai ${name},\n\nIzin kamu sudah kami setujui. Berikut detailnya:\n\n- Alasan izin  : ${alasan}\n- Tanggal      : ${izinDate}\n- Durasi       : ${durasi} hari kerja\n\nIzin ini termasuk yang mendapat reimbursement dan akan langsung diproses oleh tim HR.\n\nSalam,\nHR Dialogika`;
+                const tpl = buildApproveEmailTemplate(p, Boolean(pendingReimburseData));
                 const ta = document.getElementById("approveEmailTextarea");
                 if (ta) ta.value = tpl;
                 const modal = document.getElementById("approveEmailModal");
@@ -1224,8 +1280,9 @@
                     const subject = `Izin Approved - ${p.user_name || ""} | ${startSlash}`.trim();
                     const mailto = buildMailtoUrl(to, subject, body);
                     openMailClient(mailto);
+                    const includeReimburse = Boolean(pendingReimburseData);
                     let createdReimburseIdLocal = null;
-                    if (pendingReimburseData) {
+                    if (includeReimburse && pendingReimburseData) {
                         try {
                             const ref = await addDoc(collection(db, "reimburse"), pendingReimburseData);
                             createdReimburseIdLocal = ref.id;
@@ -1439,7 +1496,12 @@
                         dailyEntries: generateDailyEntries(p.start_date, p.end_date || p.start_date),
                         status: "pending",
                         created_at: new Date().toISOString(),
-                        related: { reason: p.reason || "", type: p.type || "" }
+                        related: {
+                            reason: p.reason || "",
+                            type: p.type || "",
+                            permit_type: p.permit_type || p.type || "",
+                            permit_hours: p.permit_hours || "",
+                        }
                     };
                     if (approveFlowMode === "status-change") {
                         pendingReimburseData = reimbursePayload;
@@ -1716,7 +1778,7 @@
 
                 const renderDayItem = (item, entry, dotClass, isPending) => {
                     const dateLabel = formatDailyDate(entry.date);
-                    const jenis = (item.related && item.related.type) ? item.related.type : (item.type || "-");
+                    const jenis = getPermitJenisLabel(item.related || item);
                     const reason = (item.related && item.related.reason) ? item.related.reason : (item.reason || "-");
                     const statusLabel = isPending
                         ? '<span class="status-badge status-pending">Pending</span>'
