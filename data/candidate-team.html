@@ -3160,6 +3160,7 @@
       } from "../element/recruitment-interview-utils.js";
       import {
         promptTeamDivision,
+        resolveCandidateDivision,
         syncAcceptedCandidateToTeamManagement,
       } from "../element/team-management-sync.js";
       import {
@@ -6178,7 +6179,14 @@
         if (talentId && normalized) {
           let selectedTeamDivision = "";
           if (normalized === "accepted") {
-            selectedTeamDivision = await promptTeamDivision();
+            selectedTeamDivision = await resolveCandidateDivision(
+              db,
+              INTERNSHIP_CANDIDATES_COLLECTION,
+              talentId,
+            );
+            if (!selectedTeamDivision) {
+              selectedTeamDivision = await promptTeamDivision();
+            }
             if (!selectedTeamDivision) {
               statusSelect.value =
                 previousStatus ||

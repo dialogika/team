@@ -405,6 +405,33 @@
             return String(day).padStart(2, "0") + " " + month + " " + year;
         }
 
+        function normalizePermitType(value) {
+            const raw = String(value || "").toLowerCase().trim();
+            if (raw === "setengah-hari" || raw === "half-day" || raw === "half day") return "half-day";
+            return "full-day";
+        }
+
+        function formatPermitHourValue(value) {
+            return String(value || "").trim().replace(/\./g, ":");
+        }
+
+        function formatPermitHoursRange(startHour, endHour) {
+            const start = formatPermitHourValue(startHour);
+            const end = formatPermitHourValue(endHour);
+            if (!start || !end) return "";
+            return start + " - " + end;
+        }
+
+        function getPermitTypeLabel(data) {
+            const hours = formatPermitHoursRange(data && data.permit_start_hour, data && data.permit_end_hour)
+                || String((data && data.permit_hours) || "").trim().replace(/\./g, ":");
+            const type = normalizePermitType(data && (data.permit_type || data.type));
+            if (type === "half-day" || hours) {
+                return hours ? "Half Day (" + hours + ")" : "Half Day";
+            }
+            return "Full Day";
+        }
+
         // loadUserPermitSummary functionality removed based on requirements.
 
         async function loadUserPermitHistory(userId, options = { all: false }) {
@@ -442,17 +469,7 @@
                     const endRaw = data.end_date || data.start_date || "";
                     const startLabel = formatDateLabel(startRaw);
                     const endLabel = formatDateLabel(endRaw);
-                    let durasiLabel = "";
-                    const startDate = parseDateString(startRaw);
-                    const endDate = parseDateString(endRaw);
-                    if (startDate && endDate) {
-                        const ms = endDate.getTime() - startDate.getTime();
-                        const days = Math.floor(ms / 86400000) + 1;
-                        const dayCount = days > 0 ? days : 1;
-                        durasiLabel = String(dayCount) + " Hari";
-                    } else {
-                        durasiLabel = "1 Hari";
-                    }
+                    const jenisLabel = getPermitTypeLabel(data);
                     const statusRaw = String(data.status || "pending").toLowerCase();
                     let badgeClass = "bg-amber-100 text-amber-700";
                     let statusText = "Pending";
@@ -472,7 +489,11 @@
                         iconColorClass = "text-red-600";
                         iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
                     }
-                    const subtitle = startLabel && durasiLabel ? startLabel + " • " + durasiLabel : durasiLabel || startLabel;
+                    const subtitleParts = [];
+                    if (startLabel) subtitleParts.push(startLabel);
+                    if (endLabel && endLabel !== startLabel) subtitleParts.push(endLabel);
+                    if (jenisLabel) subtitleParts.push(jenisLabel);
+                    const subtitle = subtitleParts.join(" • ");
                     const itemHtml = `
                         <div class="p-6 flex items-center justify-between hover:bg-slate-50 transition">
                             <div class="flex items-center gap-4">
@@ -610,9 +631,16 @@
 
                 const type = typeInput ? typeInput.value.trim() : "";
                 const reason = reasonInput ? reasonInput.value.trim() : "";
+                const normalizedType = normalizePermitType(type);
+                const permitHoursValue = formatPermitHoursRange(permitStartHour ? permitStartHour.value : "", permitEndHour ? permitEndHour.value : "");
 
                 if (!type || !selectedStartDate || !selectedEndDate || !reason) {
                     alert("Mohon lengkapi minimal jenis izin, tanggal, dan alasan.");
+                    return;
+                }
+
+                if (normalizedType === "half-day" && !permitHoursValue) {
+                    alert("Mohon lengkapi jam mulai dan jam selesai untuk izin setengah hari.");
                     return;
                 }
 
@@ -652,10 +680,13 @@
                         user_position: userPosition,
                         user_photo: userPhoto,
                         // category: null, // deprecated
-                        type,
+                        type: normalizedType,
+                        permit_type: normalizedType,
                         start_date: selectedStartDate || null,
                         end_date: selectedEndDate || null,
-                        permit_hours: (type === 'setengah-hari') ? (permitStartHour.value + ' - ' + permitEndHour.value) : null,
+                        permit_hours: normalizedType === "half-day" ? permitHoursValue : null,
+                        permit_start_hour: normalizedType === "half-day" ? (permitStartHour ? permitStartHour.value || "" : "") : null,
+                        permit_end_hour: normalizedType === "half-day" ? (permitEndHour ? permitEndHour.value || "" : "") : null,
                         reason,
                         // attachment_name: fileName || null,
                         attachment_url: fileUrl || null,
@@ -664,6 +695,15 @@
                     });
 
                     permitForm.reset();
+                    selectedStartDate = "";
+                    selectedEndDate = "";
+                    if (hoursWrapper) {
+                        hoursWrapper.classList.add('hidden');
+                        hoursWrapper.classList.remove('grid');
+                    }
+                    if (permitStartHour) permitStartHour.required = false;
+                    if (permitEndHour) permitEndHour.required = false;
+                    if (fp) fp.set("mode", "range");
                     alert("Permohonan izin berhasil dikirim.");
                 } catch (err) {
                     console.error("Gagal mengirim permohonan izin", err);

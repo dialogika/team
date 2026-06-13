@@ -619,7 +619,7 @@
                 if (body) body.innerHTML = "";
             });
 
-            state.members
+                state.members
                 .slice()
                 .sort((a, b) => (a.name || "").localeCompare(b.name || "", "id"))
                 .forEach((member) => {
@@ -632,7 +632,7 @@
                         targetDivision = "Resigned";
                     } else {
                         // For active members, use their division
-                        const division = normalizeDivision(member.division);
+                        const division = normalizeDivision(member.department || member.division);
                         if (division && ACTIVE_DIVISIONS.includes(division)) {
                             targetDivision = division;
                         }
@@ -648,7 +648,7 @@
                     
                     if (isSpecial) {
                         // For Ghosted and Resigned, include originalDivision
-                        const originalDiv = member.originalDivision || member.division || "-";
+                        const originalDiv = member.originalDivision || member.department || member.division || "-";
                         tr.innerHTML =
                             '<td><span class="member-name">' + escapeHtml(member.name || "-") + '</span></td>' +
                             '<td>' + escapeHtml(originalDiv) + '</td>' +
@@ -1006,6 +1006,7 @@
                     const updatePayload = {
                         name: payload.name,
                         division: divisionToSave,
+                        department: divisionToSave,
                         originalDivision: originalDivisionToSave,
                         status: newStatus,
                         contractType: payload.contractType,
@@ -1041,6 +1042,7 @@
                     const createPayload = {
                         name: payload.name,
                         division: divisionToSave,
+                        department: divisionToSave,
                         originalDivision: originalDivisionToSave,
                         status: status,
                         contractType: payload.contractType,

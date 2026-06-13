@@ -2036,7 +2036,6 @@
         import { renderTopBar } from "../element/topbar.js";
         import { renderSidebar } from "../element/sidebar.js";
         import { renderRightbarRecruit } from "../element/rightbar-recruit.js";
-        import { renderBreadcrumb } from "../element/breadcrumb.js";
         import { normalizeWhatsappMessage, buildWhatsappDeepLink, hasReplacementCharacter } from "../element/whatsapp-encoding.js";
         import {
             normalizeInterviewMode,
@@ -2044,6 +2043,25 @@
             getInterviewTimeErrorMessage,
             buildInterviewLocationLine
         } from "../element/recruitment-interview-utils.js";
+        const renderBreadcrumb = (container, config) => {
+            if (!container) return;
+            const items = (config && Array.isArray(config.items)) ? config.items : [];
+            if (!items.length) {
+                container.innerHTML = "";
+                return;
+            }
+            const html = items.map((item, index) => {
+                const isLast = index === items.length - 1;
+                const label = (item && item.label ? item.label : "").toString();
+                if (!label) return "";
+                if (isLast || item.current) {
+                    return '<span class="text-slate-500 fw-semibold">' + label + '</span>';
+                }
+                const href = (item && item.href ? item.href : "#").toString();
+                return '<a href="' + href + '" class="text-decoration-none text-primary fw-semibold">' + label + '</a>';
+            }).filter(Boolean).join('<span class="mx-2 text-slate-400">/</span>');
+            container.innerHTML = '<nav aria-label="breadcrumb">' + html + '</nav>';
+        };
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import {
@@ -5639,7 +5657,11 @@
                 window.location.href = "../index.html";
                 return;
             }
-            initializeModalBindings();
+            try {
+                initializeModalBindings();
+            } catch (error) {
+                console.error("Inisialisasi modal gagal, lanjutkan load detail kandidat.", error);
+            }
             loadCandidateDetail();
         });
 

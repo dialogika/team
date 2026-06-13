@@ -2225,6 +2225,7 @@
         } from "../element/whatsapp-message-builder.js";
         import {
             promptTeamDivision,
+            resolveCandidateDivision,
             syncAcceptedCandidateToTeamManagement
         } from "../element/team-management-sync.js";
         const renderBreadcrumb = (container, config) => {
@@ -5481,14 +5482,6 @@
                 
                 if (activeDecisionAction === "accepted" && decisionModalContext === "interview") {
                     const acceptedMessage = normalizeWhatsappMessage((document.getElementById("acceptedWhatsappText").value || "").trim());
-                    const selectedTeamDivision = (document.getElementById("acceptedDivisionSelect").value || "").trim();
-                    if (!selectedTeamDivision) {
-                        document.getElementById("acceptedDivisionSelect").classList.add("is-invalid");
-                        showWarning("Silakan pilih divisi team terlebih dahulu.");
-                        syncDecisionSubmitState();
-                        return;
-                    }
-                    document.getElementById("acceptedDivisionSelect").classList.remove("is-invalid");
                     if (!acceptedWhatsappPayload || !acceptedWhatsappConfirmedAt || !acceptedMessage) {
                         setAcceptedWhatsappValidation("Acceptance letter WhatsApp wajib disiapkan, dikirim, dan dikonfirmasi sebelum submit accepted.", "warning");
                         syncDecisionSubmitState();
@@ -5559,6 +5552,19 @@
                         acceptedWhatsappRetryCount: acceptedWhatsappRetryCount,
                         actor
                     });
+                    let selectedTeamDivision = await resolveCandidateDivision(
+                        db,
+                        INTERNSHIP_CANDIDATES_COLLECTION,
+                        currentCandidate.id,
+                    );
+                    if (!selectedTeamDivision) {
+                        selectedTeamDivision = (
+                            document.getElementById("acceptedDivisionSelect").value || ""
+                        ).trim();
+                    }
+                    if (!selectedTeamDivision) {
+                        selectedTeamDivision = await promptTeamDivision();
+                    }
                     const syncResult = await syncAcceptedTeamCopy(currentCandidate.id, selectedTeamDivision);
                     decisionModal.hide();
                     showSuccess(
