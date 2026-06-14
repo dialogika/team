@@ -8,6 +8,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet" />
@@ -63,18 +64,24 @@
             box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
         }
 
+        /* ─── Modern Webinar Cards ─── */
         .webinar-card {
             background: #ffffff;
-            border-radius: 16px;
+            border-radius: 18px;
             border: 1px solid #e5e7eb;
             overflow: hidden;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
         }
 
         .webinar-card:hover {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(11, 43, 106, 0.1), 0 4px 12px rgba(0, 0, 0, 0.04);
+            transform: translateY(-4px);
+            border-color: #c7d2fe;
         }
 
         .webinar-card-active {
@@ -82,39 +89,189 @@
             border-width: 2px;
         }
 
+        .webinar-card-active:hover {
+            border-color: #059669;
+        }
+
+        .webinar-card-poster {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f0f4ff, #e2e8f0);
+        }
+
+        .webinar-card-poster img {
+            width: 100%;
+            display: block;
+        }
+
         .webinar-poster-preview {
             width: 100%;
-            height: 180px;
-            object-fit: cover;
-            background: #f1f5f9;
+            height: auto;
+            display: block;
         }
 
         .webinar-poster-placeholder {
             width: 100%;
-            height: 180px;
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            height: 220px;
+            background: linear-gradient(135deg, #f0f4ff, #e2e8f0);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #94a3b8;
         }
 
-        .status-badge-active {
-            background: #d1fae5;
-            color: #065f46;
+        .webinar-status-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
             font-weight: 700;
-            font-size: 0.75rem;
-            padding: 4px 12px;
+            font-size: 0.7rem;
+            padding: 5px 14px;
             border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            letter-spacing: 0.3px;
+            z-index: 2;
         }
 
-        .status-badge-inactive {
-            background: #f1f5f9;
+        .webinar-status-badge.active {
+            background: rgba(209, 250, 229, 0.95);
+            color: #065f46;
+        }
+
+        .webinar-status-badge.inactive {
+            background: rgba(241, 245, 249, 0.95);
             color: #64748b;
-            font-weight: 600;
+        }
+
+        .webinar-card-body {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .webinar-card-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .webinar-card-desc {
+            font-size: 0.825rem;
+            color: #64748b;
+            line-height: 1.6;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.6em;
+        }
+
+        .webinar-card-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+            margin-top: auto;
+        }
+
+        .webinar-card-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
             font-size: 0.75rem;
-            padding: 4px 12px;
-            border-radius: 999px;
+            color: #94a3b8;
+        }
+
+        .webinar-card-meta-item i {
+            font-size: 0.875rem;
+            color: #cbd5e1;
+            width: 16px;
+            text-align: center;
+        }
+
+        .webinar-card-meta-item .text-success { color: #10b981 !important; }
+        .webinar-card-meta-item .text-warning { color: #f59e0b !important; }
+
+        .webinar-card-footer {
+            display: flex;
+            gap: 8px;
+            padding: 14px 20px;
+            border-top: 1px solid #f1f5f9;
+            background: #fafbfd;
+            border-radius: 0 0 18px 18px;
+        }
+
+        .webinar-card-footer .btn-card-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 8px 0;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            color: #64748b;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .webinar-card-footer .btn-card-action:hover {
+            background: #f8fafc;
+            border-color: #d1d5db;
+            color: #374151;
+        }
+
+        .webinar-card-footer .btn-card-action.action-edit:hover {
+            border-color: #818cf8;
+            color: #4f46e5;
+            background: #eef2ff;
+        }
+
+        .webinar-card-footer .btn-card-action.action-activate:hover {
+            border-color: #34d399;
+            color: #059669;
+            background: #ecfdf5;
+        }
+
+        .webinar-card-footer .btn-card-action.action-deactivate:hover {
+            border-color: #fbbf24;
+            color: #d97706;
+            background: #fffbeb;
+        }
+
+        .webinar-card-footer .btn-card-action.action-delete:hover {
+            border-color: #f87171;
+            color: #dc2626;
+            background: #fef2f2;
+        }
+
+        .webinar-order-badge {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-left: auto;
+            display: flex;
+            align-items: center;
         }
 
         .poster-upload-zone {
@@ -232,6 +389,33 @@
         .form-check-input:checked {
             background-color: #10b981;
             border-color: #10b981;
+        }
+
+        /* ─── Quill Editor ─── */
+        #webinarMetaDescEditor {
+            background: #fff;
+            border-radius: 0 0 6px 6px;
+        }
+        #webinarMetaDescEditor .ql-editor {
+            min-height: 200px;
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+        }
+        #webinarMetaDescEditor .ql-toolbar {
+            border-radius: 6px 6px 0 0;
+            border-color: #d1d5db;
+            background: #f9fafb;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        #webinarMetaDescEditor .ql-container {
+            border-color: #d1d5db;
+            border-radius: 0 0 6px 6px;
+        }
+        #webinarMetaDescEditor .ql-editor:focus {
+            box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1);
         }
     </style>
 
@@ -357,10 +541,8 @@
                         <!-- Meta Description -->
                         <div class="mb-4">
                             <label class="form-label">Meta Description <span class="text-danger">*</span></label>
-                            <textarea id="webinarMetaDesc" class="form-control" rows="3"
-                                placeholder="Deskripsi singkat webinar untuk meta description..." required></textarea>
-                            <small class="text-muted">Deskripsi yang akan tampil pada tag &lt;meta
-                                name="description"&gt;.</small>
+                            <div id="webinarMetaDescEditor" style="height:280px;"></div>
+                            <small class="text-muted">Deskripsi webinar dengan format rich text (WYSIWYG). Tampilan di halaman publik akan sama persis dengan yang dibuat di editor ini.</small>
                         </div>
 
                         <!-- Poster Upload -->
@@ -448,6 +630,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
     <!-- Firebase SDK Modular -->
     <script type="module">
         import { renderTopBar } from "../element/topbar.js";
@@ -481,6 +664,7 @@
         let currentUser = null;
         let webinarsCache = [];
         let posterFile = null; // selected file for upload
+        let quillEditor = null; // Quill WYSIWYG editor instance
 
         // ─── Auth Guard ───
         onAuthStateChanged(auth, async (user) => {
@@ -533,58 +717,63 @@
             webinarsCache.forEach((w) => {
                 const isActive = w.is_active === true;
                 const cardClass = isActive ? 'webinar-card webinar-card-active' : 'webinar-card';
-                const statusBadge = isActive
-                    ? '<span class="status-badge-active"><i class="bi bi-broadcast me-1"></i>Aktif</span>'
-                    : '<span class="status-badge-inactive">Nonaktif</span>';
 
                 const posterHtml = w.poster_url
-                    ? `<img src="${w.poster_url}" class="webinar-poster-preview" alt="${escapeHtml(w.name)}">`
-                    : `<div class="webinar-poster-placeholder"><i class="bi bi-image" style="font-size:2rem;"></i></div>`;
+                    ? `<img src="${w.poster_url}" alt="${escapeHtml(w.name)}">`
+                    : `<div class="webinar-poster-placeholder"><i class="bi bi-image" style="font-size:2.5rem;"></i></div>`;
 
-                const activateBtnHtml = isActive
-                    ? `<button class="btn-action" title="Nonaktifkan" onclick="toggleActive('${w.id}', false)">
-                           <i class="bi bi-pause-circle text-warning"></i>
-                       </button>`
-                    : `<button class="btn-action btn-action-activate" title="Aktifkan" onclick="toggleActive('${w.id}', true)">
-                           <i class="bi bi-play-circle text-success"></i>
-                       </button>`;
+                const statusBadge = isActive
+                    ? '<span class="webinar-status-badge active"><i class="bi bi-broadcast"></i>Aktif</span>'
+                    : '<span class="webinar-status-badge inactive">Nonaktif</span>';
+
+                const cleanDesc = stripHtml(w.meta_description || '');
+                const descPreview = cleanDesc.length > 120
+                    ? cleanDesc.substring(0, 120).trim() + '...'
+                    : cleanDesc;
+
+                const metaTitlePreview = (w.meta_title || '').length > 50
+                    ? (w.meta_title || '').substring(0, 50) + '...'
+                    : (w.meta_title || '-');
+
+                const activateBtnClass = isActive ? 'action-deactivate' : 'action-activate';
+                const activateBtnIcon = isActive ? 'bi-pause-circle' : 'bi-play-circle';
+                const activateBtnLabel = isActive ? 'Nonaktifkan' : 'Aktifkan';
 
                 const col = document.createElement('div');
-                col.className = 'col-md-6 col-lg-4';
+                col.className = 'col-md-6 col-xl-4';
                 col.innerHTML = `
                     <div class="${cardClass}">
-                        ${posterHtml}
-                        <div class="p-3">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="fw-bold mb-0 text-dark" style="flex:1;">${escapeHtml(w.name)}</h6>
-                                ${statusBadge}
-                            </div>
-                            <div class="text-muted small mb-3" style="min-height:2.4em;max-height:2.4em;overflow:hidden;">
-                                ${escapeHtml((w.meta_description || '').substring(0, 100))}${(w.meta_description || '').length > 100 ? '...' : ''}
-                            </div>
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                                <small class="text-muted" style="font-size:0.75rem;">
-                                    <i class="bi bi-chat-dots me-1"></i>${w.whatsapp_link ? 'Linked' : 'No Link'}
-                                </small>
-                                <span class="text-muted">·</span>
-                                <small class="text-muted" style="font-size:0.75rem;">
-                                    <i class="bi bi-tag me-1"></i>${escapeHtml((w.meta_title || '').substring(0, 40))}${(w.meta_title || '').length > 40 ? '...' : ''}
-                                </small>
-                            </div>
-                            <div class="d-flex gap-2 pt-2 border-top">
-                                <button class="btn-action btn-action-edit" title="Edit" onclick="openEditModal('${w.id}')">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-                                ${activateBtnHtml}
-                                <button class="btn-action btn-action-delete" title="Hapus" onclick="openDeleteModal('${w.id}')">
-                                    <i class="bi bi-trash3"></i>
-                                </button>
-                                <div class="ms-auto">
-                                    <small class="text-muted" style="font-size:0.7rem;">
-                                        Order: ${w.order ?? 0}
-                                    </small>
+                        <div class="webinar-card-poster">
+                            ${posterHtml}
+                            ${statusBadge}
+                        </div>
+                        <div class="webinar-card-body">
+                            <h6 class="webinar-card-title">${escapeHtml(w.name)}</h6>
+                            ${descPreview ? `<p class="webinar-card-desc">${escapeHtml(descPreview)}</p>` : ''}
+                            <div class="webinar-card-meta">
+                                <div class="webinar-card-meta-item">
+                                    <i class="bi bi-tag"></i>
+                                    <span>${escapeHtml(metaTitlePreview)}</span>
+                                </div>
+                                <div class="webinar-card-meta-item">
+                                    <i class="bi bi-whatsapp"></i>
+                                    ${w.whatsapp_link
+                                        ? '<span class="text-success">WhatsApp Linked</span>'
+                                        : '<span class="text-warning">No Link</span>'}
                                 </div>
                             </div>
+                        </div>
+                        <div class="webinar-card-footer">
+                            <button class="btn-card-action action-edit" title="Edit" onclick="openEditModal('${w.id}')">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </button>
+                            <button class="btn-card-action ${activateBtnClass}" title="${activateBtnLabel}" onclick="toggleActive('${w.id}', ${!isActive})">
+                                <i class="bi ${activateBtnIcon}"></i> ${activateBtnLabel}
+                            </button>
+                            <button class="btn-card-action action-delete" title="Hapus" onclick="openDeleteModal('${w.id}')">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                            <span class="webinar-order-badge">#${w.order ?? 0}</span>
                         </div>
                     </div>
                 `;
@@ -615,7 +804,7 @@
             document.getElementById('webinarId').value = '';
             document.getElementById('webinarName').value = '';
             document.getElementById('webinarMetaTitle').value = '';
-            document.getElementById('webinarMetaDesc').value = '';
+            if (quillEditor) quillEditor.setContents([]);
             document.getElementById('webinarWhatsapp').value = '';
             document.getElementById('webinarIsActive').checked = false;
             document.getElementById('posterExistingUrl').value = '';
@@ -635,7 +824,13 @@
             document.getElementById('webinarId').value = id;
             document.getElementById('webinarName').value = w.name || '';
             document.getElementById('webinarMetaTitle').value = w.meta_title || '';
-            document.getElementById('webinarMetaDesc').value = w.meta_description || '';
+            if (quillEditor) {
+                if (w.meta_description) {
+                    quillEditor.clipboard.dangerouslyPasteHTML(w.meta_description);
+                } else {
+                    quillEditor.setContents([]);
+                }
+            }
             document.getElementById('webinarWhatsapp').value = w.whatsapp_link || '';
             document.getElementById('webinarIsActive').checked = w.is_active === true;
             document.getElementById('posterExistingUrl').value = w.poster_url || '';
@@ -704,8 +899,35 @@
             reader.readAsDataURL(file);
         };
 
-        // Drag & Drop
+        // ─── Initialize Quill Rich Text Editor & Poster Drag-and-Drop ───
         document.addEventListener('DOMContentLoaded', () => {
+            const editorEl = document.getElementById('webinarMetaDescEditor');
+            if (editorEl && typeof Quill !== 'undefined') {
+                quillEditor = new Quill('#webinarMetaDescEditor', {
+                    theme: 'snow',
+                    placeholder: 'Tulis deskripsi webinar di sini...',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            [{ 'size': ['small', false, 'large', 'huge'] }],
+                            ['bold', 'italic', 'underline'],
+                            [{ 'color': [] }, { 'background': [] }],
+                            [{ 'align': [] }],
+                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                            ['link'],
+                            ['clean'],
+                            ['undo', 'redo']
+                        ],
+                        history: {
+                            delay: 1000,
+                            maxStack: 100,
+                            userOnly: true
+                        }
+                    }
+                });
+            }
+
+            // Poster Drag & Drop
             const zone = document.getElementById('posterUploadZone');
             if (!zone) return;
             zone.addEventListener('dragover', (e) => {
@@ -755,7 +977,8 @@
             const id = document.getElementById('webinarId').value.trim();
             const name = document.getElementById('webinarName').value.trim();
             const metaTitle = document.getElementById('webinarMetaTitle').value.trim();
-            const metaDesc = document.getElementById('webinarMetaDesc').value.trim();
+            const metaDesc = quillEditor ? quillEditor.root.innerHTML : '';
+            const metaDescText = quillEditor ? quillEditor.getText().trim() : '';
             const whatsappLink = document.getElementById('webinarWhatsapp').value.trim();
             const isActive = document.getElementById('webinarIsActive').checked;
             const existingPoster = document.getElementById('posterExistingUrl').value.trim();
@@ -763,7 +986,7 @@
             // Validation
             if (!name) return showToast("Nama webinar wajib diisi.", "error");
             if (!metaTitle) return showToast("Meta Title wajib diisi.", "error");
-            if (!metaDesc) return showToast("Meta Description wajib diisi.", "error");
+            if (!metaDescText) return showToast("Meta Description wajib diisi.", "error");
 
             // Button loading state
             const btn = document.getElementById('btnSaveWebinar');
@@ -921,6 +1144,13 @@
         }
 
         // ─── Utility ───
+        function stripHtml(html) {
+            if (!html) return '';
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+        }
+
         function escapeHtml(str) {
             if (!str) return '';
             const div = document.createElement('div');
