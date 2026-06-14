@@ -952,6 +952,37 @@
         return entries;
       }
 
+      /**
+       * Generate exactly `count` daily entries starting from startDate.
+       * The source of truth for reimbursement count is the admin's popup input,
+       * NOT the permit date range.
+       */
+      function generateDailyEntriesCount(startDate, count) {
+        const n = Math.max(0, Math.floor(Number(count) || 0));
+        if (n === 0 || !startDate) return [];
+        const start = parseDateForCalc(startDate);
+        const entries = [];
+        const current = new Date(
+          start.getFullYear(),
+          start.getMonth(),
+          start.getDate(),
+        );
+        // Safety limit to avoid infinite loop
+        const maxIterations = n * 10 + 30;
+        let iterations = 0;
+        while (entries.length < n && iterations < maxIterations) {
+          if (WORK_DAYS.has(current.getDay())) {
+            const y = current.getFullYear();
+            const m = String(current.getMonth() + 1).padStart(2, "0");
+            const d = String(current.getDate()).padStart(2, "0");
+            entries.push({ date: `${y}-${m}-${d}`, status: "pending" });
+          }
+          current.setDate(current.getDate() + 1);
+          iterations++;
+        }
+        return entries;
+      }
+
       const topbarTarget = document.getElementById("topbarContainer");
       if (topbarTarget) renderTopBar(topbarTarget);
       const sidebarTarget = document.getElementById("sidebarContainer");
@@ -1992,7 +2023,7 @@
                         end_date: p.end_date || p.start_date || "",
                         total_days: safeDays,
                         total_hours: safeHours,
-                        dailyEntries: generateDailyEntries(p.start_date, p.end_date || p.start_date),
+                        dailyEntries: generateDailyEntriesCount(p.start_date, safeDays),
                         status: "pending",
                         created_at: new Date().toISOString(),
                         related: {
@@ -2142,6 +2173,8 @@
                 user_name: item.user_name || "-",
                 user_photo: item.user_photo || "",
                 items: [],
+                total_days: 0,
+                total_hours: 0,
                 pending_days: 0,
                 pending_hours: 0,
                 completed_days: 0,
@@ -2160,16 +2193,29 @@
             const completedCount = entries.filter(
               (e) => e.status === "completed",
             ).length;
+            const totalEntries = pendingCount + completedCount;
 
+            group.total_days += totalEntries;
             group.pending_days += pendingCount;
             group.completed_days += completedCount;
 
-            if (pendingCount > 0) {
-              group.pending_hours += hours;
-              group.status = "pending";
-            } else {
-              group.completed_hours += hours;
+            // Distribute hours proportionally across days
+            if (totalEntries > 0 && hours > 0) {
+              const hoursPerEntry = hours / totalEntries;
+              group.pending_hours += hoursPerEntry * pendingCount;
+              group.completed_hours += hoursPerEntry * completedCount;
             }
+
+            if (pendingCount > 0) {
+              group.status = "pending";
+            } else if (totalEntries > 0 && group.status === "completed") {
+              // Keep status "completed" only if this item has entries and all are done
+              // (group status starts as "completed" and flips to "pending" if any item has pending)
+            }
+          });
+          // Compute final total_hours per group
+          map.forEach((group) => {
+            group.total_hours = group.pending_hours + group.completed_hours;
           });
           return Array.from(map.values());
         }
@@ -2261,7 +2307,17 @@
             if (!entries || !Array.isArray(entries) || entries.length === 0) {
               const sd = data.start_date || "";
               const ed = data.end_date || data.start_date || "";
-              if (sd) {
+              const storedDays = Number(data.total_days ?? data.days ?? 0) || 0;
+              if (storedDays > 0 && sd) {
+                // Source of truth is total_days from admin popup input
+                entries = generateDailyEntriesCount(sd, storedDays);
+                if (
+                  String(data.status || "pending").toLowerCase() === "completed"
+                ) {
+                  entries.forEach((entry) => (entry.status = "completed"));
+                }
+              } else if (sd) {
+                // Fallback: no total_days stored, use date range
                 entries = generateDailyEntries(sd, ed);
                 if (
                   String(data.status || "pending").toLowerCase() === "completed"
@@ -2349,9 +2405,9 @@
           if (subtitle)
             subtitle.textContent = `Pending: ${group.pending_days} hari - Completed: ${group.completed_days} hari`;
           if (totalDays)
-            totalDays.textContent = formatNumber(group.pending_days);
+            totalDays.textContent = formatNumber(group.total_days);
           if (totalHours)
-            totalHours.textContent = formatNumber(group.pending_hours);
+            totalHours.textContent = formatNumber(group.total_hours);
 
           const pendingDaysList = [];
           const completedDaysList = [];
@@ -2485,7 +2541,20 @@
                 ) {
                   const sd = d.start_date || "";
                   const ed = d.end_date || d.start_date || "";
-                  if (sd) {
+                  const storedDays = Number(d.total_days ?? d.days ?? 0) || 0;
+                  if (storedDays > 0 && sd) {
+                    // Source of truth is total_days from admin popup input
+                    dailyEntries = generateDailyEntriesCount(sd, storedDays);
+                    if (
+                      String(d.status || "pending").toLowerCase() ===
+                      "completed"
+                    ) {
+                      dailyEntries.forEach(
+                        (entry) => (entry.status = "completed"),
+                      );
+                    }
+                  } else if (sd) {
+                    // Fallback: no total_days stored, use date range
                     dailyEntries = generateDailyEntries(sd, ed);
                     if (
                       String(d.status || "pending").toLowerCase() ===
