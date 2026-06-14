@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webinar Management - Team Dialogika</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid #f3f4f6;
+            padding: 20px 30px;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-title {
+            font-weight: 800;
+            color: #111;
+            font-size: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-control,
+        .form-select {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--dlg-blue);
+            box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1);
+        }
+
+        .settings-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+        }
+
+        .webinar-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .webinar-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .webinar-card-active {
+            border-color: #10b981;
+            border-width: 2px;
+        }
+
+        .webinar-poster-preview {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: #f1f5f9;
+        }
+
+        .webinar-poster-placeholder {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+        }
+
+        .status-badge-active {
+            background: #d1fae5;
+            color: #065f46;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 999px;
+        }
+
+        .status-badge-inactive {
+            background: #f1f5f9;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 999px;
+        }
+
+        .poster-upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #f8fafc;
+        }
+
+        .poster-upload-zone:hover {
+            border-color: var(--dlg-blue);
+            background: #eff6ff;
+        }
+
+        .poster-upload-zone.has-image {
+            border-style: solid;
+            border-color: #10b981;
+            padding: 10px;
+        }
+
+        .poster-upload-preview {
+            max-height: 200px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .custom-toast {
+            min-width: 300px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            animation: slideInRight 0.3s ease;
+        }
+
+        .custom-toast-success {
+            background: #059669;
+        }
+
+        .custom-toast-error {
+            background: #dc2626;
+        }
+
+        .custom-toast-warning {
+            background: #d97706;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-action:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-action-edit:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+
+        .btn-action-delete:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .btn-action-activate:hover {
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .form-check-input:checked {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+    </style>
+
+    <!-- Centralized Auth Guard -->
+    <script type="module" src="../assets/js/auth-guard.js"></script>
+</head>
+
+<body>
+
+    <div id="topbarContainer"></div>
+
+    <div class="dashboard-container">
+
+        <div id="sidebarContainer"></div>
+
+        <main class="main-content">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h4 class="fw-bold mb-0">Webinar Management</h4>
+                    <small class="text-muted">Kelola section webinar secara dinamis. Hanya satu webinar yang boleh aktif
+                        dalam satu waktu.</small>
+                </div>
+                <button class="btn btn-dark rounded-pill px-4 d-flex align-items-center gap-2"
+                    onclick="openAddModal()">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Tambah Webinar</span>
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="settings-card d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center"
+                            style="width:48px;height:48px;background:#ede9fe;">
+                            <i class="bi bi-collection-play-fill text-purple" style="font-size:1.3rem;color:#7c3aed;"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-uppercase text-muted fw-bold" style="font-size:0.7rem;">Total
+                                Webinar</div>
+                            <h3 class="fw-extrabold mb-0" id="statTotalWebinar">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="settings-card d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center"
+                            style="width:48px;height:48px;background:#d1fae5;">
+                            <i class="bi bi-broadcast" style="font-size:1.3rem;color:#059669;"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-uppercase text-muted fw-bold" style="font-size:0.7rem;">Webinar
+                                Aktif</div>
+                            <h3 class="fw-extrabold mb-0" id="statActiveWebinar">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="settings-card d-flex align-items-center gap-3">
+                        <div class="rounded-3 d-flex align-items-center justify-content-center"
+                            style="width:48px;height:48px;background:#fef3c7;">
+                            <i class="bi bi-eye-fill" style="font-size:1.3rem;color:#d97706;"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-uppercase text-muted fw-bold" style="font-size:0.7rem;">Status
+                                Publik</div>
+                            <div class="fw-bold mb-0" id="statPublicStatus" style="font-size:0.95rem;">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Webinar Grid -->
+            <div id="webinarGrid" class="row g-4">
+                <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display:none;">
+                <div class="empty-state-icon"><i class="bi bi-collection-play"></i></div>
+                <h5 class="fw-bold text-slate-700">Belum ada webinar</h5>
+                <p class="text-muted mb-3">Klik tombol "Tambah Webinar" untuk membuat section webinar pertama
+                    Anda.</p>
+                <button class="btn btn-dark rounded-pill px-4" onclick="openAddModal()">
+                    <i class="bi bi-plus-lg me-1"></i> Tambah Webinar Pertama
+                </button>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- MODAL: Add / Edit Webinar -->
+    <div class="modal fade" id="webinarModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="webinarModalTitle">Tambah Webinar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="webinarForm">
+                        <input type="hidden" id="webinarId">
+
+                        <!-- Nama Webinar -->
+                        <div class="mb-4">
+                            <label class="form-label">Nama Webinar <span class="text-danger">*</span></label>
+                            <input type="text" id="webinarName" class="form-control"
+                                placeholder="cth: Webinar 1.0, Webinar 2.0" required>
+                            <small class="text-muted">Nama unik untuk mengidentifikasi webinar ini.</small>
+                        </div>
+
+                        <!-- Meta Title -->
+                        <div class="mb-4">
+                            <label class="form-label">Meta Title <span class="text-danger">*</span></label>
+                            <input type="text" id="webinarMetaTitle" class="form-control"
+                                placeholder="cth: Dialogika Webinar 1.0 - Membangun Karir di Bidang IT" required>
+                            <small class="text-muted">Judul yang akan tampil pada tag &lt;title&gt; halaman
+                                publik.</small>
+                        </div>
+
+                        <!-- Meta Description -->
+                        <div class="mb-4">
+                            <label class="form-label">Meta Description <span class="text-danger">*</span></label>
+                            <textarea id="webinarMetaDesc" class="form-control" rows="3"
+                                placeholder="Deskripsi singkat webinar untuk meta description..." required></textarea>
+                            <small class="text-muted">Deskripsi yang akan tampil pada tag &lt;meta
+                                name="description"&gt;.</small>
+                        </div>
+
+                        <!-- Poster Upload -->
+                        <div class="mb-4">
+                            <label class="form-label">Poster Webinar</label>
+                            <div class="poster-upload-zone" id="posterUploadZone" onclick="triggerPosterUpload()">
+                                <div id="posterPlaceholder">
+                                    <i class="bi bi-cloud-arrow-up" style="font-size:2rem;color:#94a3b8;"></i>
+                                    <p class="mb-0 mt-2 text-muted fw-semibold">Klik atau drag gambar untuk upload</p>
+                                    <small class="text-muted">Format: JPG, PNG, WebP</small>
+                                </div>
+                                <img id="posterPreview" class="poster-upload-preview" style="display:none;"
+                                    alt="Poster Preview">
+                            </div>
+                            <input type="file" id="posterFileInput" accept="image/jpeg,image/png,image/webp"
+                                style="display:none;" onchange="handlePosterSelect(event)">
+                            <input type="hidden" id="posterExistingUrl">
+                            <small class="text-muted d-block mt-1" id="posterFileName"></small>
+                        </div>
+
+                        <!-- WhatsApp Link -->
+                        <div class="mb-4">
+                            <label class="form-label">Link Grup WhatsApp</label>
+                            <input type="url" id="webinarWhatsapp" class="form-control"
+                                placeholder="cth: https://chat.whatsapp.com/xxxxx">
+                            <small class="text-muted">Link grup WhatsApp untuk peserta webinar.</small>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="mb-4 form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="webinarIsActive">
+                            <label class="form-check-label fw-bold" for="webinarIsActive">Aktifkan Webinar
+                                Ini</label>
+                            <div id="activateWarning" class="mt-1" style="display:none;">
+                                <small class="text-warning fw-semibold">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                    Mengaktifkan webinar ini akan menonaktifkan webinar lain yang sedang aktif.
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="d-flex gap-3 pt-3 border-top">
+                            <button type="button" class="btn btn-dark rounded-pill px-4" id="btnSaveWebinar"
+                                onclick="saveWebinar()">
+                                <span id="btnSaveLabel">Simpan</span>
+                                <span id="btnSaveSpinner" class="spinner-border spinner-border-sm ms-2"
+                                    style="display:none;"></span>
+                            </button>
+                            <button type="button" class="btn btn-light rounded-pill px-4 border"
+                                data-bs-dismiss="modal">Batal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Delete Confirmation -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 p-4 pb-0">
+                    <h5 class="fw-bold text-danger">Hapus Webinar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-2">Apakah Anda yakin ingin menghapus webinar <strong id="deleteWebinarName"></strong>?
+                    </p>
+                    <p class="text-muted small mb-0">Tindakan ini tidak dapat dibatalkan.</p>
+                    <input type="hidden" id="deleteWebinarId">
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4"
+                        onclick="confirmDelete()">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Firebase SDK Modular -->
+    <script type="module">
+        import { renderTopBar } from "../element/topbar.js";
+        import { renderSidebar } from "../element/sidebar.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDoc, getDocs, serverTimestamp, onSnapshot, orderBy, doc, deleteDoc, updateDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        // ─── Firebase Config ───
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
+            authDomain: "pre-dialogika.firebaseapp.com",
+            projectId: "pre-dialogika",
+            storageBucket: "pre-dialogika.firebasestorage.app",
+            messagingSenderId: "343771410480",
+            appId: "1:343771410480:web:32881c9868522090237df5",
+            measurementId: "G-SXN811P3N0"
+        };
+
+        const topbarTarget = document.getElementById('topbarContainer');
+        renderTopBar(topbarTarget);
+        const sidebarTarget = document.getElementById('sidebarContainer');
+        renderSidebar(sidebarTarget);
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+        let webinarsCache = [];
+        let posterFile = null; // selected file for upload
+
+        // ─── Auth Guard ───
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const localData = JSON.parse(localStorage.getItem('userData'));
+                document.getElementById('user-name-display').innerText = localData?.name || user.email;
+                document.getElementById('user-photo-display').src = localData?.photo || "https://i.pravatar.cc/300";
+                document.getElementById('user-role-display').innerText = localData?.position || "Staff";
+                listenToWebinars();
+            } else {
+                window.location.href = "../index.html";
+            }
+        });
+
+        // ─── Real-time Webinar Listener ───
+        function listenToWebinars() {
+            try {
+                const q = query(collection(db, "webinars"), orderBy("order", "asc"));
+                onSnapshot(q, (snapshot) => {
+                    webinarsCache = [];
+                    snapshot.forEach((docSnap) => {
+                        webinarsCache.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                    renderWebinars();
+                    updateStats();
+                }, (error) => {
+                    console.error("Failed to listen webinars:", error);
+                    showToast("Gagal memuat data webinar.", "error");
+                });
+            } catch (e) {
+                console.error("Listener setup failed:", e);
+            }
+        }
+
+        // ─── Render Webinar Cards ───
+        function renderWebinars() {
+            const grid = document.getElementById('webinarGrid');
+            const empty = document.getElementById('emptyState');
+
+            if (!webinarsCache.length) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            grid.innerHTML = '';
+
+            webinarsCache.forEach((w) => {
+                const isActive = w.is_active === true;
+                const cardClass = isActive ? 'webinar-card webinar-card-active' : 'webinar-card';
+                const statusBadge = isActive
+                    ? '<span class="status-badge-active"><i class="bi bi-broadcast me-1"></i>Aktif</span>'
+                    : '<span class="status-badge-inactive">Nonaktif</span>';
+
+                const posterHtml = w.poster_url
+                    ? `<img src="${w.poster_url}" class="webinar-poster-preview" alt="${escapeHtml(w.name)}">`
+                    : `<div class="webinar-poster-placeholder"><i class="bi bi-image" style="font-size:2rem;"></i></div>`;
+
+                const activateBtnHtml = isActive
+                    ? `<button class="btn-action" title="Nonaktifkan" onclick="toggleActive('${w.id}', false)">
+                           <i class="bi bi-pause-circle text-warning"></i>
+                       </button>`
+                    : `<button class="btn-action btn-action-activate" title="Aktifkan" onclick="toggleActive('${w.id}', true)">
+                           <i class="bi bi-play-circle text-success"></i>
+                       </button>`;
+
+                const col = document.createElement('div');
+                col.className = 'col-md-6 col-lg-4';
+                col.innerHTML = `
+                    <div class="${cardClass}">
+                        ${posterHtml}
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold mb-0 text-dark" style="flex:1;">${escapeHtml(w.name)}</h6>
+                                ${statusBadge}
+                            </div>
+                            <div class="text-muted small mb-3" style="min-height:2.4em;max-height:2.4em;overflow:hidden;">
+                                ${escapeHtml((w.meta_description || '').substring(0, 100))}${(w.meta_description || '').length > 100 ? '...' : ''}
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <small class="text-muted" style="font-size:0.75rem;">
+                                    <i class="bi bi-chat-dots me-1"></i>${w.whatsapp_link ? 'Linked' : 'No Link'}
+                                </small>
+                                <span class="text-muted">·</span>
+                                <small class="text-muted" style="font-size:0.75rem;">
+                                    <i class="bi bi-tag me-1"></i>${escapeHtml((w.meta_title || '').substring(0, 40))}${(w.meta_title || '').length > 40 ? '...' : ''}
+                                </small>
+                            </div>
+                            <div class="d-flex gap-2 pt-2 border-top">
+                                <button class="btn-action btn-action-edit" title="Edit" onclick="openEditModal('${w.id}')">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                ${activateBtnHtml}
+                                <button class="btn-action btn-action-delete" title="Hapus" onclick="openDeleteModal('${w.id}')">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                                <div class="ms-auto">
+                                    <small class="text-muted" style="font-size:0.7rem;">
+                                        Order: ${w.order ?? 0}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(col);
+            });
+        }
+
+        // ─── Update Stats ───
+        function updateStats() {
+            const total = webinarsCache.length;
+            const activeCount = webinarsCache.filter(w => w.is_active === true).length;
+            const activeWebinar = webinarsCache.find(w => w.is_active === true);
+
+            document.getElementById('statTotalWebinar').textContent = total;
+            document.getElementById('statActiveWebinar').textContent = activeCount;
+
+            const publicStatus = document.getElementById('statPublicStatus');
+            if (activeWebinar) {
+                publicStatus.innerHTML = `<span class="text-success">${escapeHtml(activeWebinar.name)}</span>`;
+            } else {
+                publicStatus.innerHTML = '<span class="text-muted">Tidak ada webinar aktif</span>';
+            }
+        }
+
+        // ─── Modal Helpers ───
+        window.openAddModal = function () {
+            document.getElementById('webinarModalTitle').textContent = 'Tambah Webinar Baru';
+            document.getElementById('webinarId').value = '';
+            document.getElementById('webinarName').value = '';
+            document.getElementById('webinarMetaTitle').value = '';
+            document.getElementById('webinarMetaDesc').value = '';
+            document.getElementById('webinarWhatsapp').value = '';
+            document.getElementById('webinarIsActive').checked = false;
+            document.getElementById('posterExistingUrl').value = '';
+            document.getElementById('posterFileInput').value = '';
+            document.getElementById('posterFileName').textContent = '';
+            resetPosterPreview();
+            updateActivateWarning();
+            const modal = new bootstrap.Modal(document.getElementById('webinarModal'));
+            modal.show();
+        };
+
+        window.openEditModal = function (id) {
+            const w = webinarsCache.find(x => x.id === id);
+            if (!w) return;
+
+            document.getElementById('webinarModalTitle').textContent = 'Edit Webinar';
+            document.getElementById('webinarId').value = id;
+            document.getElementById('webinarName').value = w.name || '';
+            document.getElementById('webinarMetaTitle').value = w.meta_title || '';
+            document.getElementById('webinarMetaDesc').value = w.meta_description || '';
+            document.getElementById('webinarWhatsapp').value = w.whatsapp_link || '';
+            document.getElementById('webinarIsActive').checked = w.is_active === true;
+            document.getElementById('posterExistingUrl').value = w.poster_url || '';
+            document.getElementById('posterFileInput').value = '';
+            document.getElementById('posterFileName').textContent = w.poster_url ? 'Poster sudah diupload' : '';
+            posterFile = null;
+
+            const preview = document.getElementById('posterPreview');
+            const placeholder = document.getElementById('posterPlaceholder');
+            const zone = document.getElementById('posterUploadZone');
+            if (w.poster_url) {
+                preview.src = w.poster_url;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+                zone.classList.add('has-image');
+            } else {
+                resetPosterPreview();
+            }
+
+            updateActivateWarning();
+            const modal = new bootstrap.Modal(document.getElementById('webinarModal'));
+            modal.show();
+        };
+
+        window.openDeleteModal = function (id) {
+            const w = webinarsCache.find(x => x.id === id);
+            if (!w) return;
+            document.getElementById('deleteWebinarName').textContent = w.name || '';
+            document.getElementById('deleteWebinarId').value = id;
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        };
+
+        // ─── Poster Upload ───
+        function resetPosterPreview() {
+            const preview = document.getElementById('posterPreview');
+            const placeholder = document.getElementById('posterPlaceholder');
+            const zone = document.getElementById('posterUploadZone');
+            preview.style.display = 'none';
+            preview.src = '';
+            placeholder.style.display = 'block';
+            zone.classList.remove('has-image');
+            posterFile = null;
+        }
+
+        window.triggerPosterUpload = function () {
+            document.getElementById('posterFileInput').click();
+        };
+
+        window.handlePosterSelect = function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            posterFile = file;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const preview = document.getElementById('posterPreview');
+                const placeholder = document.getElementById('posterPlaceholder');
+                const zone = document.getElementById('posterUploadZone');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+                zone.classList.add('has-image');
+                document.getElementById('posterFileName').textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // Drag & Drop
+        document.addEventListener('DOMContentLoaded', () => {
+            const zone = document.getElementById('posterUploadZone');
+            if (!zone) return;
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.style.borderColor = '#6366f1';
+                zone.style.background = '#eff6ff';
+            });
+            zone.addEventListener('dragleave', () => {
+                zone.style.borderColor = '';
+                zone.style.background = '';
+            });
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.style.borderColor = '';
+                zone.style.background = '';
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    document.getElementById('posterFileInput').files = e.dataTransfer.files;
+                    handlePosterSelect({ target: { files: [file] } });
+                }
+            });
+        });
+
+        // ─── Activate Warning ───
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggle = document.getElementById('webinarIsActive');
+            if (toggle) {
+                toggle.addEventListener('change', updateActivateWarning);
+            }
+        });
+
+        function updateActivateWarning() {
+            const toggle = document.getElementById('webinarIsActive');
+            const warning = document.getElementById('activateWarning');
+            const editId = document.getElementById('webinarId').value;
+
+            if (toggle.checked) {
+                const hasOtherActive = webinarsCache.some(w => w.is_active === true && w.id !== editId);
+                warning.style.display = hasOtherActive ? 'block' : 'none';
+            } else {
+                warning.style.display = 'none';
+            }
+        }
+
+        // ─── Save Webinar (Add / Edit) ───
+        window.saveWebinar = async function () {
+            const id = document.getElementById('webinarId').value.trim();
+            const name = document.getElementById('webinarName').value.trim();
+            const metaTitle = document.getElementById('webinarMetaTitle').value.trim();
+            const metaDesc = document.getElementById('webinarMetaDesc').value.trim();
+            const whatsappLink = document.getElementById('webinarWhatsapp').value.trim();
+            const isActive = document.getElementById('webinarIsActive').checked;
+            const existingPoster = document.getElementById('posterExistingUrl').value.trim();
+
+            // Validation
+            if (!name) return showToast("Nama webinar wajib diisi.", "error");
+            if (!metaTitle) return showToast("Meta Title wajib diisi.", "error");
+            if (!metaDesc) return showToast("Meta Description wajib diisi.", "error");
+
+            // Button loading state
+            const btn = document.getElementById('btnSaveWebinar');
+            const label = document.getElementById('btnSaveLabel');
+            const spinner = document.getElementById('btnSaveSpinner');
+            btn.disabled = true;
+            label.textContent = 'Menyimpan...';
+            spinner.style.display = 'inline-block';
+
+            try {
+                // Upload poster if new file selected
+                let posterUrl = existingPoster;
+                if (posterFile) {
+                    const timestamp = Date.now();
+                    const ext = posterFile.name.split('.').pop();
+                    const storageRef = ref(storage, `webinars/${timestamp}_${name.replace(/\s+/g, '_')}.${ext}`);
+                    const uploadResult = await uploadBytes(storageRef, posterFile);
+                    posterUrl = await getDownloadURL(uploadResult.ref);
+                    posterFile = null;
+                }
+
+                // If activating this webinar, deactivate all others first (batch write)
+                if (isActive) {
+                    const othersActive = webinarsCache.filter(w => w.is_active === true && w.id !== id);
+                    if (othersActive.length > 0) {
+                        const batch = writeBatch(db);
+                        othersActive.forEach(w => {
+                            const wRef = doc(db, "webinars", w.id);
+                            batch.update(wRef, { is_active: false, updated_at: serverTimestamp() });
+                        });
+                        await batch.commit();
+                    }
+                }
+
+                // Calculate order for new webinar
+                const maxOrder = webinarsCache.reduce((max, w) => Math.max(max, Number(w.order) || 0), 0);
+
+                if (id) {
+                    // Update existing
+                    await updateDoc(doc(db, "webinars", id), {
+                        name: name,
+                        meta_title: metaTitle,
+                        meta_description: metaDesc,
+                        poster_url: posterUrl || '',
+                        whatsapp_link: whatsappLink || '',
+                        is_active: isActive,
+                        updated_at: serverTimestamp()
+                    });
+                    showToast(`Webinar "${name}" berhasil diperbarui.`, "success");
+                } else {
+                    // Create new
+                    await addDoc(collection(db, "webinars"), {
+                        name: name,
+                        meta_title: metaTitle,
+                        meta_description: metaDesc,
+                        poster_url: posterUrl || '',
+                        whatsapp_link: whatsappLink || '',
+                        is_active: isActive,
+                        order: maxOrder + 1,
+                        created_at: serverTimestamp(),
+                        updated_at: serverTimestamp()
+                    });
+                    showToast(`Webinar "${name}" berhasil ditambahkan.`, "success");
+                }
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('webinarModal'));
+                if (modal) modal.hide();
+
+            } catch (error) {
+                console.error("Error saving webinar:", error);
+                showToast("Gagal menyimpan webinar: " + (error.message || error.toString()), "error");
+            } finally {
+                btn.disabled = false;
+                label.textContent = 'Simpan';
+                spinner.style.display = 'none';
+            }
+        };
+
+        // ─── Toggle Active ───
+        window.toggleActive = async function (id, activate) {
+            try {
+                if (activate) {
+                    // Validate: deactivate all others
+                    const othersActive = webinarsCache.filter(w => w.is_active === true && w.id !== id);
+                    if (othersActive.length > 0) {
+                        const confirmed = confirm(
+                            `Mengaktifkan webinar ini akan menonaktifkan ${othersActive.length} webinar lain yang sedang aktif. Lanjutkan?`
+                        );
+                        if (!confirmed) return;
+
+                        const batch = writeBatch(db);
+                        othersActive.forEach(w => {
+                            batch.update(doc(db, "webinars", w.id), {
+                                is_active: false,
+                                updated_at: serverTimestamp()
+                            });
+                        });
+                        await batch.commit();
+                    }
+
+                    await updateDoc(doc(db, "webinars", id), {
+                        is_active: true,
+                        updated_at: serverTimestamp()
+                    });
+
+                    const w = webinarsCache.find(x => x.id === id);
+                    showToast(`Webinar "${w?.name || ''}" diaktifkan.`, "success");
+                } else {
+                    await updateDoc(doc(db, "webinars", id), {
+                        is_active: false,
+                        updated_at: serverTimestamp()
+                    });
+
+                    const w = webinarsCache.find(x => x.id === id);
+                    showToast(`Webinar "${w?.name || ''}" dinonaktifkan.`, "warning");
+                }
+            } catch (error) {
+                console.error("Error toggling webinar status:", error);
+                showToast("Gagal mengubah status webinar.", "error");
+            }
+        };
+
+        // ─── Delete Webinar ───
+        window.confirmDelete = async function () {
+            const id = document.getElementById('deleteWebinarId').value;
+            if (!id) return;
+
+            try {
+                const w = webinarsCache.find(x => x.id === id);
+                await deleteDoc(doc(db, "webinars", id));
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+                if (modal) modal.hide();
+
+                showToast(`Webinar "${w?.name || ''}" berhasil dihapus.`, "success");
+            } catch (error) {
+                console.error("Error deleting webinar:", error);
+                showToast("Gagal menghapus webinar.", "error");
+            }
+        };
+
+        // ─── Toast ───
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `custom-toast custom-toast-${type} mb-2`;
+            toast.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle-fill' : type === 'error' ? 'x-circle-fill' : 'exclamation-triangle-fill'} me-2"></i>${escapeHtml(message)}`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // ─── Utility ───
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // ─── Logout ───
+        window.logout = async () => {
+            await signOut(auth);
+            localStorage.removeItem('userData');
+            window.location.href = "../index.html";
+        };
+
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById('sidebarNav');
+            if (!sidebar) return;
+            const isMobile = window.innerWidth <= 991;
+            if (isMobile) {
+                sidebar.classList.toggle('show');
+            } else {
+                document.body.classList.toggle('sidebar-collapsed');
+            }
+        };
+
+    </script>
+</body>
+
+</html>
