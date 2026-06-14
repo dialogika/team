@@ -2037,6 +2037,7 @@
         import { renderSidebar } from "../element/sidebar.js";
         import { renderRightbarRecruit } from "../element/rightbar-recruit.js";
         import { normalizeWhatsappMessage, buildWhatsappDeepLink, hasReplacementCharacter } from "../element/whatsapp-encoding.js";
+        import { getStoredTemplates as getCategoryTemplates, interpolateTemplate } from "../element/template-manager.js";
         import {
             normalizeInterviewMode,
             isInterviewTimeWithinRange,
@@ -2147,7 +2148,7 @@
             renderBreadcrumb(document.getElementById("internshipCandidateDetailBreadcrumb"), {
                 items: [
                     { label: "Home", href: "../home.html", iconHtml: '<i class="bi bi-house-fill"></i>' },
-                    { label: "Candidate Internship", href: "./candidate-internship.html" },
+                    { label: "Candidate Management", href: "./candidate-management.html" },
                     { label: "Internship Candidate Detail", current: true }
                 ]
             });
@@ -3450,7 +3451,7 @@
                         '<div class="d-flex flex-column gap-4">' +
                             '<div id="internshipCandidateDetailBreadcrumb"></div>' +
                             '<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">' +
-                                '<a href="./candidate-internship.html" class="detail-back-link"><i class="fa-solid fa-arrow-left"></i><span>Kembali ke daftar kandidat</span></a>' +
+                                '<a href="./candidate-management.html" class="detail-back-link"><i class="fa-solid fa-arrow-left"></i><span>Kembali ke daftar kandidat</span></a>' +
                                 '<div class="detail-chip-row mt-0">' +
                                     '<span class="detail-meta-chip"><i class="fa-regular fa-hashtag"></i>' + escapeHtml(vm.id || "-") + '</span>' +
                                     '<span class="detail-meta-chip"><i class="fa-regular fa-calendar"></i>' + escapeHtml(formatDate(vm.createdAt)) + '</span>' +
@@ -3611,7 +3612,7 @@
                     '<div class="empty-state-card">' +
                         '<div class="fw-bold text-dark mb-2">ID kandidat tidak ditemukan</div>' +
                         '<div class="mb-4">Buka halaman ini dari card kandidat agar detail yang tepat dapat dimuat.</div>' +
-                        '<a href="./candidate-internship.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
+                        '<a href="./candidate-management.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
                     '</div>';
                 return;
             }
@@ -3624,7 +3625,7 @@
                         '<div class="empty-state-card">' +
                             '<div class="fw-bold text-dark mb-2">Data kandidat tidak ditemukan</div>' +
                             '<div class="mb-4">Kemungkinan data sudah dihapus atau ID kandidat tidak valid.</div>' +
-                            '<a href="./candidate-internship.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
+                            '<a href="./candidate-management.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
                         '</div>';
                     return;
                 }
@@ -3637,7 +3638,7 @@
                     '<div class="empty-state-card">' +
                         '<div class="fw-bold text-dark mb-2">Terjadi kesalahan saat memuat data</div>' +
                         '<div class="mb-4">Silakan refresh halaman atau coba lagi beberapa saat.</div>' +
-                        '<a href="./candidate-internship.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
+                        '<a href="./candidate-management.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
                     '</div>';
             }
         }
@@ -3894,42 +3895,8 @@
             }
         }
 
-        const CHAT_TEMPLATE_STORAGE_KEY = "dialogika_internship_chat_templates_v1";
-        const CHAT_TEMPLATE_DEFAULTS = {
-            interview_online: "*[REKRUTMEN DIALOGIKA]*\n\nHalo Kak {candidate_name}!\n\nTerima kasih sudah mengikuti tahapan rekrutmen posisi {position_name} di Dialogika dengan antusias. Selanjutnya, kami ucapkan selamat karena Kakak telah lolos pada tahap screening!\n\nMaka dari itu, kami mengundang Kakak untuk mengikuti tahapan selanjutnya, yaitu wawancara secara online dan verifikasi jadwal yang akan dilaksanakan pada:\n\n*Tanggal* : {interview_date}\n*Waktu*   : {interview_time} WIB\n*Link Meeting* : {meeting_link}\n\nKandidat dimohon untuk bergabung maksimal 5 menit sebelum jadwal wawancara, menggunakan pakaian yang sopan dan rapi, serta memastikan koneksi internet dalam kondisi stabil.\n\nTerima kasih atas perhatiannya.\n\nSalam,\nHuman Resource Dialogika",
-            interview_offline: "*[REKRUTMEN DIALOGIKA]*\n\nHalo Kak {candidate_name}!\n\nTerima kasih sudah mengikuti tahapan rekrutmen posisi {position_name} di Dialogika dengan antusias. Selanjutnya kami ucapkan selamat karena telah lolos pada tahap screening!\n\nMaka dari itu, kami akan mengundang kakak untuk mengikuti tahapan selanjutnya, yaitu tahap wawancara dan verifikasi jadwal. Pelaksanaan wawancara akan dilakukan secara offline pada:\n\n*Tanggal* : {interview_date}\n*Waktu*   : {interview_time} WIB\n*Lokasi*  : {interview_location}\n\nKandidat dimohon untuk hadir maksimal 5 menit sebelum jadwal wawancara serta menggunakan pakaian yang sopan dan rapi, serta membawa laptop.\n\nTerima kasih atas perhatiannya\n\nSalam,\nHuman Resource Dialogika\n\nMohon untuk konfirmasi kehadiran dengan membalas pesan ini. Terima kasih.\n*reschedule hanya bisa dilakukan 1x maksimal H-1",
-            accepted: "*[Acceptance Letter]*\n\nHalo {candidate_name}!\n\nTerima kasih atas partisipasi dan antusiasmenya dalam mengikuti proses rekrutmen Tim Dialogika.\n\nSetelah melalui proses seleksi dan evaluasi, kami dengan senang hati menginformasikan bahwa Kakak diterima sebagai Tim di Dialogika.\nSelamat bergabung bersama tim!\n\nInformasi mengenai jadwal onboarding dan kelengkapan administrasi akan kami kirimkan dalam waktu dekat.\n\nTerima kasih dan sampai jumpa di hari pertama magang.\n\nSalam hormat,\nHR Dialogika",
-            onboarding: "*Undangan Onboarding*\n\n*[Recruitment Dialogika Team - WELCOME!]*\n\nSelamat! Dengan ini kami menginformasikan bahwa kamu telah diterima sebagai Tim di Dialogika. Kami sangat senang menyambutmu menjadi bagian dari tim kami.\n\nSebagai langkah selanjutnya, kami akan mengadakan sesi onboarding pada:\n\n*Tanggal* : {onboarding_date} secara offline di Yogyakarta\n*Waktu*   : {onboarding_time} WIB\n*Tempat*  : {onboarding_location}\n\nUntuk teman-teman yang akan melakukan konversi SKS, mohon lengkapi informasi berikut:\n*abaikan apabila tidak melakukan konversi SKS*\n- Durasi magang minimal dari kampus: ... bulan\n- Syarat/dokumen yang dibutuhkan dari Dialogika:\n- Syarat jobdesc tertentu:\n\nJika ada pertanyaan atau hal yang perlu dikonfirmasi, jangan ragu untuk menghubungi kami melalui WhatsApp ini.\n\nSekali lagi, selamat bergabung di keluarga besar Dialogika! Kami tidak sabar untuk memulai perjalanan ini bersamamu.\n\nSalam hangat,\n\nHR Dialogika\n\n*Dimohon membawa materai Rp10.000 & menginstal aplikasi Click-Up & Messenger di Handphone & Laptop*\n\nNoted: Silahkan untuk menghubungi kak Elsa dengan nama FB @Dwiya Elsa Yulianti dengan isi chatnya \"Halo kak, Perkenalkan aku (Nama) dari divisi (.....). Terima kasih kak\".",
-            rejected: "[Recruitment Dialogika Team - UPDATE]\nHalo Kak {candidate_name}!!\n\nTerima kasih banyak atas waktu dan antusiasme yang telah Kakak berikan selama proses seleksi Tim di Dialogika. Kami sangat mengapresiasi usaha dan ketertarikan Kakak untuk bergabung bersama kami.\n\nSetelah melalui proses pertimbangan yang cukup panjang, dengan berat hati kami menginformasikan bahwa saat ini Kakak belum dapat kami lanjutkan ke tahap berikutnya. Keputusan ini tidak mengurangi nilai dan potensi yang Kakak miliki, karena banyak sekali kandidat hebat yang turut berpartisipasi dalam proses seleksi ini.\n\nKami berharap Kakak tetap semangat dalam mengejar kesempatan lainnya, dan semoga di lain waktu kita bisa dipertemukan kembali dalam kesempatan yang berbeda.\n\nTerima kasih sekali lagi atas ketertarikan Kakak kepada Dialogika.\n\nSalam hangat,\nHR Dialogika"
-        };
-
-        function getStoredChatTemplates() {
-            const defaults = { ...CHAT_TEMPLATE_DEFAULTS };
-            try {
-                const raw = window.localStorage.getItem(CHAT_TEMPLATE_STORAGE_KEY);
-                if (!raw) return defaults;
-                const parsed = JSON.parse(raw);
-                if (!parsed || typeof parsed !== "object") return defaults;
-                Object.keys(defaults).forEach((key) => {
-                    const value = (parsed[key] || "").toString().trim();
-                    if (value) defaults[key] = value;
-                });
-                return defaults;
-            } catch (error) {
-                return defaults;
-            }
-        }
-
-        function fillChatTemplate(templateText, tokens) {
-            const source = (templateText || "").toString();
-            return source.replace(/\{([a-z_]+)\}/gi, (fullMatch, tokenName) => {
-                const replacement = tokens && Object.prototype.hasOwnProperty.call(tokens, tokenName)
-                    ? tokens[tokenName]
-                    : "";
-                const nextValue = (replacement || "").toString().trim();
-                return nextValue || fullMatch;
-            });
-        }
+        // Templates are now managed per-category via template-manager.js (category: "intern")
+        function getInternTemplates() { return getCategoryTemplates("intern"); }
 
         function buildInterviewWhatsappMessage(vm, scheduleDate) {
             const candidateName = vm && vm.name ? vm.name : "Kandidat";
@@ -3946,9 +3913,9 @@
             const isOnline = state.mode === "online";
             const meetingLink = (state.meetingLink || "").trim();
             const offlineLocation = (state.location || INTERVIEW_LOCATION_URL || "").trim();
-            const templates = getStoredChatTemplates();
+            const templates = getInternTemplates();
             const selectedTemplate = isOnline ? templates.interview_online : templates.interview_offline;
-            return fillChatTemplate(selectedTemplate, {
+            return interpolateTemplate(selectedTemplate, {
                 candidate_name: candidateName,
                 position_name: positionName,
                 interview_date: dayAndDateText,
@@ -4050,8 +4017,8 @@
 
         function buildAcceptedWhatsappMessage(vm) {
             const candidateName = vm && vm.name ? vm.name : "Kandidat";
-            const templates = getStoredChatTemplates();
-            return fillChatTemplate(templates.accepted, {
+            const templates = getInternTemplates();
+            return interpolateTemplate(templates.accepted, {
                 candidate_name: candidateName
             });
         }
@@ -4245,8 +4212,8 @@
         function buildOnboardingWhatsappMessage(scheduleDate) {
             const dateText = formatInterviewDateForMessage(scheduleDate);
             const timeText = formatInterviewTimeForMessage(scheduleDate);
-            const templates = getStoredChatTemplates();
-            return fillChatTemplate(templates.onboarding, {
+            const templates = getInternTemplates();
+            return interpolateTemplate(templates.onboarding, {
                 onboarding_date: dateText,
                 onboarding_time: timeText,
                 onboarding_location: ONBOARDING_LOCATION_URL
@@ -4508,8 +4475,8 @@
 
         function buildRejectionWhatsappMessage(vm) {
             const candidateName = vm && vm.name ? vm.name : "Kandidat";
-            const templates = getStoredChatTemplates();
-            return fillChatTemplate(templates.rejected, {
+            const templates = getInternTemplates();
+            return interpolateTemplate(templates.rejected, {
                 candidate_name: candidateName
             });
         }

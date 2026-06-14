@@ -1,6 +1,6 @@
 /**
  * Centralized WhatsApp Message Builder
- * Builds all WhatsApp messages using centralized template system
+ * Builds all WhatsApp messages using per-category template system
  */
 
 import {
@@ -20,6 +20,7 @@ import {
  * @param {string} options.mode - 'online' or 'offline'
  * @param {string} options.meetingLink - Meeting link (for online)
  * @param {string} options.interviewLocation - Interview location (for offline)
+ * @param {string} options.category - Category: 'intern', 'team', or 'mentor' (default: 'team')
  * @returns {string|null} Generated WhatsApp message
  */
 export function buildInterviewMessage(options = {}) {
@@ -30,12 +31,13 @@ export function buildInterviewMessage(options = {}) {
         interviewTime = "-",
         mode = "online",
         meetingLink = "",
-        interviewLocation = ""
+        interviewLocation = "",
+        category = "team"
     } = options;
 
-    const templateId = getTemplateIdForStageMode("interview", mode);
+    const templateId = getTemplateIdForStageMode("interview", mode, category);
     if (!templateId) {
-        console.warn("No template found for interview mode:", mode);
+        console.warn("No template found for interview mode:", mode, "category:", category);
         return null;
     }
 
@@ -48,7 +50,7 @@ export function buildInterviewMessage(options = {}) {
         interview_location: interviewLocation
     };
 
-    return buildMessageFromTemplate(templateId, tokens);
+    return buildMessageFromTemplate(templateId, tokens, category);
 }
 
 /**
@@ -60,6 +62,7 @@ export function buildInterviewMessage(options = {}) {
  * @param {string} options.mode - 'online' or 'offline'
  * @param {string} options.meetingLink - Meeting link (for online)
  * @param {string} options.ojtLocation - OJT location (for offline)
+ * @param {string} options.category - Category: 'intern', 'team', or 'mentor' (default: 'team')
  * @returns {string|null} Generated WhatsApp message
  */
 export function buildOnJobTrainingMessage(options = {}) {
@@ -69,12 +72,13 @@ export function buildOnJobTrainingMessage(options = {}) {
         ojtTime = "-",
         mode = "online",
         meetingLink = "",
-        ojtLocation = ""
+        ojtLocation = "",
+        category = "team"
     } = options;
 
-    const templateId = getTemplateIdForStageMode("on_job_training", mode);
+    const templateId = getTemplateIdForStageMode("on_job_training", mode, category);
     if (!templateId) {
-        console.warn("No template found for On Job Training mode:", mode);
+        console.warn("No template found for On Job Training mode:", mode, "category:", category);
         return null;
     }
 
@@ -86,12 +90,13 @@ export function buildOnJobTrainingMessage(options = {}) {
         ojt_location: ojtLocation
     };
 
-    return buildMessageFromTemplate(templateId, tokens);
+    return buildMessageFromTemplate(templateId, tokens, category);
 }
 
 /**
  * Build micro teaching WhatsApp message (backward-compatible wrapper)
  * @param {Object} options - Build options
+ * @param {string} options.category - Category (default: 'team')
  * @returns {string|null} Generated WhatsApp message
  */
 export function buildMicroTeachingMessage(options = {}) {
@@ -101,16 +106,36 @@ export function buildMicroTeachingMessage(options = {}) {
         microTeachingTime = "-",
         mode = "online",
         meetingLink = "",
-        microTeachingLocation = ""
+        microTeachingLocation = "",
+        category = "team"
     } = options;
 
+    // For mentor, use micro_teaching stage directly
+    if (category === "mentor") {
+        const templateId = getTemplateIdForStageMode("micro_teaching", mode, category);
+        if (!templateId) {
+            console.warn("No template found for Micro Teaching mode:", mode, "category:", category);
+            return null;
+        }
+        const tokens = {
+            candidate_name: candidateName,
+            microteaching_date: microTeachingDate,
+            microteaching_time: microTeachingTime,
+            meeting_link: meetingLink,
+            microteaching_location: microTeachingLocation
+        };
+        return buildMessageFromTemplate(templateId, tokens, category);
+    }
+
+    // For team/intern, delegate to OJT builder
     return buildOnJobTrainingMessage({
         candidateName,
         ojtDate: microTeachingDate,
         ojtTime: microTeachingTime,
         mode,
         meetingLink,
-        ojtLocation: microTeachingLocation
+        ojtLocation: microTeachingLocation,
+        category
     });
 }
 
@@ -118,71 +143,74 @@ export function buildMicroTeachingMessage(options = {}) {
  * Build accepted WhatsApp message
  * @param {Object} options - Build options
  * @param {string} options.candidateName - Candidate name
+ * @param {string} options.category - Category (default: 'team')
  * @returns {string|null} Generated WhatsApp message
  */
 export function buildAcceptedMessage(options = {}) {
-    const { candidateName = "Kandidat" } = options;
+    const { candidateName = "Kandidat", category = "team" } = options;
 
     const tokens = {
         candidate_name: candidateName
     };
 
-    return buildMessageFromTemplate("accepted", tokens);
+    return buildMessageFromTemplate("accepted", tokens, category);
 }
 
 /**
  * Build rejected WhatsApp message
  * @param {Object} options - Build options
  * @param {string} options.candidateName - Candidate name
+ * @param {string} options.category - Category (default: 'team')
  * @returns {string|null} Generated WhatsApp message
  */
 export function buildRejectedMessage(options = {}) {
-    const { candidateName = "Kandidat" } = options;
+    const { candidateName = "Kandidat", category = "team" } = options;
 
     const tokens = {
         candidate_name: candidateName
     };
 
-    return buildMessageFromTemplate("rejected", tokens);
+    return buildMessageFromTemplate("rejected", tokens, category);
 }
 
 /**
  * Build any template message with custom tokens
  * @param {string} templateId - Template ID
  * @param {Object} tokens - Custom token values
+ * @param {string} category - Category (default: 'team')
  * @returns {string|null} Generated message
  */
-export function buildCustomMessage(templateId, tokens = {}) {
-    return buildMessageFromTemplate(templateId, tokens);
+export function buildCustomMessage(templateId, tokens = {}, category = "team") {
+    return buildMessageFromTemplate(templateId, tokens, category);
 }
 
 /**
  * Get all available message builders
- * Returns object with builder functions for each template type
+ * @param {string} category - Category (default: 'team')
  * @returns {Object} Builders map
  */
-export function getMessageBuilders() {
+export function getMessageBuilders(category = "team") {
     return {
-        interview_online: (options) => buildInterviewMessage({ ...options, mode: "online" }),
-        interview_offline: (options) => buildInterviewMessage({ ...options, mode: "offline" }),
-        micro_teaching_online: (options) => buildOnJobTrainingMessage({ ...options, mode: "online" }),
-        micro_teaching_offline: (options) => buildOnJobTrainingMessage({ ...options, mode: "offline" }),
-        on_job_training_online: (options) => buildOnJobTrainingMessage({ ...options, mode: "online" }),
-        on_job_training_offline: (options) => buildOnJobTrainingMessage({ ...options, mode: "offline" }),
-        accepted: buildAcceptedMessage,
-        rejected: buildRejectedMessage,
-        custom: buildCustomMessage
+        interview_online: (options) => buildInterviewMessage({ ...options, mode: "online", category }),
+        interview_offline: (options) => buildInterviewMessage({ ...options, mode: "offline", category }),
+        micro_teaching_online: (options) => buildMicroTeachingMessage({ ...options, mode: "online", category }),
+        micro_teaching_offline: (options) => buildMicroTeachingMessage({ ...options, mode: "offline", category }),
+        on_job_training_online: (options) => buildOnJobTrainingMessage({ ...options, mode: "online", category }),
+        on_job_training_offline: (options) => buildOnJobTrainingMessage({ ...options, mode: "offline", category }),
+        accepted: (options) => buildAcceptedMessage({ ...options, category }),
+        rejected: (options) => buildRejectedMessage({ ...options, category }),
+        custom: (templateId, tokens) => buildCustomMessage(templateId, tokens, category)
     };
 }
 
 /**
  * Preview template with sample tokens
- * Useful for template editor previews
  * @param {string} templateId - Template ID
  * @param {Object} sampleTokens - Sample token values
+ * @param {string} category - Category (default: 'team')
  * @returns {string|null} Preview message
  */
-export function previewTemplate(templateId, sampleTokens = {}) {
+export function previewTemplate(templateId, sampleTokens = {}, category = "team") {
     const defaults = {
         candidate_name: "Nama Kandidat",
         position_name: "Posisi",
@@ -193,11 +221,14 @@ export function previewTemplate(templateId, sampleTokens = {}) {
         ojt_date: "Hari, Tanggal Bulan Tahun",
         ojt_time: "HH:MM",
         ojt_location: "Alamat Lokasi",
-        micro_teaching_date: "Hari, Tanggal Bulan Tahun",
-        micro_teaching_time: "HH:MM",
-        micro_teaching_location: "Alamat Lokasi"
+        microteaching_date: "Hari, Tanggal Bulan Tahun",
+        microteaching_time: "HH:MM",
+        microteaching_location: "Alamat Lokasi",
+        onboarding_date: "Hari, Tanggal Bulan Tahun",
+        onboarding_time: "HH:MM",
+        onboarding_location: "Alamat Lokasi"
     };
 
     const tokens = { ...defaults, ...sampleTokens };
-    return buildMessageFromTemplate(templateId, tokens);
+    return buildMessageFromTemplate(templateId, tokens, category);
 }

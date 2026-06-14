@@ -4,7 +4,7 @@ import { renderSidebar } from "./sidebar.js";
 import { renderRightbarRecruit } from "./rightbar-recruit.js";
 import { getInterviewScheduleStatus, filterAndSortInterviewSchedules } from "./recruitment-interview-utils.js";
 import { promptTeamDivision, resolveCandidateDivision, syncAcceptedCandidateToTeamManagement } from "./team-management-sync.js";
-import { TEMPLATE_DEFINITIONS, TEMPLATE_STORAGE_KEY, getStoredTemplates, getTemplatesWithMetadata, saveTemplates, resetTemplatesToDefaults, setTemplatesLastModified } from "./template-manager.js";
+import { getCategoryTemplateDefs, getStoredTemplates, saveTemplates, setTemplatesLastModified } from "./template-manager.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, collection, getDoc, getDocs, onSnapshot, addDoc, updateDoc, setDoc, serverTimestamp, arrayUnion, query, where, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -488,12 +488,19 @@ function renderInterviewScheduleTable() {
   prevBtn.disabled = page <= 1; nextBtn.disabled = page >= tp;
 }
 
-// ===== TEMPLATE EDITOR =====
+// ===== TEMPLATE EDITOR (per-category) =====
 let templateModalInstance = null;
-function renderTemplateEditor() {
+let activeTemplateCategory = "team";
+const CATEGORY_LABELS = { intern: "Intern", team: "Team", mentor: "Mentor" };
+function renderTemplateEditor(category) {
+  activeTemplateCategory = category || "team";
   const el = document.getElementById("templateEditorGrid"); if (!el) return;
-  const values = getStoredTemplates();
-  el.innerHTML = TEMPLATE_DEFINITIONS.map(item => { const tl = item.requiredTokens.join(", "); return '<div class="template-editor-item"><h6 class="template-editor-item-title">'+escapeHtml(item.title)+'</h6><p class="template-editor-item-desc">'+escapeHtml(item.description)+'</p><p class="template-editor-item-desc mb-1"><strong>Placeholder:</strong> '+escapeHtml(tl)+'</p><textarea class="form-control" data-template-input="'+item.id+'" rows="7">'+escapeHtml(values[item.id]||item.defaultTemplate)+'</textarea></div>'; }).join("");
+  const defs = getCategoryTemplateDefs(activeTemplateCategory);
+  const values = getStoredTemplates(activeTemplateCategory);
+  el.innerHTML = defs.map(item => { const tl = item.requiredTokens.join(", "); return '<div class="template-editor-item"><h6 class="template-editor-item-title">'+escapeHtml(item.title)+'</h6><p class="template-editor-item-desc">'+escapeHtml(item.description)+'</p><p class="template-editor-item-desc mb-1"><strong>Placeholder:</strong> '+escapeHtml(tl)+'</p><textarea class="form-control" data-template-input="'+item.id+'" rows="7">'+escapeHtml(values[item.id]||item.defaultTemplate)+'</textarea></div>'; }).join("");
+  // Update category label in modal header
+  const catLabel = document.getElementById("templateCategoryLabel");
+  if (catLabel) catLabel.textContent = "Template WhatsApp — " + (CATEGORY_LABELS[activeTemplateCategory] || activeTemplateCategory);
 }
 function setTemplateValidation(msg, tone) {
   const el = document.getElementById("templateBaseValidationMsg"); if (!el) return;
@@ -562,14 +569,16 @@ function bindEvents() {
     console.log("[NAV] Schedule row click → navigating to:", detailUrl);
     setTimeout(() => { if (cid) window.location.href = detailUrl; else if (dl) { console.log("[NAV] Fallback detail link:", dl); window.location.href = dl; } }, 160);
   });
-  // Template modal
+  // Template modal (per-category)
   const tplModalEl = document.getElementById("templateBaseModal");
   if (tplModalEl && window.bootstrap) templateModalInstance = new bootstrap.Modal(tplModalEl);
-  document.querySelectorAll('.tab-template-btn').forEach(btn => btn.addEventListener('click', () => { renderTemplateEditor(); setTemplateValidation("",""); if (templateModalInstance) templateModalInstance.show(); }));
+  document.querySelectorAll('.tab-template-btn').forEach(btn => btn.addEventListener('click', () => { const cat = btn.dataset.tab || activeTab; renderTemplateEditor(cat); setTemplateValidation("",""); if (templateModalInstance) templateModalInstance.show(); }));
   document.getElementById("saveTemplateBaseBtn")?.addEventListener('click', () => {
-    const values = {}; TEMPLATE_DEFINITIONS.forEach(d => { const f = document.querySelector('[data-template-input="'+d.id+'"]'); values[d.id] = f ? (f.value||"").trim() : ""; });
-    for (const d of TEMPLATE_DEFINITIONS) { if (!values[d.id]) { setTemplateValidation("Template `"+d.title+"` tidak boleh kosong.","danger"); return; } for (const t of d.requiredTokens) { if (!values[d.id].includes(t)) { setTemplateValidation("Template `"+d.title+"` harus memuat "+t+".","danger"); return; } } }
-    try { saveTemplates(values); setTemplatesLastModified(); window.dispatchEvent(new CustomEvent("dialogika:chat-templates-updated",{detail:{updatedAt:Date.now()}})); } catch(e) { setTemplateValidation("Gagal menyimpan.","danger"); return; }
+    const cat = activeTemplateCategory;
+    const defs = getCategoryTemplateDefs(cat);
+    const values = {}; defs.forEach(d => { const f = document.querySelector('[data-template-input="'+d.id+'"]'); values[d.id] = f ? (f.value||"").trim() : ""; });
+    for (const d of defs) { if (!values[d.id]) { setTemplateValidation("Template `"+d.title+"` tidak boleh kosong.","danger"); return; } for (const t of d.requiredTokens) { if (!values[d.id].includes(t)) { setTemplateValidation("Template `"+d.title+"` harus memuat "+t+".","danger"); return; } } }
+    try { saveTemplates(values, cat); setTemplatesLastModified(cat); window.dispatchEvent(new CustomEvent("dialogika:chat-templates-updated",{detail:{category:cat,updatedAt:Date.now()}})); } catch(e) { setTemplateValidation("Gagal menyimpan.","danger"); return; }
     setTemplateValidation("Berhasil disimpan.","success"); setTimeout(() => { if (templateModalInstance) templateModalInstance.hide(); }, 500);
   });
   document.getElementById("templateEditorGrid")?.addEventListener('input', (ev) => { if (ev.target.tagName === "TEXTAREA") { ev.target.style.height = "auto"; ev.target.style.height = Math.max(ev.target.scrollHeight, 170)+"px"; } });

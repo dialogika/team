@@ -23,17 +23,9 @@ export function renderRightbarRecruit() {
             <h2>Recruitment Shortcut</h2>
         </div>
         <div class="menu-grid">
-            <a href="../data/candidate-internship.html" class="menu-item">
-                <i data-lucide="user-plus"></i>
-                <span>Internship Candidate</span>
-            </a>
-            <a href="../data/candidate-mentor.html" class="menu-item">
-                <i data-lucide="graduation-cap"></i>
-                <span>Mentor Candidate</span>
-            </a>
-            <a href="../data/candidate-team.html" class="menu-item">
+            <a href="../data/candidate-management.html" class="menu-item">
                 <i data-lucide="users"></i>
-                <span>Team Candidate</span>
+                <span>Candidate Management</span>
             </a>
             <a href="../data/scouting-candidate.html" class="menu-item">
                 <i data-lucide="search"></i>

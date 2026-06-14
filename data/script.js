@@ -125,7 +125,7 @@
             renderBreadcrumb(document.getElementById("internshipCandidateDetailBreadcrumb"), {
                 items: [
                     { label: "Home", href: "../home.html", iconHtml: '<i class="bi bi-house-fill"></i>' },
-                    { label: "Candidate Team", href: "./candidate-team.html" },
+                    { label: "Candidate Management", href: "./candidate-management.html" },
                     { label: "Internship Candidate Detail", current: true }
                 ]
             });
@@ -1489,7 +1489,7 @@
                         '<div class="d-flex flex-column gap-4">' +
                             '<div id="internshipCandidateDetailBreadcrumb"></div>' +
                             '<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">' +
-                                '<a href="./candidate-team.html" class="detail-back-link"><i class="fa-solid fa-arrow-left"></i><span>Kembali ke daftar kandidat</span></a>' +
+                                '<a href="./candidate-management.html" class="detail-back-link"><i class="fa-solid fa-arrow-left"></i><span>Kembali ke daftar kandidat</span></a>' +
                                 '<div class="detail-chip-row mt-0">' +
                                     '<span class="detail-meta-chip"><i class="fa-regular fa-hashtag"></i>' + escapeHtml(vm.id || "-") + '</span>' +
                                     '<span class="detail-meta-chip"><i class="fa-regular fa-calendar"></i>' + escapeHtml(formatDate(vm.createdAt)) + '</span>' +
@@ -1631,7 +1631,7 @@
                     '<div class="empty-state-card">' +
                         '<div class="fw-bold text-dark mb-2">ID kandidat tidak ditemukan</div>' +
                         '<div class="mb-4">Buka halaman ini dari card kandidat agar detail yang tepat dapat dimuat.</div>' +
-                        '<a href="./candidate-team.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
+                        '<a href="./candidate-management.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
                     '</div>';
                 return;
             }
@@ -1644,7 +1644,7 @@
                         '<div class="empty-state-card">' +
                             '<div class="fw-bold text-dark mb-2">Data kandidat tidak ditemukan</div>' +
                             '<div class="mb-4">Kemungkinan data sudah dihapus atau ID kandidat tidak valid.</div>' +
-                            '<a href="./candidate-team.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
+                            '<a href="./candidate-management.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
                         '</div>';
                     return;
                 }
@@ -1657,7 +1657,7 @@
                     '<div class="empty-state-card">' +
                         '<div class="fw-bold text-dark mb-2">Terjadi kesalahan saat memuat data</div>' +
                         '<div class="mb-4">Silakan refresh halaman atau coba lagi beberapa saat.</div>' +
-                        '<a href="./candidate-team.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
+                        '<a href="./candidate-management.html" class="btn btn-primary">Kembali ke daftar kandidat</a>' +
                     '</div>';
             }
         }
