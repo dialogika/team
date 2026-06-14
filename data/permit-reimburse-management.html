@@ -115,6 +115,16 @@
       .table-zebra tbody tr:nth-child(even) {
         background: #f8fafc;
       }
+      /* Status row colors must override zebra striping */
+      .table-zebra tbody tr:nth-child(even).bg-emerald-50 {
+        background: #ecfdf5;
+      }
+      .table-zebra tbody tr:nth-child(even).bg-amber-50 {
+        background: #fffbeb;
+      }
+      .table-zebra tbody tr:nth-child(even).bg-rose-50 {
+        background: #fff1f2;
+      }
       .table-row {
         transition: background-color 0.18s ease;
       }
@@ -2230,10 +2240,10 @@
           }
           const rows = records
             .map((item) => {
-              const hasPending =
-                (Number(item.pending_days) || 0) > 0 ||
-                (Number(item.pending_hours) || 0) > 0;
-              const rowBgClass = hasPending ? "bg-amber-50" : "bg-emerald-50";
+              const pendingDays = Number(item.pending_days) || 0;
+              const rowBgClass = pendingDays === 0
+                ? "bg-emerald-50"
+                : (pendingDays >= 5 ? "bg-rose-50" : "bg-amber-50");
               const avatar = item.user_photo || getAvatarUrl(item.user_name);
               const detailBtn =
                 '<button data-action="detail" data-id="' +
