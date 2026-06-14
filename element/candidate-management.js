@@ -155,7 +155,11 @@ const TAB_CONFIG = {
       return cur;
     },
     hasOjtSection: false, hasTeamSync: false,
-    positionField: (data, scouting, internship) => data.role_name || internship.role_name || scouting.role_name || "",
+    positionField: (data, scouting, internship) => {
+      const raw = (internship.position_name || internship.position || scouting.position_name || scouting.position || data.position_name || data.position || "").toString().trim();
+      if (raw && raw.toLowerCase() !== "internship") return raw;
+      return "";
+    },
     interviewScheduleField: (recruitment) => {
       const dueDateRaw = recruitment.interview_schedule || recruitment.due_date || null;
       return formatScheduleSortValue(dueDateRaw);
