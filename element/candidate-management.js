@@ -111,7 +111,7 @@ const TAB_CONFIG = {
       if (["accepted","accept"].includes(fd) && cur !== "micro_teaching") return "accepted";
       return cur;
     },
-    hasOjtSection: false, hasTeamSync: false,
+    hasOjtSection: false, hasTeamSync: false, hasMentorSync: true,
     positionField: (data, scouting, internship) => scouting.position_name || internship.position || "",
     interviewScheduleField: (recruitment) => {
       const dueDateRaw = recruitment.interview_schedule || recruitment.due_date || null;
@@ -523,6 +523,54 @@ async function moveCandidateToTrash(cat, talentId, payload) {
   } catch(e) { throw e; }
 }
 
+// ===== MENTOR SYNC (accepted → mentor collection) =====
+async function syncAcceptedMentorFromScreening(candidateId) {
+  if (!candidateId) return;
+  try {
+    const snap = await getDoc(doc(db, "mentors_screening", candidateId));
+    if (!snap.exists()) { console.warn("Mentor candidate not found:", candidateId); return; }
+    const sourceData = snap.data() || {};
+    const basic = sourceData.basic_info || {};
+    const contact = sourceData.contact_info || {};
+    const internship = sourceData.internship || sourceData.internship_info || {};
+    const scouting = sourceData.scouting_info || {};
+    const education = sourceData.education || {};
+    const fullName = basic.full_name || scouting.full_name || sourceData.full_name || "Tanpa Nama";
+    const nickName = (fullName.split(" ")[0] || "").trim();
+    const whatsappRaw = internship.whatsapp || contact.whatsapp || contact.phone || sourceData.whatsapp || "";
+    const digits = (whatsappRaw || "").toString().replace(/\D/g, "");
+    const whatsappLink = digits ? "https://wa.me/" + digits : "";
+    const location = internship.address || contact.address || sourceData.location || sourceData.city || "";
+    const teachingType = scouting.teaching_type || internship.teaching_type || sourceData.teaching_type || "";
+    const deliveryType = internship.mode || sourceData.type || sourceData.deliveryType || "";
+    const mentorPayload = {
+      fullName, nickName, whatsapp: whatsappLink, location,
+      rating: 0, teaching: teachingType, type: deliveryType,
+      activeClasses: 0, totalClasses: 0, status: "active",
+      contractEnd: null, contractDurationMonths: null, lastActiveDays: 0,
+      completionRate: 0, attendanceRate: 0, complaintCount: 0, avgFeedback: 0,
+      totalEarning: 0, pendingPayment: 0, feeOnline: 0, feeOffline: 0,
+      availability: [], classHistory: [], contractNotes: "",
+      bankName: "", accountNumber: "", accountHolderName: fullName,
+      email: internship.email || contact.email || basic.email || "",
+      campus: internship.campus || education.campus || education.university || "",
+      major: internship.major || education.major || education.department || education.faculty || "",
+      instagram: internship.instagram || contact.instagram || "",
+      linkedin: internship.linkedin || contact.linkedin || scouting.channel_url || "",
+      address: contact.address || internship.address || "",
+      avatar_url: basic.avatar_url || "",
+      source_candidate_id: candidateId,
+      source_collection: "mentors_screening",
+      copied_to_mentor_at: new Date().toISOString(),
+      createdAt: sourceData.created_at || sourceData.createdAt || serverTimestamp()
+    };
+    await setDoc(doc(db, "mentor", candidateId), mentorPayload, { merge: true });
+    console.log("[Mentor Sync] Candidate", candidateId, "synced to mentor collection.");
+  } catch (e) {
+    console.error("[Mentor Sync] Failed to sync candidate to mentor collection:", e);
+  }
+}
+
 // ===== TAB SWITCHING =====
 function switchTab(cat) {
   activeTab = cat;
@@ -622,6 +670,11 @@ function bindEvents() {
         const ok = await updateCandidateStatus(cat, talentId, normalized, actorName);
         if (!ok) { await loadCandidates(cat); alert("Gagal update status."); return; }
         try { await syncAcceptedCandidateToTeamManagement({ db, candidateCollection: cfg.collectionName, candidateId: talentId, division: div, source: "candidate-"+cat }); } catch(err) { console.error("Sync failed", err); }
+        updateCandidateStatusUI(cat, talentId, normalized);
+      } else if (cfg.hasMentorSync && normalized === "accepted") {
+        const ok = await updateCandidateStatus(cat, talentId, normalized, actorName);
+        if (!ok) { await loadCandidates(cat); alert("Gagal update status."); return; }
+        try { await syncAcceptedMentorFromScreening(talentId); } catch(err) { console.error("Mentor sync failed", err); }
         updateCandidateStatusUI(cat, talentId, normalized);
       } else {
         const ok = await updateCandidateStatus(cat, talentId, normalized, actorName);
