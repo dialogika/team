@@ -41,7 +41,7 @@
         .table-scroll-wrap {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            max-height: 72vh;
+            max-height: 78vh;
             overflow-y: auto;
             border-radius: 16px;
         }
@@ -81,14 +81,48 @@
         .b-city { display: inline-block; background: #f0f9ff; color: #0369a1; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
         .b-prog { display: inline-block; background: #ede9fe; color: #6d28d9; border-radius: 8px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
         .b-info { display: inline-block; background: #f0fdf4; color: #15803d; border-radius: 999px; padding: 1px 8px; font-size: 10px; font-weight: 600; }
+        .b-info-final { display: inline-block; background: #fef3c7; color: #92400e; border-radius: 999px; padding: 1px 8px; font-size: 10px; font-weight: 600; }
         .b-pay-full { display: inline-block; background: #dcfce7; color: #166534; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
         .b-pay-dp   { display: inline-block; background: #fef9c3; color: #854d0e; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
         .b-pay-oth  { display: inline-block; background: #f1f5f9; color: #475569; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
         .td-price { font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; color: #0f172a; white-space: nowrap; }
         .td-ts    { font-size: 12px; white-space: nowrap; color: #64748b; }
+        .td-nama  { font-weight: 700; color: #0f172a; }
+        .btn-copy-wa {
+            font-size: 10px; padding: 1px 7px; border-radius: 6px; margin-left: 6px;
+            background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; cursor: pointer;
+            transition: background .15s;
+        }
+        .btn-copy-wa:hover { background: #e2e8f0; }
+        .btn-copy-wa.copied { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
         .btn-bukti { font-size: 11px; padding: 3px 12px; border-radius: 999px; white-space: nowrap; font-weight: 600; }
         /* pagination */
         .pgn-btn { min-width: 34px; font-size: 12px; padding: 4px 10px; border-radius: 10px; }
+        /* summary cards */
+        .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .stat-card {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 18px;
+            padding: 18px 22px; display: flex; flex-direction: column; gap: 4px;
+            box-shadow: 0 4px 14px -6px rgba(15,23,42,.12); cursor: pointer;
+            transition: box-shadow .2s, border-color .2s;
+        }
+        .stat-card:hover { box-shadow: 0 8px 24px -8px rgba(15,23,42,.18); border-color: #cbd5e1; }
+        .stat-card.active { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,.18); }
+        .stat-card-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .08em; }
+        .stat-card-value { font-size: 26px; font-weight: 800; color: #0f172a; line-height: 1.1; }
+        .stat-card-sub    { font-size: 12px; color: #64748b; font-weight: 500; }
+        .stat-card.sc-full .stat-card-value { color: #166534; }
+        .stat-card.sc-dp   .stat-card-value { color: #92400e; }
+        .stat-card.sc-total .stat-card-value { color: #4f46e5; }
+        /* payment summary footer */
+        .pay-summary {
+            display: flex; gap: 24px; align-items: center; justify-content: flex-end;
+            padding: 14px 18px; border-top: 2px solid #e2e8f0; margin-top: 12px;
+            font-size: 13px; color: #334155; flex-wrap: wrap;
+        }
+        .pay-summary-item { display: flex; align-items: center; gap: 6px; }
+        .pay-summary-item strong { font-weight: 700; color: #0f172a; }
+        .pay-summary-total { font-size: 15px; font-weight: 800; color: #4f46e5; }
         [x-cloak] { display: none !important; }
     </style>
 
@@ -103,7 +137,7 @@
         <div id="sidebarContainer"></div>
 
         <main class="main-content">
-            <div class="max-w-6xl mx-auto px-6 py-6">
+            <div class="max-w-full px-6 py-6">
                 <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                     <div>
                         <nav class="flex gap-2 text-xs font-bold text-blue-600 uppercase tracking-widest mb-2">
@@ -139,6 +173,24 @@
                     </div>
                 </header>
 
+                <div class="stat-cards" id="statCards">
+                    <div class="stat-card sc-total" data-pay-filter="all">
+                        <span class="stat-card-label">Total Member</span>
+                        <span class="stat-card-value" id="scTotal">0</span>
+                        <span class="stat-card-sub">dari seluruh data</span>
+                    </div>
+                    <div class="stat-card sc-full" data-pay-filter="full">
+                        <span class="stat-card-label">Full Payment</span>
+                        <span class="stat-card-value" id="scFull">0</span>
+                        <span class="stat-card-sub">Lunas / Full</span>
+                    </div>
+                    <div class="stat-card sc-dp" data-pay-filter="dp">
+                        <span class="stat-card-label">Down Payment (DP)</span>
+                        <span class="stat-card-value" id="scDp">0</span>
+                        <span class="stat-card-sub">Cicilan / DP</span>
+                    </div>
+                </div>
+
                 <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center mb-4">
                     <div class="relative flex-grow group">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -147,6 +199,11 @@
                         <input id="memberSearchInput" type="text" placeholder="Cari nama, WhatsApp, kota, program..." class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none text-sm text-slate-700 shadow-sm">
                     </div>
                     <div class="flex items-center gap-3">
+                        <select id="paymentFilterSelect" class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="all">Semua Pembayaran</option>
+                            <option value="full">Full Payment</option>
+                            <option value="dp">Down Payment (DP)</option>
+                        </select>
                         <select id="pageSizeSelect" class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
                             <option value="10">10 / halaman</option>
                             <option value="25" selected>25 / halaman</option>
@@ -180,6 +237,10 @@
                         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 mt-3 px-1">
                             <span id="pgnInfo" class="text-[11px] text-slate-400"></span>
                             <div id="pgnControls" class="d-flex align-items-center gap-1 flex-wrap"></div>
+                        </div>
+                        <div class="pay-summary" id="paySummary">
+                            <div class="pay-summary-item"><span>Total Member:</span><strong id="psTotalMember">0</strong></div>
+                            <div class="pay-summary-item"><span>Total Pembayaran:</span><strong class="pay-summary-total" id="psTotalBayar">Rp0</strong></div>
                         </div>
                     </div>
                 </section>
@@ -297,6 +358,13 @@
         const pageSizeSelect = document.getElementById("pageSizeSelect");
         const pgnInfo = document.getElementById("pgnInfo");
         const pgnControls = document.getElementById("pgnControls");
+        const paymentFilterSelect = document.getElementById("paymentFilterSelect");
+        const statCards = document.getElementById("statCards");
+        const scTotal = document.getElementById("scTotal");
+        const scFull = document.getElementById("scFull");
+        const scDp = document.getElementById("scDp");
+        const psTotalMember = document.getElementById("psTotalMember");
+        const psTotalBayar = document.getElementById("psTotalBayar");
 
         let allMembers = [];
         let filteredList = [];
@@ -304,19 +372,19 @@
         let pageSize = parseInt(pageSizeSelect?.value || "25", 10);
         let sortKey = "created_at";
         let sortDir = "desc";
+        let paymentFilter = "all";
 
         const MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 
         const COLUMNS = [
-            { key: "nama",                    label: "Nama",                   type: "string" },
-            { key: "whatsapp",                label: "WhatsApp",               type: "string" },
+            { key: "nama",                    label: "Nama",                   type: "bold_string" },
+            { key: "whatsapp",                label: "WhatsApp",               type: "wa_copy" },
             { key: "kota",                    label: "Kota",                   type: "badge_city" },
-            { key: "program_kelas",           label: "Program / Kelas",        type: "badge_prog" },
-            { key: "tanggal_mulai_kelas",     label: "Tgl Mulai Kelas",        type: "date" },
+            { key: "produk_dibeli",           label: "Produk Dibeli",          type: "badge_prog" },
             { key: "harga_dibayarkan",        label: "Harga Dibayarkan",       type: "price" },
             { key: "metode_pembayaran",       label: "Metode Pembayaran",      type: "badge_pay" },
             { key: "sumber_informasi",        label: "Sumber Informasi",       type: "badge_info" },
-            { key: "waktu_pengisian",         label: "Waktu Pengisian",        type: "timestamp" },
+            { key: "sumber_informasi_final",  label: "Sumber Info Final",      type: "badge_info_final" },
             { key: "created_at",              label: "Created At",             type: "timestamp" },
             { key: "bukti_transfer",          label: "Bukti Transfer",         type: "image_link" }
         ];
@@ -357,12 +425,11 @@
                 nama: String(pick(raw,["nama","name","nama_lengkap"])),
                 whatsapp: String(pick(raw,["whatsapp","phone","no_hp","telepon","hp"])),
                 kota: String(pick(raw,["kota","city","domisili","domisili_kota"])),
-                program_kelas: String(pick(raw,["program_kelas","program_diambil","programDiambil","program","kelas","product"])),
-                tanggal_mulai_kelas: pick(raw,["tanggal_mulai_kelas","tanggalMulaiKelas","tanggal_mulai","startDate"]),
+                produk_dibeli: String(pick(raw,["produk_dibeli","produkDibeli","product","program_kelas","program_diambil","kelas"])),
                 harga_dibayarkan: pick(raw,["harga_dibayarkan","hargaDibayarkan","harga","amount","nominal"]),
                 metode_pembayaran: String(pick(raw,["metode_pembayaran","metodePembayaran","payment_method","pembayaran"])),
                 sumber_informasi: String(pick(raw,["sumber_informasi","sumberInformasi","sumber_info"])),
-                waktu_pengisian: pick(raw,["waktu_pengisian","waktuPengisian","submitted_at","form_submitted_at"]),
+                sumber_informasi_final: String(pick(raw,["sumber_informasi_final","sumberInformasiFinal"])),
                 created_at: pick(raw,["created_at","createdAt","created_date","tanggal_daftar","tanggal","date","registered_at","timestamp"]),
                 bukti_transfer: String(pick(raw,["bukti_transfer","buktiTransfer","bukti_pembayaran","proof_url","proof"])),
                 _raw: raw
@@ -377,6 +444,13 @@
                 case "timestamp": return `<span class="td-ts">${fmtTs(v)}</span>`;
                 case "date":      return `<span class="td-ts">${fmtDate(v)}</span>`;
                 case "price":     return `<span class="td-price">${fmtRp(v)}</span>`;
+                case "bold_string":
+                    return s ? `<span class="td-nama">${esc(s)}</span>` : '<span style="color:#cbd5e1">-</span>';
+                case "wa_copy": {
+                    if (!s) return '<span style="color:#cbd5e1">-</span>';
+                    const num = esc(s);
+                    return `<span>${num}</span><button type="button" class="btn-copy-wa" data-wa="${num}" title="Copy nomor" onclick="navigator.clipboard.writeText('${num}').then(()=>{this.textContent='✓';this.classList.add('copied');setTimeout(()=>{this.textContent='⧉';this.classList.remove('copied');},1500);})">⧉</button>`;
+                }
                 case "badge_city":
                     return s ? `<span class="b-city">${esc(s)}</span>` : '<span style="color:#cbd5e1">-</span>';
                 case "badge_prog":
@@ -461,6 +535,29 @@
             pgnControls.innerHTML = h;
         }
 
+        /* ── payment helpers ── */
+        function isFullPayment(s) { const l = String(s||"").toLowerCase(); return l.includes("full") || l === "lunas"; }
+        function isDP(s) { const l = String(s||"").toLowerCase(); return l.includes("dp") || l.includes("down") || l.includes("cicil") || l.includes("installment"); }
+        function parsePrice(v) { return typeof v === "number" ? v : (parseInt(String(v||"").replace(/[^0-9]/g,""),10) || 0); }
+
+        function renderSummary() {
+            const fullCount = filteredList.filter(m => isFullPayment(m.metode_pembayaran)).length;
+            const dpCount   = filteredList.filter(m => isDP(m.metode_pembayaran)).length;
+            const totalBayar = filteredList.reduce((sum, m) => sum + parsePrice(m.harga_dibayarkan), 0);
+
+            if (scTotal) scTotal.textContent = filteredList.length;
+            if (scFull)  scFull.textContent  = fullCount;
+            if (scDp)    scDp.textContent    = dpCount;
+            if (psTotalMember) psTotalMember.textContent = filteredList.length;
+            if (psTotalBayar)  psTotalBayar.textContent  = "Rp" + totalBayar.toLocaleString("id-ID");
+
+            /* highlight active card */
+            document.querySelectorAll(".stat-card").forEach(c => {
+                const f = c.dataset.payFilter;
+                c.classList.toggle("active", f === paymentFilter || (f === "all" && paymentFilter === "all"));
+            });
+        }
+
         /* ── main render ── */
         function renderTable() {
             if (!filteredList.length) {
@@ -480,6 +577,7 @@
             summaryText.textContent = `Menampilkan ${filteredList.length} member`;
             dataInfoText.textContent = `Total: ${allMembers.length} member`;
             renderPgn();
+            renderSummary();
         }
 
         /* ── filter + sort ── */
@@ -502,6 +600,12 @@
                     if (ed && nd > ed) return false;
                     return true;
                 });
+            }
+            /* payment method filter */
+            if (paymentFilter === "full") {
+                list = list.filter(m => isFullPayment(m.metode_pembayaran));
+            } else if (paymentFilter === "dp") {
+                list = list.filter(m => isDP(m.metode_pembayaran));
             }
             list.sort((a,b) => cmpRows(a,b,sortKey,sortDir));
             filteredList = list;
@@ -546,7 +650,7 @@
             document.getElementById("detailMemberName").textContent     = nama;
             document.getElementById("detailMemberPhone").textContent    = wa;
             document.getElementById("detailMemberEmail").textContent    = raw.email || "-";
-            document.getElementById("detailMemberProgram").textContent  = member.program_kelas || "-";
+            document.getElementById("detailMemberProgram").textContent  = member.produk_dibeli || "-";
             document.getElementById("detailMemberCity").textContent     = member.kota || "-";
             document.getElementById("detailMemberDate").textContent     = fmtTs(member.created_at);
 
@@ -562,8 +666,7 @@
                 const skip = new Set([
                     "nama","name","nama_lengkap","whatsapp","phone","no_hp","telepon","hp",
                     "email","kota","city","domisili","domisili_kota",
-                    "program_kelas","program_diambil","programDiambil","program","kelas","product",
-                    "tanggal_mulai_kelas","tanggalMulaiKelas","tanggal_mulai","startDate",
+                    "produk_dibeli","produkDibeli","product","program_kelas","program_diambil","programDiambil","kelas",
                     "harga_dibayarkan","hargaDibayarkan","harga","amount","nominal",
                     "metode_pembayaran","metodePembayaran","payment_method","pembayaran",
                     "sumber_informasi","sumberInformasi","sumber_info",
@@ -601,6 +704,20 @@
         endDateInput?.addEventListener("change", applyFilters);
         btnResetDate?.addEventListener("click", () => { startDateInput.value = ""; endDateInput.value = ""; applyFilters(); });
         pageSizeSelect?.addEventListener("change", () => { pageSize = parseInt(pageSizeSelect.value,10); currentPage = 1; renderTable(); });
+        paymentFilterSelect?.addEventListener("change", () => { paymentFilter = paymentFilterSelect.value; applyFilters(); });
+        statCards?.addEventListener("click", e => {
+            const card = e.target.closest(".stat-card[data-pay-filter]");
+            if (!card) return;
+            const f = card.dataset.payFilter;
+            if (paymentFilter === f && f !== "all") {
+                paymentFilter = "all";
+                paymentFilterSelect.value = "all";
+            } else {
+                paymentFilter = f;
+                paymentFilterSelect.value = f;
+            }
+            applyFilters();
+        });
         thead?.addEventListener("click", e => {
             const th = e.target.closest("th[data-sort-key]"); if (!th) return;
             const k = th.dataset.sortKey;
