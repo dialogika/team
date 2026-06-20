@@ -7,7 +7,7 @@ import { promptTeamDivision, resolveCandidateDivision, syncAcceptedCandidateToTe
 import { getCategoryTemplateDefs, getStoredTemplates, saveTemplates, setTemplatesLastModified } from "./template-manager.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, collection, getDoc, getDocs, onSnapshot, addDoc, updateDoc, setDoc, serverTimestamp, arrayUnion, query, where, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, doc, collection, getDoc, getDocs, onSnapshot, addDoc, updateDoc, setDoc, deleteDoc, serverTimestamp, arrayUnion, query, where, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
 // ===== FIREBASE INIT =====
@@ -334,10 +334,11 @@ function appendCandidateToUI(cat, params) {
   const interviewSectionHtml = '<div class="candidate-selection-meta"><div class="candidate-interview-meta"><div class="candidate-extra-item candidate-extra-item-interviewer"><div class="candidate-extra-label">Interviewer</div><div class="interviewer-grid" data-bs-toggle="tooltip" data-bs-placement="top" title="'+escapeHtml(intNames)+'">'+intGridHtml+'</div></div><div class="candidate-extra-item candidate-extra-item-schedule"><div class="schedule-compact-header"><i class="fa-regular fa-calendar-days"></i><span>Jadwal Interview</span></div><div class="schedule-compact-details"><div class="schedule-compact-row"><span>Tanggal</span><strong>'+escapeHtml(intDate)+'</strong></div><div class="schedule-compact-row"><span>Jam</span><strong>'+escapeHtml(intTime)+'</strong></div><div class="schedule-compact-row"><span>Status</span><strong>'+(intBadge ? '<span class="'+intBadge.className+'">'+escapeHtml(intBadge.label)+'</span>' : '-')+'</strong></div></div></div></div></div>';
   let ojtSectionHtml = "";
   if (cfg.hasOjtSection && ojtStart) { const ojtDate = formatOjtDateRangeCompact(ojtStart, ojtEnd); ojtSectionHtml = '<div class="candidate-selection-meta mt-2"><div class="candidate-interview-meta"><div class="candidate-extra-item candidate-extra-item-schedule" style="border-left:3px solid #10b981"><div class="schedule-compact-header"><i class="fa-solid fa-graduation-cap"></i><span>Jadwal OJT</span></div><div class="schedule-compact-date">'+escapeHtml(ojtDate)+'</div></div></div></div>'; }
-  const actionBtn = '<div class="candidate-card-head-actions"><button type="button" class="candidate-inline-action action-trash candidate-delete-btn" data-category="'+cat+'" title="Pindahkan ke Sampah"><i class="fa-solid fa-trash-can"></i></button></div>';
+  const cancelBtnHtml = (!["rejected","canceled"].includes(currentStatus)) ? '<button type="button" class="candidate-inline-action candidate-cancel-btn" data-category="'+cat+'" data-talent-id="'+talentId+'" title="Canceled / Mengundurkan Diri" style="color:#b45309"><i class="fa-solid fa-user-xmark"></i></button>' : '';
+  const actionBtn = '<div class="candidate-card-head-actions">'+cancelBtnHtml+'<button type="button" class="candidate-inline-action action-trash candidate-delete-btn" data-category="'+cat+'" title="Pindahkan ke Sampah"><i class="fa-solid fa-trash-can"></i></button></div>';
   let bodyContent = detailListHtml; if (statusDetailsHtml) bodyContent += statusDetailsHtml;
   const gridHtml = '<div class="candidate-item" data-name="'+name+'" data-position="'+position+'" data-email="'+emailValue+'" data-campus="'+campusValue+'" data-avatar="'+avatarAttr+'" data-status-label="'+escapeHtml(statusLabel)+'" data-talent-id="'+talentId+'" data-status="'+currentStatus+'" data-created="'+createdSortValue+'" data-due-date="'+escapeHtml(dueDateInputValue)+'" data-interview-status="'+intStatus+'" data-interviewer-availability="'+intAvail+'" data-category="'+cat+'" tabindex="0" role="link"><div class="candidate-card-modern"><div class="candidate-card-head"><div class="candidate-avatar-row"><img src="'+avatarUrl+'" alt="'+name+'" class="candidate-avatar-large"><div class="candidate-header-main"><div class="candidate-name">'+name+'</div>'+headerChipsHtml+'</div></div>'+actionBtn+(statusDetailsHtml ? "" : interviewSectionHtml+ojtSectionHtml)+'</div><div class="candidate-card-body">'+bodyContent+'</div></div></div>';
-  const listHtml = '<tr style="background-color:transparent" class="candidate-row candidate-row-main" data-name="'+name+'" data-position="'+position+'" data-email="'+emailValue+'" data-campus="'+campusValue+'" data-avatar="'+avatarAttr+'" data-status-label="'+escapeHtml(statusLabel)+'" data-status="'+currentStatus+'" data-created="'+createdSortValue+'" data-due-date="'+escapeHtml(dueDateInputValue)+'" data-interview-status="'+intStatus+'" data-interviewer-availability="'+intAvail+'" data-talent-id="'+talentId+'" data-category="'+cat+'"><td style="background-color:transparent" colspan="1" class="border-0 px-0 py-2"><div class="candidate-list-card" data-talent-id="'+talentId+'" data-category="'+cat+'" tabindex="0" role="link"><div class="candidate-list-main"><div class="candidate-list-topbar"><div class="d-flex gap-3 align-items-start flex-grow-1"><img src="'+avatarUrl+'" alt="'+name+'" class="list-img rounded-4 shadow-sm" style="width:64px;height:64px;object-fit:cover;border-radius:1rem"><div class="candidate-header-main"><div class="candidate-name">'+name+'</div>'+headerChipsHtml+'</div></div><button type="button" class="candidate-inline-action action-trash candidate-delete-btn" data-category="'+cat+'" title="Pindahkan ke Sampah"><i class="fa-solid fa-trash-can"></i></button></div>'+(statusDetailsHtml ? statusDetailsHtml : interviewSectionHtml+ojtSectionHtml)+detailListHtml+'</div></div></td></tr>';
+  const listHtml = '<tr style="background-color:transparent" class="candidate-row candidate-row-main" data-name="'+name+'" data-position="'+position+'" data-email="'+emailValue+'" data-campus="'+campusValue+'" data-avatar="'+avatarAttr+'" data-status-label="'+escapeHtml(statusLabel)+'" data-status="'+currentStatus+'" data-created="'+createdSortValue+'" data-due-date="'+escapeHtml(dueDateInputValue)+'" data-interview-status="'+intStatus+'" data-interviewer-availability="'+intAvail+'" data-talent-id="'+talentId+'" data-category="'+cat+'"><td style="background-color:transparent" colspan="1" class="border-0 px-0 py-2"><div class="candidate-list-card" data-talent-id="'+talentId+'" data-category="'+cat+'" tabindex="0" role="link"><div class="candidate-list-main"><div class="candidate-list-topbar"><div class="d-flex gap-3 align-items-start flex-grow-1"><img src="'+avatarUrl+'" alt="'+name+'" class="list-img rounded-4 shadow-sm" style="width:64px;height:64px;object-fit:cover;border-radius:1rem"><div class="candidate-header-main"><div class="candidate-name">'+name+'</div>'+headerChipsHtml+'</div></div>'+cancelBtnHtml+'<button type="button" class="candidate-inline-action action-trash candidate-delete-btn" data-category="'+cat+'" title="Pindahkan ke Sampah"><i class="fa-solid fa-trash-can"></i></button></div>'+(statusDetailsHtml ? statusDetailsHtml : interviewSectionHtml+ojtSectionHtml)+detailListHtml+'</div></div></td></tr>';
   gridContainer.insertAdjacentHTML("beforeend", gridHtml);
   listTbody.insertAdjacentHTML("beforeend", listHtml);
   if (window.refreshTooltips) window.refreshTooltips();
@@ -514,6 +515,78 @@ async function updateCandidateStatus(cat, talentId, newStatus, actorName) {
   const ref = doc(db, cfg.collectionName, talentId); const nowIso = new Date().toISOString();
   try { await updateDoc(ref, { "recruitment_status.current": newStatus, "recruitment_status.history": arrayUnion({ status: newStatus, date: nowIso }), logs: arrayUnion({ action: "status_change", to: newStatus, by: actorName||null, date: nowIso }) }); return true; } catch(e) { console.error("Status update failed", e); return false; }
 }
+async function cancelCandidateStatus(cat, talentId, notes, actorName) {
+  const cfg = TAB_CONFIG[cat]; if (!talentId) return false;
+  const ref = doc(db, cfg.collectionName, talentId); const nowIso = new Date().toISOString();
+  try {
+    await updateDoc(ref, {
+      "recruitment_status.current": "canceled",
+      "recruitment_status.final_decision": "canceled",
+      "recruitment_status.final_decision_at": nowIso,
+      "recruitment_status.withdrawn_notes": notes || "",
+      "recruitment_status.history": arrayUnion({ status: "canceled", previousStatus: "active", date: nowIso, by: actorName||null }),
+      logs: arrayUnion({ action: "status_change", to: "canceled", by: actorName||null, date: nowIso, notes: notes||"" })
+    });
+    return true;
+  } catch(e) { console.error("Cancel status update failed", e); return false; }
+}
+async function deleteSyncedCandidateData(cat, talentId) {
+  const cfg = TAB_CONFIG[cat];
+  try {
+    if (cfg.hasMentorSync) {
+      const mentorRef = doc(db, "mentor", talentId);
+      const mentorSnap = await getDoc(mentorRef);
+      if (mentorSnap.exists()) {
+        await deleteDoc(mentorRef);
+        console.log("[Cancel Sync] Deleted mentor doc:", talentId);
+      }
+    }
+    if (cfg.hasTeamSync) {
+      const tmQuery = query(collection(db, "team_management"), where("candidateId", "==", talentId), limit(1));
+      const tmSnap = await getDocs(tmQuery);
+      if (!tmSnap.empty) {
+        const tmDoc = tmSnap.docs[0];
+        await deleteDoc(doc(db, "team_management", tmDoc.id));
+        console.log("[Cancel Sync] Deleted team_management doc:", tmDoc.id);
+      }
+      await updateDoc(doc(db, cfg.collectionName, talentId), {
+        isTeamMember: false,
+        is_team_member: false,
+        "recruitment_status.is_team_member": false,
+        "recruitment_status.team_management_id": null,
+        "recruitment_status.team_member_division": null,
+        "recruitment_status.team_member_department": null,
+        teamManagementId: null
+      });
+      console.log("[Cancel Sync] Cleared team flags for:", talentId);
+    }
+  } catch(e) {
+    console.error("[Cancel Sync] Failed to clean synced data:", e);
+  }
+}
+async function handleCancelCandidate(cat, talentId) {
+  const actor = window.auth?.currentUser;
+  const actorName = actor?.displayName || actor?.email || "";
+  const result = await Swal.fire({
+    icon: "warning",
+    title: "Canceled / Mengundurkan Diri",
+    text: "Apakah Anda yakin ingin menandai kandidat ini sebagai Canceled / Mengundurkan Diri? Kandidat akan keluar dari pipeline aktif.",
+    input: "textarea",
+    inputLabel: "Catatan / alasan pengunduran diri (opsional)",
+    inputPlaceholder: "Tuliskan alasan atau catatan...",
+    showCancelButton: true,
+    confirmButtonText: "Ya, batalkan",
+    cancelButtonText: "Batal",
+    reverseButtons: true,
+    confirmButtonColor: "#b45309"
+  });
+  if (!result.isConfirmed) return;
+  const notes = (result.value || "").toString().trim();
+  const ok = await cancelCandidateStatus(cat, talentId, notes, actorName);
+  if (!ok) { alert("Gagal mengupdate status kandidat."); return; }
+  try { await deleteSyncedCandidateData(cat, talentId); } catch(err) { console.error("Sync cleanup failed", err); }
+  updateCandidateStatusUI(cat, talentId, "canceled");
+}
 async function moveCandidateToTrash(cat, talentId, payload) {
   const cfg = TAB_CONFIG[cat]; if (!talentId) return;
   const user = auth.currentUser; const dbn = user ? user.displayName||user.email||"Recruitment Team" : "Recruitment Team"; const dbe = user ? user.email||"" : "";
@@ -643,6 +716,15 @@ function bindEvents() {
       try { await moveCandidateToTrash(cat, talentId, payload); removeCandidateFromUI(cat, talentId); } catch(err) { console.error(err); alert("Gagal memindahkan kandidat."); }
       return;
     }
+    const cancelBtn = e.target.closest('.candidate-cancel-btn');
+    if (cancelBtn) {
+      e.stopPropagation();
+      const cat = cancelBtn.dataset.category;
+      const talentId = cancelBtn.dataset.talentId;
+      if (!cat || !talentId) return;
+      await handleCancelCandidate(cat, talentId);
+      return;
+    }
     if (detailCard && !e.target.closest('.candidate-inline-action')) {
       const cat = detailCard.dataset?.category || activeTab;
       const tid = detailCard.dataset?.talentId;
@@ -676,6 +758,26 @@ function bindEvents() {
         if (!ok) { await loadCandidates(cat); alert("Gagal update status."); return; }
         try { await syncAcceptedMentorFromScreening(talentId); } catch(err) { console.error("Mentor sync failed", err); }
         updateCandidateStatusUI(cat, talentId, normalized);
+      } else if (normalized === "canceled") {
+        const result = await Swal.fire({
+          icon: "warning",
+          title: "Canceled / Mengundurkan Diri",
+          text: "Tandai kandidat ini sebagai Canceled / Mengundurkan Diri?",
+          input: "textarea",
+          inputLabel: "Catatan / alasan pengunduran diri (opsional)",
+          inputPlaceholder: "Tuliskan alasan atau catatan...",
+          showCancelButton: true,
+          confirmButtonText: "Ya, batalkan",
+          cancelButtonText: "Batal",
+          reverseButtons: true,
+          confirmButtonColor: "#b45309"
+        });
+        if (!result.isConfirmed) { sel.value = "screening"; return; }
+        const notes = (result.value || "").toString().trim();
+        const ok = await cancelCandidateStatus(cat, talentId, notes, actorName);
+        if (!ok) { await loadCandidates(cat); alert("Gagal update status."); return; }
+        try { await deleteSyncedCandidateData(cat, talentId); } catch(err) { console.error("Sync cleanup failed", err); }
+        updateCandidateStatusUI(cat, talentId, "canceled");
       } else {
         const ok = await updateCandidateStatus(cat, talentId, normalized, actorName);
         if (!ok) { await loadCandidates(cat); alert("Gagal update status."); return; }

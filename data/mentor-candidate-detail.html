@@ -202,6 +202,18 @@
             border-color: #fca5a5;
         }
 
+        .status-canceled {
+            background: #f1f5f9;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+
+        .decision-canceled {
+            background: #f1f5f9;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+
         .detail-card {
             background: rgba(255, 255, 255, 0.96);
             border: 1px solid rgba(226, 232, 240, 0.95);
@@ -234,7 +246,7 @@
 
         .pipeline-stepper {
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-template-columns: repeat(6, minmax(0, 1fr));
             gap: 12px;
             margin-bottom: 1.25rem;
         }
@@ -346,6 +358,24 @@
 
         .pipeline-step.is-rejected .pipeline-step-caption {
             color: #dc2626;
+        }
+
+        .pipeline-step.is-canceled {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .pipeline-step.is-canceled .pipeline-step-index {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            color: #ffffff;
+        }
+
+        .pipeline-step.is-canceled .pipeline-step-label {
+            color: #334155;
+        }
+
+        .pipeline-step.is-canceled .pipeline-step-caption {
+            color: #64748b;
         }
 
         .pipeline-step.is-complete {
@@ -2132,7 +2162,8 @@
             { value: "interview", label: "Interview", caption: "", badgeClass: "status-interview" },
             { value: "micro_teaching", label: "micro_teaching", caption: "", badgeClass: "status-micro-teaching" },
             { value: "accepted", label: "Accepted", caption: "", badgeClass: "status-accepted" },
-            { value: "rejected", label: "Rejected", caption: "", badgeClass: "decision-rejected" }
+            { value: "rejected", label: "Rejected", caption: "", badgeClass: "decision-rejected" },
+            { value: "canceled", label: "Canceled", caption: "", badgeClass: "decision-canceled" }
         ];
 
         const app = initializeApp(firebaseConfig);
@@ -2570,6 +2601,7 @@
             if (raw === "interview") return "interview";
             if (raw === "accepted" || raw === "accept" || raw === "decision") return "accepted";
             if (raw === "rejected" || raw === "reject") return "rejected";
+            if (raw === "canceled" || raw === "cancelled" || raw === "withdrawn" || raw === "mengundurkan_diri") return "canceled";
             if (raw === "micro_teaching") return "micro_teaching";
             return "screening";
         }
@@ -2578,6 +2610,7 @@
             const raw = (value || "").toString().trim().toLowerCase();
             if (raw === "accepted" || raw === "accept") return "accepted";
             if (raw === "rejected" || raw === "reject") return "rejected";
+            if (raw === "canceled" || raw === "cancelled" || raw === "withdrawn" || raw === "mengundurkan_diri") return "canceled";
             return "";
         }
 
@@ -2904,6 +2937,12 @@
                     } else if (step.value === "screening" || step.value === "interview") {
                         classes += " is-complete";
                     }
+                } else if (status === "canceled") {
+                    if (step.value === "canceled") {
+                        classes += " is-active is-canceled";
+                    } else if (step.value === "screening" || step.value === "interview") {
+                        classes += " is-complete";
+                    }
                 } else {
                     if (index < currentIndex) classes += " is-complete";
                     if (index === currentIndex) {
@@ -2991,6 +3030,9 @@
             }
             if (normalized === "rejected") {
                 return '<span class="decision-badge decision-rejected">Tidak Diterima</span>';
+            }
+            if (normalized === "canceled") {
+                return '<span class="decision-badge decision-canceled">Canceled / Mengundurkan Diri</span>';
             }
             return "";
         }
@@ -3120,7 +3162,7 @@
             const finalDecisionAt = recruitment.final_decision_at || null;
             const interviewerIds = Array.isArray(data.interviewers) ? data.interviewers : [];
             const history = Array.isArray(recruitment.history) ? recruitment.history.slice() : [];
-            const displayStatus = finalDecision === "rejected" ? "rejected" : currentStatus;
+            const displayStatus = (finalDecision === "rejected" || finalDecision === "canceled") ? finalDecision : currentStatus;
             const micro_teachingStartDate = recruitment.micro_teaching_start_date || data.micro_teaching_start_date || null;
             const micro_teachingMode = normalizeInterviewMode(recruitment.micro_teaching_mode || data.micro_teaching_mode || "offline");
             const micro_teachingMeetingLink = recruitment.micro_teaching_meeting_link || data.micro_teaching_meeting_link || "";
@@ -3129,6 +3171,7 @@
             const mentorId = recruitment.mentor_id || data.mentor_id || "";
             const rejectionReason = recruitment.rejection_reason || "";
             const rejectionNotes = recruitment.rejection_notes || "";
+            const canceledNotes = recruitment.withdrawn_notes || recruitment.canceled_notes || "";
             const screeningHistoryEntry = history
                 .slice()
                 .sort((a, b) => (parseDateValue(b.date)?.getTime() || 0) - (parseDateValue(a.date)?.getTime() || 0))
@@ -3198,6 +3241,7 @@
                 mentorId,
                 rejectionReason,
                 rejectionNotes,
+                canceledNotes,
                 isInactive: inactiveRecord,
                 raw: data
             };
@@ -3515,6 +3559,7 @@
                         '<div class="action-panel-note">Button hanya aktif selama status kandidat masih berada di tahap screening dan divalidasi ulang dari backend secara real-time.</div>' +
                         '<div class="action-cta">' +
                             '<button type="button" class="btn btn-primary" id="btnOpenInterviewModal"><i class="fa-solid fa-calendar-check me-2"></i>Lanjutkan ke Proses Interview</button>' +
+                            '<button type="button" class="btn btn-outline-warning" id="btnCancelCandidate" style="border-color:#cbd5e1;color:#475569"><i class="fa-solid fa-user-xmark me-2"></i>Canceled / Mengundurkan Diri</button>' +
                         '</div>' +
                     '</div>';
             } else if (vm.displayStatus === "interview") {
@@ -3526,6 +3571,7 @@
                             '<button type="button" class="btn btn-outline-primary" id="btnEditInterviewSchedule"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Jadwal</button>' +
                             '<button type="button" class="btn btn-success" id="btnOpenmicro_teachingModal"><i class="fa-solid fa-clipboard-check me-2"></i>Jadwalkan Micro Teaching</button>' +
                             '<button type="button" class="btn btn-danger" id="btnOpenDecisionModal"><i class="fa-solid fa-xmark me-2"></i>Tolak Kandidat</button>' +
+                            '<button type="button" class="btn btn-outline-warning" id="btnCancelCandidate" style="border-color:#cbd5e1;color:#475569"><i class="fa-solid fa-user-xmark me-2"></i>Canceled / Mengundurkan Diri</button>' +
                         '</div>' +
                     '</div>';
             } else if (vm.displayStatus === "accepted") {
@@ -3538,11 +3584,21 @@
                         '<div class="action-panel-note">Setelah micro teaching selesai, recruiter dapat menetapkan kandidat menjadi accepted atau rejected.</div>' +
                         '<div class="action-cta">' +
                             '<button type="button" class="btn btn-success" id="btnOpenDecisionModal"><i class="fa-solid fa-clipboard-check me-2"></i>Proses Keputusan Final</button>' +
+                            '<button type="button" class="btn btn-outline-warning" id="btnCancelCandidate" style="border-color:#cbd5e1;color:#475569"><i class="fa-solid fa-user-xmark me-2"></i>Canceled / Mengundurkan Diri</button>' +
                         '</div>' +
                     '</div>';
             } else if (vm.displayStatus === "rejected") {
                 actionHtml =
                     '<div class="status-empty-note">Kandidat telah ditandai rejected dan tidak memiliki aksi lanjutan pada halaman ini.</div>';
+            } else if (vm.displayStatus === "canceled") {
+                const canceledDateText = vm.finalDecisionAt ? formatDate(vm.finalDecisionAt) : "-";
+                const canceledNotesText = vm.canceledNotes || "";
+                actionHtml =
+                    '<div class="action-panel" style="background:linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%);border-color:#cbd5e1">' +
+                        '<div class="action-panel-title"><i class="fa-solid fa-user-xmark me-2" style="color:#64748b"></i>Kandidat Mengundurkan Diri</div>' +
+                        '<div class="action-panel-note">Kandidat telah mengundurkan diri selama proses seleksi pada ' + escapeHtml(canceledDateText) + '.</div>' +
+                        (canceledNotesText ? '<div style="margin-top:0.5rem;padding:0.75rem 1rem;background:#fff;border:1px solid #e2e8f0;border-radius:14px"><div style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#94a3b8;margin-bottom:4px">Catatan</div><div style="font-size:0.88rem;color:#334155;font-weight:600">' + escapeHtml(canceledNotesText) + '</div></div>' : '') +
+                    '</div>';
             }
             detailRoot.innerHTML =
                 '<div class="section-stack">' +
@@ -5588,6 +5644,79 @@
             const openmicro_teachingBtn = document.getElementById("btnOpenmicro_teachingModal");
             const downloadCvBtn = document.getElementById("btnDownloadCv");
             const downloadPortfolioBtn = document.getElementById("btnDownloadPortfolio");
+            const cancelCandidateBtn = document.getElementById("btnCancelCandidate");
+
+            if (cancelCandidateBtn) {
+                cancelCandidateBtn.addEventListener("click", async () => {
+                    const result = await Swal.fire({
+                        icon: "warning",
+                        title: "Canceled / Mengundurkan Diri",
+                        text: "Apakah Anda yakin ingin menandai kandidat ini sebagai Canceled / Mengundurkan Diri? Kandidat akan keluar dari pipeline aktif.",
+                        input: "textarea",
+                        inputLabel: "Catatan / alasan pengunduran diri (opsional)",
+                        inputPlaceholder: "Tuliskan alasan atau catatan...",
+                        showCancelButton: true,
+                        confirmButtonText: "Ya, batalkan",
+                        cancelButtonText: "Batal",
+                        reverseButtons: true,
+                        confirmButtonColor: "#b45309"
+                    });
+                    if (!result.isConfirmed) return;
+                    const notes = (result.value || "").toString().trim();
+                    const actor = getActor();
+                    const nowIso = new Date().toISOString();
+                    try {
+                        const latestVm = await getLatestCandidateSnapshot(currentCandidate.id);
+                        if (latestVm.displayStatus === "accepted" || latestVm.displayStatus === "rejected" || latestVm.displayStatus === "canceled") {
+                            showWarning("Status kandidat telah berubah. Pembatalan tidak dapat dilakukan.");
+                            renderCandidateDetail();
+                            return;
+                        }
+                        const firestorePayload = {
+                            "recruitment_status.current": "canceled",
+                            "recruitment_status.final_decision": "canceled",
+                            "recruitment_status.final_decision_at": nowIso,
+                            "recruitment_status.withdrawn_notes": notes || null,
+                            "recruitment_status.history": arrayUnion({
+                                status: "canceled",
+                                previousStatus: latestVm.currentStatus,
+                                date: nowIso,
+                                by: actor.name
+                            }),
+                            "audit_trail": arrayUnion({
+                                timestamp: nowIso,
+                                actorId: actor.id,
+                                actorName: actor.name,
+                                action: "cancel_candidate",
+                                from: latestVm.currentStatus,
+                                to: "canceled",
+                                notes: notes || ""
+                            }),
+                            logs: arrayUnion({
+                                action: "status_change",
+                                to: "canceled",
+                                from: latestVm.currentStatus,
+                                by: actor.name,
+                                uid: actor.id,
+                                date: nowIso,
+                                notes: notes || ""
+                            })
+                        };
+                        await persistCandidateUpdate(currentCandidate.id, firestorePayload, "POST", {
+                            action: "cancel-candidate",
+                            candidateId: currentCandidate.id,
+                            statusFrom: latestVm.currentStatus,
+                            statusTo: "canceled",
+                            notes: notes || "",
+                            actor
+                        });
+                        showSuccess("Kandidat berhasil ditandai Canceled / Mengundurkan Diri.");
+                    } catch (error) {
+                        console.error("Gagal membatalkan kandidat", error);
+                        showError(error.message || "Gagal membatalkan kandidat.");
+                    }
+                });
+            }
 
             if (openInterviewBtn) {
                 openInterviewBtn.addEventListener("click", () => openInterviewModal("schedule"));
