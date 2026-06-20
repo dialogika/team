@@ -139,6 +139,28 @@
             color: #4f46e5;
             white-space: nowrap;
         }
+        .btn-add-member {
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 8px 14px;
+            white-space: nowrap;
+        }
+        .btn-mini-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 6px 10px;
+            white-space: nowrap;
+        }
+        .member-action-wrap {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
         [x-cloak] { display: none !important; }
     </style>
 
@@ -215,6 +237,9 @@
                         <input id="memberSearchInput" type="text" placeholder="Cari nama, WhatsApp, kota, program..." class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none text-sm text-slate-700 shadow-sm">
                     </div>
                     <div class="flex items-center gap-3">
+                        <button type="button" id="btnAddMember" class="btn btn-primary btn-add-member">
+                            <i class="bi bi-plus-lg me-1"></i>Tambah Data
+                        </button>
                         <select id="paymentFilterSelect" class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
                             <option value="all">Semua Pembayaran</option>
                             <option value="full">Full Payment</option>
@@ -320,6 +345,91 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="modal fade" id="memberFormModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header border-0 pb-0">
+                                <div>
+                                    <h5 class="modal-title mb-0" id="memberFormTitle">Tambah Data Member</h5>
+                                    <div class="text-xs text-slate-400" id="memberFormSubtitle">Isi data member yang akan disimpan ke Firebase.</div>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body pt-3">
+                                <input type="hidden" id="memberFormMode" value="add">
+                                <input type="hidden" id="memberEditId" value="">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-xs font-bold text-slate-500 uppercase tracking-[0.16em]">Nama</label>
+                                        <input type="text" id="memberFormNama" class="form-control" placeholder="Nama member">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-xs font-bold text-slate-500 uppercase tracking-[0.16em]">WhatsApp</label>
+                                        <input type="text" id="memberFormWhatsapp" class="form-control" placeholder="62812...">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-xs font-bold text-slate-500 uppercase tracking-[0.16em]">Kota</label>
+                                        <input type="text" id="memberFormKota" class="form-control" placeholder="Kota">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-xs font-bold text-slate-500 uppercase tracking-[0.16em]">Produk Dibeli</label>
+                                        <select id="memberFormProduk" class="form-select">
+                                            <option value="">Pilih produk</option>
+                                            <option value="fisrt class">fisrt class</option>
+                                            <option value="fistr kids">fistr kids</option>
+                                            <option value="prive first class/kids">prive first class/kids</option>
+                                            <option value="master class">master class</option>
+                                            <option value="mc class">mc class</option>
+                                            <option value="premium class">premium class</option>
+                                            <option value="first play">first play</option>
+                                            <option value="basic plus">basic plus</option>
+                                            <option value="kids plus">kids plus</option>
+                                            <option value="private basic plus">private basic plus</option>
+                                            <option value="private kids oplus">private kids oplus</option>
+                                            <option value="basic play">basic play</option>
+                                            <option value="private level 02">private level 02</option>
+                                            <option value="private lvl 03">private lvl 03</option>
+                                            <option value="public speaking class">public speaking class</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-xs font-bold text-slate-500 uppercase tracking-[0.16em]">Harga Dibayarkan</label>
+                                        <input type="text" id="memberFormHarga" class="form-control" placeholder="1500000">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-xs font-bold text-slate-500 uppercase tracking-[0.16em]">Metode Pembayaran</label>
+                                        <select id="memberFormMetode" class="form-select">
+                                            <option value="">Pilih pembayaran</option>
+                                            <option value="Down Payment (DP)">Down Payment (DP)</option>
+                                            <option value="Full Payment">Full Payment</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-xs font-bold text-slate-500 uppercase tracking-[0.16em]">Sumber Informasi</label>
+                                        <input type="text" id="memberFormSumber" class="form-control" placeholder="Instagram / Website / Referral">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label text-xs font-bold text-slate-500 uppercase tracking-[0.16em]">Bukti Transfer</label>
+                                        <input type="file" id="memberFormBuktiFile" class="form-control" accept="image/*">
+                                        <div id="memberFormBuktiHelp" class="text-xs text-slate-400 mt-2">
+                                            Upload gambar bukti transfer, maksimal 3 MB.
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="alert alert-light border text-xs text-slate-500 mb-0">
+                                            Tanggal pembuatan akan diisi otomatis saat menambah data. Saat edit, field lain yang tidak ditampilkan tetap dipertahankan.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                <button type="button" id="memberFormSubmitBtn" class="btn btn-primary">Simpan Data</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -332,8 +442,13 @@
         import {
             getFirestore,
             collection,
-            getDocs
+            getDocs,
+            addDoc,
+            updateDoc,
+            doc,
+            deleteDoc
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDyzzEYbJkkl-N8snrQf14qvj8De4YliV0",
@@ -347,6 +462,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         const topbarTarget = document.getElementById("topbarContainer");
         if (topbarTarget) {
@@ -372,11 +488,32 @@
         const pgnInfo = document.getElementById("pgnInfo");
         const pgnControls = document.getElementById("pgnControls");
         const paymentFilterSelect = document.getElementById("paymentFilterSelect");
+        const btnAddMember = document.getElementById("btnAddMember");
         const statCards = document.getElementById("statCards");
         const scTotal = document.getElementById("scTotal");
         const scFull = document.getElementById("scFull");
         const scDp = document.getElementById("scDp");
         const tfoot = document.getElementById("memberTableFoot");
+        const memberFormModalEl = document.getElementById("memberFormModal");
+        const memberFormTitle = document.getElementById("memberFormTitle");
+        const memberFormSubtitle = document.getElementById("memberFormSubtitle");
+        const memberFormMode = document.getElementById("memberFormMode");
+        const memberEditId = document.getElementById("memberEditId");
+        const memberFormNama = document.getElementById("memberFormNama");
+        const memberFormWhatsapp = document.getElementById("memberFormWhatsapp");
+        const memberFormKota = document.getElementById("memberFormKota");
+        const memberFormProduk = document.getElementById("memberFormProduk");
+        const memberFormHarga = document.getElementById("memberFormHarga");
+        const memberFormMetode = document.getElementById("memberFormMetode");
+        const memberFormSumber = document.getElementById("memberFormSumber");
+        const memberFormBuktiFile = document.getElementById("memberFormBuktiFile");
+        const memberFormBuktiHelp = document.getElementById("memberFormBuktiHelp");
+        const memberFormSubmitBtn = document.getElementById("memberFormSubmitBtn");
+        const memberFormModal = (memberFormModalEl && window.bootstrap && window.bootstrap.Modal)
+            ? window.bootstrap.Modal.getOrCreateInstance(memberFormModalEl)
+            : null;
+        let currentProofUrl = "";
+        let currentProofName = "";
 
         let allMembers = [];
         let filteredList = [];
@@ -396,9 +533,9 @@
             { key: "harga_dibayarkan",        label: "Harga Dibayarkan",       type: "price" },
             { key: "metode_pembayaran",       label: "Metode Pembayaran",      type: "badge_pay" },
             { key: "sumber_informasi",        label: "Sumber Informasi",       type: "badge_info" },
-            { key: "sumber_informasi_final",  label: "Sumber Info Final",      type: "badge_info_final" },
             { key: "created_at",              label: "Created At",             type: "timestamp" },
-            { key: "bukti_transfer",          label: "Bukti Transfer",         type: "image_link" }
+            { key: "bukti_transfer",          label: "Bukti Transfer",         type: "image_link" },
+            { key: "aksi",                    label: "Aksi",                   type: "actions" }
         ];
 
         /* ── helpers ── */
@@ -431,9 +568,62 @@
             const p = String(value).split("-"); if (p.length !== 3) return null;
             const d = new Date(+p[0], +p[1]-1, +p[2]); return isNaN(d.getTime()) ? null : d;
         }
+        function ensureSelectValue(selectEl, value) {
+            if (!selectEl) return;
+            const normalized = String(value || "").trim();
+            if (!normalized) {
+                selectEl.value = "";
+                return;
+            }
+            const exists = Array.from(selectEl.options).some(opt => opt.value === normalized);
+            if (!exists) {
+                const opt = document.createElement("option");
+                opt.value = normalized;
+                opt.textContent = normalized;
+                selectEl.appendChild(opt);
+            }
+            selectEl.value = normalized;
+        }
+        function normalizePaymentMethod(value) {
+            const v = String(value || "").toLowerCase().trim();
+            if (!v) return "";
+            if (v.includes("full") || v === "lunas") return "Full Payment";
+            if (v.includes("dp") || v.includes("down") || v.includes("cicil") || v.includes("installment")) return "Down Payment (DP)";
+            return v;
+        }
+        function cleanFileName(name) {
+            return String(name || "proof").replace(/[^a-zA-Z0-9._-]/g, "_");
+        }
+        function refreshProofHelp(file = null) {
+            if (!memberFormBuktiHelp) return;
+            if (file) {
+                const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+                memberFormBuktiHelp.textContent = `File dipilih: ${file.name} (${sizeMb} MB). Maksimal 3 MB.`;
+                return;
+            }
+            if (currentProofUrl) {
+                memberFormBuktiHelp.textContent = "Bukti transfer saat ini masih tersimpan. Upload gambar baru untuk mengganti.";
+                return;
+            }
+            memberFormBuktiHelp.textContent = "Upload gambar bukti transfer, maksimal 3 MB.";
+        }
+        async function uploadProofImage(file, memberId) {
+            if (!file) return "";
+            if (!file.type || !file.type.startsWith("image/")) {
+                throw new Error("File harus berupa gambar.");
+            }
+            if (file.size > 3 * 1024 * 1024) {
+                throw new Error("Ukuran gambar maksimal 3 MB.");
+            }
+            const filePath = `member-proofs/${memberId || "new"}-${Date.now()}-${cleanFileName(file.name)}`;
+            const fileRef = storageRef(storage, filePath);
+            await uploadBytes(fileRef, file);
+            return getDownloadURL(fileRef);
+        }
 
         function mapRow(raw) {
             return {
+                id: raw.id || raw._id || raw.docId || "",
                 nama: String(pick(raw,["nama","name","nama_lengkap"])),
                 whatsapp: String(pick(raw,["whatsapp","phone","no_hp","telepon","hp"])),
                 kota: String(pick(raw,["kota","city","domisili","domisili_kota"])),
@@ -441,7 +631,6 @@
                 harga_dibayarkan: pick(raw,["harga_dibayarkan","hargaDibayarkan","harga","amount","nominal"]),
                 metode_pembayaran: String(pick(raw,["metode_pembayaran","metodePembayaran","payment_method","pembayaran"])),
                 sumber_informasi: String(pick(raw,["sumber_informasi","sumberInformasi","sumber_info"])),
-                sumber_informasi_final: String(pick(raw,["sumber_informasi_final","sumberInformasiFinal"])),
                 created_at: pick(raw,["created_at","createdAt","created_date","tanggal_daftar","tanggal","date","registered_at","timestamp"]),
                 bukti_transfer: String(pick(raw,["bukti_transfer","buktiTransfer","bukti_pembayaran","proof_url","proof"])),
                 _raw: raw
@@ -483,6 +672,17 @@
                     if (!url || url === "undefined") return '<span style="color:#cbd5e1">-</span>';
                     return `<a href="${esc(url)}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-bukti"><i class="bi bi-image me-1"></i>Lihat Bukti</a>`;
                 }
+                case "actions":
+                    return `
+                        <div class="member-action-wrap">
+                            <button type="button" class="btn btn-outline-primary btn-mini-action btn-edit-member" data-id="${esc(row.id || "")}" title="Edit">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-mini-action btn-delete-member" data-id="${esc(row.id || "")}" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    `;
                 default:
                     return s ? esc(s) : '<span style="color:#cbd5e1">-</span>';
             }
@@ -510,11 +710,16 @@
             const tr = document.createElement("tr");
             COLUMNS.forEach(col => {
                 const th = document.createElement("th");
-                th.dataset.sortKey = col.key;
-                const active = sortKey === col.key;
-                if (active) th.classList.add(sortDir === "asc" ? "s-asc" : "s-desc");
-                const arrow = active ? (sortDir === "asc" ? "▲" : "▼") : "⇅";
-                th.innerHTML = `${col.label}<span class="sa">${arrow}</span>`;
+                if (col.type !== "actions") {
+                    th.dataset.sortKey = col.key;
+                    const active = sortKey === col.key;
+                    if (active) th.classList.add(sortDir === "asc" ? "s-asc" : "s-desc");
+                    const arrow = active ? (sortDir === "asc" ? "▲" : "▼") : "⇅";
+                    th.innerHTML = `${col.label}<span class="sa">${arrow}</span>`;
+                } else {
+                    th.style.cursor = "default";
+                    th.innerHTML = col.label;
+                }
                 tr.appendChild(th);
             });
             thead.innerHTML = "";
@@ -525,15 +730,11 @@
             const totalBayar = filteredList.reduce((sum, m) => sum + parsePrice(m.harga_dibayarkan), 0);
             const row = document.createElement("tr");
             row.className = "tbl-foot";
-            row.innerHTML = `
-                <td class="tfoot-label">TOTAL</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td class="td-price tfoot-total">${"Rp" + totalBayar.toLocaleString("id-ID")}</td>
-                <td></td>
-                <td colspan="${Math.max(1, COLUMNS.length - 6)}"></td>
-            `;
+            row.innerHTML = Array.from({ length: COLUMNS.length }, (_, idx) => {
+                if (idx === 0) return '<td class="tfoot-label">TOTAL</td>';
+                if (idx === 4) return `<td class="td-price tfoot-total">${"Rp" + totalBayar.toLocaleString("id-ID")}</td>`;
+                return "<td></td>";
+            }).join("");
             tfoot.innerHTML = "";
             tfoot.appendChild(row);
         }
@@ -607,6 +808,109 @@
             renderSummary();
         }
 
+        function getFormPayload() {
+            return {
+                nama: String(memberFormNama?.value || "").trim(),
+                whatsapp: String(memberFormWhatsapp?.value || "").trim(),
+                kota: String(memberFormKota?.value || "").trim(),
+                produk_dibeli: String(memberFormProduk?.value || "").trim(),
+                harga_dibayarkan: String(memberFormHarga?.value || "").trim() === "" ? "" : parsePrice(memberFormHarga.value),
+                metode_pembayaran: String(memberFormMetode?.value || "").trim(),
+                sumber_informasi: String(memberFormSumber?.value || "").trim(),
+                bukti_transfer: currentProofUrl || ""
+            };
+        }
+
+        function fillForm(member) {
+            memberFormNama.value = member?.nama || "";
+            memberFormWhatsapp.value = member?.whatsapp || "";
+            memberFormKota.value = member?.kota || "";
+            ensureSelectValue(memberFormProduk, member?.produk_dibeli || "");
+            memberFormHarga.value = member?.harga_dibayarkan === undefined || member?.harga_dibayarkan === null ? "" : String(member.harga_dibayarkan);
+            ensureSelectValue(memberFormMetode, normalizePaymentMethod(member?.metode_pembayaran || ""));
+            memberFormSumber.value = member?.sumber_informasi || "";
+            currentProofUrl = member?.bukti_transfer || "";
+            currentProofName = currentProofUrl ? "Bukti transfer tersimpan" : "";
+            refreshProofHelp();
+            if (memberFormBuktiFile) {
+                memberFormBuktiFile.value = "";
+            }
+        }
+
+        function openAddMemberForm() {
+            memberFormMode.value = "add";
+            memberEditId.value = "";
+            memberFormTitle.textContent = "Tambah Data Member";
+            memberFormSubtitle.textContent = "Isi data member yang akan disimpan ke Firebase.";
+            memberFormSubmitBtn.textContent = "Simpan Data";
+            currentProofUrl = "";
+            currentProofName = "";
+            fillForm(null);
+            if (memberFormModal) memberFormModal.show();
+        }
+
+        function openEditMemberForm(member) {
+            if (!member) return;
+            memberFormMode.value = "edit";
+            memberEditId.value = member.id || "";
+            memberFormTitle.textContent = "Edit Data Member";
+            memberFormSubtitle.textContent = "Perbarui data member yang sudah tersimpan.";
+            memberFormSubmitBtn.textContent = "Simpan Perubahan";
+            fillForm(member);
+            if (memberFormModal) memberFormModal.show();
+        }
+
+        async function saveMemberForm() {
+            const payload = getFormPayload();
+            if (!payload.nama) {
+                alert("Nama member wajib diisi.");
+                return;
+            }
+
+            try {
+                const file = memberFormBuktiFile?.files?.[0] || null;
+                if (!file && !currentProofUrl) {
+                    alert("Bukti transfer wajib diunggah dalam bentuk gambar.");
+                    return;
+                }
+                memberFormSubmitBtn.disabled = true;
+                memberFormSubmitBtn.textContent = "Menyimpan...";
+                if (file) {
+                    currentProofUrl = await uploadProofImage(file, memberEditId.value || "member");
+                    payload.bukti_transfer = currentProofUrl;
+                }
+                if (memberFormMode.value === "edit" && memberEditId.value) {
+                    await updateDoc(doc(db, "data_member", memberEditId.value), payload);
+                } else {
+                    await addDoc(collection(db, "data_member"), {
+                        ...payload,
+                        created_at: new Date()
+                    });
+                }
+                if (memberFormModal) memberFormModal.hide();
+                await loadMembers();
+            } catch (error) {
+                console.error("Gagal menyimpan member:", error);
+                alert("Gagal menyimpan data member. Coba lagi.");
+            } finally {
+                memberFormSubmitBtn.disabled = false;
+                memberFormSubmitBtn.textContent = memberFormMode.value === "edit" ? "Simpan Perubahan" : "Simpan Data";
+            }
+        }
+
+        async function deleteMemberData(memberId) {
+            if (!memberId) return;
+            const ok = window.confirm("Yakin ingin menghapus data member ini?");
+            if (!ok) return;
+            try {
+                await deleteDoc(doc(db, "data_member", memberId));
+                await loadMembers();
+            } catch (error) {
+                console.error("Gagal menghapus member:", error);
+                alert("Gagal menghapus data member. Coba lagi.");
+            }
+        }
+
         /* ── filter + sort ── */
         function applyFilters() {
             const term = String(searchInput.value||"").toLowerCase().trim();
@@ -649,7 +953,7 @@
                 const snap = await getDocs(collection(db, "data_member"));
                 allMembers = [];
                 snap.forEach(ds => {
-                    const row = mapRow(ds.data() || {});
+                    const row = mapRow({ ...(ds.data() || {}), id: ds.id });
                     allMembers.push(row);
                 });
                 summaryText.textContent = `Memuat ${allMembers.length} member dari Firebase`;
@@ -697,7 +1001,6 @@
                     "harga_dibayarkan","hargaDibayarkan","harga","amount","nominal",
                     "metode_pembayaran","metodePembayaran","payment_method","pembayaran",
                     "sumber_informasi","sumberInformasi","sumber_info",
-                    "sumber_informasi_final","sumberInformasiFinal",
                     "sumber_informasi_lainnya","sumberInformasiLainnya",
                     "waktu_pengisian","waktuPengisian","submitted_at","form_submitted_at",
                     "created_at","createdAt","created_date","tanggal_daftar","tanggal","date","registered_at","timestamp",
@@ -732,6 +1035,7 @@
         btnResetDate?.addEventListener("click", () => { startDateInput.value = ""; endDateInput.value = ""; applyFilters(); });
         pageSizeSelect?.addEventListener("change", () => { pageSize = parseInt(pageSizeSelect.value,10); currentPage = 1; renderTable(); });
         paymentFilterSelect?.addEventListener("change", () => { paymentFilter = paymentFilterSelect.value; applyFilters(); });
+        btnAddMember?.addEventListener("click", openAddMemberForm);
         statCards?.addEventListener("click", e => {
             const card = e.target.closest(".stat-card[data-pay-filter]");
             if (!card) return;
@@ -756,6 +1060,36 @@
             const btn = e.target.closest("button[data-page]"); if (!btn || btn.disabled) return;
             currentPage = parseInt(btn.dataset.page,10); renderTable();
         });
+        memberFormBuktiFile?.addEventListener("change", () => {
+            const file = memberFormBuktiFile.files?.[0] || null;
+            if (file && file.size > 3 * 1024 * 1024) {
+                alert("Ukuran gambar maksimal 3 MB.");
+                memberFormBuktiFile.value = "";
+                refreshProofHelp();
+                return;
+            }
+            if (file && !file.type.startsWith("image/")) {
+                alert("File harus berupa gambar.");
+                memberFormBuktiFile.value = "";
+                refreshProofHelp();
+                return;
+            }
+            refreshProofHelp(file);
+        });
+        tbody?.addEventListener("click", e => {
+            const editBtn = e.target.closest(".btn-edit-member");
+            if (editBtn) {
+                const memberId = editBtn.dataset.id;
+                const member = filteredList.find(item => item.id === memberId) || allMembers.find(item => item.id === memberId);
+                if (!member) return;
+                openEditMemberForm(member);
+                return;
+            }
+            const deleteBtn = e.target.closest(".btn-delete-member");
+            if (!deleteBtn) return;
+            deleteMemberData(deleteBtn.dataset.id);
+        });
+        memberFormSubmitBtn?.addEventListener("click", saveMemberForm);
 
         renderHead();
         loadMembers();
