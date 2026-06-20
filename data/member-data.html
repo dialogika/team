@@ -35,8 +35,60 @@
             letter-spacing: 0.12em;
         }
         #memberTableBody tr:hover {
-            background-color: #f8fafc;
+            background-color: #eef2ff;
         }
+        /* ── Modern table ── */
+        .table-scroll-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            max-height: 72vh;
+            overflow-y: auto;
+            border-radius: 16px;
+        }
+        .table-scroll-wrap table { min-width: 1480px; }
+        .tbl-head {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: #f1f5f9;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        .tbl-head th {
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 12px 14px;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        .tbl-head th:hover { background: #e2e8f0; }
+        .tbl-head th .sa { margin-left: 4px; font-size: 9px; color: #94a3b8; }
+        .tbl-head th.s-asc .sa, .tbl-head th.s-desc .sa { color: #4f46e5; }
+        #memberTableBody td {
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #334155;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        #memberTableBody tr:nth-child(even) { background: #f8fafc; }
+        #memberTableBody tr:nth-child(even):hover { background: #eef2ff; }
+        /* badges */
+        .b-city { display: inline-block; background: #f0f9ff; color: #0369a1; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
+        .b-prog { display: inline-block; background: #ede9fe; color: #6d28d9; border-radius: 8px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+        .b-info { display: inline-block; background: #f0fdf4; color: #15803d; border-radius: 999px; padding: 1px 8px; font-size: 10px; font-weight: 600; }
+        .b-pay-full { display: inline-block; background: #dcfce7; color: #166534; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+        .b-pay-dp   { display: inline-block; background: #fef9c3; color: #854d0e; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+        .b-pay-oth  { display: inline-block; background: #f1f5f9; color: #475569; border-radius: 999px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
+        .td-price { font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; color: #0f172a; white-space: nowrap; }
+        .td-ts    { font-size: 12px; white-space: nowrap; color: #64748b; }
+        .btn-bukti { font-size: 11px; padding: 3px 12px; border-radius: 999px; white-space: nowrap; font-weight: 600; }
+        /* pagination */
+        .pgn-btn { min-width: 34px; font-size: 12px; padding: 4px 10px; border-radius: 10px; }
         [x-cloak] { display: none !important; }
     </style>
 
@@ -87,15 +139,21 @@
                     </div>
                 </header>
 
-                <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center mb-4">
                     <div class="relative flex-grow group">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg class="w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         </div>
-                        <input id="memberSearchInput" type="text" placeholder="Cari nama, email, atau nomor WhatsApp..." class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none text-sm text-slate-700 shadow-sm">
+                        <input id="memberSearchInput" type="text" placeholder="Cari nama, WhatsApp, kota, program..." class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none text-sm text-slate-700 shadow-sm">
                     </div>
-                    <div class="flex items-center gap-2 text-[11px] text-slate-400">
-                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Data terbaru di atas</span>
+                    <div class="flex items-center gap-3">
+                        <select id="pageSizeSelect" class="text-xs border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <option value="10">10 / halaman</option>
+                            <option value="25" selected>25 / halaman</option>
+                            <option value="50">50 / halaman</option>
+                            <option value="100">100 / halaman</option>
+                        </select>
+                        <span id="dataInfoText" class="text-[11px] text-slate-400 whitespace-nowrap"></span>
                     </div>
                 </div>
 
@@ -113,17 +171,15 @@
                     </div>
 
                     <div id="tableContainer" style="display:none;">
-                        <div class="table-responsive">
-                            <table class="table mb-0 align-middle">
-                                <thead class="table-light">
-                                    <tr class="text-[11px] text-slate-500">
-                                        <th class="fw-semibold">Member</th>
-                                        <th class="fw-semibold">Kontak</th>
-                                        <th class="fw-semibold text-end">Tanggal</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="memberTableBody" class="text-sm"></tbody>
+                        <div class="table-scroll-wrap">
+                            <table class="table mb-0" id="memberTable">
+                                <thead class="tbl-head" id="memberTableHead"></thead>
+                                <tbody id="memberTableBody"></tbody>
                             </table>
+                        </div>
+                        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 mt-3 px-1">
+                            <span id="pgnInfo" class="text-[11px] text-slate-400"></span>
+                            <div id="pgnControls" class="d-flex align-items-center gap-1 flex-wrap"></div>
                         </div>
                     </div>
                 </section>
@@ -235,139 +291,222 @@
         const emptyState = document.getElementById("emptyState");
         const tableContainer = document.getElementById("tableContainer");
         const tbody = document.getElementById("memberTableBody");
+        const thead = document.getElementById("memberTableHead");
         const summaryText = document.getElementById("summaryText");
+        const dataInfoText = document.getElementById("dataInfoText");
+        const pageSizeSelect = document.getElementById("pageSizeSelect");
+        const pgnInfo = document.getElementById("pgnInfo");
+        const pgnControls = document.getElementById("pgnControls");
 
         let allMembers = [];
+        let filteredList = [];
+        let currentPage = 1;
+        let pageSize = parseInt(pageSizeSelect?.value || "25", 10);
+        let sortKey = "created_at";
+        let sortDir = "desc";
 
+        const MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+
+        const COLUMNS = [
+            { key: "nama",                    label: "Nama",                   type: "string" },
+            { key: "whatsapp",                label: "WhatsApp",               type: "string" },
+            { key: "kota",                    label: "Kota",                   type: "badge_city" },
+            { key: "program_kelas",           label: "Program / Kelas",        type: "badge_prog" },
+            { key: "tanggal_mulai_kelas",     label: "Tgl Mulai Kelas",        type: "date" },
+            { key: "harga_dibayarkan",        label: "Harga Dibayarkan",       type: "price" },
+            { key: "metode_pembayaran",       label: "Metode Pembayaran",      type: "badge_pay" },
+            { key: "sumber_informasi",        label: "Sumber Informasi",       type: "badge_info" },
+            { key: "waktu_pengisian",         label: "Waktu Pengisian",        type: "timestamp" },
+            { key: "created_at",              label: "Created At",             type: "timestamp" },
+            { key: "bukti_transfer",          label: "Bukti Transfer",         type: "image_link" }
+        ];
+
+        /* ── helpers ── */
+        function pick(raw, keys) {
+            for (const k of keys) { if (raw[k] !== undefined && raw[k] !== null && raw[k] !== "") return raw[k]; }
+            return "";
+        }
+        function toTs(v) {
+            if (!v) return null;
+            if (typeof v.toDate === "function") { const t = v.toDate(); return isNaN(t.getTime()) ? null : t; }
+            const t = new Date(v); return isNaN(t.getTime()) ? null : t;
+        }
+        function fmtTs(v) {
+            const d = toTs(v); if (!d) return "-";
+            return `${String(d.getDate()).padStart(2,"0")} ${MONTHS[d.getMonth()]} ${d.getFullYear()}, ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")} WIB`;
+        }
+        function fmtDate(v) {
+            const d = toTs(v); if (!d) return "-";
+            return `${String(d.getDate()).padStart(2,"0")} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+        }
+        function fmtRp(v) {
+            if (v === undefined || v === null || v === "") return "-";
+            const n = typeof v === "number" ? v : parseInt(String(v).replace(/[^0-9]/g,""),10);
+            if (isNaN(n)) return String(v);
+            return "Rp" + n.toLocaleString("id-ID");
+        }
+        function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
         function parseDateOnly(value) {
             if (!value) return null;
-            const parts = String(value).split("-");
-            if (parts.length !== 3) return null;
-            const year = parseInt(parts[0], 10);
-            const month = parseInt(parts[1], 10) - 1;
-            const day = parseInt(parts[2], 10);
-            const d = new Date(year, month, day);
-            if (isNaN(d.getTime())) return null;
-            return d;
+            const p = String(value).split("-"); if (p.length !== 3) return null;
+            const d = new Date(+p[0], +p[1]-1, +p[2]); return isNaN(d.getTime()) ? null : d;
         }
 
-        function normalizeDateOnly(date) {
-            if (!(date instanceof Date)) return null;
-            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        function mapRow(raw) {
+            return {
+                nama: String(pick(raw,["nama","name","nama_lengkap"])),
+                whatsapp: String(pick(raw,["whatsapp","phone","no_hp","telepon","hp"])),
+                kota: String(pick(raw,["kota","city","domisili","domisili_kota"])),
+                program_kelas: String(pick(raw,["program_kelas","program_diambil","programDiambil","program","kelas","product"])),
+                tanggal_mulai_kelas: pick(raw,["tanggal_mulai_kelas","tanggalMulaiKelas","tanggal_mulai","startDate"]),
+                harga_dibayarkan: pick(raw,["harga_dibayarkan","hargaDibayarkan","harga","amount","nominal"]),
+                metode_pembayaran: String(pick(raw,["metode_pembayaran","metodePembayaran","payment_method","pembayaran"])),
+                sumber_informasi: String(pick(raw,["sumber_informasi","sumberInformasi","sumber_info"])),
+                waktu_pengisian: pick(raw,["waktu_pengisian","waktuPengisian","submitted_at","form_submitted_at"]),
+                created_at: pick(raw,["created_at","createdAt","created_date","tanggal_daftar","tanggal","date","registered_at","timestamp"]),
+                bukti_transfer: String(pick(raw,["bukti_transfer","buktiTransfer","bukti_pembayaran","proof_url","proof"])),
+                _raw: raw
+            };
         }
 
-        function getMemberDate(member) {
-            if (member.createdDate instanceof Date) return member.createdDate;
-            return null;
+        /* ── cell renderer ── */
+        function renderCell(row, col) {
+            const v = row[col.key];
+            const s = String(v ?? "").trim();
+            switch (col.type) {
+                case "timestamp": return `<span class="td-ts">${fmtTs(v)}</span>`;
+                case "date":      return `<span class="td-ts">${fmtDate(v)}</span>`;
+                case "price":     return `<span class="td-price">${fmtRp(v)}</span>`;
+                case "badge_city":
+                    return s ? `<span class="b-city">${esc(s)}</span>` : '<span style="color:#cbd5e1">-</span>';
+                case "badge_prog":
+                    return s ? `<span class="b-prog">${esc(s)}</span>` : '<span style="color:#cbd5e1">-</span>';
+                case "badge_info":
+                    return s ? `<span class="b-info">${esc(s)}</span>` : '<span style="color:#cbd5e1">-</span>';
+                case "badge_info_final":
+                    return s ? `<span class="b-info-final">${esc(s)}</span>` : '<span style="color:#cbd5e1">-</span>';
+                case "badge_pay": {
+                    if (!s) return '<span style="color:#cbd5e1">-</span>';
+                    const low = s.toLowerCase();
+                    if (low.includes("full") || low === "lunas") return `<span class="b-pay-full">${esc(s)}</span>`;
+                    if (low.includes("dp") || low.includes("down") || low.includes("cicil") || low.includes("installment")) return `<span class="b-pay-dp">${esc(s)}</span>`;
+                    return `<span class="b-pay-oth">${esc(s)}</span>`;
+                }
+                case "image_link": {
+                    const url = s;
+                    if (!url || url === "undefined") return '<span style="color:#cbd5e1">-</span>';
+                    return `<a href="${esc(url)}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-bukti"><i class="bi bi-image me-1"></i>Lihat Bukti</a>`;
+                }
+                default:
+                    return s ? esc(s) : '<span style="color:#cbd5e1">-</span>';
+            }
         }
 
-        function formatDisplayDate(date) {
-            if (!date || !(date instanceof Date) || isNaN(date.getTime())) return "-";
-            const day = String(date.getDate()).padStart(2, "0");
-            const months = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
-            const month = months[date.getMonth()];
-            const year = date.getFullYear();
-            return `${day} ${month} ${year}`;
+        /* ── sort ── */
+        function cmpRows(a, b, key, dir) {
+            const col = COLUMNS.find(c => c.key === key) || { type:"string" };
+            let va = a[key], vb = b[key], cmp = 0;
+            if (col.type === "timestamp" || col.type === "date") {
+                const da = toTs(va), db = toTs(vb);
+                cmp = (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
+            } else if (col.type === "price") {
+                const na = parseInt(String(va||"").replace(/[^0-9]/g,""),10)||0;
+                const nb = parseInt(String(vb||"").replace(/[^0-9]/g,""),10)||0;
+                cmp = na - nb;
+            } else {
+                cmp = String(va||"").localeCompare(String(vb||""), "id", { sensitivity:"base" });
+            }
+            return dir === "asc" ? cmp : -cmp;
         }
 
-        function renderMembers(data) {
-            tbody.innerHTML = "";
-            if (!data || data.length === 0) {
+        /* ── head ── */
+        function renderHead() {
+            const tr = document.createElement("tr");
+            COLUMNS.forEach(col => {
+                const th = document.createElement("th");
+                th.dataset.sortKey = col.key;
+                const active = sortKey === col.key;
+                if (active) th.classList.add(sortDir === "asc" ? "s-asc" : "s-desc");
+                const arrow = active ? (sortDir === "asc" ? "▲" : "▼") : "⇅";
+                th.innerHTML = `${col.label}<span class="sa">${arrow}</span>`;
+                tr.appendChild(th);
+            });
+            thead.innerHTML = "";
+            thead.appendChild(tr);
+        }
+
+        /* ── pagination ── */
+        function totalPages() { return Math.max(1, Math.ceil(filteredList.length / pageSize)); }
+        function renderPgn() {
+            const total = filteredList.length, tp = totalPages();
+            if (currentPage > tp) currentPage = tp;
+            const s = (currentPage-1)*pageSize+1, e = Math.min(currentPage*pageSize, total);
+            pgnInfo.textContent = total > 0 ? `Menampilkan ${s}\u2013${e} dari ${total} member` : "Tidak ada data";
+            let h = "";
+            const mk = (lbl, pg, dis, act) => {
+                const cls = act ? "btn btn-primary pgn-btn" : dis ? "btn btn-light pgn-btn disabled" : "btn btn-outline-secondary pgn-btn";
+                return `<button type="button" class="${cls}" data-page="${pg}" ${dis?"disabled":""}>${lbl}</button>`;
+            };
+            h += mk("\u00AB",1,currentPage===1,false);
+            h += mk("\u2039",currentPage-1,currentPage===1,false);
+            let ps = Math.max(1, currentPage-2), pe = Math.min(tp, ps+4);
+            if (pe-ps<4) ps = Math.max(1, pe-4);
+            if (ps>1) h += mk("1",1,false,currentPage===1);
+            if (ps>2) h += `<span class="px-1 text-slate-400">\u2026</span>`;
+            for (let p=ps; p<=pe; p++) h += mk(String(p),p,false,p===currentPage);
+            if (pe<tp-1) h += `<span class="px-1 text-slate-400">\u2026</span>`;
+            if (pe<tp) h += mk(String(tp),tp,false,currentPage===tp);
+            h += mk("\u203A",currentPage+1,currentPage===tp,false);
+            h += mk("\u00BB",tp,currentPage===tp,false);
+            pgnControls.innerHTML = h;
+        }
+
+        /* ── main render ── */
+        function renderTable() {
+            if (!filteredList.length) {
                 tableContainer.style.display = "none";
                 emptyState.style.display = "block";
                 summaryText.textContent = "Tidak ada member yang cocok dengan filter.";
+                dataInfoText.textContent = "";
                 return;
             }
-            data.forEach((m) => {
-                const tr = document.createElement("tr");
-                const created = getMemberDate(m);
-
-                const name = m.name || "-";
-                const phone = m.phone || "-";
-                const email = m.email || "";
-                const program = m.program || "";
-                const city = m.city || "";
-
-                tr.innerHTML = `
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-circle bg-indigo-100 d-flex align-items-center justify-content-center text-indigo-600 fw-bold">
-                                ${name ? name.charAt(0).toUpperCase() : "M"}
-                            </div>
-                            <div>
-                                <div class="fw-semibold text-slate-800">${name}</div>
-                                ${email ? `<div class="text-xs text-slate-400">${email}</div>` : ""}
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex flex-column text-sm">
-                            <span class="text-slate-700"><i class="bi bi-whatsapp text-success me-1"></i>${phone}</span>
-                        </div>
-                    </td>
-                    <td class="text-end">
-                        <span class="text-sm text-slate-700">${formatDisplayDate(created)}</span>
-                    </td>
-                `;
-                tr.style.cursor = "pointer";
-                tr.addEventListener("click", () => {
-                    openMemberDetail(m);
-                });
-                tbody.appendChild(tr);
-            });
+            const tp = totalPages(); if (currentPage > tp) currentPage = tp;
+            const start = (currentPage-1)*pageSize;
+            const rows = filteredList.slice(start, start+pageSize);
+            renderHead();
+            tbody.innerHTML = rows.map(r => `<tr>${COLUMNS.map(c=>`<td>${renderCell(r,c)}</td>`).join("")}</tr>`).join("");
             tableContainer.style.display = "block";
             emptyState.style.display = "none";
-            summaryText.textContent = `Menampilkan ${data.length} member`;
+            summaryText.textContent = `Menampilkan ${filteredList.length} member`;
+            dataInfoText.textContent = `Total: ${allMembers.length} member`;
+            renderPgn();
         }
 
+        /* ── filter + sort ── */
         function applyFilters() {
+            const term = String(searchInput.value||"").toLowerCase().trim();
             let list = allMembers.slice();
-            const term = String(searchInput.value || "").toLowerCase().trim();
-
             if (term) {
-                list = list.filter((m) => {
-                    const name = String(m.name || "").toLowerCase();
-                    const email = String(m.email || "").toLowerCase();
-                    const phone = String(m.phone || "").toLowerCase();
-                    const city = String(m.city || "").toLowerCase();
-                    const program = String(m.program || "").toLowerCase();
-                    return (
-                        name.includes(term) ||
-                        email.includes(term) ||
-                        phone.includes(term) ||
-                        city.includes(term) ||
-                        program.includes(term)
-                    );
-                });
+                list = list.filter(m => COLUMNS.some(c => {
+                    if (c.type === "image_link") return false;
+                    return String(m[c.key]||"").toLowerCase().includes(term);
+                }));
             }
-
-            const startVal = startDateInput.value;
-            const endVal = endDateInput.value;
-            const hasRange = startVal || endVal;
-
-            if (hasRange) {
-                const start = startVal ? normalizeDateOnly(parseDateOnly(startVal)) : null;
-                const end = endVal ? normalizeDateOnly(parseDateOnly(endVal)) : null;
-                list = list.filter((m) => {
-                    const d = getMemberDate(m);
-                    if (!d) return false;
-                    const nd = normalizeDateOnly(d);
-                    if (!nd) return false;
-                    if (start && nd < start) return false;
-                    if (end && nd > end) return false;
+            const sv = startDateInput.value, ev = endDateInput.value;
+            if (sv || ev) {
+                const sd = sv ? parseDateOnly(sv) : null, ed = ev ? parseDateOnly(ev) : null;
+                list = list.filter(m => {
+                    const d = toTs(m.created_at); if (!d) return false;
+                    const nd = new Date(d.getFullYear(),d.getMonth(),d.getDate());
+                    if (sd && nd < sd) return false;
+                    if (ed && nd > ed) return false;
                     return true;
                 });
             }
-
-            list.sort((a, b) => {
-                const da = getMemberDate(a);
-                const db = getMemberDate(b);
-                const ta = da && da.getTime ? da.getTime() : 0;
-                const tb = db && db.getTime ? db.getTime() : 0;
-                return tb - ta; // terbaru di atas
-            });
-
-            renderMembers(list);
+            list.sort((a,b) => cmpRows(a,b,sortKey,sortDir));
+            filteredList = list;
+            currentPage = 1;
+            renderTable();
         }
 
         async function loadMembers() {
@@ -375,35 +514,12 @@
             emptyState.style.display = "none";
             tableContainer.style.display = "none";
             summaryText.textContent = "Sedang memuat data member...";
-
             try {
                 const snap = await getDocs(collection(db, "data_member"));
                 allMembers = [];
-                snap.forEach((docSnap) => {
-                    const d = docSnap.data() || {};
-                    const rawDate = d.created_at || d.createdAt || d.created_date || d.tanggal_daftar || d.tanggal || d.date || d.registered_at || d.timestamp || null;
-                    let createdDate = null;
-                    if (rawDate && typeof rawDate.toDate === "function") {
-                        const t = rawDate.toDate();
-                        if (!isNaN(t.getTime())) createdDate = t;
-                    } else if (rawDate) {
-                        const t = new Date(rawDate);
-                        if (!isNaN(t.getTime())) createdDate = t;
-                    }
-
-                    const programTaken = d.program_diambil || d.programDiambil || d.program || d.kelas || d.product || "";
-                    const domicile = d.domisili || d.domisili_kota || d.kota || d.city || "";
-
-                    allMembers.push({
-                        id: docSnap.id,
-                        name: d.name || d.nama || d.nama_lengkap || "",
-                        phone: d.phone || d.whatsapp || d.no_hp || d.telepon || "",
-                        email: d.email || "",
-                        program: programTaken,
-                        city: domicile,
-                        createdDate,
-                        raw: d
-                    });
+                snap.forEach(ds => {
+                    const row = mapRow(ds.data() || {});
+                    allMembers.push(row);
                 });
                 summaryText.textContent = `Memuat ${allMembers.length} member dari Firebase`;
                 loadingState.style.display = "none";
@@ -420,124 +536,84 @@
             if (!member) return;
             const modalEl = document.getElementById("memberDetailModal");
             if (!modalEl || !window.bootstrap || !window.bootstrap.Modal) return;
+            const raw = member._raw || {};
+            const nama = member.nama || "-";
+            const wa   = member.whatsapp || "-";
 
-            const titleEl = document.getElementById("detailMemberTitle");
-            const initialEl = document.getElementById("detailMemberInitial");
-            const subtitleEl = document.getElementById("detailMemberSubtitle");
-            const nameEl = document.getElementById("detailMemberName");
-            const phoneEl = document.getElementById("detailMemberPhone");
-            const emailEl = document.getElementById("detailMemberEmail");
-            const programEl = document.getElementById("detailMemberProgram");
-            const cityEl = document.getElementById("detailMemberCity");
-            const dateEl = document.getElementById("detailMemberDate");
-            const extraEl = document.getElementById("detailMemberExtra");
+            document.getElementById("detailMemberTitle").textContent    = nama || "Detail Member";
+            document.getElementById("detailMemberInitial").textContent  = nama ? nama.charAt(0).toUpperCase() : "M";
+            document.getElementById("detailMemberSubtitle").textContent = wa;
+            document.getElementById("detailMemberName").textContent     = nama;
+            document.getElementById("detailMemberPhone").textContent    = wa;
+            document.getElementById("detailMemberEmail").textContent    = raw.email || "-";
+            document.getElementById("detailMemberProgram").textContent  = member.program_kelas || "-";
+            document.getElementById("detailMemberCity").textContent     = member.kota || "-";
+            document.getElementById("detailMemberDate").textContent     = fmtTs(member.created_at);
+
             const waBtn = document.getElementById("detailWhatsappBtn");
-
-            const created = getMemberDate(member);
-
-            const displayName = member.name || "-";
-            if (titleEl) titleEl.textContent = displayName || "Detail Member";
-            if (initialEl) initialEl.textContent = displayName ? displayName.charAt(0).toUpperCase() : "M";
-            if (subtitleEl) subtitleEl.textContent = member.email || member.phone || "";
-            if (nameEl) nameEl.textContent = member.name || "-";
-            if (phoneEl) phoneEl.textContent = member.phone || "-";
-            if (emailEl) emailEl.textContent = member.email || "-";
-            if (programEl) programEl.textContent = member.program || "-";
-            if (cityEl) cityEl.textContent = member.city || "-";
-            if (dateEl) dateEl.textContent = formatDisplayDate(created);
-
             if (waBtn) {
-                const rawPhone = String(member.phone || "").replace(/[^0-9]/g, "");
-                if (rawPhone) {
-                    waBtn.style.display = "";
-                    waBtn.onclick = () => {
-                        const url = "https://wa.me/" + rawPhone;
-                        window.open(url, "_blank");
-                    };
-                } else {
-                    waBtn.style.display = "none";
-                    waBtn.onclick = null;
-                }
+                const rp = String(wa).replace(/[^0-9]/g,"");
+                if (rp) { waBtn.style.display = ""; waBtn.onclick = () => window.open("https://wa.me/"+rp,"_blank"); }
+                else    { waBtn.style.display = "none"; waBtn.onclick = null; }
             }
 
+            const extraEl = document.getElementById("detailMemberExtra");
             if (extraEl) {
-                const raw = member.raw || {};
-                const skipKeys = new Set([
-                    "name","nama","nama_lengkap",
-                    "phone","whatsapp","no_hp","telepon","hp",
-                    "email",
-                    "program","program_diambil","programDiambil","kelas","product",
-                    "city","kota","domisili","domisili_kota",
-                    "created_at","createdAt","created_date","tanggal_daftar","tanggal","date","registered_at","timestamp"
+                const skip = new Set([
+                    "nama","name","nama_lengkap","whatsapp","phone","no_hp","telepon","hp",
+                    "email","kota","city","domisili","domisili_kota",
+                    "program_kelas","program_diambil","programDiambil","program","kelas","product",
+                    "tanggal_mulai_kelas","tanggalMulaiKelas","tanggal_mulai","startDate",
+                    "harga_dibayarkan","hargaDibayarkan","harga","amount","nominal",
+                    "metode_pembayaran","metodePembayaran","payment_method","pembayaran",
+                    "sumber_informasi","sumberInformasi","sumber_info",
+                    "sumber_informasi_final","sumberInformasiFinal",
+                    "sumber_informasi_lainnya","sumberInformasiLainnya",
+                    "waktu_pengisian","waktuPengisian","submitted_at","form_submitted_at",
+                    "created_at","createdAt","created_date","tanggal_daftar","tanggal","date","registered_at","timestamp",
+                    "bukti_transfer","buktiTransfer","bukti_pembayaran","proof_url","proof"
                 ]);
-                const blocks = [];
-                const proofBlocks = [];
-                Object.keys(raw).forEach((key) => {
-                    if (skipKeys.has(key)) return;
-                    const value = raw[key];
-                    if (value === undefined || value === null || value === "") return;
-                    const keyLower = String(key).toLowerCase();
-                    let display = "";
-                    if (value && typeof value.toDate === "function") {
-                        const d = value.toDate();
-                        display = formatDisplayDate(d);
-                    } else if (typeof value === "object") {
-                        try {
-                            display = JSON.stringify(value);
-                        } catch (e) {
-                            display = String(value);
-                        }
+                const blocks = [], proofs = [];
+                Object.keys(raw).forEach(k => {
+                    if (skip.has(k)) return;
+                    const val = raw[k]; if (val === undefined || val === null || val === "") return;
+                    let disp = "";
+                    if (val && typeof val.toDate === "function") disp = fmtTs(val);
+                    else if (typeof val === "object") { try { disp = JSON.stringify(val); } catch { disp = String(val); } }
+                    else disp = String(val);
+                    const kl = k.toLowerCase();
+                    const isImg = /^https?:\/\//i.test(disp) && /\.(png|jpe?g|webp|gif)$/i.test(disp.split("?")[0]);
+                    if (isImg && (kl.includes("bukti") || kl.includes("proof"))) {
+                        proofs.push(`<div class="col-12 mb-3"><div class="text-xs text-slate-400 fw-semibold text-uppercase mb-1">${esc(k)}</div><div class="border rounded-3 p-2 bg-slate-50"><img src="${esc(disp)}" alt="${esc(k)}" class="img-fluid rounded-3"></div></div>`);
                     } else {
-                        display = String(value);
-                    }
-                    const isImage = /^https?:\/\//i.test(display) && /\.(png|jpe?g|webp|gif)$/i.test(display.split("?")[0]);
-                    if (isImage && (keyLower.includes("bukti") || keyLower.includes("proof"))) {
-                        proofBlocks.push(
-                            `<div class="col-12 mb-3">
-                                <div class="text-xs text-slate-400 fw-semibold text-uppercase mb-1">${key}</div>
-                                <div class="border rounded-3 p-2 bg-slate-50">
-                                    <img src="${display}" alt="${key}" class="img-fluid rounded-3">
-                                </div>
-                            </div>`
-                        );
-                    } else {
-                        blocks.push(
-                            `<div class="col-md-6 mb-2">
-                                <div class="text-xs text-slate-400 fw-semibold text-uppercase mb-1">${key}</div>
-                                <div class="text-xs text-slate-700">${display}</div>
-                            </div>`
-                        );
+                        blocks.push(`<div class="col-md-6 mb-2"><div class="text-xs text-slate-400 fw-semibold text-uppercase mb-1">${esc(k)}</div><div class="text-xs text-slate-700">${esc(disp)}</div></div>`);
                     }
                 });
-                const combined = blocks.concat(proofBlocks);
-                extraEl.innerHTML = combined.length
-                    ? `<div class="row">${combined.join("")}</div>`
-                    : "<div class=\"text-xs text-slate-400\">Tidak ada detail tambahan.</div>";
+                const combined = blocks.concat(proofs);
+                extraEl.innerHTML = combined.length ? `<div class="row">${combined.join("")}</div>` : '<div class="text-xs text-slate-400">Tidak ada detail tambahan.</div>';
             }
-
-            const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
-            modal.show();
+            window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
         }
 
-        if (searchInput) {
-            searchInput.addEventListener("input", () => {
-                applyFilters();
-            });
-        }
-        if (startDateInput) {
-            startDateInput.addEventListener("change", applyFilters);
-        }
-        if (endDateInput) {
-            endDateInput.addEventListener("change", applyFilters);
-        }
-        if (btnResetDate) {
-            btnResetDate.addEventListener("click", () => {
-                startDateInput.value = "";
-                endDateInput.value = "";
-                applyFilters();
-            });
-        }
+        /* ── event bindings ── */
+        searchInput?.addEventListener("input", () => applyFilters());
+        startDateInput?.addEventListener("change", applyFilters);
+        endDateInput?.addEventListener("change", applyFilters);
+        btnResetDate?.addEventListener("click", () => { startDateInput.value = ""; endDateInput.value = ""; applyFilters(); });
+        pageSizeSelect?.addEventListener("change", () => { pageSize = parseInt(pageSizeSelect.value,10); currentPage = 1; renderTable(); });
+        thead?.addEventListener("click", e => {
+            const th = e.target.closest("th[data-sort-key]"); if (!th) return;
+            const k = th.dataset.sortKey;
+            if (sortKey === k) sortDir = sortDir === "asc" ? "desc" : "asc";
+            else { sortKey = k; sortDir = "asc"; }
+            applyFilters();
+        });
+        pgnControls?.addEventListener("click", e => {
+            const btn = e.target.closest("button[data-page]"); if (!btn || btn.disabled) return;
+            currentPage = parseInt(btn.dataset.page,10); renderTable();
+        });
 
+        renderHead();
         loadMembers();
     </script>
 </body>
