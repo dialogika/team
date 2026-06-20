@@ -114,15 +114,31 @@
         .stat-card.sc-full .stat-card-value { color: #166534; }
         .stat-card.sc-dp   .stat-card-value { color: #92400e; }
         .stat-card.sc-total .stat-card-value { color: #4f46e5; }
-        /* payment summary footer */
-        .pay-summary {
-            display: flex; gap: 24px; align-items: center; justify-content: flex-end;
-            padding: 14px 18px; border-top: 2px solid #e2e8f0; margin-top: 12px;
-            font-size: 13px; color: #334155; flex-wrap: wrap;
+        /* table footer summary */
+        .tbl-foot {
+            background: #e2e8f0;
+            border-top: 2px solid #cbd5e1;
         }
-        .pay-summary-item { display: flex; align-items: center; gap: 6px; }
-        .pay-summary-item strong { font-weight: 700; color: #0f172a; }
-        .pay-summary-total { font-size: 15px; font-weight: 800; color: #4f46e5; }
+        .tbl-foot td {
+            padding: 12px 14px;
+            font-size: 12px;
+            color: #334155;
+            vertical-align: middle;
+            border-top: 1px solid #cbd5e1;
+        }
+        .tbl-foot .tfoot-label {
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: #0f172a;
+        }
+        .tbl-foot .tfoot-total {
+            font-size: 13px;
+            font-weight: 900;
+            color: #4f46e5;
+            white-space: nowrap;
+        }
         [x-cloak] { display: none !important; }
     </style>
 
@@ -232,15 +248,12 @@
                             <table class="table mb-0" id="memberTable">
                                 <thead class="tbl-head" id="memberTableHead"></thead>
                                 <tbody id="memberTableBody"></tbody>
+                                <tfoot id="memberTableFoot"></tfoot>
                             </table>
                         </div>
                         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 mt-3 px-1">
                             <span id="pgnInfo" class="text-[11px] text-slate-400"></span>
                             <div id="pgnControls" class="d-flex align-items-center gap-1 flex-wrap"></div>
-                        </div>
-                        <div class="pay-summary" id="paySummary">
-                            <div class="pay-summary-item"><span>Total Member:</span><strong id="psTotalMember">0</strong></div>
-                            <div class="pay-summary-item"><span>Total Pembayaran:</span><strong class="pay-summary-total" id="psTotalBayar">Rp0</strong></div>
                         </div>
                     </div>
                 </section>
@@ -363,8 +376,7 @@
         const scTotal = document.getElementById("scTotal");
         const scFull = document.getElementById("scFull");
         const scDp = document.getElementById("scDp");
-        const psTotalMember = document.getElementById("psTotalMember");
-        const psTotalBayar = document.getElementById("psTotalBayar");
+        const tfoot = document.getElementById("memberTableFoot");
 
         let allMembers = [];
         let filteredList = [];
@@ -509,6 +521,23 @@
             thead.appendChild(tr);
         }
 
+        function renderFoot() {
+            const totalBayar = filteredList.reduce((sum, m) => sum + parsePrice(m.harga_dibayarkan), 0);
+            const row = document.createElement("tr");
+            row.className = "tbl-foot";
+            row.innerHTML = `
+                <td class="tfoot-label">TOTAL</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td class="td-price tfoot-total">${"Rp" + totalBayar.toLocaleString("id-ID")}</td>
+                <td></td>
+                <td colspan="${Math.max(1, COLUMNS.length - 6)}"></td>
+            `;
+            tfoot.innerHTML = "";
+            tfoot.appendChild(row);
+        }
+
         /* ── pagination ── */
         function totalPages() { return Math.max(1, Math.ceil(filteredList.length / pageSize)); }
         function renderPgn() {
@@ -543,13 +572,10 @@
         function renderSummary() {
             const fullCount = filteredList.filter(m => isFullPayment(m.metode_pembayaran)).length;
             const dpCount   = filteredList.filter(m => isDP(m.metode_pembayaran)).length;
-            const totalBayar = filteredList.reduce((sum, m) => sum + parsePrice(m.harga_dibayarkan), 0);
 
             if (scTotal) scTotal.textContent = filteredList.length;
             if (scFull)  scFull.textContent  = fullCount;
             if (scDp)    scDp.textContent    = dpCount;
-            if (psTotalMember) psTotalMember.textContent = filteredList.length;
-            if (psTotalBayar)  psTotalBayar.textContent  = "Rp" + totalBayar.toLocaleString("id-ID");
 
             /* highlight active card */
             document.querySelectorAll(".stat-card").forEach(c => {
@@ -577,6 +603,7 @@
             summaryText.textContent = `Menampilkan ${filteredList.length} member`;
             dataInfoText.textContent = `Total: ${allMembers.length} member`;
             renderPgn();
+            renderFoot();
             renderSummary();
         }
 
