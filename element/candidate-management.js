@@ -685,41 +685,89 @@ async function loadRecruitmentPositions() {
   }
 }
 
+// Color palette for position cards — cycles through for visual variety
+const POSITION_CARD_COLORS = [
+  { bg: '#f0f9ff', border: '#bae6fd', accent: '#0284c7' },
+  { bg: '#fdf4ff', border: '#f0abfc', accent: '#a21caf' },
+  { bg: '#f0fdf4', border: '#86efac', accent: '#16a34a' },
+  { bg: '#fff7ed', border: '#fdba74', accent: '#ea580c' },
+  { bg: '#faf5ff', border: '#c4b5fd', accent: '#7c3aed' },
+  { bg: '#fefce8', border: '#fde047', accent: '#ca8a04' },
+  { bg: '#fff1f2', border: '#fda4af', accent: '#e11d48' },
+  { bg: '#ecfeff', border: '#67e8f9', accent: '#0891b2' },
+  { bg: '#f8fafc', border: '#94a3b8', accent: '#475569' },
+  { bg: '#fef2f2', border: '#fca5a5', accent: '#dc2626' }
+];
+
+function getPositionCategoryFilter() {
+  const activeBtn = document.querySelector('#positionCategorySubtabs .position-subtab-btn.active');
+  return activeBtn ? (activeBtn.dataset.category || '') : 'internship';
+}
+
 function renderPositionsCards() {
   const grid = document.getElementById("positionsCardGrid"); if (!grid) return;
-  const catFilter = document.getElementById("positionCategoryFilter")?.value || "";
+  const inactiveSection = document.getElementById("inactivePositionsSection");
+  const inactiveGrid = document.getElementById("inactivePositionsGrid");
+  const inactiveCount = document.getElementById("inactivePositionCount");
+  const catFilter = getPositionCategoryFilter();
   let filtered = positionsData.filter(p => {
     if (catFilter && (p.category||"") !== catFilter) return false;
     return true;
   });
-  if (!filtered.length) { grid.innerHTML = '<div class="candidate-empty-state" style="grid-column:1/-1">Tidak ada data posisi untuk kategori ini.</div>'; return; }
-  grid.innerHTML = filtered.map(p => {
-    const catLabel = p.category === "team" ? "Team" : p.category === "internship" ? "Internship" : (p.category||"-");
-    const catClass = p.category === "team" ? "badge-team" : "badge-internship";
-    const catCardClass = p.category === "team" ? "cat-team" : "cat-internship";
-    const createdStr = formatCreatedDate(p.createdAt);
-    const toggleIcon = p.active ? "fa-toggle-on" : "fa-toggle-off";
-    const toggleClass = p.active ? "action-toggle-on" : "";
-    const toggleTitle = p.active ? "Nonaktifkan" : "Aktifkan";
-    const statusBadge = p.active
-      ? '<span class="position-status-badge status-active"><i class="fa-solid fa-circle" style="font-size:0.45rem"></i>Aktif</span>'
-      : '<span class="position-status-badge status-inactive"><i class="fa-solid fa-circle" style="font-size:0.45rem"></i>Nonaktif</span>';
-    return '<div class="position-card '+catCardClass+'" data-id="'+escapeHtml(p.id)+'">'+
-      '<div class="position-card-header">'+
-        '<div class="position-card-title">'+escapeHtml(p.name||"-")+'</div>'+
-      '</div>'+
-      '<div class="position-card-meta">'+
-        '<span class="position-category-badge '+catClass+'">'+escapeHtml(catLabel)+'</span>'+
-        statusBadge+
-      '</div>'+
-      '<div class="position-card-date"><i class="fa-regular fa-calendar"></i>'+escapeHtml(createdStr||"-")+'</div>'+
-      '<div class="position-card-actions">'+
-        '<button type="button" class="position-action-btn '+toggleClass+'" data-action="toggle" data-id="'+escapeHtml(p.id)+'" title="'+toggleTitle+'"><i class="fa-solid '+toggleIcon+'"></i></button>'+
-        '<button type="button" class="position-action-btn" data-action="edit" data-id="'+escapeHtml(p.id)+'" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>'+
-        '<button type="button" class="position-action-btn action-danger" data-action="delete" data-id="'+escapeHtml(p.id)+'" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>'+
-      '</div>'+
-    '</div>';
-  }).join("");
+  const activePositions = filtered.filter(p => p.active);
+  const inactivePositions = filtered.filter(p => !p.active);
+
+  // Render active positions
+  if (!activePositions.length) {
+    grid.innerHTML = '<div class="candidate-empty-state" style="grid-column:1/-1">Tidak ada posisi aktif untuk kategori ini.</div>';
+  } else {
+    grid.innerHTML = activePositions.map((p, idx) => {
+      const color = POSITION_CARD_COLORS[idx % POSITION_CARD_COLORS.length];
+      const createdStr = formatCreatedDate(p.createdAt);
+      return '<div class="position-card" data-id="'+escapeHtml(p.id)+'" style="background:'+color.bg+';border:1px solid '+color.border+'">'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'+
+          '<div class="position-card-title">'+escapeHtml(p.name||"-")+'</div>'+
+          '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;font-weight:700;color:#16a34a"><i class="fa-solid fa-circle" style="font-size:0.35rem"></i>Aktif</span>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'+
+          '<div class="position-card-date"><i class="fa-regular fa-calendar"></i>'+escapeHtml(createdStr||"-")+'</div>'+
+          '<div style="display:flex;gap:4px">'+
+            '<button type="button" class="position-action-btn" data-action="toggle" data-id="'+escapeHtml(p.id)+'" title="Nonaktifkan" style="color:#16a34a"><i class="fa-solid fa-toggle-on"></i></button>'+
+            '<button type="button" class="position-action-btn" data-action="edit" data-id="'+escapeHtml(p.id)+'" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>'+
+            '<button type="button" class="position-action-btn action-danger" data-action="delete" data-id="'+escapeHtml(p.id)+'" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join("");
+  }
+
+  // Render inactive positions
+  if (inactiveSection && inactiveGrid) {
+    if (!inactivePositions.length) {
+      inactiveSection.style.display = "none";
+      inactiveGrid.innerHTML = "";
+    } else {
+      inactiveSection.style.display = "block";
+      if (inactiveCount) inactiveCount.textContent = inactivePositions.length;
+      inactiveGrid.innerHTML = inactivePositions.map(p => {
+        const createdStr = formatCreatedDate(p.createdAt);
+        return '<div class="position-card position-card-inactive" data-id="'+escapeHtml(p.id)+'">'+
+          '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">'+
+            '<div class="position-card-title">'+escapeHtml(p.name||"-")+'</div>'+
+            '<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;font-weight:700;color:#94a3b8"><i class="fa-solid fa-circle" style="font-size:0.35rem"></i>Nonaktif</span>'+
+          '</div>'+
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'+
+            '<div class="position-card-date"><i class="fa-regular fa-calendar"></i>'+escapeHtml(createdStr||"-")+'</div>'+
+            '<div style="display:flex;gap:4px">'+
+              '<button type="button" class="position-action-btn" data-action="toggle" data-id="'+escapeHtml(p.id)+'" title="Aktifkan" style="color:#94a3b8"><i class="fa-solid fa-toggle-off"></i></button>'+
+              '<button type="button" class="position-action-btn" data-action="edit" data-id="'+escapeHtml(p.id)+'" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>'+
+              '<button type="button" class="position-action-btn action-danger" data-action="delete" data-id="'+escapeHtml(p.id)+'" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      }).join("");
+    }
+  }
   if (window.refreshTooltips) window.refreshTooltips();
 }
 
@@ -727,17 +775,19 @@ function openPositionModal(docId) {
   const form = document.getElementById("positionForm"); if (form) form.reset();
   document.getElementById("positionDocId").value = docId || "";
   const title = document.getElementById("positionFormModalLabel");
+  // Status is always defaulted to active for new positions; for edits, keep existing value in Firestore
+  document.getElementById("positionActiveInput").value = "true";
   if (docId) {
     const pos = positionsData.find(p => p.id === docId);
     if (title) title.innerHTML = '<i class="fa-solid fa-sliders"></i>Edit Posisi';
     if (pos) {
       document.getElementById("positionNameInput").value = pos.name || "";
       document.getElementById("positionCategoryInput").value = pos.category || "";
+      // Preserve existing active state when editing
       document.getElementById("positionActiveInput").value = pos.active ? "true" : "false";
     }
   } else {
     if (title) title.innerHTML = '<i class="fa-solid fa-sliders"></i>Tambah Posisi';
-    document.getElementById("positionActiveInput").value = "true";
   }
   if (positionModalInstance) positionModalInstance.show();
 }
@@ -838,17 +888,25 @@ function bindEvents() {
   const posModalEl = document.getElementById("positionFormModal");
   if (posModalEl && window.bootstrap) positionModalInstance = new bootstrap.Modal(posModalEl);
   document.getElementById("btnAddPosition")?.addEventListener('click', () => openPositionModal(""));
-  document.getElementById("btnRefreshPositions")?.addEventListener('click', () => { positionsLoaded = false; loadRecruitmentPositions(); positionsLoaded = true; });
   document.getElementById("btnSavePosition")?.addEventListener('click', savePosition);
-  document.getElementById("positionCategoryFilter")?.addEventListener('change', renderPositionsCards);
+  // Position category subtab buttons
+  document.querySelectorAll('#positionCategorySubtabs .position-subtab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#positionCategorySubtabs .position-subtab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderPositionsCards();
+    });
+  });
   // Delegated clicks on position action buttons
-  document.getElementById("positionsCardGrid")?.addEventListener('click', async (ev) => {
+  const positionActionHandler = async (ev) => {
     const btn = ev.target.closest('.position-action-btn'); if (!btn) return;
     const action = btn.dataset.action; const id = btn.dataset.id; if (!id) return;
     if (action === "toggle") await togglePositionActive(id);
     else if (action === "edit") openPositionModal(id);
     else if (action === "delete") await deletePosition(id);
-  });
+  };
+  document.getElementById("positionsCardGrid")?.addEventListener('click', positionActionHandler);
+  document.getElementById("inactivePositionsGrid")?.addEventListener('click', positionActionHandler);
   // Delegated click events
   document.addEventListener('click', async (e) => {
     const deleteBtn = e.target.closest('.candidate-delete-btn');

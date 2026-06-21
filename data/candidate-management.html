@@ -189,17 +189,188 @@
       .position-action-btn.action-toggle-on:hover { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
       .position-date-cell { font-size: 0.8rem; color: #64748b; font-weight: 600; }
       /* ===== POSITION CARDS ===== */
-      .position-card { background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%); border: 1px solid rgba(226,232,240,0.95); border-radius: 24px; padding: 1.35rem; box-shadow: 0 8px 24px rgba(15,23,42,0.05); transition: transform 0.25s, box-shadow 0.25s; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden; }
-      .position-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; border-radius: 24px 24px 0 0; }
-      .position-card.cat-team::before { background: linear-gradient(90deg, #2563eb, #3b82f6); }
-      .position-card.cat-internship::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
-      .position-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(15,23,42,0.1); }
-      .position-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-      .position-card-title { font-size: 1.1rem; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; line-height: 1.3; word-break: break-word; }
-      .position-card-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-      .position-card-date { font-size: 0.75rem; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 5px; }
-      .position-card-date i { font-size: 0.7rem; }
-      .position-card-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 10px; border-top: 1px solid #f1f5f9; }
+      .position-card {
+        border-radius: 20px;
+        padding: 1.15rem;
+        box-shadow: 0 8px 24px rgba(15,23,42,0.03);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 12px;
+        position: relative;
+        overflow: hidden;
+      }
+      .position-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 32px rgba(15,23,42,0.08);
+      }
+      .position-card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #0f172a;
+        letter-spacing: -0.01em;
+        line-height: 1.35;
+        word-break: break-word;
+      }
+      .position-card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+      }
+      .position-card-date {
+        font-size: 0.72rem;
+        color: #64748b;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .position-card-date i {
+        font-size: 0.7rem;
+      }
+      #positionsCardGrid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+      /* ===== INACTIVE POSITIONS SECTION ===== */
+      #inactivePositionsSection {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px dashed #cbd5e1;
+      }
+      .inactive-section-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        background: #f8fafc;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+      }
+      .inactive-section-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+      }
+      .inactive-section-title {
+        font-size: 0.88rem;
+        font-weight: 800;
+        color: #475569;
+        letter-spacing: -0.01em;
+      }
+      .inactive-section-desc {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        font-weight: 600;
+      }
+      .inactive-section-count {
+        margin-left: auto;
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: #94a3b8;
+        background: #e2e8f0;
+        padding: 3px 10px;
+        border-radius: 999px;
+        flex-shrink: 0;
+      }
+      .position-card-inactive {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        opacity: 0.8;
+      }
+      .position-card-inactive:hover {
+        opacity: 1;
+      }
+      .position-card-inactive .position-card-title {
+        color: #64748b;
+      }
+      .position-card-inactive .position-card-date {
+        color: #94a3b8;
+      }
+      .position-action-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        background: rgba(255, 255, 255, 0.7);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        padding: 0;
+      }
+      .position-action-btn:hover {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+        transform: translateY(-1px);
+      }
+      .position-action-btn.action-danger:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+        color: #b91c1c;
+      }
+      
+      /* ===== POSITION SUBTABS & BUTTON ===== */
+      .btn-add-pos-custom {
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        border: none;
+        border-radius: 14px;
+        color: #fff !important;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 8px 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(37,99,235,0.2);
+        transition: all 0.25s ease;
+      }
+      .btn-add-pos-custom:hover {
+        transform: translateY(-1.5px);
+        box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+        opacity: 0.95;
+      }
+      .btn-add-pos-custom:active {
+        transform: translateY(0);
+      }
+      .position-subtabs {
+        display: inline-flex;
+        gap: 4px;
+        background: #f1f5f9;
+        border-radius: 12px;
+        padding: 4px;
+      }
+      .position-subtab-btn {
+        border: none;
+        background: transparent;
+        padding: 6px 18px;
+        border-radius: 9px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .position-subtab-btn:hover {
+        color: #334155;
+      }
+      .position-subtab-btn.active {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 4px 10px rgba(15,23,42,0.05);
+      }
       @media (max-width: 1199px) { .pipeline-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
       @media (max-width: 991px) { .pipeline-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; } .pipeline-stat-card { padding: 1rem; } .pipeline-stat-value { font-size: 1.4rem; } }
       @media (max-width: 767px) {
@@ -307,23 +478,41 @@
                   <div class="hero-copy">
                     <span class="hero-kicker"><i class="fa-solid fa-sliders"></i> Recruitment Positions</span>
                     <h1 class="hero-title">Position Management</h1>
-                    <p class="hero-subtitle mb-0">Kelola posisi rekrutmen secara dinamis untuk Team dan Internship.</p>
                   </div>
                   <div class="hero-action-stack d-flex flex-column align-items-stretch align-items-lg-end gap-2">
                     <div class="hero-action-toolbar">
-                      <button type="button" class="hero-icon-btn" id="btnRefreshPositions" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Refresh"><i class="fa-solid fa-arrows-rotate"></i></button>
-                      <button type="button" class="hero-icon-btn" id="btnAddPosition" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Tambah Posisi" style="background:#eff6ff;border-color:#93c5fd;color:#2563eb"><i class="fa-solid fa-plus"></i></button>
+                      <button type="button" class="btn btn-add-pos-custom" id="btnAddPosition">
+                        <i class="fa-solid fa-plus"></i> Tambah Posisi
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="candidate-toolbar">
-                <div class="row g-3 align-items-center">
-                  <div class="col-md-4"><label class="toolbar-label">Filter Kategori</label><select class="form-select toolbar-select w-100" id="positionCategoryFilter"><option value="internship">Internship</option><option value="team">Team</option></select></div>
+              <div class="candidate-toolbar py-3">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <div>
+                    <label class="toolbar-label mb-2">Filter Kategori</label>
+                    <div class="position-subtabs" id="positionCategorySubtabs">
+                      <button type="button" class="position-subtab-btn active" data-category="internship">Internship</button>
+                      <button type="button" class="position-subtab-btn" data-category="team">Team</button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="candidate-grid" id="positionsCardGrid">
                 <div class="text-center py-4 text-muted" style="grid-column:1/-1">Memuat data...</div>
+              </div>
+              <!-- Inactive Positions Section -->
+              <div id="inactivePositionsSection" style="display:none">
+                <div class="inactive-section-header">
+                  <div class="inactive-section-icon"><i class="fa-solid fa-archive"></i></div>
+                  <div>
+                    <div class="inactive-section-title">Inactive Positions</div>
+                    <div class="inactive-section-desc">Posisi yang tidak aktif</div>
+                  </div>
+                  <span class="inactive-section-count" id="inactivePositionCount">0</span>
+                </div>
+                <div class="candidate-grid" id="inactivePositionsGrid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;"></div>
               </div>
             </div>
 
@@ -373,7 +562,7 @@
 
     <div class="modal fade" id="templateBaseModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content schedule-modal-content border-0"><div class="modal-header schedule-modal-header"><h5 class="schedule-modal-title" id="templateBaseModalLabel"><i class="fa-regular fa-pen-to-square"></i>Ubah Template Dasar <span id="templateCategoryLabel" style="font-weight:700;color:#2563eb;font-size:0.88rem;margin-left:8px"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body schedule-modal-body"><div class="small text-muted mb-3">Kelola semua template chat secara langsung.</div><div id="templateBaseValidationMsg" class="alert alert-warning d-none py-2 px-3 mb-3"></div><div class="template-editor-grid" id="templateEditorGrid"></div></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-primary" id="saveTemplateBaseBtn">Simpan Perubahan</button></div></div></div></div>
 
-    <div class="modal fade" id="positionFormModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content schedule-modal-content border-0"><div class="modal-header schedule-modal-header"><h5 class="schedule-modal-title" id="positionFormModalLabel"><i class="fa-solid fa-sliders"></i>Tambah Posisi</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body schedule-modal-body"><form id="positionForm"><input type="hidden" id="positionDocId" value="" /><div class="row g-3"><div class="col-12"><label class="form-label small fw-bold">Nama Posisi</label><input type="text" class="form-control" id="positionNameInput" placeholder="Contoh: Frontend Developer" required /></div><div class="col-md-6"><label class="form-label small fw-bold">Kategori</label><select class="form-select" id="positionCategoryInput" required><option value="">Pilih kategori</option><option value="team">Team</option><option value="internship">Internship</option></select></div><div class="col-md-6"><label class="form-label small fw-bold">Status</label><select class="form-select" id="positionActiveInput"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-dlg-blue" id="btnSavePosition">Simpan</button></div></div></div></div>
+    <div class="modal fade" id="positionFormModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content schedule-modal-content border-0"><div class="modal-header schedule-modal-header"><h5 class="schedule-modal-title" id="positionFormModalLabel"><i class="fa-solid fa-sliders"></i>Tambah Posisi</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body schedule-modal-body"><form id="positionForm"><input type="hidden" id="positionDocId" value="" /><div class="row g-3"><div class="col-12"><label class="form-label small fw-bold">Nama Posisi</label><input type="text" class="form-control" id="positionNameInput" placeholder="Contoh: Frontend Developer" required /></div><div class="col-12"><label class="form-label small fw-bold">Kategori</label><select class="form-select" id="positionCategoryInput" required><option value="">Pilih kategori</option><option value="team">Team</option><option value="internship">Internship</option></select></div><input type="hidden" id="positionActiveInput" value="true" /></div></form></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-dlg-blue" id="btnSavePosition">Simpan</button></div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
