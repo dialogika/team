@@ -171,6 +171,35 @@
       .view-mode-slider-thumb { position: absolute; top: 3px; left: 3px; width: calc(50% - 3px); height: calc(100% - 6px); background: #2563eb; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.72rem; transition: transform 0.3s; }
       .view-mode-slider-btn.is-list .view-mode-slider-thumb { transform: translateX(100%); }
       .essay-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+      /* ===== POSITION MANAGEMENT TABLE ===== */
+      #positionsTable tbody tr { transition: background 0.2s; cursor: default; }
+      #positionsTable tbody tr:hover { background: #f8fafc; }
+      .position-name-cell { font-weight: 700; color: #0f172a; font-size: 0.92rem; }
+      .position-category-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 12px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; border: 1px solid transparent; }
+      .position-category-badge.badge-team { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+      .position-category-badge.badge-internship { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+      .position-status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 12px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; border: 1px solid transparent; }
+      .position-status-badge.status-active { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+      .position-status-badge.status-inactive { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+      .position-action-btn { width: 32px; height: 32px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; display: inline-flex; align-items: center; justify-content: center; color: #64748b; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; padding: 0; }
+      .position-action-btn:hover { background: #f1f5f9; border-color: #93c5fd; color: #2563eb; }
+      .position-action-btn.action-danger:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+      .position-action-btn.action-toggle-on { background: #fef2f2; border-color: #fecaca; color: #b45309; }
+      .position-action-btn.action-toggle-on:hover { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+      .position-date-cell { font-size: 0.8rem; color: #64748b; font-weight: 600; }
+      /* ===== POSITION CARDS ===== */
+      .position-card { background: linear-gradient(180deg, #ffffff 0%, #fcfdff 100%); border: 1px solid rgba(226,232,240,0.95); border-radius: 24px; padding: 1.35rem; box-shadow: 0 8px 24px rgba(15,23,42,0.05); transition: transform 0.25s, box-shadow 0.25s; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden; }
+      .position-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; border-radius: 24px 24px 0 0; }
+      .position-card.cat-team::before { background: linear-gradient(90deg, #2563eb, #3b82f6); }
+      .position-card.cat-internship::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+      .position-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(15,23,42,0.1); }
+      .position-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+      .position-card-title { font-size: 1.1rem; font-weight: 800; color: #0f172a; letter-spacing: -0.01em; line-height: 1.3; word-break: break-word; }
+      .position-card-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      .position-card-date { font-size: 0.75rem; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+      .position-card-date i { font-size: 0.7rem; }
+      .position-card-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 10px; border-top: 1px solid #f1f5f9; }
       @media (max-width: 1199px) { .pipeline-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
       @media (max-width: 991px) { .pipeline-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; } .pipeline-stat-card { padding: 1rem; } .pipeline-stat-value { font-size: 1.4rem; } }
       @media (max-width: 767px) {
@@ -204,6 +233,7 @@
               <button class="candidate-tab-btn active" data-tab="team"><i class="fa-solid fa-users"></i>Team<span class="tab-count" id="tabCountTeam">0</span></button>
               <button class="candidate-tab-btn" data-tab="mentor"><i class="fa-solid fa-chalkboard-user"></i>Mentor<span class="tab-count" id="tabCountMentor">0</span></button>
               <button class="candidate-tab-btn" data-tab="internship"><i class="fa-solid fa-briefcase"></i>Internship<span class="tab-count" id="tabCountInternship">0</span></button>
+              <button class="candidate-tab-btn" data-tab="positions"><i class="fa-solid fa-sliders"></i>Positions</button>
             </div>
 
             <!-- ========== TEAM TAB ========== -->
@@ -270,6 +300,33 @@
               <div class="list-view-container mt-4 tab-list-wrap" data-tab="mentor" style="display:none"><div class="candidate-list-shell"><table class="table align-middle shadow-sm border-0"><thead class="bg-slate-50/50 border-b border-slate-100"><tr class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400"><th class="ps-4 px-3 py-3">Candidate Overview</th></tr></thead><tbody class="text-[13px] text-slate-700"></tbody></table></div></div>
             </div>
 
+            <!-- ========== POSITIONS TAB ========== -->
+            <div class="tab-panel" id="panel-positions">
+              <div class="hero-panel mb-4">
+                <div class="hero-actions d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-4">
+                  <div class="hero-copy">
+                    <span class="hero-kicker"><i class="fa-solid fa-sliders"></i> Recruitment Positions</span>
+                    <h1 class="hero-title">Position Management</h1>
+                    <p class="hero-subtitle mb-0">Kelola posisi rekrutmen secara dinamis untuk Team dan Internship.</p>
+                  </div>
+                  <div class="hero-action-stack d-flex flex-column align-items-stretch align-items-lg-end gap-2">
+                    <div class="hero-action-toolbar">
+                      <button type="button" class="hero-icon-btn" id="btnRefreshPositions" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Refresh"><i class="fa-solid fa-arrows-rotate"></i></button>
+                      <button type="button" class="hero-icon-btn" id="btnAddPosition" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Tambah Posisi" style="background:#eff6ff;border-color:#93c5fd;color:#2563eb"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="candidate-toolbar">
+                <div class="row g-3 align-items-center">
+                  <div class="col-md-4"><label class="toolbar-label">Filter Kategori</label><select class="form-select toolbar-select w-100" id="positionCategoryFilter"><option value="internship">Internship</option><option value="team">Team</option></select></div>
+                </div>
+              </div>
+              <div class="candidate-grid" id="positionsCardGrid">
+                <div class="text-center py-4 text-muted" style="grid-column:1/-1">Memuat data...</div>
+              </div>
+            </div>
+
             <!-- ========== INTERNSHIP TAB ========== -->
             <div class="tab-panel" id="panel-internship">
               <div class="hero-panel mb-4">
@@ -315,6 +372,8 @@
     <div class="modal fade" id="interviewScheduleModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"><div class="modal-content schedule-modal-content border-0"><div class="modal-header schedule-modal-header"><h5 class="schedule-modal-title" id="interviewScheduleModalLabel"><i class="fa-regular fa-calendar-days"></i>Jadwal Interview</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body schedule-modal-body"><div class="schedule-modal-toolbar"><div class="row g-2"><div class="col-12 col-lg-4"><input type="search" id="interviewScheduleSearch" class="form-control" placeholder="Cari nama kandidat atau interviewer..." /></div><div class="col-6 col-lg-2"><input type="date" id="interviewScheduleDateFilter" class="form-control" /></div><div class="col-6 col-lg-2"><select id="interviewScheduleStatusFilter" class="form-select"><option value="">Semua Status</option><option value="upcoming">Upcoming</option><option value="today">Today</option></select></div><div class="col-12 col-lg-4"><select id="interviewScheduleSort" class="form-select"><option value="nearest" selected>Tanggal & waktu terdekat</option><option value="farthest">Tanggal & waktu terjauh</option><option value="candidate_asc">Nama kandidat A-Z</option><option value="candidate_desc">Nama kandidat Z-A</option></select></div></div></div><div id="interviewScheduleLoading" class="schedule-modal-loading d-none">Memuat jadwal interview...</div><div id="interviewScheduleEmpty" class="schedule-modal-empty d-none">Belum ada jadwal interview tersedia.</div><div class="table-responsive schedule-modal-table-wrap" id="interviewScheduleTableWrap"><table class="table schedule-modal-table align-middle mb-0"><colgroup><col style="width:24%"><col style="width:14%"><col style="width:23%"><col style="width:23%"><col style="width:16%"></colgroup><thead><tr><th>Tanggal Interview</th><th>Waktu</th><th>Nama Kandidat</th><th>Interviewer</th><th>Posisi</th></tr></thead><tbody id="interviewScheduleTableBody"></tbody></table></div><div class="schedule-modal-pagination" id="interviewSchedulePagWrap"><div class="schedule-modal-pagination-meta" id="interviewSchedulePagMeta">Menampilkan 0 data</div><div class="btn-group"><button type="button" class="btn btn-outline-secondary btn-sm" id="interviewSchedulePrevBtn">Sebelumnya</button><button type="button" class="btn btn-outline-secondary btn-sm" id="interviewScheduleNextBtn">Berikutnya</button></div></div></div></div></div></div>
 
     <div class="modal fade" id="templateBaseModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-xl modal-dialog-centered"><div class="modal-content schedule-modal-content border-0"><div class="modal-header schedule-modal-header"><h5 class="schedule-modal-title" id="templateBaseModalLabel"><i class="fa-regular fa-pen-to-square"></i>Ubah Template Dasar <span id="templateCategoryLabel" style="font-weight:700;color:#2563eb;font-size:0.88rem;margin-left:8px"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body schedule-modal-body"><div class="small text-muted mb-3">Kelola semua template chat secara langsung.</div><div id="templateBaseValidationMsg" class="alert alert-warning d-none py-2 px-3 mb-3"></div><div class="template-editor-grid" id="templateEditorGrid"></div></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-primary" id="saveTemplateBaseBtn">Simpan Perubahan</button></div></div></div></div>
+
+    <div class="modal fade" id="positionFormModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content schedule-modal-content border-0"><div class="modal-header schedule-modal-header"><h5 class="schedule-modal-title" id="positionFormModalLabel"><i class="fa-solid fa-sliders"></i>Tambah Posisi</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body schedule-modal-body"><form id="positionForm"><input type="hidden" id="positionDocId" value="" /><div class="row g-3"><div class="col-12"><label class="form-label small fw-bold">Nama Posisi</label><input type="text" class="form-control" id="positionNameInput" placeholder="Contoh: Frontend Developer" required /></div><div class="col-md-6"><label class="form-label small fw-bold">Kategori</label><select class="form-select" id="positionCategoryInput" required><option value="">Pilih kategori</option><option value="team">Team</option><option value="internship">Internship</option></select></div><div class="col-md-6"><label class="form-label small fw-bold">Status</label><select class="form-select" id="positionActiveInput"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-dlg-blue" id="btnSavePosition">Simpan</button></div></div></div></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>

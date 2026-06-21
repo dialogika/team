@@ -649,8 +649,139 @@ function switchTab(cat) {
   activeTab = cat;
   document.querySelectorAll('.candidate-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === cat));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-'+cat));
+  if (cat === "positions") { if (!positionsLoaded) { loadRecruitmentPositions(); positionsLoaded = true; } return; }
   const state = getTabState(cat);
   if (!state.loaded) { loadCandidates(cat); subscribeRealtimeUpdates(cat); }
+}
+
+// ===== POSITION MANAGEMENT =====
+let positionsData = [];
+let positionsLoaded = false;
+let positionModalInstance = null;
+
+async function loadRecruitmentPositions() {
+  const grid = document.getElementById("positionsCardGrid");
+  if (grid) grid.innerHTML = '<div class="text-center py-4 text-muted" style="grid-column:1/-1">Memuat data...</div>';
+  try {
+    const snap = await getDocs(collection(db, "recruitment_positions"));
+    positionsData = [];
+    snap.forEach(ds => {
+      const raw = ds.data() || {};
+      // Normalize category: could be array or string in Firestore
+      let cat = raw.category;
+      if (Array.isArray(cat)) cat = cat[0] || "";
+      cat = (cat || "").toString().toLowerCase();
+      // Normalize active: Firestore uses is_active, code uses active
+      const isActive = raw.active !== undefined ? !!raw.active : !!raw.is_active;
+      // Normalize created date: Firestore uses created_at, code uses createdAt
+      const createdAt = raw.createdAt || raw.created_at || null;
+      positionsData.push({ id: ds.id, ...raw, category: cat, active: isActive, createdAt });
+    });
+    positionsData.sort((a,b) => (a.name||"").localeCompare(b.name||"","id"));
+    renderPositionsCards();
+  } catch (e) {
+    console.error("[Positions] Failed to load:", e);
+    if (grid) grid.innerHTML = '<div class="text-center py-4 text-danger" style="grid-column:1/-1">Gagal memuat data.</div>';
+  }
+}
+
+function renderPositionsCards() {
+  const grid = document.getElementById("positionsCardGrid"); if (!grid) return;
+  const catFilter = document.getElementById("positionCategoryFilter")?.value || "";
+  let filtered = positionsData.filter(p => {
+    if (catFilter && (p.category||"") !== catFilter) return false;
+    return true;
+  });
+  if (!filtered.length) { grid.innerHTML = '<div class="candidate-empty-state" style="grid-column:1/-1">Tidak ada data posisi untuk kategori ini.</div>'; return; }
+  grid.innerHTML = filtered.map(p => {
+    const catLabel = p.category === "team" ? "Team" : p.category === "internship" ? "Internship" : (p.category||"-");
+    const catClass = p.category === "team" ? "badge-team" : "badge-internship";
+    const catCardClass = p.category === "team" ? "cat-team" : "cat-internship";
+    const createdStr = formatCreatedDate(p.createdAt);
+    const toggleIcon = p.active ? "fa-toggle-on" : "fa-toggle-off";
+    const toggleClass = p.active ? "action-toggle-on" : "";
+    const toggleTitle = p.active ? "Nonaktifkan" : "Aktifkan";
+    const statusBadge = p.active
+      ? '<span class="position-status-badge status-active"><i class="fa-solid fa-circle" style="font-size:0.45rem"></i>Aktif</span>'
+      : '<span class="position-status-badge status-inactive"><i class="fa-solid fa-circle" style="font-size:0.45rem"></i>Nonaktif</span>';
+    return '<div class="position-card '+catCardClass+'" data-id="'+escapeHtml(p.id)+'">'+
+      '<div class="position-card-header">'+
+        '<div class="position-card-title">'+escapeHtml(p.name||"-")+'</div>'+
+      '</div>'+
+      '<div class="position-card-meta">'+
+        '<span class="position-category-badge '+catClass+'">'+escapeHtml(catLabel)+'</span>'+
+        statusBadge+
+      '</div>'+
+      '<div class="position-card-date"><i class="fa-regular fa-calendar"></i>'+escapeHtml(createdStr||"-")+'</div>'+
+      '<div class="position-card-actions">'+
+        '<button type="button" class="position-action-btn '+toggleClass+'" data-action="toggle" data-id="'+escapeHtml(p.id)+'" title="'+toggleTitle+'"><i class="fa-solid '+toggleIcon+'"></i></button>'+
+        '<button type="button" class="position-action-btn" data-action="edit" data-id="'+escapeHtml(p.id)+'" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>'+
+        '<button type="button" class="position-action-btn action-danger" data-action="delete" data-id="'+escapeHtml(p.id)+'" title="Hapus"><i class="fa-solid fa-trash-can"></i></button>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+  if (window.refreshTooltips) window.refreshTooltips();
+}
+
+function openPositionModal(docId) {
+  const form = document.getElementById("positionForm"); if (form) form.reset();
+  document.getElementById("positionDocId").value = docId || "";
+  const title = document.getElementById("positionFormModalLabel");
+  if (docId) {
+    const pos = positionsData.find(p => p.id === docId);
+    if (title) title.innerHTML = '<i class="fa-solid fa-sliders"></i>Edit Posisi';
+    if (pos) {
+      document.getElementById("positionNameInput").value = pos.name || "";
+      document.getElementById("positionCategoryInput").value = pos.category || "";
+      document.getElementById("positionActiveInput").value = pos.active ? "true" : "false";
+    }
+  } else {
+    if (title) title.innerHTML = '<i class="fa-solid fa-sliders"></i>Tambah Posisi';
+    document.getElementById("positionActiveInput").value = "true";
+  }
+  if (positionModalInstance) positionModalInstance.show();
+}
+
+async function savePosition() {
+  const docId = (document.getElementById("positionDocId")?.value || "").trim();
+  const name = (document.getElementById("positionNameInput")?.value || "").trim();
+  const category = document.getElementById("positionCategoryInput")?.value || "";
+  const active = document.getElementById("positionActiveInput")?.value === "true";
+  if (!name) { alert("Nama posisi tidak boleh kosong."); return; }
+  if (!category) { alert("Pilih kategori posisi."); return; }
+  const payload = { name, category, active, is_active: active, updatedAt: serverTimestamp() };
+  try {
+    if (docId) {
+      await updateDoc(doc(db, "recruitment_positions", docId), payload);
+    } else {
+      payload.createdAt = serverTimestamp();
+      await addDoc(collection(db, "recruitment_positions"), payload);
+    }
+    if (positionModalInstance) positionModalInstance.hide();
+    await loadRecruitmentPositions();
+  } catch (e) {
+    console.error("[Positions] Save failed:", e);
+    alert("Gagal menyimpan posisi.");
+  }
+}
+
+async function togglePositionActive(docId) {
+  const pos = positionsData.find(p => p.id === docId); if (!pos) return;
+  try {
+    const newActive = !pos.active;
+    await updateDoc(doc(db, "recruitment_positions", docId), { active: newActive, is_active: newActive, updatedAt: serverTimestamp() });
+    await loadRecruitmentPositions();
+  } catch (e) { console.error("[Positions] Toggle failed:", e); alert("Gagal mengubah status."); }
+}
+
+async function deletePosition(docId) {
+  const pos = positionsData.find(p => p.id === docId);
+  const name = pos ? pos.name : docId;
+  if (!confirm("Hapus posisi \"" + name + "\"?\nData yang sudah dihapus tidak dapat dikembalikan.")) return;
+  try {
+    await deleteDoc(doc(db, "recruitment_positions", docId));
+    await loadRecruitmentPositions();
+  } catch (e) { console.error("[Positions] Delete failed:", e); alert("Gagal menghapus posisi."); }
 }
 
 // ===== EVENT BINDING =====
@@ -703,6 +834,21 @@ function bindEvents() {
     setTemplateValidation("Berhasil disimpan.","success"); setTimeout(() => { if (templateModalInstance) templateModalInstance.hide(); }, 500);
   });
   document.getElementById("templateEditorGrid")?.addEventListener('input', (ev) => { if (ev.target.tagName === "TEXTAREA") { ev.target.style.height = "auto"; ev.target.style.height = Math.max(ev.target.scrollHeight, 170)+"px"; } });
+  // ===== POSITION MANAGEMENT BINDINGS =====
+  const posModalEl = document.getElementById("positionFormModal");
+  if (posModalEl && window.bootstrap) positionModalInstance = new bootstrap.Modal(posModalEl);
+  document.getElementById("btnAddPosition")?.addEventListener('click', () => openPositionModal(""));
+  document.getElementById("btnRefreshPositions")?.addEventListener('click', () => { positionsLoaded = false; loadRecruitmentPositions(); positionsLoaded = true; });
+  document.getElementById("btnSavePosition")?.addEventListener('click', savePosition);
+  document.getElementById("positionCategoryFilter")?.addEventListener('change', renderPositionsCards);
+  // Delegated clicks on position action buttons
+  document.getElementById("positionsCardGrid")?.addEventListener('click', async (ev) => {
+    const btn = ev.target.closest('.position-action-btn'); if (!btn) return;
+    const action = btn.dataset.action; const id = btn.dataset.id; if (!id) return;
+    if (action === "toggle") await togglePositionActive(id);
+    else if (action === "edit") openPositionModal(id);
+    else if (action === "delete") await deletePosition(id);
+  });
   // Delegated click events
   document.addEventListener('click', async (e) => {
     const deleteBtn = e.target.closest('.candidate-delete-btn');
