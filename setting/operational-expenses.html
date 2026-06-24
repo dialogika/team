@@ -978,6 +978,110 @@
         });
         const storage = getStorage(firebaseApp);
 
+        // ==========================================
+        // DISCORD WEBHOOK NOTIFICATION SYSTEM
+        // ==========================================
+        async function sendDiscordExpenseNotification(expenseData) {
+            const DISCORD_WEBHOOK_URL = "https://discordapp.com/api/webhooks/1519275579894009947/kzdMqLIFwfwFAkfkDlLNDzgcD1iK1N289Wa4Aulw2pylD17B8jndW468oF61Gs5Xv3wn";
+
+            try {
+                const formatCategory = (category) => {
+                    const map = {
+                        mentor_salary: 'Mentor Salary',
+                        operational: 'Operational',
+                        reimburse: 'Reimburse',
+                        tools: 'Tools',
+                        transport: 'Transport',
+                        other: 'Other'
+                    };
+                    return map[category] || category || 'Other';
+                };
+
+                const formattedAmount = typeof expenseData.amount === 'number'
+                    ? `Rp ${new Intl.NumberFormat('id-ID').format(expenseData.amount)}`
+                    : (expenseData.amount ? `Rp ${expenseData.amount}` : '-');
+
+                const fields = [
+                    { name: "👤 Pengaju", value: expenseData.requesterName || "-", inline: true },
+                    { name: "📋 Judul", value: expenseData.title || "-", inline: true },
+                    { name: "📂 Kategori", value: formatCategory(expenseData.category) || "-", inline: true },
+                    { name: "🏢 Department", value: expenseData.department || "-", inline: true },
+                    { name: "💰 Nominal", value: formattedAmount, inline: true },
+                    { name: "👥 Penerima", value: expenseData.beneficiaryName || "-", inline: true },
+                    { name: "🏦 Bank", value: expenseData.bankName || "-", inline: true },
+                    { name: "💳 Rekening", value: expenseData.accountNumber || "-", inline: true },
+                    { name: "💸 Metode Pembayaran", value: expenseData.paymentMethod || "-", inline: true },
+                    { name: "🎓 Kelas Terkait", value: expenseData.relatedClass || "-", inline: true },
+                    { name: "📅 Due Date", value: expenseData.dueDate || "-", inline: true },
+                    { name: "📌 Status", value: expenseData.status || "-", inline: true },
+                    { name: "📝 Catatan", value: expenseData.notes || "-", inline: false }
+                ];
+
+                if (expenseData.transferProofUrl) {
+                    fields.push({
+                        name: "📎 Bukti Transfer",
+                        value: expenseData.transferProofUrl,
+                        inline: false
+                    });
+                }
+
+                let timestamp;
+                if (expenseData.createdAt) {
+                    if (typeof expenseData.createdAt.toDate === 'function') {
+                        timestamp = expenseData.createdAt.toDate().toISOString();
+                    } else if (expenseData.createdAt instanceof Date) {
+                        timestamp = expenseData.createdAt.toISOString();
+                    } else if (typeof expenseData.createdAt === 'string') {
+                        timestamp = new Date(expenseData.createdAt).toISOString();
+                    }
+                }
+                if (!timestamp && expenseData.createdAtMs) {
+                    timestamp = new Date(expenseData.createdAtMs).toISOString();
+                }
+                if (!timestamp) {
+                    timestamp = new Date().toISOString();
+                }
+
+                const embed = {
+                    title: "💰 Operational Expense Baru",
+                    description: "Operasional baru telah ditambahkan ke sistem Dialogika.",
+                    color: 5195253, // #4f46e5 (Indigo)
+                    fields: fields,
+                    footer: {
+                        text: "Dialogika Operational Expenses System"
+                    },
+                    timestamp: timestamp
+                };
+
+                if (expenseData.transferProofUrl) {
+                    embed.image = {
+                        url: expenseData.transferProofUrl
+                    };
+                }
+
+                const payload = {
+                    embeds: [embed]
+                };
+
+                const response = await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Failed to send Discord notification:', error);
+            }
+        }
+
+        // Export to window for global reusability
+        window.sendDiscordExpenseNotification = sendDiscordExpenseNotification;
+
         const topbarTarget = document.getElementById('topbarContainer');
         renderTopBar(topbarTarget);
         const sidebarTarget = document.getElementById('sidebarContainer');
@@ -2054,7 +2158,20 @@
                             payload.paidAtMs = nowMs;
                         }
 
+                        const isNew = !isEditMode.value;
+
                         await setDoc(doc(db, 'operational_expenses', expenseId), payload, { merge: true });
+
+                        // Automatic Discord Notification for new Operational Expense
+                        if (isNew) {
+                            sendDiscordExpenseNotification({
+                                id: expenseId,
+                                ...payload
+                            }).catch(err => {
+                                console.error('Error sending Discord notification:', err);
+                            });
+                        }
+
                         await loadExpenses();
                         closeDrawer();
                         showToast(isEditMode.value ? 'Expense updated' : 'Expense request created');
