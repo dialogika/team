@@ -428,8 +428,8 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="overflow-hidden rounded-2xl border border-slate-100 max-h-[420px] overflow-auto">
-                            <table class="w-full text-left text-xs">
+<div class="overflow-x-auto rounded-2xl border border-slate-100 max-h-[420px] overflow-auto">
+                            <table class="min-w-max text-left text-xs">
                                 <thead>
                                     <tr
                                         class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest font-extrabold">
@@ -525,8 +525,8 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="overflow-hidden rounded-2xl border border-slate-100 max-h-[420px] overflow-auto">
-                            <table class="w-full text-left text-xs">
+                        <div class="overflow-x-auto rounded-2xl border border-slate-100 max-h-[420px] overflow-auto">
+                            <table class="min-w-max text-left text-xs">
                                 <thead>
                                     <tr
                                         class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest font-extrabold">
@@ -542,6 +542,7 @@
                                         <th class="p-3">Referral</th>
                                         <th class="p-3">Metode</th>
                                         <th class="p-3">Bank</th>
+                                        <th class="p-3">Phone</th>
                                         <th class="p-3 text-center">Action</th>
                                     </tr>
                                 </thead>
@@ -834,7 +835,7 @@
                 <button id="closePaidInvoiceModalBtn"
                     class="text-slate-500 hover:text-slate-800 text-sm font-bold">Tutup</button>
             </div>
-            <div class="overflow-hidden rounded-2xl border border-slate-100 max-h-[420px] overflow-auto">
+                        <div class="overflow-x-auto rounded-2xl border border-slate-100 max-h-[420px] overflow-auto">
                 <table class="w-full text-left text-xs">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest font-extrabold">
@@ -964,6 +965,10 @@
                                 <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
                                 <span id="paymentViewBank" class="text-sm font-bold text-blue-600 uppercase"></span>
                             </div>
+                        </section>
+                        <section>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">No. HP</p>
+                            <p id="paymentViewPhone" class="text-sm font-semibold text-slate-800"></p>
                         </section>
                         <section>
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Referral &
@@ -1702,6 +1707,7 @@
             const limit = Math.max(parseInt(receiptPageSize, 10) || 100, 1);
             const shown = filtered.slice(0, limit);
             let totalPayment = 0;
+
             shown.forEach(function (inv) {
                 const invoiceNumber = inv.invoiceNumber || inv.id || "";
                 const nominal = typeof inv.finalBasePrice === "number" && inv.finalBasePrice > 0 ? inv.finalBasePrice : (typeof inv.basePrice === "number" ? inv.basePrice : 0);
@@ -1743,6 +1749,8 @@
                     '<td class="p-3">' + referralHtml + "</td>",
                     '<td class="p-3 text-slate-700">' + (inv.paymentMethod || "-") + "</td>",
                     '<td class="p-3 text-slate-700">' + (inv.bankName || "-") + "</td>",
+
+                    '<td class="p-3 text-slate-700">' + (inv.leadPhone || "-") + "</td>",
                     '<td class="p-3 text-center">' +
                     '<button type="button" class="view-payment px-3 py-1 rounded-full text-[10px] font-bold bg-slate-900 text-white" data-id="' + inv.id + '">View</button>' +
                     "</td>"
@@ -1809,6 +1817,11 @@
             setText("paymentViewLiability", liability ? ("Rp " + formatCurrencyId(liability)) : "-");
             setText("paymentViewNominal", nominal ? ("Rp " + formatCurrencyId(nominal)) : "-");
             setText("paymentViewReferral", inv.referralCode || "-");
+            // Ensure phone number is always visible (from various potential fields)
+            const phone = inv.phone || inv.phoneNumber || inv.leadPhone || inv.leadPhoneNumber || "";
+
+            setText("paymentViewPhone", phone || "-");
+
             setText("paymentViewMethod", inv.paymentMethod || "-");
             setText("paymentViewBank", inv.bankName || "-");
             const verificationMeta = getVerificationStatusMeta(inv.verificationStatus || "legit");
@@ -2024,6 +2037,7 @@
                         batchLabel: d.batchLabel || "",
                         classType: d.classType || "",
                         location: d.location || "",
+                        leadPhone: d.leadPhone,
                         seatsLeft: typeof d.seatsLeft === "number" ? d.seatsLeft : 0,
                         deadlineMinutes: typeof d.deadlineMinutes === "number" ? d.deadlineMinutes : 0,
                         startedAtMs: typeof d.startedAtMs === "number" ? d.startedAtMs : 0,
