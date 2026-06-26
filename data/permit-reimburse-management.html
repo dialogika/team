@@ -887,6 +887,7 @@
         collection,
         getDocs,
         query,
+        where,
         orderBy,
         updateDoc,
         doc,
@@ -2692,7 +2693,73 @@
               updatePayload.completed_at = new Date().toISOString();
             }
 
-            await updateDoc(reimburseRef, updatePayload);
+             await updateDoc(reimburseRef, updatePayload);
+
+            // Add synthetic attendance (6 hours for Full Day, 3 hours for Half Day)
+            try {
+              const userId = data.user_id || "";
+              const userName = data.user_name || "";
+              const userPhoto = data.user_photo || (await resolveUserPhoto(userId)) || "";
+              
+              const permitType = normalizePermitType(
+                (data.related && (data.related.permit_type || data.related.type)) || data.type
+              );
+              const REIMBURSE_HOURS = (permitType === "half-day") ? 3 : 6;
+
+              // Check if synthetic attendance is already added for this reimbursement and date
+              const attendanceQuery = query(
+                collection(db, "user_attendance"),
+                where("reimburse_id", "==", reimburseId)
+              );
+              const attendanceSnap = await getDocs(attendanceQuery);
+              let alreadyAdded = false;
+              attendanceSnap.forEach((docSnap) => {
+                const docData = docSnap.data() || {};
+                if (docData.date === dateStr) {
+                  alreadyAdded = true;
+                }
+              });
+
+              if (!alreadyAdded) {
+                const startHour = 9;
+                const endHour = startHour + REIMBURSE_HOURS;
+                const loginTime = `${String(startHour).padStart(2, "0")}:00:00`;
+                const logoutTime = `${String(endHour).padStart(2, "0")}:00:00`;
+
+                const loginPayload = {
+                  user_id: userId,
+                  name: userName,
+                  photo: userPhoto,
+                  date: dateStr,
+                  time: loginTime,
+                  type: "login",
+                  reimburse_id: reimburseId,
+                  is_synthetic: true,
+                  created_at: new Date()
+                };
+
+                const logoutPayload = {
+                  user_id: userId,
+                  name: userName,
+                  photo: userPhoto,
+                  date: dateStr,
+                  time: logoutTime,
+                  type: "logout",
+                  reimburse_id: reimburseId,
+                  is_synthetic: true,
+                  created_at: new Date()
+                };
+
+                await addDoc(collection(db, "user_attendance"), loginPayload);
+                await addDoc(collection(db, "user_attendance"), logoutPayload);
+                console.log(`Successfully added ${REIMBURSE_HOURS} hours synthetic attendance for ${userName} on ${dateStr}`);
+              } else {
+                console.log(`Synthetic attendance already exists for ${userName} on ${dateStr}`);
+              }
+            } catch (err) {
+              console.error("Gagal menambahkan data attendance sintetis:", err);
+            }
+
             showToast(
               `Reimburse tanggal ${formatDailyDate(dateStr)} telah selesai.`,
               "success",
