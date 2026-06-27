@@ -38,8 +38,8 @@ const TAB_CONFIG = {
     statusPipeline: [
       { value: "screening", label: "Screening", badgeClass: "status-screening", caption: "Seleksi awal" },
       { value: "interview", label: "Interview", badgeClass: "status-interview", caption: "Proses wawancara" },
-      { value: "on_job_training", label: "OJT", badgeClass: "status-micro-teaching", caption: "Simulasi mengajar" },
       { value: "accepted", label: "Accepted", badgeClass: "status-accepted", caption: "Lolos seleksi" },
+      { value: "onboarding", label: "On Boarding", badgeClass: "status-onboarding", caption: "Siap bergabung" },
       { value: "rejected", label: "Rejected", badgeClass: "status-rejected", caption: "Tidak diterima" },
       { value: "canceled", label: "Canceled", badgeClass: "status-canceled", caption: "Dibatalkan" }
     ],
@@ -55,7 +55,7 @@ const TAB_CONFIG = {
     normalizeStatus(raw) {
       if (raw === "interview") return "interview";
       if (["accept","accepted","decision"].includes(raw)) return "accepted";
-      if (raw === "on_job_training") return "on_job_training";
+      if (raw === "onboarding") return "onboarding";
       if (["rejected","reject"].includes(raw)) return "rejected";
       if (["canceled","withdrawn","mengundurkan_diri","mengundurkan diri"].includes(raw)) return "canceled";
       return "screening";
@@ -66,7 +66,7 @@ const TAB_CONFIG = {
       const fd = (s.final_decision || s.finalDecision || "").toString().trim().toLowerCase();
       if (["rejected","reject"].includes(fd)) return "rejected";
       if (["canceled","withdrawn","mengundurkan_diri","mengundurkan diri"].includes(fd)) return "canceled";
-      if (["accepted","accept"].includes(fd) && cur !== "on_job_training") return "accepted";
+      if (["accepted","accept"].includes(fd) && cur !== "onboarding") return "accepted";
       return cur;
     },
     hasOjtSection: true, hasTeamSync: true,
@@ -301,6 +301,9 @@ function appendCandidateToUI(cat, params) {
   const withdrawnNotes = escapeHtml(params.withdrawnNotes||"");
   const ojtStart = params.onJobTrainingStartDate||null; const ojtEnd = params.onJobTrainingEndDate||null;
   const isTeamMember = !!params.isTeamMember;
+  const onboardingDate = params.onboardingDate||null;
+  const onboardingTime = params.onboardingTime||"";
+  const onboardingLocation = params.onboardingLocation||"";
   const state = getTabState(cat);
   const gridContainer = document.querySelector('.tab-grid[data-tab="'+cat+'"]');
   const listTbody = document.querySelector('.tab-list-wrap[data-tab="'+cat+'"] tbody');
@@ -334,11 +337,19 @@ function appendCandidateToUI(cat, params) {
   const interviewSectionHtml = '<div class="candidate-selection-meta"><div class="candidate-interview-meta"><div class="candidate-extra-item candidate-extra-item-interviewer"><div class="candidate-extra-label">Interviewer</div><div class="interviewer-grid" data-bs-toggle="tooltip" data-bs-placement="top" title="'+escapeHtml(intNames)+'">'+intGridHtml+'</div></div><div class="candidate-extra-item candidate-extra-item-schedule"><div class="schedule-compact-header"><i class="fa-regular fa-calendar-days"></i><span>Jadwal Interview</span></div><div class="schedule-compact-details"><div class="schedule-compact-row"><span>Tanggal</span><strong>'+escapeHtml(intDate)+'</strong></div><div class="schedule-compact-row"><span>Jam</span><strong>'+escapeHtml(intTime)+'</strong></div><div class="schedule-compact-row"><span>Status</span><strong>'+(intBadge ? '<span class="'+intBadge.className+'">'+escapeHtml(intBadge.label)+'</span>' : '-')+'</strong></div></div></div></div></div>';
   let ojtSectionHtml = "";
   if (cfg.hasOjtSection && ojtStart) { const ojtDate = formatOjtDateRangeCompact(ojtStart, ojtEnd); ojtSectionHtml = '<div class="candidate-selection-meta mt-2"><div class="candidate-interview-meta"><div class="candidate-extra-item candidate-extra-item-schedule" style="border-left:3px solid #10b981"><div class="schedule-compact-header"><i class="fa-solid fa-graduation-cap"></i><span>Jadwal OJT</span></div><div class="schedule-compact-date">'+escapeHtml(ojtDate)+'</div></div></div></div>'; }
+  let onboardingSectionHtml = "";
+  if (currentStatus === "onboarding" && onboardingDate) {
+    const onbDateObj = toDateObject(onboardingDate);
+    const onbDateDisplay = onbDateObj ? formatInterviewDateOnly(onbDateObj) : escapeHtml(onboardingDate);
+    const onbTimeDisplay = onboardingTime ? escapeHtml(onboardingTime.replace(":", ".") + " WIB") : "-";
+    const onbLocationDisplay = onboardingLocation ? escapeHtml(onboardingLocation) : "-";
+    onboardingSectionHtml = '<div class="candidate-selection-meta mt-2"><div class="candidate-interview-meta"><div class="candidate-extra-item candidate-extra-item-schedule" style="border-left:3px solid #6366f1"><div class="schedule-compact-header"><i class="fa-solid fa-user-check"></i><span>On Boarding</span></div><div class="schedule-compact-details"><div class="schedule-compact-row"><span>Tanggal</span><strong>'+onbDateDisplay+'</strong></div><div class="schedule-compact-row"><span>Jam</span><strong>'+onbTimeDisplay+'</strong></div><div class="schedule-compact-row"><span>Lokasi</span><strong>'+onbLocationDisplay+'</strong></div></div></div></div></div>';
+  }
   const cancelBtnHtml = (!["rejected","canceled"].includes(currentStatus)) ? '<button type="button" class="candidate-inline-action candidate-cancel-btn" data-category="'+cat+'" data-talent-id="'+talentId+'" title="Canceled / Mengundurkan Diri" style="color:#b45309"><i class="fa-solid fa-user-xmark"></i></button>' : '';
   const actionBtn = '<div class="candidate-card-head-actions">'+cancelBtnHtml+'<button type="button" class="candidate-inline-action action-trash candidate-delete-btn" data-category="'+cat+'" title="Pindahkan ke Sampah"><i class="fa-solid fa-trash-can"></i></button></div>';
   let bodyContent = detailListHtml; if (statusDetailsHtml) bodyContent += statusDetailsHtml;
-  const gridHtml = '<div class="candidate-item" data-name="'+name+'" data-position="'+position+'" data-email="'+emailValue+'" data-campus="'+campusValue+'" data-avatar="'+avatarAttr+'" data-status-label="'+escapeHtml(statusLabel)+'" data-talent-id="'+talentId+'" data-status="'+currentStatus+'" data-created="'+createdSortValue+'" data-due-date="'+escapeHtml(dueDateInputValue)+'" data-interview-status="'+intStatus+'" data-interviewer-availability="'+intAvail+'" data-category="'+cat+'" tabindex="0" role="link"><div class="candidate-card-modern"><div class="candidate-card-head"><div class="candidate-avatar-row"><img src="'+avatarUrl+'" alt="'+name+'" class="candidate-avatar-large"><div class="candidate-header-main"><div class="candidate-name">'+name+'</div>'+headerChipsHtml+'</div></div>'+actionBtn+(statusDetailsHtml ? "" : interviewSectionHtml+ojtSectionHtml)+'</div><div class="candidate-card-body">'+bodyContent+'</div></div></div>';
-  const listHtml = '<tr style="background-color:transparent" class="candidate-row candidate-row-main" data-name="'+name+'" data-position="'+position+'" data-email="'+emailValue+'" data-campus="'+campusValue+'" data-avatar="'+avatarAttr+'" data-status-label="'+escapeHtml(statusLabel)+'" data-status="'+currentStatus+'" data-created="'+createdSortValue+'" data-due-date="'+escapeHtml(dueDateInputValue)+'" data-interview-status="'+intStatus+'" data-interviewer-availability="'+intAvail+'" data-talent-id="'+talentId+'" data-category="'+cat+'"><td style="background-color:transparent" colspan="1" class="border-0 px-0 py-2"><div class="candidate-list-card" data-talent-id="'+talentId+'" data-category="'+cat+'" tabindex="0" role="link"><div class="candidate-list-main"><div class="candidate-list-topbar"><div class="d-flex gap-3 align-items-start flex-grow-1"><img src="'+avatarUrl+'" alt="'+name+'" class="list-img rounded-4 shadow-sm" style="width:64px;height:64px;object-fit:cover;border-radius:1rem"><div class="candidate-header-main"><div class="candidate-name">'+name+'</div>'+headerChipsHtml+'</div></div>'+cancelBtnHtml+'<button type="button" class="candidate-inline-action action-trash candidate-delete-btn" data-category="'+cat+'" title="Pindahkan ke Sampah"><i class="fa-solid fa-trash-can"></i></button></div>'+(statusDetailsHtml ? statusDetailsHtml : interviewSectionHtml+ojtSectionHtml)+detailListHtml+'</div></div></td></tr>';
+  const gridHtml = '<div class="candidate-item" data-name="'+name+'" data-position="'+position+'" data-email="'+emailValue+'" data-campus="'+campusValue+'" data-avatar="'+avatarAttr+'" data-status-label="'+escapeHtml(statusLabel)+'" data-talent-id="'+talentId+'" data-status="'+currentStatus+'" data-created="'+createdSortValue+'" data-due-date="'+escapeHtml(dueDateInputValue)+'" data-interview-status="'+intStatus+'" data-interviewer-availability="'+intAvail+'" data-category="'+cat+'" tabindex="0" role="link"><div class="candidate-card-modern"><div class="candidate-card-head"><div class="candidate-avatar-row"><img src="'+avatarUrl+'" alt="'+name+'" class="candidate-avatar-large"><div class="candidate-header-main"><div class="candidate-name">'+name+'</div>'+headerChipsHtml+'</div></div>'+actionBtn+(statusDetailsHtml ? "" : interviewSectionHtml+ojtSectionHtml+onboardingSectionHtml)+'</div><div class="candidate-card-body">'+bodyContent+'</div></div></div>';
+  const listHtml = '<tr style="background-color:transparent" class="candidate-row candidate-row-main" data-name="'+name+'" data-position="'+position+'" data-email="'+emailValue+'" data-campus="'+campusValue+'" data-avatar="'+avatarAttr+'" data-status-label="'+escapeHtml(statusLabel)+'" data-status="'+currentStatus+'" data-created="'+createdSortValue+'" data-due-date="'+escapeHtml(dueDateInputValue)+'" data-interview-status="'+intStatus+'" data-interviewer-availability="'+intAvail+'" data-talent-id="'+talentId+'" data-category="'+cat+'"><td style="background-color:transparent" colspan="1" class="border-0 px-0 py-2"><div class="candidate-list-card" data-talent-id="'+talentId+'" data-category="'+cat+'" tabindex="0" role="link"><div class="candidate-list-main"><div class="candidate-list-topbar"><div class="d-flex gap-3 align-items-start flex-grow-1"><img src="'+avatarUrl+'" alt="'+name+'" class="list-img rounded-4 shadow-sm" style="width:64px;height:64px;object-fit:cover;border-radius:1rem"><div class="candidate-header-main"><div class="candidate-name">'+name+'</div>'+headerChipsHtml+'</div></div>'+cancelBtnHtml+'<button type="button" class="candidate-inline-action action-trash candidate-delete-btn" data-category="'+cat+'" title="Pindahkan ke Sampah"><i class="fa-solid fa-trash-can"></i></button></div>'+(statusDetailsHtml ? statusDetailsHtml : interviewSectionHtml+ojtSectionHtml+onboardingSectionHtml)+detailListHtml+'</div></div></td></tr>';
   gridContainer.insertAdjacentHTML("beforeend", gridHtml);
   listTbody.insertAdjacentHTML("beforeend", listHtml);
   if (window.refreshTooltips) window.refreshTooltips();
@@ -401,7 +412,10 @@ async function loadCandidates(cat, snapshotOverride) {
       const ojtStart = recruitment.on_job_training_start_date||null;
       const ojtEnd = recruitment.on_job_training_end_date||null;
       const isTeamMember = !!(data.isTeamMember||data.is_team_member||data.teamManagementId||recruitment.is_team_member||recruitment.team_management_id);
-      appendCandidateToUI(cat, { name, positionName, avatarUrl, mode, address, email, campus, talentId: ds.id, status: currentStatus, dueDateInputValue, interviewScheduleRaw: intScheduleRaw, interviewerIds: interviewers, createdSortValue, finalDecisionAt, rejectionReason, rejectionNotes, withdrawnNotes, onJobTrainingStartDate: ojtStart, onJobTrainingEndDate: ojtEnd, isTeamMember });
+      const onboardingDate = recruitment.onboarding_date||null;
+      const onboardingTime = recruitment.onboarding_time||"";
+      const onboardingLocation = recruitment.onboarding_location||"";
+      appendCandidateToUI(cat, { name, positionName, avatarUrl, mode, address, email, campus, talentId: ds.id, status: currentStatus, dueDateInputValue, interviewScheduleRaw: intScheduleRaw, interviewerIds: interviewers, createdSortValue, finalDecisionAt, rejectionReason, rejectionNotes, withdrawnNotes, onJobTrainingStartDate: ojtStart, onJobTrainingEndDate: ojtEnd, isTeamMember, onboardingDate, onboardingTime, onboardingLocation });
       found += 1;
     });
     if (!found) {

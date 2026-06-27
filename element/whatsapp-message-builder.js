@@ -140,6 +140,35 @@ export function buildMicroTeachingMessage(options = {}) {
 }
 
 /**
+ * Build onboarding WhatsApp message
+ * @param {Object} options - Build options
+ * @param {string} options.candidateName - Candidate name
+ * @param {string} options.onboardingDate - Formatted onboarding date
+ * @param {string} options.onboardingTime - Onboarding time
+ * @param {string} options.onboardingLocation - Onboarding location
+ * @param {string} options.category - Category: 'intern', 'team', or 'mentor' (default: 'team')
+ * @returns {string|null} Generated WhatsApp message
+ */
+export function buildOnboardingMessage(options = {}) {
+    const {
+        candidateName = "Kandidat",
+        onboardingDate = "-",
+        onboardingTime = "-",
+        onboardingLocation = "",
+        category = "team"
+    } = options;
+
+    const tokens = {
+        candidate_name: candidateName,
+        onboarding_date: onboardingDate,
+        onboarding_time: onboardingTime,
+        onboarding_location: onboardingLocation
+    };
+
+    return buildMessageFromTemplate("onboarding", tokens, category);
+}
+
+/**
  * Build accepted WhatsApp message
  * @param {Object} options - Build options
  * @param {string} options.candidateName - Candidate name

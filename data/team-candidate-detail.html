@@ -143,22 +143,28 @@
         }
 
         .status-accepted {
-            background: #ecfdf5;
-            color: #047857;
-            border-color: #86efac;
-        }
+             background: #ecfdf5;
+             color: #047857;
+             border-color: #86efac;
+         }
 
-        .status-On-job-training {
-            background: #ecfdf5;
-            color: #047857;
-            border-color: #86efac;
-        }
+         .status-onboarding {
+             background: #e0e7ff;
+             color: #3730a3;
+             border-color: #a5b4fc;
+         }
 
-        .status-withdrawn {
-            background: #fff7ed;
-            color: #c2410c;
-            border-color: #fdba74;
-        }
+         .status-On-job-training {
+             background: #ecfdf5;
+             color: #047857;
+             border-color: #86efac;
+         }
+
+         .status-withdrawn {
+             background: #fff7ed;
+             color: #c2410c;
+             border-color: #fdba74;
+         }
 
         .decision-accepted {
             background: #ecfdf5;
@@ -203,11 +209,11 @@
         }
 
         .pipeline-stepper {
-            display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 12px;
-            margin-bottom: 1.25rem;
-        }
+             display: grid;
+             grid-template-columns: repeat(6, minmax(0, 1fr));
+             gap: 12px;
+             margin-bottom: 1.25rem;
+         }
 
         .pipeline-step {
             display: flex;
@@ -297,10 +303,28 @@
         }
 
         .pipeline-step.is-active.is-accepted .pipeline-step-caption {
-            color: #16a34a;
-        }
+             color: #16a34a;
+         }
 
-        .pipeline-step.is-rejected {
+         .pipeline-step.is-active.is-onboarding {
+             background: #e0e7ff;
+             border-color: #a5b4fc;
+         }
+
+         .pipeline-step.is-active.is-onboarding .pipeline-step-index {
+             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+             color: #ffffff;
+         }
+
+         .pipeline-step.is-active.is-onboarding .pipeline-step-label {
+             color: #312e81;
+         }
+
+         .pipeline-step.is-active.is-onboarding .pipeline-step-caption {
+             color: #6366f1;
+         }
+
+         .pipeline-step.is-rejected {
             background: #fef2f2;
             border-color: #fca5a5;
         }
@@ -1870,24 +1894,29 @@
                                 <div class="modal-section-icon"><i class="fa-solid fa-scale-balanced"></i></div>
                             </div>
                             <div class="decision-toggle-group">
-                                <button type="button" class="decision-toggle-btn" data-decision-action="accepted"
-                                    id="decisionAcceptToggle">
-                                    <div class="fw-bold mb-1">Terima</div>
-                                    <div class="small text-muted">Kirim Acceptance Letter WhatsApp untuk menandai
-                                        kandidat diterima.</div>
-                                </button>
-                                <button type="button" class="decision-toggle-btn" data-decision-action="rejected"
-                                    id="decisionRejectToggle">
-                                    <div class="fw-bold mb-1">Tolak</div>
-                                    <div class="small text-muted">Pilih alasan penolakan dan tambahkan keterangan
-                                        pendukung.</div>
-                                </button>
-                                <button type="button" class="decision-toggle-btn" data-decision-action="withdrawn"
-                                    id="decisionWithdrawnToggle">
-                                    <div class="fw-bold mb-1">Mengundurkan Diri</div>
-                                    <div class="small text-muted">Tandai kandidat mengundurkan diri dan tambahkan keterangan.</div>
-                                </button>
-                            </div>
+                                 <button type="button" class="decision-toggle-btn" data-decision-action="accepted"
+                                     id="decisionAcceptToggle">
+                                     <div class="fw-bold mb-1">Terima</div>
+                                     <div class="small text-muted">Kirim Acceptance Letter WhatsApp untuk menandai
+                                         kandidat diterima.</div>
+                                 </button>
+                                  <button type="button" class="decision-toggle-btn" data-decision-action="onboarding"
+                                      id="decisionOnboardingToggle">
+                                      <div class="fw-bold mb-1">Jadwalkan On Boarding</div>
+                                      <div class="small text-muted">Atur jadwal On Boarding dan kirim undangan WhatsApp.</div>
+                                  </button>
+                                 <button type="button" class="decision-toggle-btn" data-decision-action="rejected"
+                                     id="decisionRejectToggle">
+                                     <div class="fw-bold mb-1">Tolak</div>
+                                     <div class="small text-muted">Pilih alasan penolakan dan tambahkan keterangan
+                                         pendukung.</div>
+                                 </button>
+                                 <button type="button" class="decision-toggle-btn" data-decision-action="withdrawn"
+                                     id="decisionWithdrawnToggle">
+                                     <div class="fw-bold mb-1">Mengundurkan Diri</div>
+                                     <div class="small text-muted">Tandai kandidat mengundurkan diri dan tambahkan keterangan.</div>
+                                 </button>
+                             </div>
                         </div>
 
                         <div class="decision-section" id="decisionAcceptSection">
@@ -2079,9 +2108,72 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                         </div>
 
-                        <div class="decision-section" id="decisionRejectSection">
+                          <div class="decision-section" id="decisionOnboardingSection">
+                             <div class="modal-section-card" id="onboardingSetupCard">
+                                 <div class="modal-section-header">
+                                     <div>
+                                         <h6 class="modal-section-title">Jadwalkan On Boarding</h6>
+                                     </div>
+                                     <div class="modal-section-icon"><i class="fa-regular fa-calendar-check"></i></div>
+                                 </div>
+                                 <div class="row g-3">
+                                     <div class="col-md-6">
+                                         <div class="modal-field-shell is-highlight">
+                                             <label for="onboardingDateInput" class="form-label form-label-soft">Tanggal On Boarding</label>
+                                             <input type="text" class="form-control" id="onboardingDateInput" placeholder="Pilih tanggal On Boarding" required>
+                                             <div class="invalid-feedback">Tanggal On Boarding wajib diisi.</div>
+                                         </div>
+                                     </div>
+                                     <div class="col-md-6">
+                                         <div class="modal-field-shell is-highlight">
+                                             <label for="onboardingTimeInput" class="form-label form-label-soft">Waktu On Boarding</label>
+                                             <input type="time" class="form-control" id="onboardingTimeInput" step="900" value="09:00" required>
+                                             <div class="invalid-feedback">Waktu On Boarding wajib diisi.</div>
+                                         </div>
+                                     </div>
+                                     <div class="col-md-12">
+                                         <div class="modal-field-shell is-highlight">
+                                             <label for="onboardingLocationInput" class="form-label form-label-soft">Lokasi On Boarding</label>
+                                             <input type="text" class="form-control" id="onboardingLocationInput" placeholder="Isi lokasi On Boarding" required>
+                                             <div class="invalid-feedback">Lokasi On Boarding wajib diisi.</div>
+                                         </div>
+                                     </div>
+                                 </div>
+                                 <div class="status-empty-note mt-3" id="onboardingStatusHint">
+                                     Lengkapi semua field terlebih dahulu, lalu klik `Siapkan On Boarding` untuk menyiapkan undangan WhatsApp.
+                                 </div>
+                                 <div class="alert alert-warning d-none mt-3 mb-0" id="onboardingValidationMessage"></div>
+                                 <div class="action-cta mt-3">
+                                     <button type="button" class="btn btn-outline-primary" id="prepareOnboardingWhatsappButton">Siapkan On Boarding</button>
+                                 </div>
+                                 <div class="whatsapp-preview-shell d-none mt-3" id="onboardingWhatsappShell">
+                                     <div class="whatsapp-preview-header">
+                                         <div>
+                                             <div class="whatsapp-preview-title">Undangan On Boarding WhatsApp</div>
+                                             <div class="whatsapp-preview-subtitle" id="onboardingWhatsappTargetInfo">Nomor kandidat belum tersedia.</div>
+                                         </div>
+                                         <span class="interview-summary-chip" id="onboardingWhatsappSendState">Belum dikirim</span>
+                                     </div>
+                                     <label for="onboardingWhatsappText" class="form-label form-label-soft mt-3">Template Pesan</label>
+                                     <textarea class="form-control" id="onboardingWhatsappText" rows="13" placeholder="Template WhatsApp On Boarding akan muncul di sini." disabled></textarea>
+                                     <div class="action-helper mt-2">Template dapat diedit sebelum dikirim ke kandidat.</div>
+                                     <div class="action-cta mt-3">
+                                         <button type="button" class="btn btn-success" id="sendOnboardingWhatsappButton" disabled><i class="fa-brands fa-whatsapp me-2"></i>Kirim WhatsApp</button>
+                                         <button type="button" class="btn btn-outline-secondary" id="retryOnboardingWhatsappButton" disabled><i class="fa-solid fa-rotate-right me-2"></i>Coba Kirim Ulang</button>
+                                     </div>
+                                     <div class="form-check whatsapp-confirm-check">
+                                         <input class="form-check-input" type="checkbox" value="" id="confirmOnboardingWhatsappCheckbox" disabled>
+                                         <label class="form-check-label" for="confirmOnboardingWhatsappCheckbox">
+                                             Sudah mengirim pesan undangan On Boarding ke kandidat.
+                                         </label>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+
+                         <div class="decision-section" id="decisionRejectSection">
                             <div class="modal-section-card">
                                 <div class="modal-section-header">
                                     <div>
@@ -2218,11 +2310,12 @@
             getCategoryStorageKey
         } from "../element/template-manager.js";
         import {
-            buildInterviewMessage,
-            buildOnJobTrainingMessage as buildonJobTrainingMessage,
-            buildAcceptedMessage,
-            buildRejectedMessage
-        } from "../element/whatsapp-message-builder.js";
+             buildInterviewMessage,
+             buildOnJobTrainingMessage as buildonJobTrainingMessage,
+             buildAcceptedMessage,
+             buildRejectedMessage,
+             buildOnboardingMessage
+         } from "../element/whatsapp-message-builder.js";
         import {
             promptTeamDivision,
             resolveCandidateDivision,
@@ -2280,13 +2373,14 @@
         };
 
         const STATUS_PIPELINE = [
-            { value: "screening", label: "Screening", caption: "", badgeClass: "status-screening" },
-            { value: "interview", label: "Interview", caption: "", badgeClass: "status-interview" },
-            { value: "on_job_training", label: "On Job Training", caption: "", badgeClass: "status-On-job-training" },
-            { value: "accepted", label: "Accepted", caption: "", badgeClass: "status-accepted" },
-            { value: "rejected", label: "Rejected", caption: "", badgeClass: "decision-rejected" },
-            { value: "withdrawn", label: "Mengundurkan Diri", caption: "", badgeClass: "status-withdrawn" }
-        ];
+             { value: "screening", label: "Screening", caption: "", badgeClass: "status-screening" },
+             { value: "interview", label: "Interview", caption: "", badgeClass: "status-interview" },
+             { value: "on_job_training", label: "On Job Training", caption: "", badgeClass: "status-On-job-training" },
+             { value: "accepted", label: "Accepted", caption: "", badgeClass: "status-accepted" },
+             { value: "onboarding", label: "On Boarding", caption: "", badgeClass: "status-onboarding" },
+             { value: "rejected", label: "Rejected", caption: "", badgeClass: "decision-rejected" },
+             { value: "withdrawn", label: "Mengundurkan Diri", caption: "", badgeClass: "status-withdrawn" }
+         ];
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -2321,10 +2415,14 @@
         let on_job_trainingWhatsappRetryCount = 0;
         let on_job_trainingWhatsappLastAttemptAt = null;
         let rejectionWhatsappPayload = null;
-        let rejectionWhatsappConfirmedAt = null;
-        let rejectionWhatsappRetryCount = 0;
-        let rejectionWhatsappLastAttemptAt = null;
-        let positionLabelsCache = null;
+         let rejectionWhatsappConfirmedAt = null;
+         let rejectionWhatsappRetryCount = 0;
+         let rejectionWhatsappLastAttemptAt = null;
+         let onboardingWhatsappPayload = null;
+         let onboardingWhatsappConfirmedAt = null;
+         let onboardingWhatsappRetryCount = 0;
+         let onboardingWhatsappLastAttemptAt = null;
+         let positionLabelsCache = null;
 
         renderTopBar(document.getElementById("topbarContainer"));
         renderSidebar(document.getElementById("sidebarContainer"));
@@ -2723,15 +2821,16 @@
             }
         }
 
-        function normalizeStatus(value) {
-            const raw = (value || "").toString().trim().toLowerCase();
-            if (raw === "interview") return "interview";
-            if (raw === "accepted" || raw === "accept" || raw === "decision") return "accepted";
-            if (raw === "rejected" || raw === "reject") return "rejected";
-            if (raw === "on_job_training") return "on_job_training";
-            if (raw === "withdrawn" || raw === "mengundurkan_diri" || raw === "mengundurkan diri") return "withdrawn";
-            return "screening";
-        }
+         function normalizeStatus(value) {
+             const raw = (value || "").toString().trim().toLowerCase();
+             if (raw === "interview") return "interview";
+             if (raw === "accepted" || raw === "accept" || raw === "decision") return "accepted";
+             if (raw === "rejected" || raw === "reject") return "rejected";
+             if (raw === "on_job_training") return "on_job_training";
+             if (raw === "onboarding") return "onboarding";
+             if (raw === "withdrawn" || raw === "mengundurkan_diri" || raw === "mengundurkan diri") return "withdrawn";
+             return "screening";
+         }
 
         function normalizeDecision(value) {
             const raw = (value || "").toString().trim().toLowerCase();
@@ -3058,14 +3157,15 @@
                     } else if (step.value === "screening" || step.value === "interview") {
                         classes += " is-complete";
                     }
-                } else {
-                    if (index < currentIndex) classes += " is-complete";
-                    if (index === currentIndex) {
-                        classes += " is-active";
-                        if (step.value === "accepted") classes += " is-accepted";
-                        if (step.value === "on_job_training") classes += " is-on_job_training";
-                    }
-                }
+                 } else {
+                     if (index < currentIndex) classes += " is-complete";
+                     if (index === currentIndex) {
+                         classes += " is-active";
+                         if (step.value === "accepted") classes += " is-accepted";
+                         if (step.value === "on_job_training") classes += " is-on_job_training";
+                         if (step.value === "onboarding") classes += " is-onboarding";
+                     }
+                 }
                 return (
                     '<div class="' + classes + '">' +
                     '<span class="pipeline-step-index">' + (index + 1) + '</span>' +
@@ -3364,6 +3464,10 @@
                 withdrawnNotes,
                 isTeamMember,
                 teamMemberDivision,
+                onboardingDate: recruitment.onboarding_date || null,
+                onboardingTime: recruitment.onboarding_time || "",
+                onboardingLocation: recruitment.onboarding_location || "",
+                onboardingAt: recruitment.onboarding_at || null,
                 isInactive: inactiveRecord,
                 raw: data
             };
@@ -3577,9 +3681,18 @@
                 if (item.rejectionReason) {
                     detailLines.push('<div><strong>Alasan Penolakan:</strong> ' + escapeHtml(item.rejectionReason) + '</div>');
                 }
-                if (item.rejectionNotes) {
-                    detailLines.push('<div><strong>Keterangan Tambahan:</strong> ' + escapeHtml(item.rejectionNotes) + '</div>');
-                }
+                 if (item.rejectionNotes) {
+                     detailLines.push('<div><strong>Keterangan Tambahan:</strong> ' + escapeHtml(item.rejectionNotes) + '</div>');
+                 }
+                 if (item.onboarding_date) {
+                     detailLines.push('<div><strong>Tanggal On Boarding:</strong> ' + escapeHtml(item.onboarding_date) + '</div>');
+                 }
+                 if (item.onboarding_time) {
+                     detailLines.push('<div><strong>Waktu On Boarding:</strong> ' + escapeHtml(item.onboarding_time) + ' WIB</div>');
+                 }
+                 if (item.onboarding_location) {
+                     detailLines.push('<div><strong>Lokasi On Boarding:</strong> ' + escapeHtml(item.onboarding_location) + '</div>');
+                 }
                 return (
                     '<div class="history-item">' +
                     '<div class="history-dot"></div>' +
@@ -3636,10 +3749,13 @@
                 hasMeaningfulValue(screeningAtDisplay)
                     ? '<div class="summary-inline-item"><i class="fa-regular fa-clock"></i><span>Waktu screening: ' + escapeHtml(screeningAtDisplay) + '</span></div>'
                     : "",
-                hasMeaningfulValue(vm.interviewNotes)
-                    ? '<div class="summary-inline-item summary-inline-item-full"><i class="fa-regular fa-note-sticky"></i><span>Catatan internal: ' + escapeHtml(vm.interviewNotes) + '</span></div>'
-                    : ""
-            ].filter(Boolean);
+                 hasMeaningfulValue(vm.interviewNotes)
+                     ? '<div class="summary-inline-item summary-inline-item-full"><i class="fa-regular fa-note-sticky"></i><span>Catatan internal: ' + escapeHtml(vm.interviewNotes) + '</span></div>'
+                     : "",
+                 vm.displayStatus === "onboarding" && hasMeaningfulValue(vm.raw?.recruitment_status?.onboarding_date)
+                     ? '<div class="summary-inline-item"><i class="fa-solid fa-user-check"></i><span>On Boarding: ' + escapeHtml(vm.raw.recruitment_status.onboarding_date) + (vm.raw.recruitment_status.onboarding_time ? ' ' + vm.raw.recruitment_status.onboarding_time + ' WIB' : '') + (vm.raw.recruitment_status.onboarding_location ? ' - ' + escapeHtml(vm.raw.recruitment_status.onboarding_location) : '') + '</span></div>'
+                     : ""
+             ].filter(Boolean);
             const processSummaryHtml = processRows.length
                 ? '<div class="summary-inline-list mb-4"><div class="summary-inline-row">' + processRows.join("") + '</div></div>'
                 : "";
@@ -3693,9 +3809,18 @@
                     '<button type="button" class="btn btn-danger" id="btnOpenDecisionModal"><i class="fa-solid fa-xmark me-2"></i>Tolak/Pengunduran Diri</button>' +
                     '</div>' +
                     '</div>';
-            } else if (vm.displayStatus === "accepted") {
-                actionHtml =
-                    '<div class="status-empty-note">Kandidat sudah ditandai accepted.</div>';
+             } else if (vm.displayStatus === "accepted") {
+                 actionHtml =
+                     '<div class="action-panel">' +
+                     '<div class="action-panel-title">Jadwalkan On Boarding</div>' +
+                     '<div class="action-panel-note">Kandidat sudah diterima. Selanjutnya, jadwalkan sesi On Boarding untuk kandidat.</div>' +
+                     '<div class="action-cta">' +
+                     '<button type="button" class="btn btn-success" id="btnOpenOnboardingModal"><i class="fa-solid fa-clipboard-check me-2"></i>Jadwalkan On Boarding</button>' +
+                     '</div>' +
+                     '</div>';
+             } else if (vm.displayStatus === "onboarding") {
+                 actionHtml =
+                     '<div class="status-empty-note">Kandidat sudah dijadwalkan On Boarding.</div>';
             } else if (vm.displayStatus === "on_job_training") {
                 actionHtml =
                     '<div class="action-panel">' +
@@ -4015,14 +4140,15 @@
             document.documentElement.style.setProperty("--interview-modal-max-height", computedMaxHeight + "px");
         }
 
-        function getWhatsappPreviewTextareas() {
-            return [
-                document.getElementById("whatsappPreviewText"),
-                document.getElementById("acceptedWhatsappText"),
-                document.getElementById("on_job_trainingWhatsappText"),
-                document.getElementById("rejectionWhatsappText")
-            ].filter(Boolean);
-        }
+         function getWhatsappPreviewTextareas() {
+             return [
+                 document.getElementById("whatsappPreviewText"),
+                 document.getElementById("acceptedWhatsappText"),
+                 document.getElementById("on_job_trainingWhatsappText"),
+                 document.getElementById("rejectionWhatsappText"),
+                 document.getElementById("onboardingWhatsappText")
+             ].filter(Boolean);
+         }
 
         function autoResizeWhatsappTextarea(textarea) {
             if (!textarea) return;
@@ -4054,25 +4180,31 @@
             });
         }
 
-        function initializePickers() {
-            const minTomorrow = getMinimumTomorrowDate();
-            if (!on_job_trainingPicker) {
-                on_job_trainingPicker = flatpickr("#on_job_trainingStartInput", {
-                    dateFormat: "Y-m-d",
-                    altInput: true,
-                    altFormat: "d/m/Y",
-                    minDate: minTomorrow
-                });
-            } else {
-                on_job_trainingPicker.set("minDate", minTomorrow);
-            }
-            flatpickr("#on_job_trainingEndInput", {
-                dateFormat: "Y-m-d",
-                altInput: true,
-                altFormat: "d/m/Y",
-                minDate: minTomorrow
-            });
-        }
+         function initializePickers() {
+             const minTomorrow = getMinimumTomorrowDate();
+             if (!on_job_trainingPicker) {
+                 on_job_trainingPicker = flatpickr("#on_job_trainingStartInput", {
+                     dateFormat: "Y-m-d",
+                     altInput: true,
+                     altFormat: "d/m/Y",
+                     minDate: minTomorrow
+                 });
+             } else {
+                 on_job_trainingPicker.set("minDate", minTomorrow);
+             }
+             flatpickr("#on_job_trainingEndInput", {
+                 dateFormat: "Y-m-d",
+                 altInput: true,
+                 altFormat: "d/m/Y",
+                 minDate: minTomorrow
+             });
+             flatpickr("#onboardingDateInput", {
+                 dateFormat: "Y-m-d",
+                 altInput: true,
+                 altFormat: "l, d F Y",
+                 minDate: minTomorrow
+             });
+         }
 
         function setWhatsappValidation(message, tone) {
             const validation = document.getElementById("whatsappValidationMessage");
@@ -4592,12 +4724,24 @@
                 submitButton.textContent = "Submit Penolakan";
                 return;
             }
-            if (activeDecisionAction === "withdrawn") {
-                submitButton.textContent = "Submit Pengunduran Diri";
-                submitButton.disabled = false;
-                return;
-            }
-            const startDate = on_job_trainingPicker && on_job_trainingPicker.selectedDates ? on_job_trainingPicker.selectedDates[0] : null;
+             if (activeDecisionAction === "withdrawn") {
+                 submitButton.textContent = "Submit Pengunduran Diri";
+                 submitButton.disabled = false;
+                 return;
+             }
+             if (activeDecisionAction === "onboarding") {
+                 const onboardingDateInput = document.getElementById("onboardingDateInput");
+                 const onboardingTimeInput = document.getElementById("onboardingTimeInput");
+                 const onboardingLocationInput = document.getElementById("onboardingLocationInput");
+                 const dateValue = onboardingDateInput ? onboardingDateInput.value : "";
+                 const timeValue = onboardingTimeInput ? onboardingTimeInput.value : "";
+                 const locationValue = onboardingLocationInput ? onboardingLocationInput.value.trim() : "";
+                 const onboardingMessage = document.getElementById("onboardingWhatsappText") ? (document.getElementById("onboardingWhatsappText").value || "").trim() : "";
+                 submitButton.textContent = "Submit On Boarding";
+                 submitButton.disabled = !dateValue || !timeValue || !locationValue || !onboardingWhatsappPayload || !onboardingWhatsappConfirmedAt || !onboardingMessage;
+                 return;
+             }
+             const startDate = on_job_trainingPicker && on_job_trainingPicker.selectedDates ? on_job_trainingPicker.selectedDates[0] : null;
             const timeValue = document.getElementById("on_job_trainingTimeInput") ? document.getElementById("on_job_trainingTimeInput").value : "";
             const scheduleState = getonJobTrainingScheduleState();
             const onJobTrainingMessage = document.getElementById("on_job_trainingWhatsappText") ? (document.getElementById("on_job_trainingWhatsappText").value || "").trim() : "";
@@ -4964,10 +5108,236 @@
                 setRejectionWhatsappValidation("Browser gagal membuka link WhatsApp. Silakan coba kirim ulang.", "danger");
                 setRejectionWhatsappPreviewState(rejectionWhatsappPayload);
             }
-            syncDecisionSubmitState();
-        }
+             syncDecisionSubmitState();
+         }
 
-        function resetInterviewModal() {
+         function buildOnboardingWhatsappMessage(vm) {
+             const candidateName = vm && vm.name ? vm.name : "Kandidat";
+             const onboardingDateInput = document.getElementById("onboardingDateInput");
+             const onboardingTimeInput = document.getElementById("onboardingTimeInput");
+             const onboardingLocationInput = document.getElementById("onboardingLocationInput");
+             
+             const dateValue = onboardingDateInput ? onboardingDateInput.value : "";
+             const timeValue = onboardingTimeInput ? onboardingTimeInput.value : "";
+             const locationValue = onboardingLocationInput ? onboardingLocationInput.value : "";
+             
+             const dateObj = parseDateValue(dateValue);
+             const onboardingDate = dateObj ? formatInterviewDateForMessage(dateObj) : "-";
+             const onboardingTime = timeValue ? timeValue.replace(":", ".") : "-";
+             
+             return buildOnboardingMessage({
+                 candidateName,
+                 onboardingDate,
+                 onboardingTime,
+                 onboardingLocation: locationValue,
+                 category: "team"
+             });
+         }
+
+         function setOnboardingWhatsappValidation(message, tone) {
+             const validation = document.getElementById("onboardingValidationMessage");
+             if (!validation) return;
+             if (!message) {
+                 validation.textContent = "";
+                 validation.className = "alert alert-warning d-none mt-3 mb-0";
+                 return;
+             }
+             validation.textContent = message;
+             validation.className = "alert mt-3 mb-0";
+             validation.classList.add(tone === "danger" ? "alert-danger" : tone === "success" ? "alert-success" : "alert-warning");
+         }
+
+         function setOnboardingWhatsappPreviewState(payload) {
+             const shell = document.getElementById("onboardingWhatsappShell");
+             const textarea = document.getElementById("onboardingWhatsappText");
+             const targetInfo = document.getElementById("onboardingWhatsappTargetInfo");
+             const sendState = document.getElementById("onboardingWhatsappSendState");
+             const sendButton = document.getElementById("sendOnboardingWhatsappButton");
+             const retryButton = document.getElementById("retryOnboardingWhatsappButton");
+             const confirmCheckbox = document.getElementById("confirmOnboardingWhatsappCheckbox");
+             const hint = document.getElementById("onboardingStatusHint");
+             if (!shell || !textarea || !targetInfo || !sendState || !sendButton || !retryButton || !confirmCheckbox || !hint) return;
+
+             if (!payload) {
+                 shell.classList.add("d-none");
+                 textarea.value = "";
+                 textarea.disabled = true;
+                 targetInfo.textContent = "Nomor kandidat belum tersedia.";
+                 sendState.textContent = "Belum dikirim";
+                 sendButton.disabled = true;
+                 retryButton.disabled = true;
+                 confirmCheckbox.checked = false;
+                 confirmCheckbox.disabled = true;
+                 hint.textContent = "Lengkapi semua field terlebih dahulu, lalu klik `Siapkan On Boarding` untuk menyiapkan undangan WhatsApp.";
+                 scheduleWhatsappPopupSizingSync();
+                 return;
+             }
+
+             shell.classList.remove("d-none");
+             textarea.disabled = false;
+             textarea.value = payload.message || "";
+             targetInfo.textContent = "Dikirim ke " + (payload.phoneDisplay || payload.phoneNumber || "-");
+             sendState.textContent = onboardingWhatsappConfirmedAt
+                 ? "Sudah dikonfirmasi"
+                 : onboardingWhatsappLastAttemptAt
+                     ? "Menunggu konfirmasi"
+                     : "Siap dikirim";
+             sendButton.disabled = !payload.deepLink;
+             retryButton.disabled = !payload.deepLink || !onboardingWhatsappLastAttemptAt;
+             confirmCheckbox.disabled = !payload.deepLink;
+             confirmCheckbox.checked = !!onboardingWhatsappConfirmedAt;
+             hint.textContent = "Template sudah siap. Kirim pesan WhatsApp ke kandidat lalu centang konfirmasi jika sudah terkirim.";
+             scheduleWhatsappPopupSizingSync();
+         }
+
+         function markOnboardingWhatsappPending(options) {
+             const opts = options || {};
+             onboardingWhatsappPayload = null;
+             onboardingWhatsappConfirmedAt = null;
+             onboardingWhatsappRetryCount = 0;
+             onboardingWhatsappLastAttemptAt = null;
+             setOnboardingWhatsappPreviewState(null);
+             syncDecisionSubmitState();
+             if (!opts.silent) {
+                 setOnboardingWhatsappValidation("", "");
+             }
+         }
+
+         function prepareOnboardingWhatsappPreview() {
+             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
+             const onboardingDateInput = document.getElementById("onboardingDateInput");
+             const onboardingTimeInput = document.getElementById("onboardingTimeInput");
+             const onboardingLocationInput = document.getElementById("onboardingLocationInput");
+             
+             const dateValue = onboardingDateInput ? onboardingDateInput.value : "";
+             const timeValue = onboardingTimeInput ? onboardingTimeInput.value : "";
+             const locationValue = onboardingLocationInput ? onboardingLocationInput.value.trim() : "";
+
+             if (onboardingDateInput) onboardingDateInput.classList.toggle("is-invalid", !dateValue);
+             if (onboardingTimeInput) onboardingTimeInput.classList.toggle("is-invalid", !timeValue);
+             if (onboardingLocationInput) onboardingLocationInput.classList.toggle("is-invalid", !locationValue);
+
+             if (!vm) {
+                 setOnboardingWhatsappValidation("Data kandidat tidak tersedia.", "danger");
+                 return null;
+             }
+             if (!dateValue || !timeValue || !locationValue) {
+                 setOnboardingWhatsappValidation("Lengkapi tanggal, waktu, dan lokasi On Boarding sebelum menyiapkan pesan WhatsApp.", "warning");
+                 return null;
+             }
+
+             const phoneNumber = getCandidateWhatsappNumber(vm);
+             if (!phoneNumber) {
+                 setOnboardingWhatsappValidation("Nomor WhatsApp kandidat tidak tersedia atau tidak valid di database.", "danger");
+                 setOnboardingWhatsappPreviewState(null);
+                 syncDecisionSubmitState();
+                 return null;
+             }
+
+             const message = normalizeWhatsappMessage(buildOnboardingWhatsappMessage(vm));
+             onboardingWhatsappPayload = {
+                 title: "Undangan On Boarding",
+                 phoneNumber,
+                 phoneDisplay: "+" + phoneNumber,
+                 message,
+                 deepLink: buildWhatsAppDeepLink(phoneNumber, message),
+                 preparedAt: new Date().toISOString()
+             };
+             onboardingWhatsappConfirmedAt = null;
+             onboardingWhatsappRetryCount = 0;
+             onboardingWhatsappLastAttemptAt = null;
+             setOnboardingWhatsappValidation("Template On Boarding siap. Anda dapat mengedit isi pesan, kirim ke WhatsApp, lalu centang checkbox konfirmasi.", "success");
+             setOnboardingWhatsappPreviewState(onboardingWhatsappPayload);
+             syncDecisionSubmitState();
+             return onboardingWhatsappPayload;
+         }
+
+         function syncOnboardingWhatsappTemplate(forceResetConfirmation) {
+             if (!onboardingWhatsappPayload) return;
+             const textarea = document.getElementById("onboardingWhatsappText");
+             const editedMessage = textarea ? (textarea.value || "").trim() : "";
+             onboardingWhatsappPayload.message = normalizeWhatsappMessage(editedMessage);
+             onboardingWhatsappPayload.deepLink = buildWhatsAppDeepLink(onboardingWhatsappPayload.phoneNumber, onboardingWhatsappPayload.message);
+             if (forceResetConfirmation && onboardingWhatsappConfirmedAt) {
+                 onboardingWhatsappConfirmedAt = null;
+                 setOnboardingWhatsappValidation("Template diubah. Kirim ulang pesan WhatsApp lalu centang checkbox konfirmasi.", "warning");
+             }
+
+             const sendButton = document.getElementById("sendOnboardingWhatsappButton");
+             const retryButton = document.getElementById("retryOnboardingWhatsappButton");
+             const confirmCheckbox = document.getElementById("confirmOnboardingWhatsappCheckbox");
+             const sendState = document.getElementById("onboardingWhatsappSendState");
+             if (sendButton) sendButton.disabled = !onboardingWhatsappPayload.deepLink;
+             if (retryButton) retryButton.disabled = !onboardingWhatsappPayload.deepLink || !onboardingWhatsappLastAttemptAt;
+             if (confirmCheckbox) {
+                 confirmCheckbox.disabled = !onboardingWhatsappPayload.deepLink;
+                 confirmCheckbox.checked = !!onboardingWhatsappConfirmedAt;
+             }
+             if (sendState) {
+                 sendState.textContent = onboardingWhatsappConfirmedAt
+                     ? "Sudah dikonfirmasi"
+                     : onboardingWhatsappLastAttemptAt
+                         ? "Menunggu konfirmasi"
+                         : "Siap dikirim";
+             }
+             scheduleWhatsappPopupSizingSync();
+             syncDecisionSubmitState();
+         }
+
+         function attemptSendOnboardingWhatsapp(isRetry) {
+             if (!onboardingWhatsappPayload) {
+                 setOnboardingWhatsappValidation("Template On Boarding belum siap. Klik `Siapkan On Boarding` terlebih dahulu.", "warning");
+                 return;
+             }
+             const textarea = document.getElementById("onboardingWhatsappText");
+             const editedMessage = textarea ? (textarea.value || "").trim() : "";
+             if (!editedMessage) {
+                 setOnboardingWhatsappValidation("Template pesan WhatsApp tidak boleh kosong.", "warning");
+                 return;
+             }
+
+             onboardingWhatsappPayload.message = normalizeWhatsappMessage(editedMessage);
+             onboardingWhatsappPayload.deepLink = buildWhatsAppDeepLink(onboardingWhatsappPayload.phoneNumber, onboardingWhatsappPayload.message);
+             if (!onboardingWhatsappPayload.deepLink) {
+                 setOnboardingWhatsappValidation("Link WhatsApp gagal dibuat. Periksa kembali nomor kandidat.", "danger");
+                 setOnboardingWhatsappPreviewState(onboardingWhatsappPayload);
+                 return;
+             }
+             if (hasBrokenEmojiEncodingInDeepLink(onboardingWhatsappPayload.deepLink)) {
+                 setOnboardingWhatsappValidation("Pesan WhatsApp mengandung karakter tidak valid. Klik `Siapkan On Boarding` untuk regenerate template lalu kirim ulang.", "danger");
+                 setOnboardingWhatsappPreviewState(onboardingWhatsappPayload);
+                 return;
+             }
+
+             try {
+                 const link = document.createElement("a");
+                 link.href = onboardingWhatsappPayload.deepLink;
+                 link.target = "_blank";
+                 link.rel = "noopener noreferrer";
+                 link.style.display = "none";
+                 document.body.appendChild(link);
+                 link.click();
+                 document.body.removeChild(link);
+                 onboardingWhatsappLastAttemptAt = new Date().toISOString();
+                 if (isRetry) {
+                     onboardingWhatsappRetryCount += 1;
+                 }
+                 setOnboardingWhatsappValidation(
+                     isRetry
+                         ? "Jendela WhatsApp dibuka kembali. Pastikan pesan terkirim, lalu centang checkbox konfirmasi."
+                         : "Jendela WhatsApp berhasil dibuka. Setelah pesan terkirim, centang checkbox konfirmasi.",
+                     "success"
+                 );
+                 setOnboardingWhatsappPreviewState(onboardingWhatsappPayload);
+             } catch (error) {
+                 console.error("Gagal membuka WhatsApp On Boarding", error);
+                 setOnboardingWhatsappValidation("Browser gagal membuka link WhatsApp. Silakan coba kirim ulang.", "danger");
+                 setOnboardingWhatsappPreviewState(onboardingWhatsappPayload);
+             }
+             syncDecisionSubmitState();
+         }
+
+         function resetInterviewModal() {
             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
             const form = document.getElementById("interviewForm");
             const interviewDateInput = document.getElementById("interviewDateTimeInput");
@@ -5068,37 +5438,75 @@
             seton_job_trainingWhatsappValidation("", "");
             markRejectionWhatsappPending({ silent: true });
             setRejectionWhatsappValidation("", "");
+            const onboardingDateInput = document.getElementById("onboardingDateInput");
+            const onboardingTimeInput = document.getElementById("onboardingTimeInput");
+            const onboardingLocationInput = document.getElementById("onboardingLocationInput");
+            const onboardingWhatsappText = document.getElementById("onboardingWhatsappText");
+            if (onboardingDateInput) {
+                onboardingDateInput.value = "";
+                onboardingDateInput.classList.remove("is-invalid");
+            }
+            if (onboardingTimeInput) {
+                onboardingTimeInput.value = "09:00";
+                onboardingTimeInput.classList.remove("is-invalid");
+            }
+            if (onboardingLocationInput) {
+                onboardingLocationInput.value = "";
+                onboardingLocationInput.classList.remove("is-invalid");
+            }
+            if (onboardingWhatsappText) onboardingWhatsappText.value = "";
+            markOnboardingWhatsappPending({ silent: true });
+            setOnboardingWhatsappValidation("", "");
             updateCounter("rejectionNotesInput", "rejectionNotesCounter");
             updateCounter("withdrawnNotesInput", "withdrawnNotesCounter");
             syncDecisionSubmitState();
         }
 
-        function syncDecisionModalContextUi() {
-            const modeCard = document.getElementById("decisionModeSelectorCard");
-            const acceptCard = document.getElementById("acceptedDecisionCard");
-            const on_job_trainingCard = document.getElementById("on_job_trainingSetupCard");
-            const rejectSection = document.getElementById("decisionRejectSection");
-            const modalSubtitle = document.getElementById("decisionModalSubtitle");
-            const statusHint = document.getElementById("decisionStatusHint");
-            const modalLabel = document.getElementById("decisionModalLabel");
+         function syncDecisionModalContextUi() {
+             const modeCard = document.getElementById("decisionModeSelectorCard");
+             const acceptCard = document.getElementById("acceptedDecisionCard");
+             const on_job_trainingCard = document.getElementById("on_job_trainingSetupCard");
+             const onboardingSection = document.getElementById("decisionOnboardingSection");
+             const rejectSection = document.getElementById("decisionRejectSection");
+             const modalSubtitle = document.getElementById("decisionModalSubtitle");
+             const statusHint = document.getElementById("decisionStatusHint");
+             const modalLabel = document.getElementById("decisionModalLabel");
 
-            const isInterviewMode = decisionModalContext === "interview";
-            if (modeCard) modeCard.classList.toggle("d-none", !isInterviewMode);
-            if (acceptCard) acceptCard.classList.toggle("d-none", !isInterviewMode);
-            if (on_job_trainingCard) on_job_trainingCard.classList.toggle("d-none", isInterviewMode);
-            if (rejectSection) rejectSection.classList.toggle("d-none", !isInterviewMode);
-            if (modalLabel) modalLabel.textContent = isInterviewMode ? "Keputusan Interview Kandidat" : "Pengaturan On Job Training";
-            if (modalSubtitle) {
-                modalSubtitle.textContent = isInterviewMode
-                    ? "Pilih aksi akhir setelah interview. Recruiter wajib menyiapkan dan mengonfirmasi WhatsApp sebelum submit."
-                    : "Lengkapi tanggal On Job Training dan departemen, lalu kirim undangan WhatsApp On Job Training sebelum submit.";
-            }
-            if (statusHint) {
-                statusHint.textContent = isInterviewMode
-                    ? "Status kandidat saat ini: On Job Training. Pilih accepted atau rejected lalu kirim template WhatsApp terkait."
-                    : "Status kandidat saat ini: Interview. Lanjutkan ke On Job Training dengan pengaturan jadwal dan undangan WhatsApp.";
-            }
-        }
+             const isInterviewMode = decisionModalContext === "interview";
+             const isOnboardingMode = decisionModalContext === "onboarding";
+             if (modeCard) modeCard.classList.toggle("d-none", !isInterviewMode);
+             if (acceptCard) acceptCard.classList.toggle("d-none", !isInterviewMode);
+             if (on_job_trainingCard) on_job_trainingCard.classList.toggle("d-none", isInterviewMode || isOnboardingMode);
+             if (rejectSection) rejectSection.classList.toggle("d-none", !isInterviewMode);
+             if (onboardingSection) onboardingSection.classList.toggle("d-none", !isOnboardingMode);
+             if (modalLabel) {
+                 if (isOnboardingMode) {
+                     modalLabel.textContent = "Jadwalkan On Boarding";
+                 } else if (isInterviewMode) {
+                     modalLabel.textContent = "Keputusan Interview Kandidat";
+                 } else {
+                     modalLabel.textContent = "Pengaturan On Job Training";
+                 }
+             }
+             if (modalSubtitle) {
+                 if (isOnboardingMode) {
+                     modalSubtitle.textContent = "Lengkapi detail On Boarding, kirim undangan WhatsApp On Boarding, lalu submit.";
+                 } else if (isInterviewMode) {
+                     modalSubtitle.textContent = "Pilih aksi akhir setelah interview. Recruiter wajib menyiapkan dan mengonfirmasi WhatsApp sebelum submit.";
+                 } else {
+                     modalSubtitle.textContent = "Lengkapi tanggal On Job Training dan departemen, lalu kirim undangan WhatsApp On Job Training sebelum submit.";
+                 }
+             }
+             if (statusHint) {
+                 if (isOnboardingMode) {
+                     statusHint.textContent = "Status kandidat saat ini: Accepted. Lengkapi detail On Boarding dan kirim undangan WhatsApp sebelum submit.";
+                 } else if (isInterviewMode) {
+                     statusHint.textContent = "Status kandidat saat ini: On Job Training. Pilih accepted atau rejected lalu kirim template WhatsApp terkait.";
+                 } else {
+                     statusHint.textContent = "Status kandidat saat ini: Interview. Lanjutkan ke On Job Training dengan pengaturan jadwal dan undangan WhatsApp.";
+                 }
+             }
+         }
 
         async function openInterviewModal(mode) {
             if (!(await ensureCandidateActiveForProgress("open_interview_modal"))) return;
@@ -5124,18 +5532,21 @@
             document.querySelectorAll(".decision-toggle-btn").forEach((button) => {
                 button.classList.toggle("is-active", button.dataset.decisionAction === action);
             });
-            document.getElementById("decisionAcceptSection").classList.toggle("is-active", action === "accepted");
-            document.getElementById("decisionRejectSection").classList.toggle("is-active", action === "rejected");
-            document.getElementById("decisionWithdrawnSection").classList.toggle("is-active", action === "withdrawn");
-            if (action === "accepted") {
-                document.getElementById("decisionStatusHint").textContent = decisionModalContext === "on_job_training"
-                    ? "Lengkapi pengaturan On Job Training, kirim undangan WhatsApp On Job Training, lalu submit."
-                    : "Saat kandidat diterima, recruiter perlu menyiapkan dan mengonfirmasi pengiriman Acceptance Letter WhatsApp sebelum submit.";
-            } else if (action === "rejected") {
-                document.getElementById("decisionStatusHint").textContent = "Saat kandidat ditolak, recruiter perlu menyiapkan dan mengonfirmasi pengiriman WhatsApp penolakan sebelum submit.";
-            } else if (action === "withdrawn") {
-                document.getElementById("decisionStatusHint").textContent = "Isi keterangan pengunduran diri lalu submit.";
-            }
+             document.getElementById("decisionAcceptSection").classList.toggle("is-active", action === "accepted");
+             document.getElementById("decisionRejectSection").classList.toggle("is-active", action === "rejected");
+             document.getElementById("decisionWithdrawnSection").classList.toggle("is-active", action === "withdrawn");
+             document.getElementById("decisionOnboardingSection").classList.toggle("is-active", action === "onboarding");
+             if (action === "accepted") {
+                 document.getElementById("decisionStatusHint").textContent = decisionModalContext === "on_job_training"
+                     ? "Lengkapi pengaturan On Job Training, kirim undangan WhatsApp On Job Training, lalu submit."
+                     : "Saat kandidat diterima, recruiter perlu menyiapkan dan mengonfirmasi pengiriman Acceptance Letter WhatsApp sebelum submit.";
+             } else if (action === "rejected") {
+                 document.getElementById("decisionStatusHint").textContent = "Saat kandidat ditolak, recruiter perlu menyiapkan dan mengonfirmasi pengiriman WhatsApp penolakan sebelum submit.";
+             } else if (action === "withdrawn") {
+                 document.getElementById("decisionStatusHint").textContent = "Isi keterangan pengunduran diri lalu submit.";
+             } else if (action === "onboarding") {
+                 document.getElementById("decisionStatusHint").textContent = "Lengkapi detail On Boarding, kirim undangan WhatsApp On Boarding, lalu submit.";
+             }
             if (action === "accepted" && decisionModalContext === "interview") {
                 if (!acceptedWhatsappPayload) {
                     prepareAcceptedWhatsappPreview();
@@ -5148,55 +5559,85 @@
                     seton_job_trainingWhatsappPreviewState(on_job_trainingWhatsappPayload);
                 }
             }
-            if (action === "rejected") {
-                if (!rejectionWhatsappPayload) {
-                    prepareRejectionWhatsappPreview();
-                } else {
-                    setRejectionWhatsappPreviewState(rejectionWhatsappPayload);
-                }
-            }
-            syncDecisionSubmitState();
-        }
+             if (action === "rejected") {
+                 if (!rejectionWhatsappPayload) {
+                     prepareRejectionWhatsappPreview();
+                 } else {
+                     setRejectionWhatsappPreviewState(rejectionWhatsappPayload);
+                 }
+             }
+             if (action === "onboarding") {
+                 if (!onboardingWhatsappPayload) {
+                     prepareOnboardingWhatsappPreview();
+                 } else {
+                     setOnboardingWhatsappPreviewState(onboardingWhatsappPayload);
+                 }
+             }
+             syncDecisionSubmitState();
+         }
 
-        async function openDecisionModal(isRejectionOnly = false) {
-            if (!(await ensureCandidateActiveForProgress("open_decision_modal"))) return;
-            const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
-            if (!vm || !(vm.displayStatus === "screening" || vm.displayStatus === "interview" || vm.displayStatus === "on_job_training")) {
-                showWarning("Keputusan (reject/withdraw) hanya dapat diproses saat status kandidat berada pada tahap Screening, Interview, atau On Job Training.");
-                return;
-            }
-            decisionModalContext = "interview";
-            resetDecisionModal();
+         async function openDecisionModal(isRejectionOnly = false) {
+             if (!(await ensureCandidateActiveForProgress("open_decision_modal"))) return;
+             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
+             if (!vm || !(vm.displayStatus === "screening" || vm.displayStatus === "interview" || vm.displayStatus === "on_job_training")) {
+                 showWarning("Keputusan (reject/withdraw) hanya dapat diproses saat status kandidat berada pada tahap Screening, Interview, atau On Job Training.");
+                 return;
+             }
+             decisionModalContext = "interview";
+             resetDecisionModal();
 
-            // Handle rejection-only mode
-            const acceptToggle = document.getElementById("decisionAcceptToggle");
-            if (acceptToggle) {
-                if (isRejectionOnly) {
-                    acceptToggle.style.display = "none";
-                } else {
-                    acceptToggle.style.display = "block";
-                }
-            }
+             // Handle rejection-only mode
+             const acceptToggle = document.getElementById("decisionAcceptToggle");
+             if (acceptToggle) {
+                 if (isRejectionOnly) {
+                     acceptToggle.style.display = "none";
+                 } else {
+                     acceptToggle.style.display = "block";
+                 }
+             }
+             const onboardingToggle = document.getElementById("decisionOnboardingToggle");
+             if (onboardingToggle) onboardingToggle.style.display = "none";
 
             syncDecisionModalContextUi();
             decisionModal.show();
         }
 
-        async function openon_job_trainingModal() {
-            if (!(await ensureCandidateActiveForProgress("open_on_job_training_modal"))) return;
-            const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
-            if (!vm || vm.displayStatus !== "interview") {
-                showWarning("Pengaturan On Job Training hanya dapat dibuka saat status kandidat berada pada tahap interview.");
-                return;
-            }
-            decisionModalContext = "on_job_training";
-            resetDecisionModal();
-            syncDecisionModalContextUi();
-            setDecisionAction("accepted");
-            decisionModal.show();
-        }
+         async function openon_job_trainingModal() {
+             if (!(await ensureCandidateActiveForProgress("open_on_job_training_modal"))) return;
+             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
+             if (!vm || vm.displayStatus !== "interview") {
+                 showWarning("Pengaturan On Job Training hanya dapat dibuka saat status kandidat berada pada tahap interview.");
+                 return;
+             }
+             decisionModalContext = "on_job_training";
+             resetDecisionModal();
+             syncDecisionModalContextUi();
+             setDecisionAction("accepted");
+             decisionModal.show();
+         }
 
-        function getAuditBase(actor, previousStatus, newStatus, reason, note) {
+         async function openOnboardingModal() {
+             if (!(await ensureCandidateActiveForProgress("open_onboarding_modal"))) return;
+             const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
+             if (!vm || vm.displayStatus !== "accepted") {
+                 showWarning("Jadwalkan On Boarding hanya dapat dibuka saat status kandidat berada pada tahap Accepted.");
+                 return;
+             }
+             decisionModalContext = "onboarding";
+             resetDecisionModal();
+             document.querySelectorAll(".decision-toggle-btn").forEach((button) => {
+                 button.style.display = "none";
+             });
+             const onboardingToggle = document.getElementById("decisionOnboardingToggle");
+             if (onboardingToggle) {
+                 onboardingToggle.style.display = "block";
+             }
+             syncDecisionModalContextUi();
+             setDecisionAction("onboarding");
+             decisionModal.show();
+         }
+
+         function getAuditBase(actor, previousStatus, newStatus, reason, note) {
             return {
                 timestamp: new Date().toISOString(),
                 actorId: actor.id,
@@ -5479,6 +5920,114 @@
                     });
                     decisionModal.hide();
                     showSuccess("Kandidat berhasil ditandai mengundurkan diri.");
+                    return;
+                }
+
+                if (activeDecisionAction === "onboarding") {
+                    const onboardingDateInput = document.getElementById("onboardingDateInput");
+                    const onboardingTimeInput = document.getElementById("onboardingTimeInput");
+                    const onboardingLocationInput = document.getElementById("onboardingLocationInput");
+                    
+                    const dateValue = onboardingDateInput ? onboardingDateInput.value : "";
+                    const timeValue = onboardingTimeInput ? onboardingTimeInput.value : "";
+                    const locationValue = onboardingLocationInput ? onboardingLocationInput.value.trim() : "";
+                    const onboardingMessage = normalizeWhatsappMessage((document.getElementById("onboardingWhatsappText").value || "").trim());
+
+                    if (onboardingDateInput) onboardingDateInput.classList.toggle("is-invalid", !dateValue);
+                    if (onboardingTimeInput) onboardingTimeInput.classList.toggle("is-invalid", !timeValue);
+                    if (onboardingLocationInput) onboardingLocationInput.classList.toggle("is-invalid", !locationValue);
+
+                    if (!dateValue || !timeValue || !locationValue) {
+                        return;
+                    }
+                    if (!onboardingWhatsappPayload || !onboardingWhatsappConfirmedAt || !onboardingMessage) {
+                        setOnboardingWhatsappValidation("Undangan On Boarding WhatsApp wajib disiapkan, dikirim, dan dikonfirmasi sebelum submit.", "warning");
+                        syncDecisionSubmitState();
+                        return;
+                    }
+
+                    onboardingWhatsappPayload.message = onboardingMessage;
+                    onboardingWhatsappPayload.deepLink = buildWhatsAppDeepLink(onboardingWhatsappPayload.phoneNumber, onboardingMessage);
+                    
+                    const dateObj = parseDateValue(dateValue);
+                    const auditEntry = {
+                        ...getAuditBase(actor, "accepted", "onboarding", "Jadwalkan On Boarding", ""),
+                        timestamp: nowIso,
+                        onboarding_date: dateValue,
+                        onboarding_time: timeValue,
+                        onboarding_location: locationValue,
+                        onboardingWhatsappStatus: "confirmed_manual",
+                        onboardingWhatsappSentAt: onboardingWhatsappConfirmedAt,
+                        onboardingWhatsappRetryCount: onboardingWhatsappRetryCount
+                    };
+                    const firestorePayload = {
+                        "recruitment_status.current": "onboarding",
+                        "recruitment_status.final_decision": null,
+                        "recruitment_status.final_decision_at": nowIso,
+                        "recruitment_status.onboarding_date": dateValue,
+                        "recruitment_status.onboarding_time": timeValue,
+                        "recruitment_status.onboarding_location": locationValue,
+                        "recruitment_status.onboarding_at": nowIso,
+                        "recruitment_status.onboarding_whatsapp_status": "confirmed_manual",
+                        "recruitment_status.onboarding_whatsapp_sent_at": onboardingWhatsappConfirmedAt,
+                        "recruitment_status.onboarding_whatsapp_last_attempt_at": onboardingWhatsappLastAttemptAt,
+                        "recruitment_status.onboarding_whatsapp_retry_count": onboardingWhatsappRetryCount,
+                        "recruitment_status.onboarding_whatsapp_recipient": onboardingWhatsappPayload.phoneNumber,
+                        "recruitment_status.onboarding_whatsapp_message_preview": onboardingMessage,
+                        "recruitment_status.history": arrayUnion({
+                            status: "onboarding",
+                            previousStatus: "accepted",
+                            date: nowIso,
+                            onboarding_date: dateValue,
+                            onboarding_time: timeValue,
+                            onboarding_location: locationValue,
+                            by: actor.name
+                        }),
+                        "audit_trail": arrayUnion(auditEntry),
+                        logs: arrayUnion({
+                            action: "team_status_change",
+                            decision: "onboarding",
+                            from: "accepted",
+                            to: "onboarding",
+                            by: actor.name,
+                            uid: actor.id,
+                            date: nowIso,
+                            onboarding_date: dateValue,
+                            onboarding_time: timeValue,
+                            onboarding_location: locationValue
+                        }, {
+                            action: "onboarding_whatsapp",
+                            decision: "onboarding",
+                            by: actor.name,
+                            uid: actor.id,
+                            date: nowIso,
+                            status: "confirmed_manual",
+                            recipient: onboardingWhatsappPayload.phoneNumber,
+                            retryCount: onboardingWhatsappRetryCount,
+                            sentAt: onboardingWhatsappConfirmedAt,
+                            lastAttemptAt: onboardingWhatsappLastAttemptAt,
+                            deliveryConfirmation: true
+                        })
+                    };
+
+                    await persistCandidateUpdate(currentCandidate.id, firestorePayload, "POST", {
+                        action: "schedule-onboarding",
+                        decision: "onboarding",
+                        candidateId: currentCandidate.id,
+                        statusFrom: "accepted",
+                        statusTo: "onboarding",
+                        onboarding_date: dateValue,
+                        onboarding_time: timeValue,
+                        onboarding_location: locationValue,
+                        onboardingWhatsappStatus: "confirmed_manual",
+                        onboardingWhatsappSentAt: onboardingWhatsappConfirmedAt,
+                        onboardingWhatsappRecipient: onboardingWhatsappPayload.phoneNumber,
+                        onboardingWhatsappRetryCount: onboardingWhatsappRetryCount,
+                        actor
+                    });
+
+                    decisionModal.hide();
+                    showSuccess("Kandidat berhasil dijadwalkan On Boarding.");
                     return;
                 }
                 
@@ -5809,39 +6358,43 @@
             }
         }
 
-        function bindDetailActions(vm) {
-            const openInterviewBtn = document.getElementById("btnOpenInterviewModal");
-            const openDecisionBtn = document.getElementById("btnOpenDecisionModal");
-            const editInterviewBtn = document.getElementById("btnEditInterviewSchedule");
-            const openon_job_trainingBtn = document.getElementById("btnOpenon_job_trainingModal");
-            const downloadCvBtn = document.getElementById("btnDownloadCv");
-            const downloadPortfolioBtn = document.getElementById("btnDownloadPortfolio");
+         function bindDetailActions(vm) {
+             const openInterviewBtn = document.getElementById("btnOpenInterviewModal");
+             const openDecisionBtn = document.getElementById("btnOpenDecisionModal");
+             const editInterviewBtn = document.getElementById("btnEditInterviewSchedule");
+             const openon_job_trainingBtn = document.getElementById("btnOpenon_job_trainingModal");
+             const openOnboardingBtn = document.getElementById("btnOpenOnboardingModal");
+             const downloadCvBtn = document.getElementById("btnDownloadCv");
+             const downloadPortfolioBtn = document.getElementById("btnDownloadPortfolio");
 
-            if (openInterviewBtn) {
-                openInterviewBtn.addEventListener("click", () => openInterviewModal("schedule"));
-            }
-            if (openDecisionBtn) {
-                const isRejectionOnly = (vm.displayStatus === "screening" || vm.displayStatus === "interview");
-                openDecisionBtn.addEventListener("click", () => openDecisionModal(isRejectionOnly));
-            }
-            if (editInterviewBtn) {
-                editInterviewBtn.addEventListener("click", async () => {
-                    const result = await Swal.fire({
-                        icon: "question",
-                        title: "Edit jadwal interview?",
-                        text: "Perubahan jadwal akan dicatat pada audit trail kandidat.",
-                        showCancelButton: true,
-                        confirmButtonText: "Ya, edit jadwal",
-                        cancelButtonText: "Batal",
-                        reverseButtons: true
-                    });
-                    if (!result.isConfirmed) return;
-                    openInterviewModal("edit");
-                });
-            }
-            if (openon_job_trainingBtn) {
-                openon_job_trainingBtn.addEventListener("click", () => openon_job_trainingModal());
-            }
+             if (openInterviewBtn) {
+                 openInterviewBtn.addEventListener("click", () => openInterviewModal("schedule"));
+             }
+             if (openDecisionBtn) {
+                 const isRejectionOnly = (vm.displayStatus === "screening" || vm.displayStatus === "interview");
+                 openDecisionBtn.addEventListener("click", () => openDecisionModal(isRejectionOnly));
+             }
+             if (editInterviewBtn) {
+                 editInterviewBtn.addEventListener("click", async () => {
+                     const result = await Swal.fire({
+                         icon: "question",
+                         title: "Edit jadwal interview?",
+                         text: "Perubahan jadwal akan dicatat pada audit trail kandidat.",
+                         showCancelButton: true,
+                         confirmButtonText: "Ya, edit jadwal",
+                         cancelButtonText: "Batal",
+                         reverseButtons: true
+                     });
+                     if (!result.isConfirmed) return;
+                     openInterviewModal("edit");
+                 });
+             }
+             if (openon_job_trainingBtn) {
+                 openon_job_trainingBtn.addEventListener("click", () => openon_job_trainingModal());
+             }
+             if (openOnboardingBtn) {
+                 openOnboardingBtn.addEventListener("click", () => openOnboardingModal());
+             }
             if (downloadCvBtn) {
                 downloadCvBtn.addEventListener("click", async () => {
                     await downloadCandidateFile(vm.resumeUrl, "cv-candidate", downloadCvBtn, "Mengunduh CV...");
@@ -6079,6 +6632,49 @@
                 setRejectionWhatsappPreviewState(rejectionWhatsappPayload);
                 syncDecisionSubmitState();
             });
+            document.getElementById("prepareOnboardingWhatsappButton").addEventListener("click", () => {
+                prepareOnboardingWhatsappPreview();
+            });
+            document.getElementById("sendOnboardingWhatsappButton").addEventListener("click", () => {
+                attemptSendOnboardingWhatsapp(false);
+            });
+            document.getElementById("retryOnboardingWhatsappButton").addEventListener("click", () => {
+                attemptSendOnboardingWhatsapp(true);
+            });
+            document.getElementById("onboardingWhatsappText").addEventListener("input", () => {
+                syncOnboardingWhatsappTemplate(true);
+            });
+            document.getElementById("confirmOnboardingWhatsappCheckbox").addEventListener("change", (event) => {
+                if (!onboardingWhatsappPayload || !onboardingWhatsappLastAttemptAt) {
+                    event.currentTarget.checked = false;
+                    setOnboardingWhatsappValidation("Kirim pesan WhatsApp On Boarding terlebih dahulu sebelum melakukan konfirmasi.", "warning");
+                    return;
+                }
+                onboardingWhatsappConfirmedAt = event.currentTarget.checked ? new Date().toISOString() : null;
+                setOnboardingWhatsappValidation(
+                    event.currentTarget.checked
+                        ? "Konfirmasi WhatsApp On Boarding tercatat. Tombol submit sudah aktif."
+                        : "Konfirmasi WhatsApp On Boarding dibatalkan. Silakan centang kembali jika pesan sudah benar-benar terkirim.",
+                    event.currentTarget.checked ? "success" : "warning"
+                );
+                setOnboardingWhatsappPreviewState(onboardingWhatsappPayload);
+                syncDecisionSubmitState();
+            });
+            document.getElementById("onboardingDateInput").addEventListener("change", () => {
+                document.getElementById("onboardingDateInput").classList.remove("is-invalid");
+                markOnboardingWhatsappPending({ preserveIfUnchanged: true });
+                syncDecisionSubmitState();
+            });
+            document.getElementById("onboardingTimeInput").addEventListener("input", () => {
+                document.getElementById("onboardingTimeInput").classList.remove("is-invalid");
+                markOnboardingWhatsappPending({ preserveIfUnchanged: true });
+                syncDecisionSubmitState();
+            });
+            document.getElementById("onboardingLocationInput").addEventListener("input", () => {
+                document.getElementById("onboardingLocationInput").classList.remove("is-invalid");
+                markOnboardingWhatsappPending({ preserveIfUnchanged: true });
+                syncDecisionSubmitState();
+            });
             document.querySelectorAll(".decision-toggle-btn").forEach((button) => {
                 button.addEventListener("click", () => setDecisionAction(button.dataset.decisionAction || ""));
             });
@@ -6105,10 +6701,12 @@
                 seton_job_trainingWhatsappValidation("", "");
                 markRejectionWhatsappPending({ silent: true });
                 setRejectionWhatsappValidation("", "");
+                markOnboardingWhatsappPending({ silent: true });
+                setOnboardingWhatsappValidation("", "");
                 decisionModalContext = "interview";
                 syncDecisionSubmitState();
             });
-        }
+         }
 
         onAuthStateChanged(auth, (user) => {
             if (!user) {
@@ -6143,20 +6741,23 @@
             handleTemplatesUpdated();
         });
 
-        function handleTemplatesUpdated() {
-            if (typeof interviewWhatsappPayload !== "undefined" && interviewWhatsappPayload) {
-                prepareWhatsappPreview();
-            }
-            if (typeof acceptedWhatsappPayload !== "undefined" && acceptedWhatsappPayload) {
-                prepareAcceptedWhatsappPreview();
-            }
-            if (typeof on_job_trainingWhatsappPayload !== "undefined" && on_job_trainingWhatsappPayload) {
-                prepareon_job_trainingWhatsappPreview();
-            }
-            if (typeof rejectionWhatsappPayload !== "undefined" && rejectionWhatsappPayload) {
-                prepareRejectionWhatsappPreview();
-            }
-        }
+         function handleTemplatesUpdated() {
+             if (typeof interviewWhatsappPayload !== "undefined" && interviewWhatsappPayload) {
+                 prepareWhatsappPreview();
+             }
+             if (typeof acceptedWhatsappPayload !== "undefined" && acceptedWhatsappPayload) {
+                 prepareAcceptedWhatsappPreview();
+             }
+             if (typeof on_job_trainingWhatsappPayload !== "undefined" && on_job_trainingWhatsappPayload) {
+                 prepareon_job_trainingWhatsappPreview();
+             }
+             if (typeof rejectionWhatsappPayload !== "undefined" && rejectionWhatsappPayload) {
+                 prepareRejectionWhatsappPreview();
+             }
+             if (typeof onboardingWhatsappPayload !== "undefined" && onboardingWhatsappPayload) {
+                 prepareOnboardingWhatsappPreview();
+             }
+         }
     </script>
 </body>
 

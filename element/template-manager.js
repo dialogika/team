@@ -95,7 +95,15 @@ export const CATEGORY_TEMPLATE_DEFS = {
             description: "Template untuk notifikasi kandidat diterima.",
             stage: "decision",
             requiredTokens: ["{candidate_name}"],
-            defaultTemplate: "*[Acceptance Letter]*\n\nHalo {candidate_name}!\n\nTerima kasih atas partisipasi dan antusiasmenya dalam mengikuti proses rekrutmen Tim Dialogika.\n\nSetelah melalui proses seleksi dan evaluasi, kami dengan senang hati menginformasikan bahwa Kakak diterima sebagai Tim di Dialogika.\nSelamat bergabung bersama tim!\n\nInformasi mengenai jadwal On Job Training dan kelengkapan administrasi akan kami kirimkan dalam waktu dekat.\n\nTerima kasih dan sampai jumpa di hari pertama magang.\n\nSalam hormat,\nHR Dialogika"
+            defaultTemplate: "*[Acceptance Letter]*\n\nHalo {candidate_name}!\n\nTerima kasih atas partisipasi dan antusiasmenya dalam mengikuti proses rekrutmen Tim Dialogika.\n\nSetelah melalui proses seleksi dan evaluasi, kami dengan senang hati menginformasikan bahwa Kakak diterima sebagai Tim di Dialogika.\nSelamat bergabung bersama tim!\n\nInformasi mengenai jadwal On Boarding dan kelengkapan administrasi akan kami kirimkan dalam waktu dekat.\n\nTerima kasih dan sampai jumpa di hari pertama magang.\n\nSalam hormat,\nHR Dialogika"
+        },
+        {
+            id: "onboarding",
+            title: "Onboarding",
+            description: "Template untuk undangan onboarding kandidat tim.",
+            stage: "onboarding",
+            requiredTokens: ["{onboarding_date}", "{onboarding_time}", "{onboarding_location}"],
+            defaultTemplate: "*Undangan Onboarding*\n\n*[Recruitment Dialogika - WELCOME!]*\n\nSelamat! Dengan ini kami menginformasikan bahwa kamu telah diterima sebagai Team di Dialogika. Kami sangat senang menyambutmu menjadi bagian dari tim kami.\n\nSebagai langkah selanjutnya, kami akan mengadakan sesi onboarding pada:\n\n*Tanggal* : {onboarding_date} secara offline di Yogyakarta\n*Waktu*   : {onboarding_time} WIB\n*Tempat*  : {onboarding_location}\n\nUntuk teman-teman yang akan melakukan konversi SKS, mohon lengkapi informasi berikut:\n\n*abaikan apabila tidak melakukan konversi SKS*\n\n- Durasi magang minimal dari kampus: ... bulan\n- Syarat/dokumen yang dibutuhkan dari Dialogika:\n- Syarat jobdesc tertentu:\n\nJika ada pertanyaan atau hal yang perlu dikonfirmasi, jangan ragu untuk menghubungi kami melalui WhatsApp ini.\n\nSekali lagi, selamat bergabung di keluarga besar Dialogika! Kami tidak sabar untuk memulai perjalanan ini bersamamu.\n\nSalam hangat,\n\nHR Dialogika\n\n*Dimohon membawa materai Rp10.000 & menginstal aplikasi Click-Up & Discord di Handphone & Laptop*"
         },
         {
             id: "rejected",
