@@ -29,6 +29,7 @@ body {
 .grad-green { background: linear-gradient(135deg, var(--dlg-green), var(--dlg-green-end)); }
 .grad-red { background: linear-gradient(135deg, var(--dlg-red), var(--dlg-red-end)); }
 .grad-purple { background: var(--dlg-purple); }
+.grad-slate { background: linear-gradient(135deg, #475569, #64748b); }
 
 .text-purple { color: var(--dlg-purple) !important; }
 
