@@ -184,6 +184,12 @@
                                     <input type="text" id="nameInput"
                                         class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                                 </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Kelas</label>
+                                    <input type="text" id="classInput"
+                                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                </div>
                             </div>
 
                             <div class="rounded-xl bg-white border border-slate-200 px-4 py-3 mb-4">
@@ -244,8 +250,8 @@
                                     <div class="rounded-lg bg-white/80 border border-blue-100 px-3 py-3">
                                         <div class="font-bold text-slate-800 mb-2">Aturan Format</div>
                                         <ul class="list-disc pl-4 space-y-1">
-                                            <li>Setiap baris minimal berisi `invoice` dan `nama peserta`.</li>
-                                            <li>Kolom ketiga `tanggal` bersifat opsional, formatnya `DD/MM/YYYY`.</li>
+                                            <li>Setiap baris minimal berisi `invoice`, `nama peserta`, dan `kelas`.</li>
+                                            <li>Kolom keempat `tanggal` bersifat opsional, formatnya `DD/MM/YYYY`.</li>
                                             <li>Pemisah yang didukung: `TAB`, `|`, atau koma `,`.</li>
                                             <li>Baris kosong diabaikan, baris invalid tidak ikut diproses.</li>
                                         </ul>
@@ -253,10 +259,10 @@
 
                                     <div class="rounded-lg bg-slate-900 text-slate-100 px-3 py-3">
                                         <div class="font-bold text-white mb-2">Contoh Format Valid</div>
-                                        <pre id="batchGuideExample" class="text-[11px] leading-5 whitespace-pre-wrap mb-0">13.07353	Asih Wulansari
-13.07354	Budi Santoso	20/04/2026
-13.07355|Citra Lestari|21/04/2026
-13.07356,Daniel Pratama,22/04/2026</pre>
+                                        <pre id="batchGuideExample" class="text-[11px] leading-5 whitespace-pre-wrap mb-0">13.07353	Asih Wulansari	Public Speaking Basic
+13.07354	Budi Santoso	Public Speaking Advanced	20/04/2026
+13.07355|Citra Lestari|Public Speaking Basic|21/04/2026
+13.07356,Daniel Pratama,Public Speaking Advanced,22/04/2026</pre>
                                     </div>
                                 </div>
 
@@ -271,8 +277,8 @@
                             </div>
 
                             <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Paste Daftar Peserta</label>
-                            <textarea id="batchInput" class="batch-textarea w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="13.07353	Asih Wulansari&#10;13.07354	Budi Santoso	20/04/2026&#10;13.07355|Citra Lestari|21/04/2026"></textarea>
-                            <p class="text-[11px] text-slate-400 mt-2">Format per baris: invoice + nama + tanggal opsional. Separator bisa TAB, koma, atau pipe.</p>
+                            <textarea id="batchInput" class="batch-textarea w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="13.07353	Asih Wulansari	Public Speaking Basic&#10;13.07354	Budi Santoso	Public Speaking Advanced	20/04/2026&#10;13.07355|Citra Lestari|Public Speaking Basic|21/04/2026"></textarea>
+                            <p class="text-[11px] text-slate-400 mt-2">Format per baris: invoice + nama + kelas + tanggal opsional. Separator bisa TAB, koma, atau pipe.</p>
 
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
                                 <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
@@ -350,6 +356,9 @@
 
                         <!-- Teks Nama -->
                         <text id="textName" x="130" y="610" font-family="'Montserrat', sans-serif" font-weight="700" font-size="95" fill="#0b2b6a" style="letter-spacing: 0; line-height: 1.4;">Asih Wulansari</text>
+
+                        <!-- Teks Kelas -->
+                        <text id="textClass" x="130" y="700" font-family="'Montserrat', sans-serif" font-weight="600" font-size="40" fill="#0b2b6a" style="letter-spacing: 0; line-height: 1.4;"></text>
 
                         <!-- Teks Tanggal Award -->
                         <text id="textAward" x="140" y="783" font-family="'Montserrat', sans-serif" font-weight="700" font-size="33" fill="#0b2b6a" style="letter-spacing: 0.1em; line-height: 1.6;">THIS CERTIFICATE IS AWARDED ON 20 NOVEMBER 2025</text>
@@ -531,6 +540,7 @@
 
         const invoiceInput = document.getElementById('invoiceInput');
         const nameInput = document.getElementById('nameInput');
+        const classInput = document.getElementById('classInput');
         const globalDateInput = document.getElementById('globalDateInput');
         const batchInput = document.getElementById('batchInput');
         const validCountBadge = document.getElementById('validCountBadge');
@@ -563,6 +573,7 @@
         const certSvg = document.getElementById('certSvg');
         const textInvoice = document.getElementById('textInvoice');
         const textName = document.getElementById('textName');
+        const textClass = document.getElementById('textClass');
         const textAward = document.getElementById('textAward');
         const svgBg = document.getElementById('svgBg');
         const logSearchInput = document.getElementById('logSearchInput');
@@ -584,10 +595,10 @@
 
         const DEFAULT_INVOICE = "13.07353";
         const DEFAULT_NAME = "Asih Wulansari";
-        const GUIDE_EXAMPLE_TEXT = `13.07353\tAsih Wulansari
-13.07354\tBudi Santoso\t20/04/2026
-13.07355|Citra Lestari|21/04/2026
-13.07356,Daniel Pratama,22/04/2026`;
+        const GUIDE_EXAMPLE_TEXT = `13.07353\tAsih Wulansari\tPublic Speaking Basic
+13.07354\tBudi Santoso\tPublic Speaking Advanced\t20/04/2026
+13.07355|Citra Lestari|Public Speaking Basic|21/04/2026
+13.07356,Daniel Pratama,Public Speaking Advanced,22/04/2026`;
         const CERT_LOG_STORAGE_KEY = 'dlg_certificate_logs_v1';
         const CERT_LOG_COLLECTION = 'certificate_logs';
         const CERT_LOG_FETCH_LIMIT = 2000;
@@ -902,12 +913,13 @@
                 const previewEntry = {
                     invoice: found.invoice,
                     name: found.recipientName,
-                    rawDate: found.certificateDate,
+                    className: found.className || "",
                     certificateDate: found.certificateDate
                 };
                 applySvgToPreview(previewEntry);
                 invoiceInput.value = previewEntry.invoice || '';
                 nameInput.value = previewEntry.name || '';
+                classInput.value = previewEntry.className || '';
                 if (previewEntry.certificateDate) {
                     globalDateInput.value = previewEntry.certificateDate;
                     state.globalCertificateDate = previewEntry.certificateDate;
@@ -1082,6 +1094,7 @@
                 return {
                     invoice: invoiceInput.value.trim() || DEFAULT_INVOICE,
                     name: nameInput.value.trim() || DEFAULT_NAME,
+                    className: classInput.value.trim() || "",
                     rawDate: "",
                     certificateDate: globalDateInput.value || getTodayInputValue()
                 };
@@ -1096,9 +1109,11 @@
 
         function renderCertificateToSvgData(entry) {
             const certificateDate = resolveEntryDate(entry);
+            const classText = entry.className ? `HAS SUCCESSFULLY COMPLETED THE PUBLIC SPEAKING ${entry.className.toUpperCase()}` : "";
             return {
                 invoiceText: buildFullInvoice(entry.invoice, certificateDate),
                 nameText: entry.name || "-",
+                classText: classText,
                 awardText: `THIS CERTIFICATE IS AWARDED ON ${formatDate(certificateDate)}`
             };
         }
@@ -1107,6 +1122,7 @@
             const svgData = renderCertificateToSvgData(entry);
             textInvoice.textContent = svgData.invoiceText;
             textName.textContent = svgData.nameText;
+            textClass.textContent = svgData.classText;
             textAward.textContent = svgData.awardText;
         }
 
@@ -1226,6 +1242,7 @@
             const activeEntry = getEntryForPreview();
             invoiceInput.value = activeEntry.invoice || '';
             nameInput.value = activeEntry.name || '';
+            classInput.value = activeEntry.className || '';
             globalDateInput.value = state.globalCertificateDate;
         }
 
@@ -1292,7 +1309,8 @@
                 const parts = parseBatchLine(trimmed).map((part) => part.trim());
                 const invoice = parts[0] || '';
                 const name = parts[1] || '';
-                const rawDate = parts[2] || '';
+                const className = parts[2] || '';
+                const rawDate = parts[3] || '';
                 const normalizedDate = rawDate ? parseBatchDateInput(rawDate) : '';
 
                 if (!invoice || !name) {
@@ -1313,6 +1331,7 @@
                 validEntries.push({
                     invoice,
                     name,
+                    className,
                     rawDate: normalizedDate,
                     certificateDate: normalizedDate || globalDate
                 });
@@ -1523,12 +1542,13 @@
             state.batchEntries = [{
                 invoice: DEFAULT_INVOICE,
                 name: DEFAULT_NAME,
+                className: "",
                 rawDate: '',
                 certificateDate: today
             }];
             state.invalidEntries = [];
             state.activeIndex = 0;
-            batchInput.value = `${DEFAULT_INVOICE}\t${DEFAULT_NAME}`;
+            batchInput.value = `${DEFAULT_INVOICE}\t${DEFAULT_NAME}\tPublic Speaking Basic`;
             refreshPreview();
             setStatus('Siap digunakan. Anda bisa edit peserta aktif atau import batch sekaligus.', 'info');
         }
@@ -1540,6 +1560,11 @@
 
         nameInput.addEventListener('input', () => {
             updateActiveEntry('name', nameInput.value);
+            refreshPreview();
+        });
+
+        classInput.addEventListener('input', () => {
+            updateActiveEntry('className', classInput.value);
             refreshPreview();
         });
 
