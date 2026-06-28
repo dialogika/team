@@ -1026,6 +1026,8 @@
             const rows = [];
             snap.forEach((d) => {
               const v = d.data() || {};
+              const source = v.source || "manual";
+              if (source !== "manual") return;
               rows.push({
                 id: d.id,
                 user_id: v.user_id || "",
