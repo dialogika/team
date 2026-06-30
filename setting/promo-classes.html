@@ -412,31 +412,6 @@
           <section class="content-card">
             <div class="toolbar mb-4">
               <div class="d-flex flex-wrap gap-2 flex-grow-1">
-                <div style="min-width: 320px; flex: 1 1 320px">
-                  <label class="form-label fw-semibold mb-2">Durasi Promo</label>
-                  <div class="input-group">
-                    <div class="input-group-text bg-white border-end-0 rounded-start-4">
-                      <i class="bi bi-calendar-range"></i>
-                    </div>
-                    <input
-                      id="promoDurationStartFilter"
-                      type="date"
-                      class="form-control border-start-0 rounded-end-0"
-                      placeholder="Mulai dari"
-                    />
-                    <input
-                      id="promoDurationEndFilter"
-                      type="date"
-                      class="form-control border-start-0 rounded-start-0"
-                      placeholder="Sampai dengan"
-                    />
-                    <div
-                      class="input-group-text bg-white border-start-0 rounded-start-4"
-                    >
-                      -
-                    </div>
-                  </div>
-                </div>
                 <div style="min-width: 260px; flex: 1 1 320px">
                   <div class="input-group">
                     <span
@@ -598,9 +573,13 @@
                   />
                 </div>
                 <div class="col-12">
-                  <label class="form-label fw-semibold">Pilih Durasi Promo</label>
+                  <label class="form-label fw-semibold"
+                    >Pilih Durasi Promo</label
+                  >
                   <div class="input-group">
-                    <div class="input-group-text bg-white border-end-0 rounded-start-4">
+                    <div
+                      class="input-group-text bg-white border-end-0 rounded-start-4"
+                    >
                       <i class="bi bi-calendar-range"></i>
                     </div>
                     <input
@@ -619,12 +598,10 @@
                       -
                     </div>
                   </div>
-                  <input
-                    id="promoDurationInput"
-                    type="hidden"
-                  />
+                  <input id="promoDurationInput" type="hidden" />
                   <small class="text-muted"
-                    >Atau input manual (Contoh: 1 Juni 2026 - 31 Juli 2026)</small
+                    >Atau input manual (Contoh: 1 Juni 2026 - 31 Juli
+                    2026)</small
                   >
                 </div>
               </div>
@@ -782,7 +759,7 @@
       async function migratePromoDuration() {
         const batch = [];
         const nowMs = Date.now();
-        
+
         for (const item of promoClassesCache) {
           if (!item.promoDuration) {
             batch.push(
@@ -791,15 +768,17 @@
                 updated_at: serverTimestamp(),
                 updated_at_ms: nowMs,
                 updated_by: currentUser?.email || currentUser?.uid || "",
-              })
+              }),
             );
           }
         }
-        
+
         if (batch.length > 0) {
           try {
             await Promise.all(batch);
-            console.log(`Migrated ${batch.length} promo classes with promoDuration`);
+            console.log(
+              `Migrated ${batch.length} promo classes with promoDuration`,
+            );
           } catch (error) {
             console.error("Failed to migrate promo duration:", error);
           }
@@ -967,7 +946,7 @@
         const selectedLocation = locationFilter.value;
         const startFilter = promoDurationStartFilter?.value;
         const endFilter = promoDurationEndFilter?.value;
-        
+
         return promoClassesCache.filter((item) => {
           const matchesLocation =
             selectedLocation === "all" ||
@@ -987,40 +966,40 @@
             .join(" ");
 
           if (!normalizeText(haystack).includes(searchTerm)) return false;
-          
+
           if (!startFilter && !endFilter) return true;
-          
+
           const durationStr = String(item.promoDuration || "");
           if (!durationStr || !durationStr.includes("-")) return false;
-          
+
           const dateRange = parseDurationDateRange(durationStr);
           if (!dateRange) return false;
-          
+
           if (startFilter) {
             const startDate = new Date(startFilter);
             if (dateRange.end < startDate) return false;
           }
-          
+
           if (endFilter) {
             const endDate = new Date(endFilter);
             if (dateRange.start > endDate) return false;
           }
-          
+
           return true;
         });
       }
-      
+
       function parseDurationDateRange(durationStr) {
         if (!durationStr || !durationStr.includes("-")) return null;
-        
-        const parts = durationStr.split("-").map(s => s.trim());
+
+        const parts = durationStr.split("-").map((s) => s.trim());
         if (parts.length < 2) return null;
-        
+
         const startDate = parseIndonesianDate(parts[0]);
         const endDate = parseIndonesianDate(parts[1]);
-        
+
         if (!startDate || !endDate) return null;
-        
+
         return { start: startDate, end: endDate };
       }
 
@@ -1162,12 +1141,23 @@
         document.getElementById("promoDurationStartDate").value = "2026-06-01";
         document.getElementById("promoDurationEndDate").value = "2026-07-31";
         updateDurationInput();
-        document.getElementById("promoDurationInput").value = "1 Juni 2026 - 31 Juli 2026";
+        document.getElementById("promoDurationInput").value =
+          "1 Juni 2026 - 31 Juli 2026";
       }
 
       const monthNames = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
       ];
 
       function formatDateToIndonesian(dateStr) {
@@ -1182,27 +1172,40 @@
       function updateDurationInput() {
         const start = document.getElementById("promoDurationStartDate").value;
         const end = document.getElementById("promoDurationEndDate").value;
-        
+
         if (start && end) {
           const startDate = formatDateToIndonesian(start);
           const endDate = formatDateToIndonesian(end);
-          document.getElementById("promoDurationInput").value = `${startDate} - ${endDate}`;
+          document.getElementById("promoDurationInput").value =
+            `${startDate} - ${endDate}`;
         }
       }
 
-      document.getElementById("promoDurationStartDate").addEventListener("change", updateDurationInput);
-      document.getElementById("promoDurationEndDate").addEventListener("change", updateDurationInput);
+      document
+        .getElementById("promoDurationStartDate")
+        .addEventListener("change", updateDurationInput);
+      document
+        .getElementById("promoDurationEndDate")
+        .addEventListener("change", updateDurationInput);
 
-      document.getElementById("promoDurationStartDate").addEventListener("click", function() {
-        this.showPicker?.();
-      });
-      
-      document.getElementById("promoDurationEndDate").addEventListener("click", function() {
-        this.showPicker?.();
-      });
+      document
+        .getElementById("promoDurationStartDate")
+        .addEventListener("click", function () {
+          this.showPicker?.();
+        });
 
-      const promoDurationStartFilter = document.getElementById("promoDurationStartFilter");
-      const promoDurationEndFilter = document.getElementById("promoDurationEndFilter");
+      document
+        .getElementById("promoDurationEndDate")
+        .addEventListener("click", function () {
+          this.showPicker?.();
+        });
+
+      const promoDurationStartFilter = document.getElementById(
+        "promoDurationStartFilter",
+      );
+      const promoDurationEndFilter = document.getElementById(
+        "promoDurationEndFilter",
+      );
 
       promoDurationStartFilter?.addEventListener("change", () => {
         currentPage = 1;
@@ -1213,10 +1216,10 @@
         renderPromoClassTable();
       });
 
-      promoDurationStartFilter?.addEventListener("click", function() {
+      promoDurationStartFilter?.addEventListener("click", function () {
         this.showPicker?.();
       });
-      promoDurationEndFilter?.addEventListener("click", function() {
+      promoDurationEndFilter?.addEventListener("click", function () {
         this.showPicker?.();
       });
 
@@ -1226,40 +1229,42 @@
           document.getElementById("promoDurationEndDate").value = "";
           return;
         }
-        
-        const parts = durationStr.split("-").map(s => s.trim());
+
+        const parts = durationStr.split("-").map((s) => s.trim());
         if (parts.length < 2) {
           document.getElementById("promoDurationStartDate").value = "";
           document.getElementById("promoDurationEndDate").value = "";
           return;
         }
-        
+
         const startDate = parseIndonesianDate(parts[0]);
         const endDate = parseIndonesianDate(parts[1]);
-        
+
         if (startDate) {
-          document.getElementById("promoDurationStartDate").value = formatDateToISO(startDate);
+          document.getElementById("promoDurationStartDate").value =
+            formatDateToISO(startDate);
         }
         if (endDate) {
-          document.getElementById("promoDurationEndDate").value = formatDateToISO(endDate);
+          document.getElementById("promoDurationEndDate").value =
+            formatDateToISO(endDate);
         }
       }
 
       function parseIndonesianDate(dateStr) {
         if (!dateStr) return null;
-        
+
         const parts = dateStr.split(" ");
         if (parts.length < 3) return null;
-        
+
         const day = parseInt(parts[0], 10);
         const monthName = parts[1];
         const year = parseInt(parts[2], 10);
-        
+
         if (!day || !monthName || !year) return null;
-        
+
         const monthIndex = monthNames.indexOf(monthName);
         if (monthIndex === -1) return null;
-        
+
         return new Date(year, monthIndex, day);
       }
 
@@ -1296,9 +1301,10 @@
           item.normalPrice || "";
         document.getElementById("promoPriceInput").value =
           item.promoPrice || "";
-        
+
         if (item.promoDuration) {
-          document.getElementById("promoDurationInput").value = item.promoDuration;
+          document.getElementById("promoDurationInput").value =
+            item.promoDuration;
           parseAndSetDurationDates(item.promoDuration);
         } else {
           document.getElementById("promoDurationInput").value = "";
@@ -1408,7 +1414,8 @@
             document.getElementById("promoClassModal"),
           ).hide();
           resetForm();
-          document.getElementById("promoDurationInput").value = "1 Juni 2026 - 31 Juli 2026";
+          document.getElementById("promoDurationInput").value =
+            "1 Juni 2026 - 31 Juli 2026";
         } catch (error) {
           console.error("Failed to save promo class:", error);
           showToast("Gagal menyimpan promo class.", "error");
