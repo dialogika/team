@@ -270,9 +270,27 @@
         color: #4f46e5;
       }
       /* table footer summary */
-      .tbl-foot {
+      .tbl-foot-fixed {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         background: #e2e8f0;
         border-top: 2px solid #cbd5e1;
+        border-radius: 0 0 16px 16px;
+        padding: 12px 16px;
+      }
+      .tbl-foot-fixed .tfoot-label {
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #0f172a;
+      }
+      .tbl-foot-fixed .tfoot-total {
+        font-size: 13px;
+        font-weight: 900;
+        color: #4f46e5;
+        white-space: nowrap;
       }
       .tbl-foot td {
         padding: 12px 14px;
@@ -287,8 +305,11 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: #0f172a;
-        z-index: 4;
+        position: sticky; /* tambahkan */
+        left: 0; /* tambahkan */
+        z-index: 6; /* naikkan, harus di atas kolom lain */
         background: #e2e8f0;
+        box-shadow: 12px 0 18px -18px rgba(15, 23, 42, 0.45); /* tambahkan, biar konsisten dengan header/body */
       }
       .tbl-foot .tfoot-total {
         font-size: 13px;
@@ -545,8 +566,11 @@
                 <table class="table mb-0" id="memberTable">
                   <thead class="tbl-head" id="memberTableHead"></thead>
                   <tbody id="memberTableBody"></tbody>
-                  <tfoot id="memberTableFoot"></tfoot>
                 </table>
+              </div>
+              <div class="tbl-foot-fixed" id="memberTableFootFixed">
+                <span class="tfoot-label">TOTAL</span>
+                <span class="tfoot-total" id="tfootTotalValue">Rp0</span>
               </div>
               <div
                 class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 mt-3 px-1"
@@ -1339,22 +1363,15 @@
         thead.innerHTML = "";
         thead.appendChild(tr);
       }
-
       function renderFoot() {
         const totalBayar = filteredList.reduce(
           (sum, m) => sum + parsePrice(m.harga_dibayarkan),
           0,
         );
-        const row = document.createElement("tr");
-        row.className = "tbl-foot";
-        row.innerHTML = Array.from({ length: COLUMNS.length }, (_, idx) => {
-          if (idx === 0) return '<td class="tfoot-label">TOTAL</td>';
-          if (idx === 4)
-            return `<td class="td-price tfoot-total">${"Rp" + totalBayar.toLocaleString("id-ID")}</td>`;
-          return "<td></td>";
-        }).join("");
-        tfoot.innerHTML = "";
-        tfoot.appendChild(row);
+        const totalEl = document.getElementById("tfootTotalValue");
+        if (totalEl) {
+          totalEl.textContent = "Rp" + totalBayar.toLocaleString("id-ID");
+        }
       }
 
       /* ── pagination ── */
