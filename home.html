@@ -406,51 +406,58 @@
             </div>
 
 
-            <!-- TASKS & STATUS -->
+            <!-- DAILY REPORT APPROVAL -->
             <div class="row g-4 mb-5">
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm h-100 rounded-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="fw-bold mb-0 text-dark"><i
-                                        class="bi bi-exclamation-circle text-warning me-2"></i>Needs Approval</h6>
-                                <span class="badge bg-warning text-dark rounded-pill">3</span>
+                                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-exclamation-circle text-warning me-2"></i>Daily Report Approval</h6>
+                                <span id="dailyReportBadge" class="badge bg-warning text-dark rounded-pill">0</span>
                             </div>
-                            <div class="d-flex flex-column gap-3">
-                                <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <p class="fw-bold mb-0 small">Budget Proposal</p><small class="text-muted"
-                                            style="font-size:0.7rem">Sarah (Finance)</small>
-                                    </div>
-                                    <div class="d-flex gap-2"><button class="btn btn-sm bg-white border text-danger"><i
-                                                class="bi bi-x"></i></button><button class="btn btn-sm btn-dark"><i
-                                                class="bi bi-check"></i></button></div>
-                                </div>
+                            <div id="dailyReportList" class="d-flex flex-column gap-2">
+                                <p class="text-muted small mb-0">Loading...</p>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-lg-6">
-                    <div class="card border-0 shadow-sm h-100 rounded-4">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="fw-bold mb-0 text-dark"><i
-                                        class="bi bi-check2-all text-success me-2"></i>Last Day Completed</h6>
+            <!-- MODAL: DAILY REPORT DETAIL -->
+            <div class="modal fade" id="dailyReportModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Detail Laporan Harian</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="modalReportId">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nama</label>
+                                <p id="modalReportName" class="form-control-plaintext"></p>
                             </div>
-                            <p class="text-muted small fst-italic mb-3 text-purple">"Great work yesterday! Keep the
-                                momentum going. 🚀"</p>
-                            <div class="d-flex flex-column gap-2">
-                                <div class="d-flex align-items-center justify-content-between border-bottom pb-2">
-                                    <span class="text-muted small text-decoration-line-through">Meeting Report: Client
-                                        A</span>
-                                    <i class="bi bi-check-circle-fill text-success small"></i>
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <span class="text-muted small text-decoration-line-through">Fix Login Bug</span>
-                                    <i class="bi bi-check-circle-fill text-success small"></i>
-                                </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Departemen / Posisi</label>
+                                <p id="modalReportDeptPos" class="form-control-plaintext"></p>
                             </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tanggal</label>
+                                <p id="modalReportDate" class="form-control-plaintext"></p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tugas</label>
+                                <ul id="modalReportTasks" class="list-group"></ul>
+                            </div>
+                            <div id="rejectReasonContainer" class="mb-3" style="display:none;">
+                                <label class="form-label fw-bold text-danger">Alasan Penolakan *</label>
+                                <textarea id="rejectReason" class="form-control" rows="3" placeholder="Masukkan alasan penolakan..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger rounded-pill px-4" onclick="rejectReport()">Reject</button>
+                            <button type="button" class="btn btn-success rounded-pill px-4" onclick="approveReport()">Approve</button>
                         </div>
                     </div>
                 </div>
@@ -690,8 +697,11 @@
                     if (userDocSnap.exists()) {
                         const data = userDocSnap.data();
                         const role = data.access?.role_id;
+                        const employment = data.employment || {};
+                        window.teamMemberDepartment = employment.department || '';
                         if (['staff'].includes(role)) {
                             loadPendingApprovals();
+                            loadDailyReportApprovals();
                         }
                     }
                 } catch (e) {
@@ -1558,7 +1568,140 @@
             }
         };
 
-        // --- 6. LOGOUT ---
+        // --- 6. DAILY REPORT APPROVAL ---
+        let dailyReportUnsubscribe = null;
+
+        function loadDailyReportApprovals() {
+            const list = document.getElementById('dailyReportList');
+            const badge = document.getElementById('dailyReportBadge');
+            if (!list || !badge) return;
+
+            const dept = window.teamMemberDepartment;
+            if (!dept) {
+                list.innerHTML = '<p class="text-muted small mb-0">Departemen tidak ditemukan.</p>';
+                return;
+            }
+
+            const q = query(
+                collection(db, 'intern_dailyreport'),
+                where('status', '==', 'Pending'),
+                where('department', '==', dept)
+            );
+
+            if (dailyReportUnsubscribe) {
+                dailyReportUnsubscribe();
+            }
+
+            dailyReportUnsubscribe = onSnapshot(q, (snapshot) => {
+                list.innerHTML = '';
+                if (snapshot.empty) {
+                    list.innerHTML = '<p class="text-muted small mb-0">Tidak ada laporan perlu persetujuan.</p>';
+                    badge.textContent = '0';
+                    return;
+                }
+
+                badge.textContent = snapshot.size;
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const item = document.createElement('div');
+                    item.className = 'p-3 bg-light rounded-3 d-flex justify-content-between align-items-center';
+                    item.style.cursor = 'pointer';
+                    item.innerHTML = `
+                        <div>
+                            <p class="fw-bold mb-0 small">${data.name || 'No Name'}</p>
+                            <small class="text-muted" style="font-size:0.7rem">${data.report_date || '-'} | ${data.position || '-'}</small>
+                        </div>
+                        <button class="btn btn-sm btn-dark rounded-pill px-3">Review</button>
+                    `;
+                    item.addEventListener('click', () => openDailyReportModal(docSnap.id, data));
+                    list.appendChild(item);
+                });
+            }, (error) => {
+                console.error('Error loading daily reports:', error);
+                list.innerHTML = '<p class="text-danger small mb-0">Gagal memuat data.</p>';
+            });
+        }
+
+        function openDailyReportModal(reportId, data) {
+            const modalEl = document.getElementById('dailyReportModal');
+            if (!modalEl) return;
+
+            document.getElementById('modalReportId').value = reportId;
+            document.getElementById('modalReportName').textContent = data.name || '-';
+            document.getElementById('modalReportDeptPos').textContent = `${data.department || '-'} / ${data.position || '-'}`;
+            document.getElementById('modalReportDate').textContent = data.report_date || '-';
+
+            const tasksList = document.getElementById('modalReportTasks');
+            tasksList.innerHTML = '';
+            if (data.tasks && Array.isArray(data.tasks)) {
+                data.tasks.forEach(task => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = task;
+                    tasksList.appendChild(li);
+                });
+            }
+
+            document.getElementById('rejectReasonContainer').style.display = 'none';
+            document.getElementById('rejectReason').value = '';
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+
+        window.approveReport = async () => {
+            const reportId = document.getElementById('modalReportId').value;
+            if (!reportId) return;
+
+            try {
+                await updateDoc(doc(db, 'intern_dailyreport', reportId), {
+                    status: 'Approved',
+                    reviewer_id: currentUser.uid,
+                    reviewer_name: JSON.parse(localStorage.getItem('userData'))?.name || currentUser.email,
+                    reviewed_at: serverTimestamp()
+                });
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('dailyReportModal'));
+                if (modal) modal.hide();
+                alert('Laporan berhasil disetujui');
+            } catch (error) {
+                console.error('Error approving report:', error);
+                alert('Gagal menyetujui laporan');
+            }
+        };
+
+        window.rejectReport = async () => {
+            const reportId = document.getElementById('modalReportId').value;
+            const reason = document.getElementById('rejectReason').value.trim();
+
+            if (!reportId) return;
+            if (!reason) {
+                document.getElementById('rejectReasonContainer').style.display = 'block';
+                document.getElementById('rejectReason').focus();
+                alert('Alasan penolakan wajib diisi');
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, 'intern_dailyreport', reportId), {
+                    status: 'Rejected',
+                    reviewer_id: currentUser.uid,
+                    reviewer_name: JSON.parse(localStorage.getItem('userData'))?.name || currentUser.email,
+                    reviewed_at: serverTimestamp(),
+                    rejection_reason: reason
+                });
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('dailyReportModal'));
+                if (modal) modal.hide();
+                alert('Laporan ditolak');
+            } catch (error) {
+                console.error('Error rejecting report:', error);
+                alert('Gagal menolak laporan');
+            }
+        };
+
+        // --- 7. LOGOUT ---
         window.logout = async () => {
             await signOut(auth);
             localStorage.removeItem('userData');
