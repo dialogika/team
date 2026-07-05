@@ -170,77 +170,51 @@
             </div>
             <div class="online-scroll-container mb-4" id="onlineUsersContainer"></div>
 
-            <!-- OPPORTUNITY -->
-            <div class="opportunity-card">
-                <div class="opp-icon-box"><i class="bi bi-stars fs-3"></i></div>
-                <div class="flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h6 class="fw-bold mb-0 text-dark">New Opportunity!</h6>
+            <!-- APPROVALS SECTION: Daily Report + Pending Registrations -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-exclamation-circle text-warning me-2"></i>Daily Report Approval</h6>
+                                <span id="dailyReportBadge" class="badge bg-warning text-dark rounded-pill">0</span>
+                            </div>
+                            <div id="dailyReportList" class="d-flex flex-column gap-2">
+                                <p class="text-muted small mb-0">Loading...</p>
+                            </div>
+                        </div>
                     </div>
-                    <p class="mb-0 small text-muted">Webinar collaboration with <strong>Kampus Merdeka</strong> is
-                        tentative but high priority.</p>
                 </div>
-                <button class="btn btn-dlg-blue px-4 d-none d-sm-block rounded-pill">Details</button>
-            </div>
-
-            <!-- PENDING APPROVALS SECTION (Admin Only) -->
-            <div id="pendingApprovalsSection" class="mb-5" style="display: none;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0 text-dark">📋 Pending Registrations</h5>
-                </div>
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body p-4">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Position</th>
-                                        <th>Registered At</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="pendingUsersTableBody">
-                                    <tr>
-                                        <td colspan="5" class="text-center text-muted">Loading pending registrations...
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                <div class="col-md-6">
+                    <div id="pendingApprovalsSection" style="display: none;">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-person-plus me-2"></i>Pending Registrations</h6>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Position</th>
+                                                <th>Registered At</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pendingUsersTableBody">
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted py-4">Loading pending registrations...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- PINNED PROJECTS SECTION -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0 text-dark">📌 Pinned Projects</h5>
-                <button class="btn btn-sm text-muted fw-bold" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#hiddenProjects">
-                    More Projects <i class="bi bi-chevron-down ms-1"></i>
-                </button>
-            </div>
-
-            <!-- CONTAINER PROJECT (Diisi oleh JS) -->
-            <div class="row g-4 mb-2" id="pinnedProjectsContainer">
-
-                <!-- Loading State (Sementara) -->
-                <div class="col-12 text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- HIDDEN PROJECTS (COLLAPSE) -->
-            <div class="collapse mb-5" id="hiddenProjects">
-                <div class="row g-4 mt-0" id="otherProjectsContainer">
-                    <!-- Project yang tidak di-pin akan muncul disini -->
-                </div>
-            </div>
-
 
             <!-- APPS OVERVIEW -->
             <div class="mb-5">
@@ -406,23 +380,6 @@
             </div>
 
 
-            <!-- DAILY REPORT APPROVAL -->
-            <div class="row g-4 mb-5">
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm rounded-4">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-exclamation-circle text-warning me-2"></i>Daily Report Approval</h6>
-                                <span id="dailyReportBadge" class="badge bg-warning text-dark rounded-pill">0</span>
-                            </div>
-                            <div id="dailyReportList" class="d-flex flex-column gap-2">
-                                <p class="text-muted small mb-0">Loading...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- MODAL: DAILY REPORT DETAIL -->
             <div class="modal fade" id="dailyReportModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
@@ -463,19 +420,7 @@
                 </div>
             </div>
 
-            <!-- TAGS -->
-            <div class="mb-5">
-                <h6 class="fw-bold text-muted text-uppercase small mb-3">Quick Tags</h6>
-                <div class="d-flex flex-wrap">
-                    <a href="#" class="tag-pill tag-blue">#Marketing</a>
-                    <a href="#" class="tag-pill tag-yellow">#Development</a>
-                    <a href="#" class="tag-pill tag-green">#HR_Recruitment</a>
-                    <a href="#" class="tag-pill tag-purple">#Design_System</a>
-                    <a href="#" class="tag-pill tag-red">#Quarter_4</a>
-                    <a href="#" class="tag-pill tag-blue">#Finance</a>
-                </div>
-            </div>
-
+            
         </main>
 
         <!-- MOBILE BOTTOM NAVIGATION -->
@@ -686,8 +631,6 @@
                 }
 
                 await loadDepartments();
-                listenToProjects();
-                listenToTasks();
                 startPresenceTracking();
                 listenToOnlineUsers();
                 startMenuBadgeRefresh();
@@ -699,7 +642,7 @@
                         const role = data.access?.role_id;
                         const employment = data.employment || {};
                         window.teamMemberDepartment = employment.department || '';
-                        if (['staff'].includes(role)) {
+                        if (role) {
                             loadPendingApprovals();
                             loadDailyReportApprovals();
                         }
@@ -1576,16 +1519,9 @@
             const badge = document.getElementById('dailyReportBadge');
             if (!list || !badge) return;
 
-            const dept = window.teamMemberDepartment;
-            if (!dept) {
-                list.innerHTML = '<p class="text-muted small mb-0">Departemen tidak ditemukan.</p>';
-                return;
-            }
-
             const q = query(
                 collection(db, 'intern_dailyreport'),
-                where('status', '==', 'Pending'),
-                where('department', '==', dept)
+                where('status', 'in', ['Pending', 'Pending Review', 'pending', 'pending review'])
             );
 
             if (dailyReportUnsubscribe) {
@@ -1602,8 +1538,18 @@
 
                 badge.textContent = snapshot.size;
 
+                const reports = [];
                 snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
+                    reports.push({ id: docSnap.id, data: docSnap.data() });
+                });
+                reports.sort((a, b) => {
+                    const aTime = getMs(a.data.submitted_at || a.data.submittedAt || a.data.report_date);
+                    const bTime = getMs(b.data.submitted_at || b.data.submittedAt || b.data.report_date);
+                    return (bTime || 0) - (aTime || 0);
+                });
+
+                reports.forEach(report => {
+                    const data = report.data;
                     const item = document.createElement('div');
                     item.className = 'p-3 bg-light rounded-3 d-flex justify-content-between align-items-center';
                     item.style.cursor = 'pointer';
@@ -1614,7 +1560,7 @@
                         </div>
                         <button class="btn btn-sm btn-dark rounded-pill px-3">Review</button>
                     `;
-                    item.addEventListener('click', () => openDailyReportModal(docSnap.id, data));
+                    item.addEventListener('click', () => openDailyReportModal(report.id, data));
                     list.appendChild(item);
                 });
             }, (error) => {
