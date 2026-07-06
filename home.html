@@ -450,7 +450,7 @@
 
                             <div class="card border shadow-sm rounded-3 mb-3">
                                 <div class="card-body p-3">
-                                    <h6 class="fw-bold text-dark mb-3">Tugas yang Dilaporkann</h6>
+                                    <h6 class="fw-bold text-dark mb-3">Tugas yang Dilaporkan</h6>
                                     <ul id="modalReportTasks" class="list-unstyled mb-0"></ul>
                                 </div>
                             </div>
@@ -458,7 +458,10 @@
                         </div>
                         <div class="modal-footer border-0 p-4 pt-2">
                             <button type="button" class="btn btn-danger rounded-pill px-4" onclick="showRejectModal()">Reject</button>
-                            <button type="button" class="btn btn-success rounded-pill px-4" onclick="approveReport()">Approve</button>
+                            <div id="approveButtonsContainer">
+                                <button type="button" class="btn btn-success rounded-pill px-4 me-2" onclick="approveReport()">Approve All</button>
+                                <button type="button" class="btn btn-outline-success rounded-pill px-4" onclick="approveIndividualTasks()">Approve Individual</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1686,12 +1689,25 @@
 
             const tasksList = document.getElementById('modalReportTasks');
             tasksList.innerHTML = '';
+            
+            // Simpan data task ke element untuk nanti digunakan
+            document.getElementById('modalReportId').dataset.tasks = JSON.stringify(data.tasks || []);
+            
+            const buttonsContainer = document.getElementById('approveButtonsContainer');
+            buttonsContainer.innerHTML = `
+                <button type="button" class="btn btn-success rounded-pill px-4 me-2" onclick="approveReport()">Approve All</button>
+                <button type="button" class="btn btn-outline-success rounded-pill px-4" onclick="approveIndividualTasks()">Approve Individual</button>
+            `;
+            
             if (data.tasks && Array.isArray(data.tasks)) {
                 data.tasks.forEach((task, index) => {
                     const li = document.createElement('li');
                     li.className = 'd-flex align-items-start mb-2';
                     li.innerHTML = `
-                        <span class="badge bg-primary rounded-pill me-2 mt-1" style="min-width: 24px;">${index + 1}</span>
+                        <div class="form-check mt-1 me-2" style="display: none;" id="taskCheckContainer_${index}">
+                            <input class="form-check-input task-approve-checkbox" type="checkbox" value="${index}" id="taskCheck_${index}">
+                        </div>
+                        <span class="badge bg-primary rounded-pill me-2 mt-1" id="taskBadge_${index}" style="min-width: 24px;">${index + 1}</span>
                         <div>
                             <div class="fw-bold text-dark">${task.task || '-'}</div>
                             <small class="text-muted">${task.note || '-'}</small>
@@ -1704,6 +1720,110 @@
             const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
         }
+
+        window.approveIndividualTasks = () => {
+            const checkboxes = document.querySelectorAll('.task-approve-checkbox');
+            const containers = document.querySelectorAll('[id^="taskCheckContainer_"]');
+            const badges = document.querySelectorAll('[id^="taskBadge_"]');
+            
+            containers.forEach(el => el.style.display = 'block');
+            badges.forEach(el => el.style.display = 'none');
+            
+            const buttonsContainer = document.getElementById('approveButtonsContainer');
+            buttonsContainer.innerHTML = `
+                <button type="button" class="btn btn-secondary rounded-pill px-4 me-2" onclick="cancelApproveIndividual()">Cancel</button>
+                <button type="button" class="btn btn-success rounded-pill px-4" onclick="submitApproveIndividual()">Approve Selected</button>
+            `;
+            checkboxes.forEach(cb => cb.checked = false);
+        };
+        
+        window.cancelApproveIndividual = () => {
+            const containers = document.querySelectorAll('[id^="taskCheckContainer_"]');
+            const badges = document.querySelectorAll('[id^="taskBadge_"]');
+            
+            containers.forEach(el => el.style.display = 'none');
+            badges.forEach(el => el.style.display = 'inline-block');
+            
+            const buttonsContainer = document.getElementById('approveButtonsContainer');
+            buttonsContainer.innerHTML = `
+                <button type="button" class="btn btn-success rounded-pill px-4 me-2" onclick="approveReport()">Approve All</button>
+                <button type="button" class="btn btn-outline-success rounded-pill px-4" onclick="approveIndividualTasks()">Approve Individual</button>
+            `;
+        };
+        
+        window.submitApproveIndividual = async () => {
+            const reportId = document.getElementById('modalReportId').value;
+            if (!reportId) return;
+            
+            const checkboxes = document.querySelectorAll('.task-approve-checkbox');
+            const tasksData = JSON.parse(document.getElementById('modalReportId').dataset.tasks || '[]');
+            
+            const selectedIndices = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => parseInt(cb.value));
+                
+            if (selectedIndices.length === 0) {
+                Swal.fire({
+                    title: 'Peringatan',
+                    text: 'Pilih setidaknya satu tugas untuk disetujui',
+                    icon: 'warning'
+                });
+                return;
+            }
+            
+            // Tandai task yang di-approve dan yang tidak di-centang sebagai rejected
+            const updatedTasks = tasksData.map((task, idx) => {
+                return {
+                    ...task,
+                    status: selectedIndices.includes(idx) ? 'Approved' : 'Rejected'
+                };
+            });
+            
+            const allApproved = updatedTasks.length > 0 && updatedTasks.every(t => t.status === 'Approved');
+            const allRejected = updatedTasks.length > 0 && updatedTasks.every(t => t.status === 'Rejected');
+            
+            let reportStatus = 'Partially Approved';
+            if (allApproved) {
+                reportStatus = 'Approved';
+            } else if (allRejected) {
+                reportStatus = 'Rejected';
+            }
+            
+            try {
+                await updateDoc(doc(db, 'intern_dailyreport', reportId), {
+                    tasks: updatedTasks,
+                    status: reportStatus,
+                    reviewer_id: currentUser.uid,
+                    reviewer_name: JSON.parse(localStorage.getItem('userData'))?.name || currentUser.email,
+                    reviewed_at: serverTimestamp()
+                });
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('dailyReportModal'));
+                if (modal) modal.hide();
+                
+                // Reset mode 
+                cancelApproveIndividual();
+                
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Tugas yang dipilih berhasil disetujui',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#198754',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            } catch (error) {
+                console.error('Error approving tasks:', error);
+                Swal.fire({
+                    title: 'Gagal!',
+                    text: 'Gagal menyetujui tugas',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        };
 
         window.approveReport = async () => {
             const reportId = document.getElementById('modalReportId').value;
