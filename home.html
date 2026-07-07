@@ -1612,12 +1612,29 @@
                     return;
                 }
 
-                badge.textContent = snapshot.size;
-
                 const reports = [];
+                const userDept = (window.teamMemberDepartment || "").toLowerCase().trim();
+
                 snapshot.forEach(docSnap => {
-                    reports.push({ id: docSnap.id, data: docSnap.data() });
+                    const data = docSnap.data();
+                    const reportDept = (data.department || "").toLowerCase().trim();
+                    
+                    // Filter laporan berdasarkan departemen user yang login
+                    if (userDept && reportDept !== userDept) {
+                        return;
+                    }
+                    
+                    reports.push({ id: docSnap.id, data: data });
                 });
+
+                if (reports.length === 0) {
+                    list.innerHTML = '<p class="text-muted small mb-0">Tidak ada laporan perlu persetujuan.</p>';
+                    badge.textContent = '0';
+                    return;
+                }
+
+                badge.textContent = reports.length;
+
                 reports.sort((a, b) => {
                     const aTime = getMs(a.data.submitted_at || a.data.submittedAt || a.data.report_date);
                     const bTime = getMs(b.data.submitted_at || b.data.submittedAt || b.data.report_date);
