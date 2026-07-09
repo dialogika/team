@@ -359,10 +359,11 @@
                   >
                     Delete
                   </button>
-                  <button
-                    @click="saveProduct"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-indigo-100 transition-all active:scale-95"
-                  >
+                    <button
+                      type="button"
+                      @click="saveProduct"
+                      class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-indigo-100 transition-all active:scale-95"
+                    >
                     {{ isEditMode ? 'Push Changes' : 'Register Product' }}
                   </button>
                 </div>
@@ -558,9 +559,9 @@
                           :key="idx"
                           class="space-y-2 bg-slate-50 border border-slate-100 rounded-xl p-3"
                           draggable="true"
-                          @dragstart="onRowDragStart('curriculum', idx)"
+                          @dragstart="onRowDragStart('curriculum', idx, $event)"
                           @dragover.prevent
-                          @drop="onRowDrop('curriculum', idx)"
+                          @drop="onRowDrop('curriculum', idx, $event)"
                         >
                           <div class="flex items-center gap-2">
                             <input
@@ -614,9 +615,9 @@
                           :key="idx"
                           class="p-4 bg-slate-50 rounded-2xl border border-slate-100"
                           draggable="true"
-                          @dragstart="onRowDragStart('features', idx)"
+                          @dragstart="onRowDragStart('features', idx, $event)"
                           @dragover.prevent
-                          @drop="onRowDrop('features', idx)"
+                          @drop="onRowDrop('features', idx, $event)"
                         >
                           <div
                             class="flex justify-between items-start mb-3 gap-3"
@@ -693,9 +694,9 @@
                           :key="idx"
                           class="flex items-center gap-2"
                           draggable="true"
-                          @dragstart="onRowDragStart('outcomes', idx)"
+                          @dragstart="onRowDragStart('outcomes', idx, $event)"
                           @dragover.prevent
-                          @drop="onRowDrop('outcomes', idx)"
+                          @drop="onRowDrop('outcomes', idx, $event)"
                         >
                           <input
                             type="text"
@@ -841,9 +842,9 @@
                         :key="idx"
                         class="flex items-center gap-2"
                         draggable="true"
-                        @dragstart="onRowDragStart('specifications', idx)"
+                        @dragstart="onRowDragStart('specifications', idx, $event)"
                         @dragover.prevent
-                        @drop="onRowDrop('specifications', idx)"
+                        @drop="onRowDrop('specifications', idx, $event)"
                       >
                         <input
                           type="text"
@@ -1358,132 +1359,156 @@
             form.value.specifications.push("");
           };
 
-          const onRowDragStart = (section, index) => {
-            dragState.value = { section, index };
-          };
+           const onRowDragStart = (section, index, event) => {
+             dragState.value = { section, index };
+             if (event && event.dataTransfer) {
+               event.dataTransfer.effectAllowed = 'move';
+               event.dataTransfer.setData('text/html', '');
+             }
+           };
 
-          const onRowDrop = (section, index) => {
-            if (!dragState.value || dragState.value.section !== section) return;
-            const from = dragState.value.index;
-            if (from === index || from == null) {
-              dragState.value = { section: null, index: null };
-              return;
-            }
-            const list = form.value[section];
-            if (!Array.isArray(list)) {
-              dragState.value = { section: null, index: null };
-              return;
-            }
-            const item = list.splice(from, 1)[0];
-            list.splice(index, 0, item);
-            dragState.value = { section: null, index: null };
-          };
+           const onRowDrop = (section, index, event) => {
+             if (event) {
+               event.preventDefault();
+               event.stopPropagation();
+             }
+             if (!dragState.value || dragState.value.section !== section) {
+               dragState.value = { section: null, index: null };
+               return;
+             }
+             const from = dragState.value.index;
+             if (from === index || from == null) {
+               dragState.value = { section: null, index: null };
+               return;
+             }
+             const list = form.value[section];
+             if (!Array.isArray(list)) {
+               dragState.value = { section: null, index: null };
+               return;
+             }
+             const item = list.splice(from, 1)[0];
+             list.splice(index, 0, item);
+             dragState.value = { section: null, index: null };
+           };
 
-          const saveProduct = async () => {
-            if (!form.value.product_id || !form.value.name) {
-              alert("Please fill in Product ID and Name.");
-              return;
-            }
+           const saveProduct = async () => {
+             if (form.value.product_id === undefined) {
+               alert("Product ID is required to save.");
+               return;
+             }
+             if (
+               !isEditMode.value &&
+               products.value.some((p) => p.product_id === form.value.product_id)
+             ) {
+               alert("Product ID already exists!");
+               return;
+             }
 
-            if (
-              !isEditMode.value &&
-              products.value.some((p) => p.product_id === form.value.product_id)
-            ) {
-              alert("ID already exists!");
-              return;
-            }
+             const normalizedCurriculum = Array.isArray(form.value.curriculum)
+               ? form.value.curriculum
+                   .map((item) => ({
+                     order: String(item.order || "").trim(),
+                     title: String(item.title || "").trim(),
+                     description: String(item.description || "").trim(),
+                   }))
+                   .filter((item) => item.title)
+               : [];
 
-            const normalizedCurriculum = Array.isArray(form.value.curriculum)
-              ? form.value.curriculum
-                  .map((item) => ({
-                    order: String(item.order || "").trim(),
-                    title: String(item.title || "").trim(),
-                    description: String(item.description || "").trim(),
-                  }))
-                  .filter((item) => item.title)
-              : [];
+             const normalizedFeatures = Array.isArray(form.value.features)
+               ? form.value.features.map((feat) => ({
+                   label: String(feat.label || "").trim(),
+                   type: feat.type || "boolean",
+                   value:
+                     feat.type === "boolean"
+                       ? !!feat.value
+                       : String(feat.value ?? "").trim(),
+                 }))
+               : [];
 
-            const normalizedFeatures = Array.isArray(form.value.features)
-              ? form.value.features.map((feat) => ({
-                  label: String(feat.label || "").trim(),
-                  type: feat.type || "boolean",
-                  value:
-                    feat.type === "boolean"
-                      ? !!feat.value
-                      : String(feat.value ?? "").trim(),
-                }))
-              : [];
+             const classType = form.value.type || "Online";
 
-            const classType = form.value.type || "Online";
+             const manualSpecifications = Array.isArray(
+               form.value.specifications,
+             )
+               ? form.value.specifications.filter((item) =>
+                   String(item || "").trim(),
+                 )
+               : [];
+             const finalSpecifications = [classType, ...manualSpecifications].filter(
+               (s) => String(s || "").trim(),
+             );
 
-            // Class Type is always synced as the first point of Specification,
-            // followed by whatever the user typed in the Specification list.
-            const manualSpecifications = Array.isArray(
-              form.value.specifications,
-            )
-              ? form.value.specifications.filter((item) =>
-                  String(item || "").trim(),
-                )
-              : [];
-            const finalSpecifications = [classType, ...manualSpecifications];
+             const normalizedOutcomes = Array.isArray(form.value.outcomes)
+               ? form.value.outcomes.filter((o) => String(o || "").trim())
+               : [];
 
-            const payload = {
-              productId: form.value.product_id,
-              name: form.value.name,
-              description: form.value.description || "",
-              type: classType,
-              basePrice: Number(form.value.base_price) || 0,
-              currency: "IDR",
-              totalSessions: Number(form.value.total_sessions) || 0,
-              badgeText:
-                form.value.visual && form.value.visual.badge_text
-                  ? form.value.visual.badge_text
-                  : "NEW",
-              badgeColor:
-                form.value.visual && form.value.visual.badge_color
-                  ? form.value.visual.badge_color
-                  : "#6366f1",
-              thumbnailUrl: form.value.visual
-                ? form.value.visual.thumbnail_url || null
-                : null,
-              features: normalizedFeatures,
-              materials: normalizedCurriculum,
-              specifications: finalSpecifications,
-              targetOutcomes: Array.isArray(form.value.outcomes)
-                ? form.value.outcomes
-                : [],
-              status: form.value.status || "active",
-              updatedAt: window.serverTimestamp
-                ? window.serverTimestamp()
-                : null,
-            };
+             const payload = {
+               productId: form.value.product_id,
+               name: form.value.name,
+               description: form.value.description || "",
+               type: classType,
+               basePrice: Number(form.value.base_price) || 0,
+               currency: "IDR",
+               totalSessions: Number(form.value.total_sessions) || 0,
+               badgeText:
+                 form.value.visual && form.value.visual.badge_text
+                   ? form.value.visual.badge_text
+                   : "NEW",
+               badgeColor:
+                 form.value.visual && form.value.visual.badge_color
+                   ? form.value.visual.badge_color
+                   : "#6366f1",
+               thumbnailUrl: form.value.visual
+                 ? form.value.visual.thumbnail_url || null
+                 : null,
+               features: normalizedFeatures,
+               materials: normalizedCurriculum,
+               specifications: finalSpecifications,
+               targetOutcomes: normalizedOutcomes,
+               status: form.value.status || "active",
+               updatedAt: window.serverTimestamp
+                 ? window.serverTimestamp()
+                 : null,
+             };
 
-            try {
-              if (!window.db || !window.setDoc || !window.doc) {
-                alert("Database not initialized");
-                return;
-              }
+             console.log("[SaveProduct] Payload prepared:", {
+               productId: payload.productId,
+               specCount: finalSpecifications.length,
+               outcomeCount: normalizedOutcomes.length,
+               specs: finalSpecifications,
+             });
 
-              await window.setDoc(
-                window.doc(window.db, "products", form.value.product_id),
-                payload,
-                { merge: true },
-              );
+             try {
+               if (!window.db || !window.setDoc || !window.doc) {
+                 alert("Database not initialized");
+                 return;
+               }
 
-              await loadProductsWithRetry(2, 1000);
+               await window.setDoc(
+                 window.doc(window.db, "products", form.value.product_id),
+                 payload,
+                 { merge: true },
+               );
 
-              if (isEditMode.value) {
-                showToast("Data Synced with Database");
-              } else {
-                showToast("New Product Registered");
-              }
+               console.log("[SaveProduct] Document saved successfully");
+               await loadProductsWithRetry(2, 1000);
 
-              showForm.value = false;
-            } catch (e) {
-              console.error("Failed to save product", e);
-              alert("Gagal menyimpan produk: " + (e.message || e.toString()));
-            }
-          };
+               if (isEditMode.value) {
+                 showToast("Data Synced with Database");
+               } else {
+                 showToast("New Product Registered");
+               }
+
+               showForm.value = false;
+             } catch (e) {
+               console.error("[SaveProduct] Failed to save product:", {
+                 productId: form.value.product_id,
+                 error: e.message || e.toString(),
+                 errorCode: e.code,
+               });
+               alert("Gagal menyimpan produk: " + (e.message || e.toString()));
+             }
+           };
 
           const openDeleteModal = () => {
             if (!isEditMode.value || !form.value.product_id) return;
@@ -1495,25 +1520,50 @@
             showDeleteModal.value = false;
           };
 
-          const deleteCurrentProduct = async () => {
-            if (!isEditMode.value || !form.value.product_id) return;
-            if (!window.db || !window.doc || !window.deleteDoc) return;
-            deleting.value = true;
-            try {
-              await window.deleteDoc(
-                window.doc(window.db, "products", form.value.product_id),
-              );
-              await loadProductsWithRetry(2, 1000);
-              showDeleteModal.value = false;
-              showForm.value = false;
-              showToast("Product Deleted");
-            } catch (e) {
-              console.error("Failed to delete product", e);
-              alert("Gagal menghapus produk: " + (e.message || e.toString()));
-            } finally {
-              deleting.value = false;
-            }
-          };
+           const deleteCurrentProduct = async () => {
+             if (!isEditMode.value || !form.value.product_id) {
+               console.warn("[Delete] Edit mode or product_id not set");
+               return;
+             }
+             
+             const productIdToDelete = String(form.value.product_id).trim();
+             if (!productIdToDelete) {
+               alert("Product ID tidak valid untuk dihapus.");
+               return;
+             }
+             
+             if (!window.db || !window.doc || !window.deleteDoc) {
+               console.error("[Delete] Firestore not initialized", {
+                 hasDb: !!window.db,
+                 hasDoc: !!window.doc,
+                 hasDeleteDoc: !!window.deleteDoc,
+               });
+               alert("Database tidak terinisialisasi dengan benar.");
+               return;
+             }
+             
+             deleting.value = true;
+             try {
+               console.log("[Delete] Starting delete for product:", productIdToDelete);
+               const docRef = window.doc(window.db, "products", productIdToDelete);
+               await window.deleteDoc(docRef);
+               console.log("[Delete] Successfully deleted document from Firestore");
+               
+               await loadProductsWithRetry(2, 1000);
+               showDeleteModal.value = false;
+               showForm.value = false;
+               showToast("Product Deleted");
+             } catch (e) {
+               console.error("[Delete] Failed to delete product:", {
+                 productId: productIdToDelete,
+                 error: e.message || e.toString(),
+                 errorCode: e.code,
+               });
+               alert("Gagal menghapus produk: " + (e.message || e.toString()));
+             } finally {
+               deleting.value = false;
+             }
+           };
 
           const showToast = (msg) => {
             toast.value = msg;
