@@ -1082,6 +1082,88 @@
         // Export to window for global reusability
         window.sendDiscordExpenseNotification = sendDiscordExpenseNotification;
 
+        // DISCORD WEBHOOK NOTIFICATION SYSTEM (PAID)
+        // ==========================================
+        async function sendDiscordPaidNotification(expenseData) {
+            const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1519571944364576809/hDYfs52OwPDvKcu_00WuL48PAcF0TKf_4BgDGu58vUXNmaVGkPg0w5aMoArM9OU02-ax";
+
+            try {
+                const formatCategory = (category) => {
+                    const map = {
+                        mentor_salary: 'Mentor Salary',
+                        operational: 'Operational',
+                        reimburse: 'Reimburse',
+                        tools: 'Tools',
+                        transport: 'Transport',
+                        other: 'Other'
+                    };
+                    return map[category] || category || 'Other';
+                };
+
+                const formattedAmount = typeof expenseData.amount === 'number'
+                    ? `Rp ${new Intl.NumberFormat('id-ID').format(expenseData.amount)}`
+                    : (expenseData.amount ? `Rp ${expenseData.amount}` : '-');
+
+                const fields = [
+                    { name: "👤 Pengaju", value: expenseData.requesterName || "-", inline: true },
+                    { name: "📋 Judul", value: expenseData.title || "-", inline: true },
+                    { name: "📂 Kategori", value: formatCategory(expenseData.category) || "-", inline: true },
+                    { name: "💰 Nominal", value: formattedAmount, inline: true },
+                    { name: "👥 Penerima", value: expenseData.beneficiaryName || "-", inline: true },
+                    { name: "📌 Status", value: expenseData.status ? expenseData.status.toUpperCase() : "-", inline: true },
+                ];
+
+                if (expenseData.paymentNotes) {
+                    fields.push({ name: "📝 Catatan Pembayaran", value: expenseData.paymentNotes, inline: false });
+                }
+
+                let timestamp;
+                if (expenseData.paidAtMs) {
+                    timestamp = new Date(expenseData.paidAtMs).toISOString();
+                } else if (expenseData.updatedAtMs) {
+                    timestamp = new Date(expenseData.updatedAtMs).toISOString();
+                } else {
+                    timestamp = new Date().toISOString();
+                }
+                
+                const embed = {
+                    title: "✅ Expense Dibayarkan",
+                    description: `Request expense **${expenseData.title}** telah dibayarkan.`,
+                    color: 3581519, // #36b37f (Green)
+                    fields: fields,
+                    footer: {
+                        text: "Dialogika Operational Expenses System"
+                    },
+                    timestamp: timestamp
+                };
+
+                if (expenseData.transferProofUrl) {
+                    embed.image = {
+                        url: expenseData.transferProofUrl
+                    };
+                }
+
+                const payload = {
+                    embeds: [embed]
+                };
+
+                const response = await fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Failed to send Discord paid notification:', error);
+            }
+        }
+
+        // Export to window for global reusability
+        window.sendDiscordPaidNotification = sendDiscordPaidNotification;
+
         const topbarTarget = document.getElementById('topbarContainer');
         renderTopBar(topbarTarget);
         const sidebarTarget = document.getElementById('sidebarContainer');
@@ -1128,6 +1210,7 @@
                 const saving = ref(false);
                 const toast = ref(null);
                 const currentExpenseId = ref('');
+                const previousStatus = ref('');
                 const proofFileInput = ref(null);
                 const reimburseProofInput = ref(null);
                 const form = ref({});
@@ -1866,6 +1949,7 @@
                 const openEditDrawer = (expense) => {
                     isEditMode.value = true;
                     currentExpenseId.value = expense.id;
+                    previousStatus.value = expense.status;
                     let fallbackMentorWhatsapp = expense.mentorWhatsapp || '';
                     if (!normalizeWhatsappNumber(fallbackMentorWhatsapp) && expense.mentorId) {
                         const mentorById = mentorOptions.value.find((item) => item.id === expense.mentorId);
@@ -2159,6 +2243,7 @@
                         }
 
                         const isNew = !isEditMode.value;
+                        const justPaidOrComplete = !isNew && previousStatus.value !== 'paid' && previousStatus.value !== 'complete' && (payload.status === 'paid' || payload.status === 'complete');
 
                         await setDoc(doc(db, 'operational_expenses', expenseId), payload, { merge: true });
 
@@ -2169,6 +2254,16 @@
                                 ...payload
                             }).catch(err => {
                                 console.error('Error sending Discord notification:', err);
+                            });
+                        }
+
+                        // Automatic Discord Notification when status is changed to paid or complete
+                        if (justPaidOrComplete) {
+                            sendDiscordPaidNotification({
+                                id: expenseId,
+                                ...payload
+                            }).catch(err => {
+                                console.error('Error sending Discord paid notification:', err);
                             });
                         }
 

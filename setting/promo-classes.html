@@ -89,6 +89,126 @@
         line-height: 1;
       }
 
+      /* -------------------- Batch selector -------------------- */
+      .batch-scroller {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 6px;
+      }
+
+      .batch-scroller::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      .batch-scroller::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 999px;
+      }
+
+      .batch-pill {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 10px 18px;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        cursor: pointer;
+        min-width: 190px;
+        transition: all 0.15s ease;
+      }
+
+      .batch-pill:hover {
+        border-color: var(--dlg-blue, #0b2b6a);
+        transform: translateY(-1px);
+      }
+
+      .batch-pill.active {
+        background: var(--dlg-blue, #0b2b6a);
+        border-color: var(--dlg-blue, #0b2b6a);
+        box-shadow: 0 8px 20px rgba(11, 43, 106, 0.25);
+      }
+
+      .batch-pill .batch-pill-label {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #0f172a;
+        white-space: nowrap;
+      }
+
+      .batch-pill.active .batch-pill-label {
+        color: #fff;
+      }
+
+      .batch-pill .batch-pill-count {
+        font-size: 0.76rem;
+        color: #64748b;
+        font-weight: 600;
+      }
+
+      .batch-pill.active .batch-pill-count {
+        color: #cfe0ff;
+      }
+
+      .batch-pill-add {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-width: 150px;
+        border-radius: 16px;
+        border: 1.5px dashed #94a3b8;
+        background: transparent;
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+
+      .batch-pill-add:hover {
+        border-color: var(--dlg-blue, #0b2b6a);
+        color: var(--dlg-blue, #0b2b6a);
+      }
+
+      .batch-info-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+      }
+
+      .batch-info-bar .batch-info-title {
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .batch-info-bar .batch-info-sub {
+        color: #64748b;
+        font-size: 0.82rem;
+      }
+
+      .batch-empty-state {
+        text-align: center;
+        padding: 60px 24px;
+        color: #64748b;
+      }
+
+      .batch-empty-state i {
+        font-size: 3.2rem;
+        color: #cbd5e1;
+      }
+
       .toolbar {
         display: flex;
         flex-wrap: wrap;
@@ -117,7 +237,7 @@
       }
 
       .table-modern {
-        min-width: 1020px;
+        min-width: 920px;
         margin-bottom: 0;
       }
 
@@ -350,6 +470,17 @@
         border-color: #fff;
       }
 
+      .batch-static-field {
+        background: #f1f5f9;
+        border-radius: 14px;
+        padding: 10px 14px;
+        font-weight: 600;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
       @media (max-width: 767.98px) {
         .hero-card,
         .content-card,
@@ -393,23 +524,38 @@
                   <span>Promo Classes</span>
                 </div>
                 <h1 class="fw-bold mb-2">Promo Classes</h1>
+                <p class="text-muted mb-0">
+                  Data dikelompokkan per batch berdasarkan rentang tanggal
+                  promo. Tanggal batch tidak bisa diubah per data, cukup tambah
+                  atau hapus data di dalam batch yang sesuai.
+                </p>
               </div>
               <div class="d-flex flex-wrap gap-2">
                 <button
                   type="button"
                   class="btn btn-outline-secondary rounded-pill px-4"
-                  onclick="refreshPromoClasses()"
+                  onclick="refreshAll()"
                 >
                   <i class="bi bi-arrow-clockwise me-2"></i>Refresh
                 </button>
                 <button
                   type="button"
                   class="btn btn-dlg-blue rounded-pill px-4"
-                  onclick="openAddModal()"
+                  onclick="openNewBatchModal()"
                 >
-                  <i class="bi bi-plus-circle me-2"></i>Tambah Promo Class
+                  <i class="bi bi-calendar-plus me-2"></i>Buat Batch Baru
                 </button>
               </div>
+            </div>
+          </section>
+
+          <section class="content-card mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h6 class="fw-bold mb-0">Pilih Batch</h6>
+              <span class="text-muted small" id="batchCountLabel">0 batch</span>
+            </div>
+            <div class="batch-scroller" id="batchScroller">
+              <div class="text-muted small py-2">Memuat batch...</div>
             </div>
           </section>
 
@@ -418,7 +564,7 @@
               <div class="metric-card">
                 <div class="d-flex justify-content-between align-items-start">
                   <div>
-                    <div class="metric-label mb-2">Total Promo</div>
+                    <div class="metric-label mb-2">Total di Batch Ini</div>
                     <div class="metric-value" id="metricTotal">0</div>
                   </div>
                   <div class="metric-icon blue">
@@ -456,103 +602,148 @@
           </section>
 
           <section class="content-card">
-            <div class="toolbar mb-4">
-              <div class="d-flex flex-wrap gap-2 flex-grow-1">
-                <div style="min-width: 260px; flex: 1 1 320px">
-                  <div class="input-group">
-                    <span
-                      class="input-group-text bg-white border-end-0 rounded-start-4"
-                    >
-                      <i class="bi bi-search"></i>
-                    </span>
-                    <input
-                      id="searchInput"
-                      type="text"
-                      class="form-control border-start-0 rounded-end-4"
-                      placeholder="Cari product, location, atau harga..."
-                    />
-                  </div>
+            <div class="batch-info-bar" id="batchInfoBar" style="display: none">
+              <div>
+                <div class="batch-info-title">
+                  <i class="bi bi-calendar-range"></i>
+                  <span id="batchInfoLabel">-</span>
                 </div>
-                <div style="min-width: 180px">
-                  <select id="locationFilter" class="form-select rounded-4">
-                    <option value="all">Semua Lokasi</option>
-                  </select>
+                <div class="batch-info-sub" id="batchInfoSub">
+                  0 data dalam batch ini
                 </div>
-              </div>
-              <div class="text-muted small" id="resultSummary">0 data</div>
-            </div>
-
-            <div class="bulk-action-bar" id="bulkActionBar">
-              <div class="bulk-count">
-                <i class="bi bi-check2-square"></i>
-                <span id="bulkSelectedCount">0</span> data dipilih
               </div>
               <div class="d-flex flex-wrap gap-2">
                 <button
                   type="button"
-                  class="btn btn-light btn-sm rounded-pill px-3 fw-semibold"
-                  onclick="openBulkEditModal()"
+                  class="btn btn-dlg-blue rounded-pill px-4"
+                  id="addToBatchBtn"
+                  onclick="openAddModal()"
                 >
-                  <i class="bi bi-calendar2-week me-1"></i>Edit Tanggal Promo
+                  <i class="bi bi-plus-circle me-2"></i>Tambah ke Batch Ini
                 </button>
                 <button
                   type="button"
-                  class="btn btn-bulk-clear btn-sm rounded-pill px-3"
-                  onclick="clearSelection()"
+                  class="btn btn-outline-danger rounded-pill px-4"
+                  id="deleteBatchBtn"
+                  style="display: none"
+                  onclick="openDeleteBatchModal()"
                 >
-                  Batal Pilih
+                  <i class="bi bi-trash3 me-2"></i>Hapus Batch
                 </button>
               </div>
             </div>
 
-            <div class="table-wrap">
-              <table class="table table-modern align-middle">
-                <thead>
-                  <tr>
-                    <th style="width: 44px">
-                      <input
-                        type="checkbox"
-                        id="selectAllCheckbox"
-                        onchange="toggleSelectAll(this.checked)"
-                        title="Pilih semua di halaman ini"
-                      />
-                    </th>
-                    <th>Product</th>
-                    <th>Location</th>
-                    <th>Location Name</th>
-                    <th>Normal Price</th>
-                    <th>Promo Price</th>
-                    <th>Maps</th>
-                    <th>Durasi Promo</th>
-                    <th>Updated</th>
-                    <th class="text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="promoClassTableBody">
-                  <tr>
-                    <td colspan="10" class="text-center text-muted py-5">
-                      Loading promo classes...
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="pagination-toolbar">
-              <div class="pagination-info" id="paginationInfo">
-                Menampilkan 0-0 dari 0 data
+            <div id="batchContentArea">
+              <div class="batch-empty-state">
+                <i class="bi bi-calendar-x"></i>
+                <h6 class="fw-bold mt-3 mb-2">Belum ada batch dipilih</h6>
+                <p class="mb-3">
+                  Buat batch baru untuk mulai mengelompokkan promo class
+                  berdasarkan rentang tanggal.
+                </p>
+                <button
+                  type="button"
+                  class="btn btn-dlg-blue rounded-pill px-4"
+                  onclick="openNewBatchModal()"
+                >
+                  <i class="bi bi-calendar-plus me-2"></i>Buat Batch Baru
+                </button>
               </div>
-              <nav aria-label="Promo Classes Pagination">
-                <ul
-                  class="pagination pagination-modern"
-                  id="paginationContainer"
-                ></ul>
-              </nav>
+            </div>
+
+            <div id="batchTableWrap" style="display: none">
+              <div class="toolbar mb-4">
+                <div class="d-flex flex-wrap gap-2 flex-grow-1">
+                  <div style="min-width: 260px; flex: 1 1 320px">
+                    <div class="input-group">
+                      <span
+                        class="input-group-text bg-white border-end-0 rounded-start-4"
+                      >
+                        <i class="bi bi-search"></i>
+                      </span>
+                      <input
+                        id="searchInput"
+                        type="text"
+                        class="form-control border-start-0 rounded-end-4"
+                        placeholder="Cari product, location, atau harga..."
+                      />
+                    </div>
+                  </div>
+                  <div style="min-width: 180px">
+                    <select id="locationFilter" class="form-select rounded-4">
+                      <option value="all">Semua Lokasi</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="text-muted small" id="resultSummary">0 data</div>
+              </div>
+
+              <div class="bulk-action-bar" id="bulkActionBar">
+                <div class="bulk-count">
+                  <i class="bi bi-check2-square"></i>
+                  <span id="bulkSelectedCount">0</span> data dipilih
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-light btn-sm rounded-pill px-3 fw-semibold text-danger"
+                    onclick="openBulkDeleteModal()"
+                  >
+                    <i class="bi bi-trash3 me-1"></i>Hapus Terpilih
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-bulk-clear btn-sm rounded-pill px-3"
+                    onclick="clearSelection()"
+                  >
+                    Batal Pilih
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-wrap">
+                <table class="table table-modern align-middle">
+                  <thead>
+                    <tr>
+                      <th style="width: 44px">
+                        <input
+                          type="checkbox"
+                          id="selectAllCheckbox"
+                          onchange="toggleSelectAll(this.checked)"
+                          title="Pilih semua di halaman ini"
+                        />
+                      </th>
+                      <th>Product</th>
+                      <th>Location</th>
+                      <th>Location Name</th>
+                      <th>Normal Price</th>
+                      <th>Promo Price</th>
+                      <th>Maps</th>
+                      <th>Updated</th>
+                      <th class="text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="promoClassTableBody"></tbody>
+                </table>
+              </div>
+              <div class="pagination-toolbar">
+                <div class="pagination-info" id="paginationInfo">
+                  Menampilkan 0-0 dari 0 data
+                </div>
+                <nav aria-label="Promo Classes Pagination">
+                  <ul
+                    class="pagination pagination-modern"
+                    id="paginationContainer"
+                  ></ul>
+                </nav>
+              </div>
             </div>
           </section>
         </div>
       </main>
     </div>
 
+    <!-- Add / Edit Promo Class Modal -->
     <div
       class="modal fade"
       id="promoClassModal"
@@ -580,7 +771,19 @@
           <div class="modal-body">
             <form id="promoClassForm">
               <input type="hidden" id="promoClassId" />
+              <input type="hidden" id="promoDurationInput" />
               <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label fw-semibold">Batch</label>
+                  <div class="batch-static-field">
+                    <i class="bi bi-calendar-range"></i>
+                    <span id="formBatchLabel">-</span>
+                  </div>
+                  <small class="text-muted"
+                    >Tanggal promo mengikuti batch yang sedang dipilih dan tidak
+                    bisa diubah per data.</small
+                  >
+                </div>
                 <div class="col-md-6">
                   <label for="productInput" class="form-label fw-semibold"
                     >Product</label
@@ -649,38 +852,6 @@
                     required
                   />
                 </div>
-                <div class="col-12">
-                  <label class="form-label fw-semibold"
-                    >Pilih Durasi Promo</label
-                  >
-                  <div class="input-group">
-                    <div
-                      class="input-group-text bg-white border-end-0 rounded-start-4"
-                    >
-                      <i class="bi bi-calendar-range"></i>
-                    </div>
-                    <input
-                      id="promoDurationStartDate"
-                      type="date"
-                      class="form-control border-start-0 rounded-end-0"
-                    />
-                    <input
-                      id="promoDurationEndDate"
-                      type="date"
-                      class="form-control border-start-0 rounded-start-0"
-                    />
-                    <div
-                      class="input-group-text bg-white border-start-0 rounded-start-4"
-                    >
-                      -
-                    </div>
-                  </div>
-                  <input id="promoDurationInput" type="hidden" />
-                  <small class="text-muted"
-                    >Atau input manual (Contoh: 1 Juni 2026 - 31 Juli
-                    2026)</small
-                  >
-                </div>
               </div>
             </form>
           </div>
@@ -710,6 +881,7 @@
       </div>
     </div>
 
+    <!-- Delete single item modal -->
     <div
       class="modal fade"
       id="deletePromoClassModal"
@@ -756,18 +928,69 @@
       </div>
     </div>
 
-    <div class="modal fade" id="bulkEditModal" tabindex="-1" aria-hidden="true">
+    <!-- Bulk delete modal -->
+    <div
+      class="modal fade"
+      id="bulkDeleteModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold text-danger mb-0">
+              Hapus Data Terpilih
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-0">
+              Yakin ingin menghapus
+              <strong><span id="bulkDeleteCount">0</span> data</strong> yang
+              dipilih dari batch ini? Tindakan ini tidak bisa dibatalkan.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-light border rounded-pill px-4"
+              data-bs-dismiss="modal"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger rounded-pill px-4"
+              id="confirmBulkDeleteBtn"
+              onclick="confirmBulkDelete()"
+            >
+              <span id="confirmBulkDeleteLabel">Hapus Semua</span>
+              <span
+                id="confirmBulkDeleteSpinner"
+                class="spinner-border spinner-border-sm ms-2"
+                style="display: none"
+              ></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New batch modal -->
+    <div class="modal fade" id="newBatchModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
             <div>
-              <h5 class="modal-title fw-bold mb-1">
-                Edit Tanggal Promo (Bulk)
-              </h5>
+              <h5 class="modal-title fw-bold mb-1">Buat Batch Baru</h5>
               <div class="text-muted small">
-                Perubahan akan diterapkan ke
-                <strong><span id="bulkEditCount">0</span> data</strong> yang
-                dipilih.
+                Batch adalah kumpulan promo class dalam rentang tanggal
+                tertentu.
               </div>
             </div>
             <button
@@ -778,9 +1001,7 @@
             ></button>
           </div>
           <div class="modal-body">
-            <label class="form-label fw-semibold"
-              >Pilih Durasi Promo Baru</label
-            >
+            <label class="form-label fw-semibold">Rentang Tanggal Batch</label>
             <div class="input-group">
               <div
                 class="input-group-text bg-white border-end-0 rounded-start-4"
@@ -788,12 +1009,12 @@
                 <i class="bi bi-calendar-range"></i>
               </div>
               <input
-                id="bulkDurationStartDate"
+                id="newBatchStartDate"
                 type="date"
                 class="form-control border-start-0 rounded-end-0"
               />
               <input
-                id="bulkDurationEndDate"
+                id="newBatchEndDate"
                 type="date"
                 class="form-control border-start-0 rounded-start-0"
               />
@@ -803,9 +1024,8 @@
                 -
               </div>
             </div>
-            <input id="bulkDurationInput" type="hidden" />
             <small class="text-muted d-block mt-2"
-              >Preview: <strong id="bulkDurationPreview">-</strong></small
+              >Preview: <strong id="newBatchPreview">-</strong></small
             >
           </div>
           <div class="modal-footer">
@@ -819,15 +1039,60 @@
             <button
               type="button"
               class="btn btn-dlg-blue rounded-pill px-4"
-              id="saveBulkEditBtn"
-              onclick="saveBulkEdit()"
+              id="saveNewBatchBtn"
+              onclick="saveNewBatch()"
             >
-              <span id="saveBulkEditLabel">Terapkan ke Semua</span>
+              <span id="saveNewBatchLabel">Buat Batch</span>
               <span
-                id="saveBulkEditSpinner"
+                id="saveNewBatchSpinner"
                 class="spinner-border spinner-border-sm ms-2"
                 style="display: none"
               ></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete batch modal -->
+    <div
+      class="modal fade"
+      id="deleteBatchModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold text-danger mb-0">Hapus Batch</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-0">
+              Yakin ingin menghapus batch
+              <strong id="deleteBatchLabel">-</strong>? Batch hanya bisa dihapus
+              jika tidak berisi data promo class.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-light border rounded-pill px-4"
+              data-bs-dismiss="modal"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger rounded-pill px-4"
+              onclick="confirmDeleteBatch()"
+            >
+              Hapus Batch
             </button>
           </div>
         </div>
@@ -876,12 +1141,22 @@
       const db = getFirestore(app);
 
       let currentUser = null;
+
+      // Raw caches from Firestore
       let promoClassesCache = [];
+      let promoBatchesCache = []; // formal batch docs: {id, label, startDate, endDate, ...}
       let unsubscribePromoClasses = null;
+      let unsubscribePromoBatches = null;
+
+      // Derived: merged batch list with counts, sorted by startDate.
+      let batchListCache = [];
+      let activeBatchLabel = null;
+
       let currentPage = 1;
       const ITEMS_PER_PAGE = 10;
+      const migratingLabels = new Set();
 
-      // Bulk selection state: holds the ids of currently-selected rows.
+      // Bulk selection state: holds the ids of currently-selected rows (within active batch).
       const selectedIds = new Set();
 
       const searchInput = document.getElementById("searchInput");
@@ -895,6 +1170,14 @@
       const selectAllCheckbox = document.getElementById("selectAllCheckbox");
       const bulkActionBar = document.getElementById("bulkActionBar");
       const bulkSelectedCount = document.getElementById("bulkSelectedCount");
+      const batchScroller = document.getElementById("batchScroller");
+      const batchCountLabel = document.getElementById("batchCountLabel");
+      const batchInfoBar = document.getElementById("batchInfoBar");
+      const batchInfoLabel = document.getElementById("batchInfoLabel");
+      const batchInfoSub = document.getElementById("batchInfoSub");
+      const batchContentArea = document.getElementById("batchContentArea");
+      const batchTableWrap = document.getElementById("batchTableWrap");
+      const deleteBatchBtn = document.getElementById("deleteBatchBtn");
 
       onAuthStateChanged(auth, (user) => {
         if (!user) {
@@ -915,45 +1198,35 @@
         if (userPhotoNode) userPhotoNode.src = userPhoto;
         if (userRoleNode) userRoleNode.innerText = userRole;
 
+        listenToPromoBatches();
         listenToPromoClasses();
       });
 
-      async function migratePromoDuration() {
-        const batch = [];
-        const nowMs = Date.now();
+      /* ---------------------------------------------------------------- */
+      /* Firestore listeners                                              */
+      /* ---------------------------------------------------------------- */
 
-        for (const item of promoClassesCache) {
-          if (!item.promoDuration) {
-            batch.push(
-              updateDoc(doc(db, "promo_classes", item.id), {
-                promoDuration: "1 Juni 2026 - 31 Juli 2026",
-                updated_at: serverTimestamp(),
-                updated_at_ms: nowMs,
-                updated_by: currentUser?.email || currentUser?.uid || "",
-              }),
-            );
-          }
-        }
-
-        if (batch.length > 0) {
-          try {
-            await Promise.all(batch);
-            console.log(
-              `Migrated ${batch.length} promo classes with promoDuration`,
-            );
-          } catch (error) {
-            console.error("Failed to migrate promo duration:", error);
-          }
-        }
+      function listenToPromoBatches() {
+        if (unsubscribePromoBatches) unsubscribePromoBatches();
+        unsubscribePromoBatches = onSnapshot(
+          collection(db, "promo_batches"),
+          (snapshot) => {
+            const rows = [];
+            snapshot.forEach((docSnap) => {
+              rows.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            promoBatchesCache = rows;
+            rebuildBatchList();
+          },
+          (error) => {
+            console.error("Failed to load promo batches:", error);
+            showToast("Gagal memuat data batch.", "error");
+          },
+        );
       }
 
       function listenToPromoClasses() {
-        if (unsubscribePromoClasses) {
-          unsubscribePromoClasses();
-        }
-
-        tableBody.innerHTML =
-          '<tr><td colspan="10" class="text-center text-muted py-5">Loading promo classes...</td></tr>';
+        if (unsubscribePromoClasses) unsubscribePromoClasses();
         unsubscribePromoClasses = onSnapshot(
           collection(db, "promo_classes"),
           (snapshot) => {
@@ -971,27 +1244,210 @@
             promoClassesCache = rows.sort(
               (a, b) => getRecordSortMs(b) - getRecordSortMs(a),
             );
-            renderLocationFilterOptions();
-            updateMetrics();
-            renderPromoClassTable();
-            updateBulkActionBar();
-            migratePromoDuration();
+            rebuildBatchList();
           },
           (error) => {
             console.error("Failed to load promo classes:", error);
-            tableBody.innerHTML =
-              '<tr><td colspan="10" class="text-center text-danger py-5">Gagal memuat promo classes.</td></tr>';
             showToast("Gagal memuat promo classes.", "error");
           },
         );
       }
 
+      /* ---------------------------------------------------------------- */
+      /* Batch list derivation & legacy migration                         */
+      /* ---------------------------------------------------------------- */
+
+      function rebuildBatchList() {
+        const byLabel = new Map();
+
+        promoBatchesCache.forEach((batchDoc) => {
+          if (!batchDoc.label) return;
+          byLabel.set(batchDoc.label, {
+            id: batchDoc.id,
+            label: batchDoc.label,
+            startDate: batchDoc.startDate || null,
+            endDate: batchDoc.endDate || null,
+            count: 0,
+          });
+        });
+
+        const legacyLabelsMissing = new Set();
+
+        promoClassesCache.forEach((item) => {
+          const label = String(item.promoDuration || "").trim();
+          if (!label) return;
+          if (byLabel.has(label)) {
+            byLabel.get(label).count += 1;
+          } else {
+            legacyLabelsMissing.add(label);
+            // Still show it in the list (count-only) while migration completes.
+            if (!byLabel.has(label)) {
+              const range = parseDurationDateRange(label);
+              byLabel.set(label, {
+                id: null,
+                label,
+                startDate: range ? formatDateToISO(range.start) : null,
+                endDate: range ? formatDateToISO(range.end) : null,
+                count: 0,
+              });
+            }
+            byLabel.get(label).count += 1;
+          }
+        });
+
+        batchListCache = Array.from(byLabel.values()).sort((a, b) => {
+          const aTime = a.startDate ? new Date(a.startDate).getTime() : 0;
+          const bTime = b.startDate ? new Date(b.startDate).getTime() : 0;
+          return aTime - bTime;
+        });
+
+        migrateLegacyBatches(legacyLabelsMissing);
+
+        if (!activeBatchLabel && batchListCache.length > 0) {
+          activeBatchLabel = pickDefaultBatchLabel();
+        }
+        if (
+          activeBatchLabel &&
+          !batchListCache.some((b) => b.label === activeBatchLabel)
+        ) {
+          activeBatchLabel = batchListCache.length
+            ? batchListCache[0].label
+            : null;
+        }
+
+        renderBatchScroller();
+        renderLocationFilterOptions();
+        renderActiveBatchView();
+      }
+
+      function pickDefaultBatchLabel() {
+        const now = Date.now();
+        const containing = batchListCache.find((b) => {
+          if (!b.startDate || !b.endDate) return false;
+          const s = new Date(b.startDate).getTime();
+          const e = new Date(b.endDate).getTime();
+          return now >= s && now <= e;
+        });
+        if (containing) return containing.label;
+
+        const upcoming = batchListCache
+          .filter((b) => b.startDate && new Date(b.startDate).getTime() >= now)
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))[0];
+        if (upcoming) return upcoming.label;
+
+        return batchListCache[batchListCache.length - 1].label;
+      }
+
+      async function migrateLegacyBatches(legacyLabelsMissing) {
+        if (!currentUser) return;
+        for (const label of legacyLabelsMissing) {
+          if (migratingLabels.has(label)) continue;
+          const range = parseDurationDateRange(label);
+          if (!range) continue;
+          migratingLabels.add(label);
+          try {
+            await addDoc(collection(db, "promo_batches"), {
+              label,
+              startDate: formatDateToISO(range.start),
+              endDate: formatDateToISO(range.end),
+              created_at: serverTimestamp(),
+              created_at_ms: Date.now(),
+              created_by: currentUser?.email || currentUser?.uid || "",
+              migrated: true,
+            });
+          } catch (error) {
+            console.error("Failed to migrate legacy batch:", label, error);
+            migratingLabels.delete(label);
+          }
+        }
+      }
+
+      /* ---------------------------------------------------------------- */
+      /* Batch scroller rendering                                         */
+      /* ---------------------------------------------------------------- */
+
+      function renderBatchScroller() {
+        batchCountLabel.textContent = `${batchListCache.length} batch`;
+
+        const pills = batchListCache
+          .map((batch) => {
+            const isActive = batch.label === activeBatchLabel;
+            return `
+              <div class="batch-pill ${isActive ? "active" : ""}" onclick="selectBatch('${escapeAttribute(batch.label)}')">
+                <span class="batch-pill-label">${escapeHtml(batch.label)}</span>
+                <span class="batch-pill-count">${batch.count} data</span>
+              </div>
+            `;
+          })
+          .join("");
+
+        const addPill = `
+          <div class="batch-pill batch-pill-add" onclick="openNewBatchModal()">
+            <i class="bi bi-plus-lg"></i> Batch Baru
+          </div>
+        `;
+
+        batchScroller.innerHTML = batchListCache.length
+          ? pills + addPill
+          : `<div class="text-muted small py-2">Belum ada batch.</div>` +
+            addPill;
+      }
+
+      window.selectBatch = function (label) {
+        activeBatchLabel = label;
+        currentPage = 1;
+        clearSelection();
+        renderBatchScroller();
+        renderActiveBatchView();
+      };
+
+      function getActiveBatch() {
+        return batchListCache.find((b) => b.label === activeBatchLabel) || null;
+      }
+
+      function getItemsForActiveBatch() {
+        if (!activeBatchLabel) return [];
+        return promoClassesCache.filter(
+          (item) =>
+            String(item.promoDuration || "").trim() === activeBatchLabel,
+        );
+      }
+
+      function renderActiveBatchView() {
+        const batch = getActiveBatch();
+
+        if (!batch) {
+          batchInfoBar.style.display = "none";
+          batchContentArea.style.display = "block";
+          batchTableWrap.style.display = "none";
+          return;
+        }
+
+        batchInfoBar.style.display = "flex";
+        batchContentArea.style.display = "none";
+        batchTableWrap.style.display = "block";
+
+        batchInfoLabel.textContent = batch.label;
+        batchInfoSub.textContent = `${batch.count} data dalam batch ini`;
+        deleteBatchBtn.style.display =
+          batch.count === 0 ? "inline-flex" : "none";
+
+        updateMetrics();
+        renderPromoClassTable();
+        updateBulkActionBar();
+      }
+
+      /* ---------------------------------------------------------------- */
+      /* Metrics                                                          */
+      /* ---------------------------------------------------------------- */
+
       function updateMetrics() {
-        const total = promoClassesCache.length;
-        const online = promoClassesCache.filter(
+        const items = getItemsForActiveBatch();
+        const total = items.length;
+        const online = items.filter(
           (item) => normalizeText(item.location) === "online",
         ).length;
-        const withMaps = promoClassesCache.filter((item) =>
+        const withMaps = items.filter((item) =>
           String(item.mapsLink || "").trim(),
         ).length;
 
@@ -1002,9 +1458,10 @@
 
       function renderLocationFilterOptions() {
         const currentValue = locationFilter.value || "all";
+        const items = getItemsForActiveBatch();
         const uniqueLocations = Array.from(
           new Set(
-            promoClassesCache
+            items
               .map((item) => String(item.location || "").trim())
               .filter(Boolean),
           ),
@@ -1024,16 +1481,16 @@
             : "all";
       }
 
+      /* ---------------------------------------------------------------- */
+      /* Table rendering (scoped to active batch)                         */
+      /* ---------------------------------------------------------------- */
+
       function renderPromoClassTable() {
         const filteredRows = getFilteredPromoClasses();
         const totalItems = filteredRows.length;
         const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
-        if (currentPage > totalPages) {
-          currentPage = totalPages;
-        }
-        if (currentPage < 1) {
-          currentPage = 1;
-        }
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
 
         const startIndex =
           totalItems === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1;
@@ -1049,11 +1506,11 @@
         if (!totalItems) {
           tableBody.innerHTML = `
                     <tr>
-                        <td colspan="10">
+                        <td colspan="9">
                             <div class="empty-state">
                                 <i class="bi bi-inboxes"></i>
-                                <h6 class="fw-bold mt-3 mb-2">Belum ada promo class yang cocok</h6>
-                                <p class="mb-0">Coba ubah filter pencarian atau tambahkan data promo class baru.</p>
+                                <h6 class="fw-bold mt-3 mb-2">Belum ada promo class di batch ini</h6>
+                                <p class="mb-0">Coba ubah pencarian, atau tambahkan data promo class baru ke batch ini.</p>
                             </div>
                         </td>
                     </tr>
@@ -1095,7 +1552,6 @@
                         <td><span class="price-chip normal">${escapeHtml(item.normalPrice || "-")}</span></td>
                         <td><span class="price-chip promo">${escapeHtml(item.promoPrice || "-")}</span></td>
                         <td>${mapsHtml}</td>
-                        <td>${item.promoDuration ? escapeHtml(item.promoDuration) : '<span class="text-muted">-</span>'}</td>
                         <td class="text-muted small">${formatDateTime(item.updated_at || item.created_at, item.updated_at_ms || item.created_at_ms)}</td>
                         <td class="text-center">
                             <div class="d-inline-flex gap-2">
@@ -1119,10 +1575,9 @@
       function getFilteredPromoClasses() {
         const searchTerm = normalizeText(searchInput.value);
         const selectedLocation = locationFilter.value;
-        const startFilter = promoDurationStartFilter?.value;
-        const endFilter = promoDurationEndFilter?.value;
+        const items = getItemsForActiveBatch();
 
-        return promoClassesCache.filter((item) => {
+        return items.filter((item) => {
           const matchesLocation =
             selectedLocation === "all" ||
             String(item.location || "").trim() === selectedLocation;
@@ -1140,27 +1595,7 @@
             .map((value) => String(value || ""))
             .join(" ");
 
-          if (!normalizeText(haystack).includes(searchTerm)) return false;
-
-          if (!startFilter && !endFilter) return true;
-
-          const durationStr = String(item.promoDuration || "");
-          if (!durationStr || !durationStr.includes("-")) return false;
-
-          const dateRange = parseDurationDateRange(durationStr);
-          if (!dateRange) return false;
-
-          if (startFilter) {
-            const startDate = new Date(startFilter);
-            if (dateRange.end < startDate) return false;
-          }
-
-          if (endFilter) {
-            const endDate = new Date(endFilter);
-            if (dateRange.start > endDate) return false;
-          }
-
-          return true;
+          return normalizeText(haystack).includes(searchTerm);
         });
       }
 
@@ -1309,16 +1744,9 @@
         }, 3200);
       }
 
-      function resetForm() {
-        document.getElementById("promoClassForm").reset();
-        document.getElementById("promoClassId").value = "";
-        document.getElementById("locationInput").value = "Online";
-        document.getElementById("promoDurationStartDate").value = "2026-06-01";
-        document.getElementById("promoDurationEndDate").value = "2026-07-31";
-        updateDurationInput();
-        document.getElementById("promoDurationInput").value =
-          "1 Juni 2026 - 31 Juli 2026";
-      }
+      /* ---------------------------------------------------------------- */
+      /* Date helpers                                                     */
+      /* ---------------------------------------------------------------- */
 
       const monthNames = [
         "Januari",
@@ -1342,87 +1770,6 @@
         const month = monthNames[date.getMonth()];
         const year = date.getFullYear();
         return `${day} ${month} ${year}`;
-      }
-
-      function updateDurationInput() {
-        const start = document.getElementById("promoDurationStartDate").value;
-        const end = document.getElementById("promoDurationEndDate").value;
-
-        if (start && end) {
-          const startDate = formatDateToIndonesian(start);
-          const endDate = formatDateToIndonesian(end);
-          document.getElementById("promoDurationInput").value =
-            `${startDate} - ${endDate}`;
-        }
-      }
-
-      document
-        .getElementById("promoDurationStartDate")
-        .addEventListener("change", updateDurationInput);
-      document
-        .getElementById("promoDurationEndDate")
-        .addEventListener("change", updateDurationInput);
-
-      document
-        .getElementById("promoDurationStartDate")
-        .addEventListener("click", function () {
-          this.showPicker?.();
-        });
-
-      document
-        .getElementById("promoDurationEndDate")
-        .addEventListener("click", function () {
-          this.showPicker?.();
-        });
-
-      const promoDurationStartFilter = document.getElementById(
-        "promoDurationStartFilter",
-      );
-      const promoDurationEndFilter = document.getElementById(
-        "promoDurationEndFilter",
-      );
-
-      promoDurationStartFilter?.addEventListener("change", () => {
-        currentPage = 1;
-        renderPromoClassTable();
-      });
-      promoDurationEndFilter?.addEventListener("change", () => {
-        currentPage = 1;
-        renderPromoClassTable();
-      });
-
-      promoDurationStartFilter?.addEventListener("click", function () {
-        this.showPicker?.();
-      });
-      promoDurationEndFilter?.addEventListener("click", function () {
-        this.showPicker?.();
-      });
-
-      function parseAndSetDurationDates(durationStr) {
-        if (!durationStr || !durationStr.includes("-")) {
-          document.getElementById("promoDurationStartDate").value = "";
-          document.getElementById("promoDurationEndDate").value = "";
-          return;
-        }
-
-        const parts = durationStr.split("-").map((s) => s.trim());
-        if (parts.length < 2) {
-          document.getElementById("promoDurationStartDate").value = "";
-          document.getElementById("promoDurationEndDate").value = "";
-          return;
-        }
-
-        const startDate = parseIndonesianDate(parts[0]);
-        const endDate = parseIndonesianDate(parts[1]);
-
-        if (startDate) {
-          document.getElementById("promoDurationStartDate").value =
-            formatDateToISO(startDate);
-        }
-        if (endDate) {
-          document.getElementById("promoDurationEndDate").value =
-            formatDateToISO(endDate);
-        }
       }
 
       function parseIndonesianDate(dateStr) {
@@ -1450,7 +1797,25 @@
         return `${year}-${month}-${day}`;
       }
 
+      /* ---------------------------------------------------------------- */
+      /* Add / Edit / Delete promo class (fields other than date only)     */
+      /* ---------------------------------------------------------------- */
+
+      function resetForm() {
+        document.getElementById("promoClassForm").reset();
+        document.getElementById("promoClassId").value = "";
+        document.getElementById("locationInput").value = "Online";
+        document.getElementById("promoDurationInput").value =
+          activeBatchLabel || "";
+        document.getElementById("formBatchLabel").textContent =
+          activeBatchLabel || "-";
+      }
+
       window.openAddModal = function () {
+        if (!activeBatchLabel) {
+          showToast("Pilih atau buat batch terlebih dahulu.", "error");
+          return;
+        }
         resetForm();
         document.getElementById("promoClassModalTitle").textContent =
           "Tambah Promo Class";
@@ -1476,16 +1841,10 @@
           item.normalPrice || "";
         document.getElementById("promoPriceInput").value =
           item.promoPrice || "";
-
-        if (item.promoDuration) {
-          document.getElementById("promoDurationInput").value =
-            item.promoDuration;
-          parseAndSetDurationDates(item.promoDuration);
-        } else {
-          document.getElementById("promoDurationInput").value = "";
-          document.getElementById("promoDurationStartDate").value = "";
-          document.getElementById("promoDurationEndDate").value = "";
-        }
+        document.getElementById("promoDurationInput").value =
+          item.promoDuration || activeBatchLabel || "";
+        document.getElementById("formBatchLabel").textContent =
+          item.promoDuration || activeBatchLabel || "-";
 
         bootstrap.Modal.getOrCreateInstance(
           document.getElementById("promoClassModal"),
@@ -1520,6 +1879,7 @@
         const promoPrice = document
           .getElementById("promoPriceInput")
           .value.trim();
+        // Duration is fixed by the batch — never editable per record.
         const promoDuration = document
           .getElementById("promoDurationInput")
           .value.trim();
@@ -1538,6 +1898,13 @@
         }
         if (!promoPrice) {
           showToast("Promo price wajib diisi.", "error");
+          return;
+        }
+        if (!promoDuration) {
+          showToast(
+            "Batch tidak ditemukan, pilih batch terlebih dahulu.",
+            "error",
+          );
           return;
         }
 
@@ -1580,7 +1947,7 @@
               created_by: actor,
             });
             showToast(
-              `Promo class "${product}" berhasil ditambahkan.`,
+              `Promo class "${product}" berhasil ditambahkan ke batch.`,
               "success",
             );
           }
@@ -1589,8 +1956,6 @@
             document.getElementById("promoClassModal"),
           ).hide();
           resetForm();
-          document.getElementById("promoDurationInput").value =
-            "1 Juni 2026 - 31 Juli 2026";
         } catch (error) {
           console.error("Failed to save promo class:", error);
           showToast("Gagal menyimpan promo class.", "error");
@@ -1622,9 +1987,10 @@
         }
       };
 
-      window.refreshPromoClasses = function () {
+      window.refreshAll = function () {
+        listenToPromoBatches();
         listenToPromoClasses();
-        showToast("Promo classes sedang disegarkan.", "warning");
+        showToast("Data sedang disegarkan.", "warning");
       };
 
       window.goToPage = function (page) {
@@ -1664,7 +2030,7 @@
       });
 
       /* ---------------------------------------------------------------- */
-      /* Bulk selection & bulk date editing                                */
+      /* Bulk selection & bulk delete (add/remove data per batch only)     */
       /* ---------------------------------------------------------------- */
 
       function updateBulkActionBar() {
@@ -1724,112 +2090,202 @@
         renderPromoClassTable();
       };
 
-      const bulkDurationStartDate = document.getElementById(
-        "bulkDurationStartDate",
-      );
-      const bulkDurationEndDate = document.getElementById(
-        "bulkDurationEndDate",
-      );
-      const bulkDurationInput = document.getElementById("bulkDurationInput");
-      const bulkDurationPreview = document.getElementById(
-        "bulkDurationPreview",
-      );
-
-      function updateBulkDurationInput() {
-        const start = bulkDurationStartDate.value;
-        const end = bulkDurationEndDate.value;
-        if (start && end) {
-          const value = `${formatDateToIndonesian(start)} - ${formatDateToIndonesian(end)}`;
-          bulkDurationInput.value = value;
-          bulkDurationPreview.textContent = value;
-        } else {
-          bulkDurationInput.value = "";
-          bulkDurationPreview.textContent = "-";
-        }
-      }
-
-      bulkDurationStartDate.addEventListener("change", updateBulkDurationInput);
-      bulkDurationEndDate.addEventListener("change", updateBulkDurationInput);
-      bulkDurationStartDate.addEventListener("click", function () {
-        this.showPicker?.();
-      });
-      bulkDurationEndDate.addEventListener("click", function () {
-        this.showPicker?.();
-      });
-
-      window.openBulkEditModal = function () {
+      window.openBulkDeleteModal = function () {
         if (selectedIds.size === 0) {
           showToast("Pilih minimal satu data terlebih dahulu.", "error");
           return;
         }
-
-        document.getElementById("bulkEditCount").textContent = String(
+        document.getElementById("bulkDeleteCount").textContent = String(
           selectedIds.size,
         );
-
-        const today = new Date();
-        const in30 = new Date();
-        in30.setDate(in30.getDate() + 30);
-        bulkDurationStartDate.value = formatDateToISO(today);
-        bulkDurationEndDate.value = formatDateToISO(in30);
-        updateBulkDurationInput();
-
         bootstrap.Modal.getOrCreateInstance(
-          document.getElementById("bulkEditModal"),
+          document.getElementById("bulkDeleteModal"),
         ).show();
       };
 
-      window.saveBulkEdit = async function () {
-        const promoDuration = bulkDurationInput.value.trim();
-        if (!promoDuration) {
-          showToast("Pilih tanggal mulai dan tanggal selesai.", "error");
-          return;
-        }
-        if (selectedIds.size === 0) {
-          showToast("Tidak ada data yang dipilih.", "error");
-          return;
-        }
+      window.confirmBulkDelete = async function () {
+        if (selectedIds.size === 0) return;
 
-        const saveBtn = document.getElementById("saveBulkEditBtn");
-        const saveLabel = document.getElementById("saveBulkEditLabel");
-        const saveSpinner = document.getElementById("saveBulkEditSpinner");
-        saveBtn.disabled = true;
-        saveLabel.textContent = "Menyimpan...";
-        saveSpinner.style.display = "inline-block";
+        const btn = document.getElementById("confirmBulkDeleteBtn");
+        const label = document.getElementById("confirmBulkDeleteLabel");
+        const spinner = document.getElementById("confirmBulkDeleteSpinner");
+        btn.disabled = true;
+        label.textContent = "Menghapus...";
+        spinner.style.display = "inline-block";
 
-        const nowMs = Date.now();
-        const actor = currentUser
-          ? currentUser.email || currentUser.uid || ""
-          : "";
-        const idsToUpdate = Array.from(selectedIds);
+        const idsToDelete = Array.from(selectedIds);
 
         try {
           const batch = writeBatch(db);
-          idsToUpdate.forEach((id) => {
-            batch.update(doc(db, "promo_classes", id), {
-              promoDuration,
-              updated_at: serverTimestamp(),
-              updated_at_ms: nowMs,
-              updated_by: actor,
-            });
+          idsToDelete.forEach((id) => {
+            batch.delete(doc(db, "promo_classes", id));
           });
           await batch.commit();
 
           showToast(
-            `Durasi promo berhasil diperbarui untuk ${idsToUpdate.length} data.`,
+            `${idsToDelete.length} data berhasil dihapus dari batch.`,
             "success",
           );
           bootstrap.Modal.getOrCreateInstance(
-            document.getElementById("bulkEditModal"),
+            document.getElementById("bulkDeleteModal"),
           ).hide();
           clearSelection();
         } catch (error) {
-          console.error("Failed to bulk update promo duration:", error);
-          showToast("Gagal memperbarui data secara bulk.", "error");
+          console.error("Failed to bulk delete promo classes:", error);
+          showToast("Gagal menghapus data secara bulk.", "error");
         } finally {
-          saveBtn.disabled = false;
-          saveLabel.textContent = "Terapkan ke Semua";
-          saveSpinner.style.display = "none";
+          btn.disabled = false;
+          label.textContent = "Hapus Semua";
+          spinner.style.display = "none";
+        }
+      };
+
+      /* ---------------------------------------------------------------- */
+      /* Batch management: create / delete                                */
+      /* ---------------------------------------------------------------- */
+
+      const newBatchStartDate = document.getElementById("newBatchStartDate");
+      const newBatchEndDate = document.getElementById("newBatchEndDate");
+      const newBatchPreview = document.getElementById("newBatchPreview");
+
+      function updateNewBatchPreview() {
+        const start = newBatchStartDate.value;
+        const end = newBatchEndDate.value;
+        if (start && end) {
+          newBatchPreview.textContent = `${formatDateToIndonesian(start)} - ${formatDateToIndonesian(end)}`;
+        } else {
+          newBatchPreview.textContent = "-";
+        }
+      }
+
+      newBatchStartDate.addEventListener("change", updateNewBatchPreview);
+      newBatchEndDate.addEventListener("change", updateNewBatchPreview);
+      newBatchStartDate.addEventListener("click", function () {
+        this.showPicker?.();
+      });
+      newBatchEndDate.addEventListener("click", function () {
+        this.showPicker?.();
+      });
+
+      window.openNewBatchModal = function () {
+        const today = new Date();
+        newBatchStartDate.value = formatDateToISO(today);
+        const end = new Date(today);
+        end.setDate(end.getDate() + 30);
+        newBatchEndDate.value = formatDateToISO(end);
+        updateNewBatchPreview();
+        bootstrap.Modal.getOrCreateInstance(
+          document.getElementById("newBatchModal"),
+        ).show();
+      };
+
+      window.saveNewBatch = async function () {
+        const start = newBatchStartDate.value;
+        const end = newBatchEndDate.value;
+
+        if (!start || !end) {
+          showToast("Pilih tanggal mulai dan tanggal selesai.", "error");
+          return;
+        }
+        if (new Date(end) < new Date(start)) {
+          showToast(
+            "Tanggal selesai tidak boleh sebelum tanggal mulai.",
+            "error",
+          );
+          return;
+        }
+
+        const label = `${formatDateToIndonesian(start)} - ${formatDateToIndonesian(end)}`;
+
+        const existing = batchListCache.find((b) => b.label === label);
+        if (existing) {
+          showToast("Batch dengan rentang tanggal ini sudah ada.", "warning");
+          activeBatchLabel = label;
+          renderBatchScroller();
+          renderActiveBatchView();
+          bootstrap.Modal.getOrCreateInstance(
+            document.getElementById("newBatchModal"),
+          ).hide();
+          return;
+        }
+
+        const btn = document.getElementById("saveNewBatchBtn");
+        const btnLabel = document.getElementById("saveNewBatchLabel");
+        const spinner = document.getElementById("saveNewBatchSpinner");
+        btn.disabled = true;
+        btnLabel.textContent = "Menyimpan...";
+        spinner.style.display = "inline-block";
+
+        const actor = currentUser
+          ? currentUser.email || currentUser.uid || ""
+          : "";
+
+        try {
+          await addDoc(collection(db, "promo_batches"), {
+            label,
+            startDate: start,
+            endDate: end,
+            created_at: serverTimestamp(),
+            created_at_ms: Date.now(),
+            created_by: actor,
+          });
+
+          activeBatchLabel = label;
+          showToast(`Batch "${label}" berhasil dibuat.`, "success");
+          bootstrap.Modal.getOrCreateInstance(
+            document.getElementById("newBatchModal"),
+          ).hide();
+        } catch (error) {
+          console.error("Failed to create batch:", error);
+          showToast("Gagal membuat batch baru.", "error");
+        } finally {
+          btn.disabled = false;
+          btnLabel.textContent = "Buat Batch";
+          spinner.style.display = "none";
+        }
+      };
+
+      window.openDeleteBatchModal = function () {
+        const batch = getActiveBatch();
+        if (!batch) return;
+        if (batch.count > 0) {
+          showToast(
+            "Batch tidak bisa dihapus karena masih berisi data.",
+            "error",
+          );
+          return;
+        }
+        document.getElementById("deleteBatchLabel").textContent = batch.label;
+        bootstrap.Modal.getOrCreateInstance(
+          document.getElementById("deleteBatchModal"),
+        ).show();
+      };
+
+      window.confirmDeleteBatch = async function () {
+        const batch = getActiveBatch();
+        if (!batch) return;
+        if (batch.count > 0) {
+          showToast(
+            "Batch tidak bisa dihapus karena masih berisi data.",
+            "error",
+          );
+          return;
+        }
+        if (!batch.id) {
+          showToast("Batch ini belum tersimpan sebagai dokumen.", "error");
+          return;
+        }
+
+        try {
+          await deleteDoc(doc(db, "promo_batches", batch.id));
+          activeBatchLabel = null;
+          showToast(`Batch "${batch.label}" berhasil dihapus.`, "success");
+          bootstrap.Modal.getOrCreateInstance(
+            document.getElementById("deleteBatchModal"),
+          ).hide();
+        } catch (error) {
+          console.error("Failed to delete batch:", error);
+          showToast("Gagal menghapus batch.", "error");
         }
       };
     </script>
