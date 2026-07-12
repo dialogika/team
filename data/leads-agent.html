@@ -26,6 +26,8 @@
   .btn-primary { background:var(--blue); color:#fff; }
   .btn-yellow { background:var(--yellow); color:var(--navy); font-weight:600; }
   .btn-ghost { background:#fff; border:1px solid var(--border); }
+  #sheet-hint { padding:0 22px 10px; color:#5f6f86; font-size:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  #sheet-hint b { color:var(--navy); font-weight:600; }
   #tablewrap { margin:0 22px 26px; overflow:auto; background:#fff; border:1px solid var(--border); border-radius:10px; max-height:calc(100vh - 210px); }
   table { border-collapse:collapse; width:max-content; min-width:100%; }
   th { position:sticky; top:0; background:var(--navy); color:#fff; padding:9px 10px; font-size:11.5px; font-weight:600; text-align:left; white-space:nowrap; z-index:2; }
@@ -33,6 +35,24 @@
   tr:hover td { background:#F6FAFF; }
   td.notes { white-space:normal; min-width:260px; max-width:420px; font-size:12px; }
   td.num { text-align:right; }
+  td.cell-editable { cursor:cell; min-width:92px; outline:none; position:relative; transition:background .12s ease, box-shadow .12s ease; }
+  td.cell-editable:hover { background:#FFFBEA; box-shadow:inset 0 0 0 1px #FFE08A; }
+  td.cell-editable:focus { background:#fff; box-shadow:inset 0 0 0 2px var(--blue); z-index:3; }
+  td.cell-editable.is-dirty { background:#FFF8D9; }
+  td.cell-editable.is-saving::after,
+  td.cell-editable.is-saved::after,
+  td.cell-editable.is-error::after {
+    position:absolute; right:5px; top:3px; font-size:10px; font-weight:700; pointer-events:none;
+  }
+  td.cell-editable.is-saving::after { content:'...'; color:#7b8794; }
+  td.cell-editable.is-saved::after { content:'OK'; color:#548235; }
+  td.cell-editable.is-error { background:#FDEAEA; box-shadow:inset 0 0 0 2px #C00000; }
+  td.cell-editable.is-error::after { content:'!'; color:#C00000; }
+  td.cell-name { font-weight:600; }
+  td.cell-date { min-width:132px; }
+  td.cell-money { min-width:128px; }
+  td.cell-actions { position:sticky; right:0; background:#fff; z-index:1; box-shadow:-1px 0 0 #eef1f6; }
+  tr:hover td.cell-actions { background:#F6FAFF; }
   .badge { padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:600; display:inline-block; }
   .s-hot { background:#FCE4D6; color:#C55A11; } .s-fu { background:#FFF2CC; color:#946c00; }
   .s-inv { background:#DDEBF7; color:#2E75B6; } .s-nur { background:#EDEDED; color:#666; }
@@ -73,6 +93,10 @@
   <button class="btn btn-yellow" onclick="openModal()">+ Tambah Lead</button>
 </div>
 <div id="status-msg"></div>
+<div id="sheet-hint">
+  <span><b>Mode spreadsheet:</b> klik cell untuk edit langsung.</span>
+  <span>Enter simpan, Tab/arrow pindah cell, bisa paste dari Excel/Google Sheets.</span>
+</div>
 
 <div id="tablewrap">
   <div id="loading">Memuat data...</div>
@@ -135,6 +159,30 @@ const COL = 'wa_leads';
 const STR_FIELDS = ['nama','whatsapp','status','program','offering','alamat','notes','date_in','date_close','channel','work','last_response','last_update','next_follow_up'];
 const INT_FIELDS = ['nomor','follow_up','nominal_deal'];
 const BADGE = {'Hot Leads':'s-hot','Follow Up':'s-fu','Invoice':'s-inv','Nurture':'s-nur','Reject':'s-rej','Closing':'s-clo'};
+const STATUS_OPTIONS = ['Hot Leads','Follow Up','Invoice','Nurture','Reject','Closing'];
+const CELL_FIELDS = [
+  'nama','whatsapp','status','follow_up','program','offering','alamat','notes',
+  'date_in','date_close','channel','work','last_response','next_follow_up','nominal_deal'
+];
+const CELL_TYPES = {
+  status:'status',
+  follow_up:'int',
+  nominal_deal:'money',
+  date_in:'datetime',
+  date_close:'datetime',
+  last_response:'datetime',
+  next_follow_up:'date'
+};
+const CELL_CLASSES = {
+  nama:'cell-name',
+  follow_up:'num',
+  notes:'notes',
+  date_in:'cell-date',
+  date_close:'cell-date',
+  last_response:'cell-date',
+  next_follow_up:'cell-date',
+  nominal_deal:'num cell-money'
+};
 
 let leads = [];
 let editingId = null;
@@ -167,6 +215,60 @@ function fmtDate(s) {
   return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()}` + (hasTime ? ` ${p(d.getHours())}:${p(d.getMinutes())}` : '');
 }
 const fmtRp = n => (n === undefined || n === '' || isNaN(n)) ? '' : 'Rp ' + Number(n).toLocaleString('id-ID');
+const p2 = n => String(n).padStart(2,'0');
+
+function normalizeStatus(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const found = STATUS_OPTIONS.find(s => s.toLowerCase() === raw.toLowerCase());
+  return found || raw;
+}
+
+function normalizeDateInput(value, type) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return type === 'datetime' ? raw + 'T00:00' : raw;
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(raw)) return raw.slice(0, 16);
+  const m = raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})(?:\s+(\d{1,2}):(\d{2}))?$/);
+  if (m) {
+    const yyyy = m[3].length === 2 ? '20' + m[3] : m[3];
+    const date = `${yyyy}-${p2(m[2])}-${p2(m[1])}`;
+    if (type === 'date') return date;
+    return `${date}T${p2(m[4] || '0')}:${p2(m[5] || '0')}`;
+  }
+  const d = new Date(raw);
+  if (!isNaN(d)) {
+    const date = `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+    return type === 'date' ? date : `${date}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  }
+  return raw;
+}
+
+function normalizeCellValue(field, value) {
+  const type = CELL_TYPES[field] || 'text';
+  const raw = String(value ?? '').replace(/\u00a0/g, ' ').trim();
+  if (type === 'int' || type === 'money') {
+    const cleaned = raw.replace(/[^\d-]/g, '');
+    return cleaned === '' ? '' : String(parseInt(cleaned, 10) || 0);
+  }
+  if (type === 'status') return normalizeStatus(raw);
+  if (type === 'date' || type === 'datetime') return normalizeDateInput(raw, type);
+  return raw;
+}
+
+function cellDisplay(field, value, editing = false) {
+  if (editing) return value ?? '';
+  if (field === 'status') return `<span class="badge ${BADGE[value]||''}">${esc(value)}</span>`;
+  if (CELL_TYPES[field] === 'money') return fmtRp(value);
+  if (CELL_TYPES[field] === 'date' || CELL_TYPES[field] === 'datetime') return fmtDate(value);
+  return esc(value);
+}
+
+function editableCell(l, field) {
+  const value = l[field] ?? '';
+  const cls = ['cell-editable', CELL_CLASSES[field] || ''].join(' ').trim();
+  return `<td class="${cls}" contenteditable="true" tabindex="0" data-id="${esc(l.id)}" data-field="${field}" data-raw="${esc(value)}" spellcheck="false">${cellDisplay(field, value)}</td>`;
+}
 
 async function api(path, opt = {}) {
   const sep = path.includes('?') ? '&' : '?';
@@ -202,25 +304,25 @@ function render() {
     (!fs || l.status === fs) &&
     (!q || ['nama','whatsapp','notes','program','offering','alamat','channel','work'].some(k => String(l[k]||'').toLowerCase().includes(q)))
   );
-  $('tbody').innerHTML = rows.map(l => `<tr>
+  $('tbody').innerHTML = rows.map(l => `<tr data-id="${esc(l.id)}">
     <td class="num">${esc(l.nomor ?? '')}</td>
-    <td><b>${esc(l.nama)}</b></td>
-    <td>${esc(l.whatsapp)}</td>
-    <td><span class="badge ${BADGE[l.status]||''}">${esc(l.status)}</span></td>
-    <td class="num">${esc(l.follow_up ?? '')}</td>
-    <td>${esc(l.program)}</td>
-    <td>${esc(l.offering)}</td>
-    <td>${esc(l.alamat)}</td>
-    <td class="notes">${esc(l.notes)}</td>
-    <td>${fmtDate(l.date_in)}</td>
-    <td>${fmtDate(l.date_close)}</td>
-    <td>${esc(l.channel)}</td>
-    <td>${esc(l.work)}</td>
-    <td>${fmtDate(l.last_response)}</td>
+    ${editableCell(l, 'nama')}
+    ${editableCell(l, 'whatsapp')}
+    ${editableCell(l, 'status')}
+    ${editableCell(l, 'follow_up')}
+    ${editableCell(l, 'program')}
+    ${editableCell(l, 'offering')}
+    ${editableCell(l, 'alamat')}
+    ${editableCell(l, 'notes')}
+    ${editableCell(l, 'date_in')}
+    ${editableCell(l, 'date_close')}
+    ${editableCell(l, 'channel')}
+    ${editableCell(l, 'work')}
+    ${editableCell(l, 'last_response')}
     <td>${fmtDate(l.last_update)}</td>
-    <td>${fmtDate(l.next_follow_up)}</td>
-    <td class="num">${fmtRp(l.nominal_deal)}</td>
-    <td>
+    ${editableCell(l, 'next_follow_up')}
+    ${editableCell(l, 'nominal_deal')}
+    <td class="cell-actions">
       <button class="icon-btn" title="Edit" onclick="openModal('${l.id}')">&#9998;</button>
       <button class="icon-btn" title="Hapus" onclick="delLead('${l.id}')">&#128465;</button>
     </td>
@@ -296,9 +398,157 @@ async function delLead(id) {
   catch (e) { alert('Gagal menghapus: ' + e.message); }
 }
 
+function moveCell(cell, rowOffset, fieldOffset) {
+  const row = cell.closest('tr');
+  if (!row) return;
+  const rows = Array.from($('tbody').querySelectorAll('tr[data-id]'));
+  const rowIndex = rows.indexOf(row);
+  const fieldIndex = CELL_FIELDS.indexOf(cell.dataset.field);
+  const nextRow = rows[rowIndex + rowOffset];
+  const nextField = CELL_FIELDS[fieldIndex + fieldOffset] || cell.dataset.field;
+  const next = nextRow?.querySelector(`[data-field="${CSS.escape(nextField)}"]`);
+  if (next) next.focus();
+}
+
+function setCellMode(cell, editing) {
+  const field = cell.dataset.field;
+  if (editing) {
+    cell.textContent = cell.dataset.raw || '';
+    document.execCommand?.('selectAll', false, null);
+  } else {
+    cell.innerHTML = cellDisplay(field, cell.dataset.raw || '');
+  }
+}
+
+function updateLeadLocal(id, field, value) {
+  const lead = leads.find(x => x.id === id);
+  if (!lead) return null;
+  lead[field] = INT_FIELDS.includes(field) && value !== '' ? parseInt(value, 10) : value;
+  return lead;
+}
+
+function encodeCellPatch(field, value, lastUpdate) {
+  const fields = { last_update: { stringValue: lastUpdate } };
+  if (STR_FIELDS.includes(field)) {
+    fields[field] = { stringValue: String(value) };
+  } else if (INT_FIELDS.includes(field) && value !== '') {
+    fields[field] = { integerValue: String(parseInt(value, 10) || 0) };
+  }
+  const maskFields = [field, 'last_update'].map(f => 'updateMask.fieldPaths=' + encodeURIComponent(f)).join('&');
+  return { body: { fields }, mask: maskFields };
+}
+
+async function saveCell(cell) {
+  const id = cell.dataset.id;
+  const field = cell.dataset.field;
+  const oldValue = cell.dataset.raw || '';
+  const newValue = normalizeCellValue(field, cell.textContent);
+  if (newValue === oldValue) {
+    cell.classList.remove('is-dirty', 'is-error');
+    setCellMode(cell, false);
+    return;
+  }
+  cell.classList.add('is-saving');
+  cell.classList.remove('is-error', 'is-saved');
+  try {
+    const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const lastUpdate = now.toISOString().slice(0,16);
+    const patch = encodeCellPatch(field, newValue, lastUpdate);
+    await api(`${BASE}/${COL}/${id}?${patch.mask}`, { method:'PATCH', body: JSON.stringify(patch.body) });
+    cell.dataset.raw = newValue;
+    updateLeadLocal(id, field, newValue);
+    updateLeadLocal(id, 'last_update', lastUpdate);
+    const lastUpdateCell = cell.closest('tr')?.children[14];
+    if (lastUpdateCell) lastUpdateCell.textContent = fmtDate(lastUpdate);
+    cell.classList.remove('is-dirty');
+    cell.classList.add('is-saved');
+    setCellMode(cell, false);
+    renderRekap();
+    window.setTimeout(() => cell.classList.remove('is-saved'), 900);
+  } catch (e) {
+    cell.classList.add('is-error');
+    $('status-msg').textContent = 'Gagal menyimpan cell: ' + e.message;
+  } finally {
+    cell.classList.remove('is-saving');
+  }
+}
+
+function setCellRaw(cell, value) {
+  const field = cell.dataset.field;
+  const normalized = normalizeCellValue(field, value);
+  cell.textContent = normalized;
+  cell.classList.add('is-dirty');
+}
+
+async function pasteGrid(startCell, text) {
+  const rows = text.replace(/\r/g, '').split('\n').filter((line, i, arr) => line || i < arr.length - 1);
+  if (!rows.length) return;
+  const startRow = startCell.closest('tr');
+  const visibleRows = Array.from($('tbody').querySelectorAll('tr[data-id]'));
+  const startRowIndex = visibleRows.indexOf(startRow);
+  const startFieldIndex = CELL_FIELDS.indexOf(startCell.dataset.field);
+  const changed = [];
+  rows.forEach((line, rIndex) => {
+    const targetRow = visibleRows[startRowIndex + rIndex];
+    if (!targetRow) return;
+    line.split('\t').forEach((value, cIndex) => {
+      const field = CELL_FIELDS[startFieldIndex + cIndex];
+      const cell = field ? targetRow.querySelector(`[data-field="${CSS.escape(field)}"]`) : null;
+      if (!cell) return;
+      setCellRaw(cell, value);
+      changed.push(cell);
+    });
+  });
+  for (const cell of changed) await saveCell(cell);
+}
+
 $('q').addEventListener('input', render);
 $('fstatus').addEventListener('change', render);
 $('overlay').addEventListener('click', e => { if (e.target.id === 'overlay') closeModal(); });
+$('tbody').addEventListener('focusin', e => {
+  const cell = e.target.closest('td.cell-editable');
+  if (!cell) return;
+  setCellMode(cell, true);
+});
+$('tbody').addEventListener('focusout', e => {
+  const cell = e.target.closest('td.cell-editable');
+  if (!cell) return;
+  saveCell(cell);
+});
+$('tbody').addEventListener('input', e => {
+  const cell = e.target.closest('td.cell-editable');
+  if (!cell) return;
+  cell.classList.toggle('is-dirty', normalizeCellValue(cell.dataset.field, cell.textContent) !== (cell.dataset.raw || ''));
+});
+$('tbody').addEventListener('keydown', e => {
+  const cell = e.target.closest('td.cell-editable');
+  if (!cell) return;
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    cell.blur();
+    moveCell(cell, 1, 0);
+  } else if (e.key === 'Tab') {
+    e.preventDefault();
+    cell.blur();
+    moveCell(cell, 0, e.shiftKey ? -1 : 1);
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    cell.blur();
+    moveCell(cell, 1, 0);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    cell.blur();
+    moveCell(cell, -1, 0);
+  }
+});
+$('tbody').addEventListener('paste', e => {
+  const cell = e.target.closest('td.cell-editable');
+  if (!cell) return;
+  const text = e.clipboardData?.getData('text/plain') || '';
+  if (!text.includes('\t') && !text.includes('\n')) return;
+  e.preventDefault();
+  pasteGrid(cell, text);
+});
 loadLeads();
 </script>
 </body>
