@@ -359,11 +359,11 @@
                   >
                     Delete
                   </button>
-                    <button
-                      type="button"
-                      @click="saveProduct"
-                      class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-indigo-100 transition-all active:scale-95"
-                    >
+                  <button
+                    type="button"
+                    @click="saveProduct"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl font-bold text-sm shadow-xl shadow-indigo-100 transition-all active:scale-95"
+                  >
                     {{ isEditMode ? 'Push Changes' : 'Register Product' }}
                   </button>
                 </div>
@@ -647,7 +647,7 @@
                               class="bg-white px-2 py-1 rounded text-[10px] font-bold outline-none border border-slate-100 flex-1"
                             >
                               <option value="boolean">Ya / Tidak</option>
-                              <option value="numeric">Angka / Jumlah</option>
+
                               <option value="text">Tulisan Bebas</option>
                             </select>
                             <div
@@ -1359,156 +1359,157 @@
             form.value.specifications.push("");
           };
 
-           const onRowDragStart = (section, index, event) => {
-             dragState.value = { section, index };
-             if (event && event.dataTransfer) {
-               event.dataTransfer.effectAllowed = 'move';
-               event.dataTransfer.setData('text/html', '');
-             }
-           };
+          const onRowDragStart = (section, index, event) => {
+            dragState.value = { section, index };
+            if (event && event.dataTransfer) {
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData("text/html", "");
+            }
+          };
 
-           const onRowDrop = (section, index, event) => {
-             if (event) {
-               event.preventDefault();
-               event.stopPropagation();
-             }
-             if (!dragState.value || dragState.value.section !== section) {
-               dragState.value = { section: null, index: null };
-               return;
-             }
-             const from = dragState.value.index;
-             if (from === index || from == null) {
-               dragState.value = { section: null, index: null };
-               return;
-             }
-             const list = form.value[section];
-             if (!Array.isArray(list)) {
-               dragState.value = { section: null, index: null };
-               return;
-             }
-             const item = list.splice(from, 1)[0];
-             list.splice(index, 0, item);
-             dragState.value = { section: null, index: null };
-           };
+          const onRowDrop = (section, index, event) => {
+            if (event) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            if (!dragState.value || dragState.value.section !== section) {
+              dragState.value = { section: null, index: null };
+              return;
+            }
+            const from = dragState.value.index;
+            if (from === index || from == null) {
+              dragState.value = { section: null, index: null };
+              return;
+            }
+            const list = form.value[section];
+            if (!Array.isArray(list)) {
+              dragState.value = { section: null, index: null };
+              return;
+            }
+            const item = list.splice(from, 1)[0];
+            list.splice(index, 0, item);
+            dragState.value = { section: null, index: null };
+          };
 
-           const saveProduct = async () => {
-             if (form.value.product_id === undefined) {
-               alert("Product ID is required to save.");
-               return;
-             }
-             if (
-               !isEditMode.value &&
-               products.value.some((p) => p.product_id === form.value.product_id)
-             ) {
-               alert("Product ID already exists!");
-               return;
-             }
+          const saveProduct = async () => {
+            if (form.value.product_id === undefined) {
+              alert("Product ID is required to save.");
+              return;
+            }
+            if (
+              !isEditMode.value &&
+              products.value.some((p) => p.product_id === form.value.product_id)
+            ) {
+              alert("Product ID already exists!");
+              return;
+            }
 
-             const normalizedCurriculum = Array.isArray(form.value.curriculum)
-               ? form.value.curriculum
-                   .map((item) => ({
-                     order: String(item.order || "").trim(),
-                     title: String(item.title || "").trim(),
-                     description: String(item.description || "").trim(),
-                   }))
-                   .filter((item) => item.title)
-               : [];
+            const normalizedCurriculum = Array.isArray(form.value.curriculum)
+              ? form.value.curriculum
+                  .map((item) => ({
+                    order: String(item.order || "").trim(),
+                    title: String(item.title || "").trim(),
+                    description: String(item.description || "").trim(),
+                  }))
+                  .filter((item) => item.title)
+              : [];
 
-             const normalizedFeatures = Array.isArray(form.value.features)
-               ? form.value.features.map((feat) => ({
-                   label: String(feat.label || "").trim(),
-                   type: feat.type || "boolean",
-                   value:
-                     feat.type === "boolean"
-                       ? !!feat.value
-                       : String(feat.value ?? "").trim(),
-                 }))
-               : [];
+            const normalizedFeatures = Array.isArray(form.value.features)
+              ? form.value.features.map((feat) => ({
+                  label: String(feat.label || "").trim(),
+                  type: feat.type || "boolean",
+                  value:
+                    feat.type === "boolean"
+                      ? !!feat.value
+                      : String(feat.value ?? "").trim(),
+                }))
+              : [];
 
-             const classType = form.value.type || "Online";
+            const classType = form.value.type || "Online";
 
-             const manualSpecifications = Array.isArray(
-               form.value.specifications,
-             )
-               ? form.value.specifications.filter((item) =>
-                   String(item || "").trim(),
-                 )
-               : [];
-             const finalSpecifications = [classType, ...manualSpecifications].filter(
-               (s) => String(s || "").trim(),
-             );
+            const manualSpecifications = Array.isArray(
+              form.value.specifications,
+            )
+              ? form.value.specifications.filter((item) =>
+                  String(item || "").trim(),
+                )
+              : [];
+            const finalSpecifications = [
+              classType,
+              ...manualSpecifications,
+            ].filter((s) => String(s || "").trim());
 
-             const normalizedOutcomes = Array.isArray(form.value.outcomes)
-               ? form.value.outcomes.filter((o) => String(o || "").trim())
-               : [];
+            const normalizedOutcomes = Array.isArray(form.value.outcomes)
+              ? form.value.outcomes.filter((o) => String(o || "").trim())
+              : [];
 
-             const payload = {
-               productId: form.value.product_id,
-               name: form.value.name,
-               description: form.value.description || "",
-               type: classType,
-               basePrice: Number(form.value.base_price) || 0,
-               currency: "IDR",
-               totalSessions: Number(form.value.total_sessions) || 0,
-               badgeText:
-                 form.value.visual && form.value.visual.badge_text
-                   ? form.value.visual.badge_text
-                   : "NEW",
-               badgeColor:
-                 form.value.visual && form.value.visual.badge_color
-                   ? form.value.visual.badge_color
-                   : "#6366f1",
-               thumbnailUrl: form.value.visual
-                 ? form.value.visual.thumbnail_url || null
-                 : null,
-               features: normalizedFeatures,
-               materials: normalizedCurriculum,
-               specifications: finalSpecifications,
-               targetOutcomes: normalizedOutcomes,
-               status: form.value.status || "active",
-               updatedAt: window.serverTimestamp
-                 ? window.serverTimestamp()
-                 : null,
-             };
+            const payload = {
+              productId: form.value.product_id,
+              name: form.value.name,
+              description: form.value.description || "",
+              type: classType,
+              basePrice: Number(form.value.base_price) || 0,
+              currency: "IDR",
+              totalSessions: Number(form.value.total_sessions) || 0,
+              badgeText:
+                form.value.visual && form.value.visual.badge_text
+                  ? form.value.visual.badge_text
+                  : "NEW",
+              badgeColor:
+                form.value.visual && form.value.visual.badge_color
+                  ? form.value.visual.badge_color
+                  : "#6366f1",
+              thumbnailUrl: form.value.visual
+                ? form.value.visual.thumbnail_url || null
+                : null,
+              features: normalizedFeatures,
+              materials: normalizedCurriculum,
+              specifications: finalSpecifications,
+              targetOutcomes: normalizedOutcomes,
+              status: form.value.status || "active",
+              updatedAt: window.serverTimestamp
+                ? window.serverTimestamp()
+                : null,
+            };
 
-             console.log("[SaveProduct] Payload prepared:", {
-               productId: payload.productId,
-               specCount: finalSpecifications.length,
-               outcomeCount: normalizedOutcomes.length,
-               specs: finalSpecifications,
-             });
+            console.log("[SaveProduct] Payload prepared:", {
+              productId: payload.productId,
+              specCount: finalSpecifications.length,
+              outcomeCount: normalizedOutcomes.length,
+              specs: finalSpecifications,
+            });
 
-             try {
-               if (!window.db || !window.setDoc || !window.doc) {
-                 alert("Database not initialized");
-                 return;
-               }
+            try {
+              if (!window.db || !window.setDoc || !window.doc) {
+                alert("Database not initialized");
+                return;
+              }
 
-               await window.setDoc(
-                 window.doc(window.db, "products", form.value.product_id),
-                 payload,
-                 { merge: true },
-               );
+              await window.setDoc(
+                window.doc(window.db, "products", form.value.product_id),
+                payload,
+                { merge: true },
+              );
 
-               console.log("[SaveProduct] Document saved successfully");
-               await loadProductsWithRetry(2, 1000);
+              console.log("[SaveProduct] Document saved successfully");
+              await loadProductsWithRetry(2, 1000);
 
-               if (isEditMode.value) {
-                 showToast("Data Synced with Database");
-               } else {
-                 showToast("New Product Registered");
-               }
+              if (isEditMode.value) {
+                showToast("Data Synced with Database");
+              } else {
+                showToast("New Product Registered");
+              }
 
-               showForm.value = false;
-             } catch (e) {
-               console.error("[SaveProduct] Failed to save product:", {
-                 productId: form.value.product_id,
-                 error: e.message || e.toString(),
-                 errorCode: e.code,
-               });
-               alert("Gagal menyimpan produk: " + (e.message || e.toString()));
-             }
-           };
+              showForm.value = false;
+            } catch (e) {
+              console.error("[SaveProduct] Failed to save product:", {
+                productId: form.value.product_id,
+                error: e.message || e.toString(),
+                errorCode: e.code,
+              });
+              alert("Gagal menyimpan produk: " + (e.message || e.toString()));
+            }
+          };
 
           const openDeleteModal = () => {
             if (!isEditMode.value || !form.value.product_id) return;
@@ -1520,50 +1521,59 @@
             showDeleteModal.value = false;
           };
 
-           const deleteCurrentProduct = async () => {
-             if (!isEditMode.value || !form.value.product_id) {
-               console.warn("[Delete] Edit mode or product_id not set");
-               return;
-             }
-             
-             const productIdToDelete = String(form.value.product_id).trim();
-             if (!productIdToDelete) {
-               alert("Product ID tidak valid untuk dihapus.");
-               return;
-             }
-             
-             if (!window.db || !window.doc || !window.deleteDoc) {
-               console.error("[Delete] Firestore not initialized", {
-                 hasDb: !!window.db,
-                 hasDoc: !!window.doc,
-                 hasDeleteDoc: !!window.deleteDoc,
-               });
-               alert("Database tidak terinisialisasi dengan benar.");
-               return;
-             }
-             
-             deleting.value = true;
-             try {
-               console.log("[Delete] Starting delete for product:", productIdToDelete);
-               const docRef = window.doc(window.db, "products", productIdToDelete);
-               await window.deleteDoc(docRef);
-               console.log("[Delete] Successfully deleted document from Firestore");
-               
-               await loadProductsWithRetry(2, 1000);
-               showDeleteModal.value = false;
-               showForm.value = false;
-               showToast("Product Deleted");
-             } catch (e) {
-               console.error("[Delete] Failed to delete product:", {
-                 productId: productIdToDelete,
-                 error: e.message || e.toString(),
-                 errorCode: e.code,
-               });
-               alert("Gagal menghapus produk: " + (e.message || e.toString()));
-             } finally {
-               deleting.value = false;
-             }
-           };
+          const deleteCurrentProduct = async () => {
+            if (!isEditMode.value || !form.value.product_id) {
+              console.warn("[Delete] Edit mode or product_id not set");
+              return;
+            }
+
+            const productIdToDelete = String(form.value.product_id).trim();
+            if (!productIdToDelete) {
+              alert("Product ID tidak valid untuk dihapus.");
+              return;
+            }
+
+            if (!window.db || !window.doc || !window.deleteDoc) {
+              console.error("[Delete] Firestore not initialized", {
+                hasDb: !!window.db,
+                hasDoc: !!window.doc,
+                hasDeleteDoc: !!window.deleteDoc,
+              });
+              alert("Database tidak terinisialisasi dengan benar.");
+              return;
+            }
+
+            deleting.value = true;
+            try {
+              console.log(
+                "[Delete] Starting delete for product:",
+                productIdToDelete,
+              );
+              const docRef = window.doc(
+                window.db,
+                "products",
+                productIdToDelete,
+              );
+              await window.deleteDoc(docRef);
+              console.log(
+                "[Delete] Successfully deleted document from Firestore",
+              );
+
+              await loadProductsWithRetry(2, 1000);
+              showDeleteModal.value = false;
+              showForm.value = false;
+              showToast("Product Deleted");
+            } catch (e) {
+              console.error("[Delete] Failed to delete product:", {
+                productId: productIdToDelete,
+                error: e.message || e.toString(),
+                errorCode: e.code,
+              });
+              alert("Gagal menghapus produk: " + (e.message || e.toString()));
+            } finally {
+              deleting.value = false;
+            }
+          };
 
           const showToast = (msg) => {
             toast.value = msg;
