@@ -1687,17 +1687,16 @@
                 }
 
                 const reports = [];
-                const userDept = (window.teamMemberDepartment || "").toLowerCase().trim();
+                const userDept = (window.teamMemberDepartment || '').toLowerCase().trim();
 
                 snapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    const reportDept = (data.department || "").toLowerCase().trim();
-                    
-                    // Filter laporan berdasarkan departemen user yang login
-                    if (userDept && reportDept !== userDept) {
+                    const reportDept = (data.department || data.internship_department || data.team_department || '').toLowerCase().trim();
+
+                    if (!userDept || !reportDept || reportDept !== userDept) {
                         return;
                     }
-                    
+
                     reports.push({ id: docSnap.id, data: data });
                 });
 

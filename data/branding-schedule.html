@@ -329,12 +329,13 @@
                     <label class="form-label small text-muted mb-1">Nama Milestone</label>
                     <select class="form-select rounded-3 milestone-name" required>
                         <option value="Script Writing" ${name === 'Script Writing' ? 'selected' : ''}>Script Writing</option>
+                        <option value="Design" ${name === 'Design' ? 'selected' : ''}>Design</option>
                         <option value="Take Video" ${name === 'Take Video' ? 'selected' : ''}>Take Video</option>
                         <option value="Video Editing" ${name === 'Video Editing' ? 'selected' : ''}>Video Editing</option>
                         <option value="Publish" ${name === 'Publish' ? 'selected' : ''}>Publish</option>
-                        <option value="Lainnya" ${['Script Writing', 'Take Video', 'Video Editing', 'Publish'].indexOf(name) === -1 && name ? 'selected' : ''}>Lainnya</option>
+                        <option value="Lainnya" ${['Script Writing', 'Design', 'Take Video', 'Video Editing', 'Publish'].indexOf(name) === -1 && name ? 'selected' : ''}>Lainnya</option>
                     </select>
-                    <input type="text" class="form-control rounded-3 mt-1 milestone-custom-name ${['Script Writing', 'Take Video', 'Video Editing', 'Publish'].indexOf(name) === -1 && name ? '' : 'd-none'}" placeholder="Nama custom..." value="${['Script Writing', 'Take Video', 'Video Editing', 'Publish'].indexOf(name) === -1 ? name : ''}">
+                    <input type="text" class="form-control rounded-3 mt-1 milestone-custom-name ${['Script Writing', 'Design', 'Take Video', 'Video Editing', 'Publish'].indexOf(name) === -1 && name ? '' : 'd-none'}" placeholder="Nama custom..." value="${['Script Writing', 'Design', 'Take Video', 'Video Editing', 'Publish'].indexOf(name) === -1 ? name : ''}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label small text-muted mb-1">Tanggal Deadline</label>
