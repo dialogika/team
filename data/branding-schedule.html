@@ -378,8 +378,25 @@
         };
 
         // Realtime Data Fetching
+        let brandingContentUnsubscribe = null;
+        let dutySchedulesUnsubscribe = null;
+
+        window.addEventListener('unload', () => {
+            if (brandingContentUnsubscribe) brandingContentUnsubscribe();
+            if (dutySchedulesUnsubscribe) dutySchedulesUnsubscribe();
+        });
+
         function startRealtimeListener() {
-            onSnapshot(collection(db, "branding_content"), (snapshot) => {
+            if (brandingContentUnsubscribe) {
+                brandingContentUnsubscribe();
+                brandingContentUnsubscribe = null;
+            }
+            if (dutySchedulesUnsubscribe) {
+                dutySchedulesUnsubscribe();
+                dutySchedulesUnsubscribe = null;
+            }
+
+            brandingContentUnsubscribe = onSnapshot(collection(db, "branding_content"), (snapshot) => {
                 allContents = [];
                 snapshot.forEach(docSnap => {
                     allContents.push({ id: docSnap.id, ...docSnap.data() });
@@ -390,7 +407,7 @@
                 updateActiveDayCard();
             });
 
-            onSnapshot(collection(db, "duty_schedules"), (snapshot) => {
+            dutySchedulesUnsubscribe = onSnapshot(collection(db, "duty_schedules"), (snapshot) => {
                 dutySchedules = [];
                 snapshot.forEach(docSnap => {
                     dutySchedules.push({ id: docSnap.id, ...docSnap.data() });

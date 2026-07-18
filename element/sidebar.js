@@ -21,31 +21,57 @@ export function renderSidebar(target) {
         if (!window.questTasksById) window.questTasksById = {};
         if (!window.questUsersById) window.questUsersById = {};
         
-        // Expose helper to fetch users once and share it
-        window.initGlobalUsers = async function() {
-            var w = window.parent && window.parent.db ? window.parent : window;
-            if (!w.db || !w.getDocs || !w.collection) return;
-            try {
-                const snap = await w.getDocs(w.collection(w.db, 'users'));
-                var usersMap = {};
-                snap.forEach(docSnap => {
-                    var d = docSnap.data() || {};
-                    usersMap[docSnap.id] = {
-                        uid: docSnap.id,
-                        name: d.name || d.email || 'Unknown',
-                        email: d.email || '',
-                        photo: d.photo || ''
-                    };
-                });
-                window.questUsersById = usersMap;
-                if (window.parent && window.parent !== window) {
-                    window.parent.questUsersById = usersMap;
+        if (!window.__appCacheInit && typeof window !== 'undefined') {
+            window.__appCacheInit = true;
+            const userCacheTTL = 300000;
+            window.initGlobalUsers = async function() {
+                const w = window.parent && window.parent.db ? window.parent : window;
+                if (!w.db || !w.getDocs || !w.collection) return;
+
+                if (window.questUsersById && Object.keys(window.questUsersById).length > 0) {
+                    console.log('Global users already initialized, reusing cache:', Object.keys(window.questUsersById).length);
+                    return;
                 }
-                console.log('Global users initialized:', Object.keys(usersMap).length);
-            } catch (e) {
-                console.error('Failed to init global users:', e);
-            }
-        };
+
+                const cc = window.__appCache__;
+                if (cc && cc.users && Date.now() - cc.usersLoadedAt < userCacheTTL) {
+                    window.questUsersById = cc.users;
+                    if (window.parent && window.parent !== window) {
+                        window.parent.questUsersById = cc.users;
+                    }
+                    console.log('Reusing global user cache:', Object.keys(cc.users).length);
+                    return;
+                }
+
+                try {
+                    const snap = await w.getDocs(w.collection(w.db, 'users'));
+                    var usersMap = {};
+                    snap.forEach(docSnap => {
+                        var d = docSnap.data() || {};
+                        usersMap[docSnap.id] = {
+                            uid: docSnap.id,
+                            name: d.name || d.email || 'Unknown',
+                            email: d.email || '',
+                            photo: d.photo || ''
+                        };
+                    });
+                    window.questUsersById = usersMap;
+                    if (window.parent && window.parent !== window) {
+                        window.parent.questUsersById = usersMap;
+                    }
+
+                    if (cc) {
+                        cc.users = Object.assign({}, usersMap);
+                        cc.usersLoadedAt = Date.now();
+                    }
+                    console.log('Global users initialized:', Object.keys(usersMap).length);
+                } catch (e) {
+                    console.error('Failed to init global users:', e);
+                }
+            };
+
+            window.initGlobalUsers();
+        }
 
         // Trigger initialization immediately
         window.initGlobalUsers();
@@ -338,7 +364,7 @@ export function renderSidebar(target) {
         if (!w || !w.db || !w.collection || !w.getDocs) {
             var attempt = typeof snapshotOrAttempt === 'number' ? snapshotOrAttempt : 0;
             var nextAttempt = attempt + 1;
-            if (nextAttempt <= 30) {
+            if (nextAttempt <= 3) {
                 setTimeout(function () { refreshSidebarCounts(nextAttempt); }, 500);
             }
             return;
@@ -3748,6 +3774,14 @@ export function renderSidebar(target) {
         async function loadQuestDepartments() {
             var dropdown = document.getElementById('questDepartmentDropdown');
             if (!dropdown) return;
+            
+            const cc = window.__appCache__;
+            const masterTTL = 1800000;
+            if (cc && cc.departments && Date.now() - cc.departmentsLoadedAt < masterTTL) {
+                renderDeptDropdown(cc.departments);
+                return;
+            }
+
             dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading departments...</span>';
             try {
                 var parentWin = window.parent;
@@ -3756,17 +3790,29 @@ export function renderSidebar(target) {
                     return;
                 }
                 var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "departments"));
-                dropdown.innerHTML = '';
+                var deptData = {};
                 snap.forEach(function (docSnap) {
                     var d = docSnap.data() || {};
-                    var name = d.name || "Untitled";
-                    var color = d.color || "#0B2B6A";
+                    deptData[docSnap.id] = { name: d.name || "Untitled", color: d.color || "#0B2B6A" };
+                });
+                if (cc) { cc.departments = deptData; cc.departmentsLoadedAt = Date.now(); }
+                renderDeptDropdown(deptData);
+            } catch (e) {
+                console.error('Failed to load departments for quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load departments.</span>';
+            }
+
+            function renderDeptDropdown(data) {
+                dropdown.innerHTML = '';
+                Object.entries(data).forEach(function ([id, d]) {
+                    var name = d.name;
+                    var color = d.color;
                     var row = document.createElement('div');
                     row.className = 'quest-dept-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
                     row.innerHTML =
                         '<span class="inline-flex w-2.5 h-2.5 rounded-full" style="background:' + color + ';"></span>' +
                         '<span class="quest-dept-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
-                        '<input type="checkbox" class="ml-2 accent-blue-600" data-dept-id="' + docSnap.id + '">';
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-dept-id="' + id + '">';
                     dropdown.appendChild(row);
                     var checkbox = row.querySelector('input[type="checkbox"]');
                     checkbox.addEventListener('change', updateQuestDepartmentLabel);
@@ -3783,14 +3829,19 @@ export function renderSidebar(target) {
                 } else {
                     updateQuestDepartmentLabel();
                 }
-            } catch (e) {
-                console.error('Failed to load departments for quest', e);
-                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load departments.</span>';
             }
         }
         async function loadQuestPositions() {
             var dropdown = document.getElementById('questPositionDropdown');
             if (!dropdown) return;
+
+            const cc = window.__appCache__;
+            const masterTTL = 1800000;
+            if (cc && cc.positions && Date.now() - cc.positionsLoadedAt < masterTTL) {
+                renderPositionDropdown(cc.positions);
+                return;
+            }
+
             dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading positions...</span>';
             try {
                 var parentWin = window.parent;
@@ -3799,15 +3850,26 @@ export function renderSidebar(target) {
                     return;
                 }
                 var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "positions"));
-                dropdown.innerHTML = '';
+                var positionData = {};
                 snap.forEach(function (docSnap) {
                     var d = docSnap.data() || {};
-                    var name = d.name || "Untitled";
+                    positionData[docSnap.id] = d.name || "Untitled";
+                });
+                if (cc) { cc.positions = positionData; cc.positionsLoadedAt = Date.now(); }
+                renderPositionDropdown(positionData);
+            } catch (e) {
+                console.error('Failed to load positions for quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load positions.</span>';
+            }
+
+            function renderPositionDropdown(data) {
+                dropdown.innerHTML = '';
+                Object.entries(data).forEach(function ([id, name]) {
                     var row = document.createElement('div');
                     row.className = 'quest-position-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
                     row.innerHTML =
                         '<span class="quest-position-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
-                        '<input type="checkbox" class="ml-2 accent-blue-600" data-position-id="' + docSnap.id + '">';
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-position-id="' + id + '">';
                     dropdown.appendChild(row);
                     var checkbox = row.querySelector('input[type="checkbox"]');
                     checkbox.addEventListener('change', updateQuestPositionLabel);
@@ -3824,9 +3886,6 @@ export function renderSidebar(target) {
                 } else {
                     updateQuestPositionLabel();
                 }
-            } catch (e) {
-                console.error('Failed to load positions for quest', e);
-                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load positions.</span>';
             }
         }
         function updateSideQuestDepartmentLabel() {
@@ -5117,9 +5176,21 @@ export function renderSidebar(target) {
     var pendingFeedbackFiles = [];
     function loadReportUsers(attempt) {
         var parentWin = window.parent;
+        var cc = window.__appCache__;
+        if (cc && cc.users && Date.now() - cc.usersLoadedAt < 300000) {
+            window.reportUsersById = cc.users;
+            if (typeof renderReports === 'function') {
+                renderReports();
+            }
+            if (typeof updateActiveReportModalUsers === 'function') {
+                updateActiveReportModalUsers();
+            }
+            return;
+        }
+
         if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
             var nextAttempt = typeof attempt === 'number' ? attempt + 1 : 1;
-            if (nextAttempt <= 30) {
+            if (nextAttempt <= 3) {
                 setTimeout(function () { loadReportUsers(nextAttempt); }, 500);
             }
             return;
@@ -5136,6 +5207,7 @@ export function renderSidebar(target) {
                 };
             });
             window.reportUsersById = map;
+            if (cc) { cc.users = map; cc.usersLoadedAt = Date.now(); }
             if (typeof renderReports === 'function') {
                 renderReports();
             }
@@ -6230,15 +6302,15 @@ export function renderSidebar(target) {
         var parentWin = window.parent;
         allReports = [];
         currentReports = [];
-        if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
-            var nextAttempt = typeof attempt === 'number' ? attempt + 1 : 1;
-            if (nextAttempt <= 30) {
-                setTimeout(function () { loadReportsFromTasks(nextAttempt); }, 500);
-            }
-            updateStats();
-            renderReports();
-            return;
-        }
+                if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                    var nextAttempt = typeof attempt === 'number' ? attempt + 1 : 1;
+                    if (nextAttempt <= 3) {
+                        setTimeout(function () { loadReportsFromTasks(nextAttempt); }, 500);
+                    }
+                    updateStats();
+                    renderReports();
+                    return;
+                }
         try {
             var tasksSnap = await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks'));
             var tasksById = {};

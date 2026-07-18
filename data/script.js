@@ -118,6 +118,10 @@
         let rejectionWhatsappLastAttemptAt = null;
         let positionLabelsCache = null;
 
+        const CACHE_TTL_USERS = 300000;
+        const CACHE_TTL_MASTER = 1800000;
+        window.__appCache__ = window.__appCache__ || { users: null, usersLoadedAt: 0, departments: null, departmentsLoadedAt: 0, positions: null, positionsLoadedAt: 0 };
+
         renderTopBar(document.getElementById("topbarContainer"));
         renderSidebar(document.getElementById("sidebarContainer"));
         renderRightbarRecruit();
@@ -409,6 +413,11 @@
 
         async function ensurePositionLabelsLoaded() {
             if (positionLabelsCache) return positionLabelsCache;
+            const cc = window.__appCache__;
+            if (cc && cc.positions && Date.now() - cc.positionsLoadedAt < CACHE_TTL_MASTER) {
+                positionLabelsCache = cc.positions;
+                return positionLabelsCache;
+            }
             let snap = await getDocs(collection(db, "position"));
             if (snap.empty) {
                 snap = await getDocs(collection(db, "positions"));
@@ -419,6 +428,7 @@
                 map[docSnap.id] = data.name || data.label || data.title || data.position || docSnap.id;
             });
             positionLabelsCache = map;
+            if (cc) { cc.positions = map; cc.positionsLoadedAt = Date.now(); }
             return map;
         }
 
@@ -949,11 +959,17 @@
         async function ensureUsersLoaded() {
             await ensurePositionLabelsLoaded();
             if (Object.keys(usersMap).length > 0) return usersMap;
+            const cc = window.__appCache__;
+            if (cc && cc.users && Date.now() - cc.usersLoadedAt < CACHE_TTL_USERS) {
+                Object.assign(usersMap, cc.users);
+                return usersMap;
+            }
             const snap = await getDocs(collection(db, "users"));
             snap.forEach(docSnap => {
                 const data = docSnap.data() || {};
                 usersMap[docSnap.id] = buildUserViewModel(docSnap.id, data);
             });
+            if (cc) { cc.users = Object.assign({}, usersMap); cc.usersLoadedAt = Date.now(); }
             return usersMap;
         }
 
@@ -1008,6 +1024,11 @@
 
         async function ensureDepartmentsLoaded() {
             if (Object.keys(departmentsMap).length > 0) return departmentsMap;
+            const cc = window.__appCache__;
+            if (cc && cc.departments && Date.now() - cc.departmentsLoadedAt < CACHE_TTL_MASTER) {
+                Object.assign(departmentsMap, cc.departments);
+                return departmentsMap;
+            }
             let snap = await getDocs(collection(db, "department"));
             if (snap.empty) {
                 snap = await getDocs(collection(db, "departments"));
@@ -1016,6 +1037,7 @@
                 const data = docSnap.data() || {};
                 departmentsMap[docSnap.id] = data.name || data.label || data.title || data.department || docSnap.id;
             });
+            if (cc) { cc.departments = Object.assign({}, departmentsMap); cc.departmentsLoadedAt = Date.now(); }
             return departmentsMap;
         }
 

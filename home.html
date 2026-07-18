@@ -757,14 +757,30 @@
             }
         });
 
+        let pendingApprovalsUnsubscribe = null;
+        let projectsUnsubscribe = null;
+        let userPresenceUnsubscribe = null;
+
+        window.addEventListener('unload', () => {
+            if (pendingApprovalsUnsubscribe) pendingApprovalsUnsubscribe();
+            if (projectsUnsubscribe) projectsUnsubscribe();
+            if (userPresenceUnsubscribe) userPresenceUnsubscribe();
+            if (dailyReportUnsubscribe) dailyReportUnsubscribe();
+        });
+
         async function loadPendingApprovals() {
             const section = document.getElementById('pendingApprovalsSection');
             const tbody = document.getElementById('pendingUsersTableBody');
             section.style.display = 'block';
 
+            if (pendingApprovalsUnsubscribe) {
+                pendingApprovalsUnsubscribe();
+                pendingApprovalsUnsubscribe = null;
+            }
+
             try {
                 const q = query(collection(db, "pending_users"), where("is_approved", "==", false));
-                onSnapshot(q, (snapshot) => {
+                pendingApprovalsUnsubscribe = onSnapshot(q, (snapshot) => {
                     tbody.innerHTML = '';
                     if (snapshot.empty) {
                         tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No pending registrations.</td></tr>';
@@ -939,6 +955,11 @@
         let listenToProjectsRetryCount = 0;
         function listenToProjects() {
             try {
+                if (projectsUnsubscribe) {
+                    projectsUnsubscribe();
+                    projectsUnsubscribe = null;
+                }
+
                 const pinnedContainer = document.getElementById('pinnedProjectsContainer');
                 const otherContainer = document.getElementById('otherProjectsContainer');
 
@@ -946,7 +967,7 @@
                 const q = query(collection(db, "projects"), orderBy("created_at", "desc"), limit(50));
 
                 // onSnapshot membuat data terupdate otomatis jika ada perubahan di database
-                onSnapshot(q, (snapshot) => {
+                projectsUnsubscribe = onSnapshot(q, (snapshot) => {
                     listenToProjectsRetryCount = 0; // Reset retry count on success
                     let projects = [];
                     snapshot.forEach((doc) => {
@@ -1056,8 +1077,13 @@
             const badge = document.getElementById('onlineActiveBadge');
             if (!container || !badge) return;
             try {
+                if (userPresenceUnsubscribe) {
+                    userPresenceUnsubscribe();
+                    userPresenceUnsubscribe = null;
+                }
+
                 const colRef = collection(db, "user_presence");
-                onSnapshot(colRef, (snapshot) => {
+                userPresenceUnsubscribe = onSnapshot(colRef, (snapshot) => {
                     listenToOnlineUsersRetryCount = 0; // Reset retry count on success
                     const now = new Date();
                     const startOfDay = new Date();
