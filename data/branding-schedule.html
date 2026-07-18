@@ -199,7 +199,7 @@
 
     <!-- MODAL: DATE CLICK OPTIONS -->
     <div class="modal fade" id="dateClickModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 p-4 pb-2">
                     <h5 class="modal-title fw-bold text-dark" id="dateClickModalTitle">Pilih Aksi</h5>
@@ -306,6 +306,7 @@
         let currentUser = null;
         let activeDate = new Date();
         let allContents = [];
+        let dutySchedules = [];
         let currentSelectedDate = null;
         let pendingDateForAdd = null;
 
@@ -388,6 +389,15 @@
                 renderNotifications();
                 updateActiveDayCard();
             });
+
+            onSnapshot(collection(db, "duty_schedules"), (snapshot) => {
+                dutySchedules = [];
+                snapshot.forEach(docSnap => {
+                    dutySchedules.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderCalendar();
+                updateActiveDayCard();
+            });
         }
 
         function populateContentTitles() {
@@ -410,6 +420,41 @@
             if (priority === 'high') return '<i class="bi bi-flag-fill text-danger me-1"></i>';
             if (priority === 'medium') return '<i class="bi bi-flag-fill text-warning me-1"></i>';
             return '<i class="bi bi-flag-fill text-success me-1"></i>';
+        }
+
+        function toDate(value) {
+            if (!value) return null;
+            if (value.toDate) return value.toDate();
+            return new Date(value);
+        }
+
+        function getDutyAssignmentsByDate(date) {
+            const matched = [];
+            dutySchedules.forEach(schedule => {
+                if (schedule.status === 'archived') return;
+                const assignments = Array.isArray(schedule.assignments) ? schedule.assignments : [];
+                assignments.forEach(item => {
+                    const aDate = toDate(item.assignment_date || schedule.start_date);
+                    if (!aDate) return;
+                    if (aDate.toDateString() === date.toDateString()) {
+                        matched.push({ schedule, assignment: item });
+                    }
+                });
+            });
+            return matched;
+        }
+
+        function getDutyAssignmentDates() {
+            const dates = [];
+            dutySchedules.forEach(schedule => {
+                if (schedule.status === 'archived') return;
+                const assignments = Array.isArray(schedule.assignments) ? schedule.assignments : [];
+                assignments.forEach(item => {
+                    const aDate = toDate(item.assignment_date || schedule.start_date);
+                    if (aDate) dates.push(aDate);
+                });
+            });
+            return dates;
         }
 
         // Calendar Render
@@ -451,8 +496,8 @@
                 allContents.forEach(content => {
                     (content.milestones || []).forEach(milestone => {
                         if (!milestone.deadline) return;
-                        const mDate = milestone.deadline.toDate ? milestone.deadline.toDate() : new Date(milestone.deadline);
-                        if (mDate.toDateString() === cellDate.toDateString()) {
+                        const mDate = toDate(milestone.deadline);
+                        if (mDate && mDate.toDateString() === cellDate.toDateString()) {
                             let badgeClass = 'bg-milestone-other';
                             if (milestone.name === 'Script Writing') badgeClass = 'bg-milestone-script';
                             else if (milestone.name === 'Take Video') badgeClass = 'bg-milestone-take';
@@ -470,6 +515,32 @@
                             dotsContainer.appendChild(badge);
                         }
                     });
+                });
+
+                // Add duty assignments to this cell (grouped by type)
+                const dailyDutyAssignments = getDutyAssignmentsByDate(cellDate);
+                const typeGroups = {};
+                dailyDutyAssignments.forEach(item => {
+                    const key = item.schedule.type_id || item.schedule.type_name || 'piket';
+                    if (!typeGroups[key]) {
+                        typeGroups[key] = { type_name: item.schedule.type_name || 'Piket', color: item.schedule.type_color || '#0B2B6A', count: 0, hasCompleted: false };
+                    }
+                    typeGroups[key].count++;
+                    if (item.assignment.status === 'completed') typeGroups[key].hasCompleted = true;
+                });
+                Object.values(typeGroups).forEach(group => {
+                    const badge = document.createElement('span');
+                    badge.className = 'milestone-badge';
+                    badge.style.backgroundColor = hexToRgba(group.color, 0.12);
+                    badge.style.color = group.color;
+                    badge.style.border = `1px solid ${group.color}`;
+                    badge.innerHTML = `<i class="bi bi-person-fill me-1"></i>${group.type_name}${group.count > 1 ? `(${group.count})` : ''}`;
+                    if (group.hasCompleted) {
+                        badge.style.textDecoration = 'line-through';
+                        badge.style.opacity = '0.6';
+                        badge.innerHTML += ' ✓';
+                    }
+                    dotsContainer.appendChild(badge);
                 });
 
                 cell.addEventListener('click', () => showDayDetails(cellDate));
@@ -495,7 +566,8 @@
                 (content.milestones || []).forEach((milestone, idx) => {
                     if (milestone.status === 'completed' || !milestone.deadline) return;
 
-                    const mDate = milestone.deadline.toDate ? milestone.deadline.toDate() : new Date(milestone.deadline);
+                    const mDate = toDate(milestone.deadline);
+                    if (!mDate) return;
                     const compareDate = new Date(mDate.getFullYear(), mDate.getMonth(), mDate.getDate());
 
                     const item = {
@@ -592,14 +664,22 @@
             }
         };
 
+        function hexToRgba(hex, alpha) {
+            const normalized = String(hex || '#0B2B6A').replace('#', '');
+            const r = parseInt(normalized.substring(0, 2), 16);
+            const g = parseInt(normalized.substring(2, 4), 16);
+            const b = parseInt(normalized.substring(4, 6), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
         // Open day detail view
         function getMilestonesByDate(date) {
             const matchedContents = [];
             allContents.forEach(content => {
                 (content.milestones || []).forEach((milestone, idx) => {
                     if (!milestone.deadline) return;
-                    const mDate = milestone.deadline.toDate ? milestone.deadline.toDate() : new Date(milestone.deadline);
-                    if (mDate.toDateString() === date.toDateString()) {
+                    const mDate = toDate(milestone.deadline);
+                    if (mDate && mDate.toDateString() === date.toDateString()) {
                         matchedContents.push({
                             content,
                             milestone,
@@ -624,33 +704,53 @@
 
         function openDateClickModal(date) {
             const matchedContents = getMilestonesByDate(date);
+            const matchedDuties = getDutyAssignmentsByDate(date);
             document.getElementById('dateClickModalTitle').textContent = date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
             const section = document.getElementById('dateClickDeadlinesSection');
             const list = document.getElementById('dateClickDeadlinesList');
             list.innerHTML = '';
 
-            if (matchedContents.length === 0) {
+            if (matchedContents.length === 0 && matchedDuties.length === 0) {
                 section.classList.add('d-none');
             } else {
                 section.classList.remove('d-none');
                 matchedContents.forEach(item => {
                     const div = document.createElement('div');
-                    div.className = 'p-3 border rounded-3 d-flex justify-content-between align-items-center gap-3';
+                    div.className = 'p-3 border rounded-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 overflow-hidden';
                     div.innerHTML = `
-                        <div>
+                        <div class="min-w-0 overflow-hidden" style="flex:1 1 auto; word-break:break-word">
                             <span class="badge ${item.milestone.status === 'completed' ? 'bg-success' : 'bg-warning text-dark'} mb-2">
                                 ${item.milestone.status === 'completed' ? 'Selesai' : 'Pending'}
                             </span>
                             <h6 class="fw-bold mb-1">${getPriorityFlag(item.content.priority)}${item.content.title}</h6>
                             <small class="text-muted d-block">${item.milestone.name}</small>
-                            ${item.content.description ? `<small class="text-muted d-block">${item.content.description}</small>` : ''}
+                            ${item.content.description ? `<small class="text-muted d-block text-break">${item.content.description}</small>` : ''}
                         </div>
                         ${item.milestone.status !== 'completed' ? `
-                            <button type="button" class="btn btn-sm btn-success rounded-pill px-3" onclick="completeDeadlineFromDateModal('${item.content.id}', ${item.milestoneIndex})">
+                            <button type="button" class="btn btn-sm btn-success rounded-pill px-3 flex-shrink-0" onclick="completeDeadlineFromDateModal('${item.content.id}', ${item.milestoneIndex})">
                                 Selesaikan
                             </button>
                         ` : ''}
+                    `;
+                    list.appendChild(div);
+                });
+
+                matchedDuties.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'p-3 border rounded-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 overflow-hidden';
+                    div.style.borderColor = item.schedule.type_color || '#0B2B6A';
+                    div.innerHTML = `
+                        <div class="min-w-0 overflow-hidden" style="flex:1 1 auto; word-break:break-word">
+                            <span class="badge mb-2" style="background-color: ${hexToRgba(item.schedule.type_color || '#0B2B6A', 0.12)}; color: ${item.schedule.type_color || '#0B2B6A'}">
+                                PIKET
+                            </span>
+                            <h6 class="fw-bold mb-1">${item.schedule.type_name || 'Piket'}</h6>
+                            <small class="text-muted d-block">${item.schedule.title}</small>
+                        </div>
+                        <a href="piket-branding.html" class="btn btn-sm btn-outline-primary rounded-pill px-3 flex-shrink-0">
+                            Lihat Detail
+                        </a>
                     `;
                     list.appendChild(div);
                 });
@@ -682,25 +782,26 @@
             list.innerHTML = '';
 
             const matchedContents = getMilestonesByDate(currentSelectedDate);
+            const matchedDuties = getDutyAssignmentsByDate(currentSelectedDate);
 
-            if (matchedContents.length === 0) {
+            if (matchedContents.length === 0 && matchedDuties.length === 0) {
                 list.innerHTML = `<p class="text-muted small mb-0 text-center py-3">Tidak ada jadwal atau deadline untuk tanggal ini.</p>`;
                 return;
             }
 
             matchedContents.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'p-3 border rounded-3 bg-light d-flex justify-content-between align-items-center';
+                div.className = 'p-3 border rounded-3 bg-light d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 overflow-hidden';
                 div.innerHTML = `
-                    <div>
+                    <div class="min-w-0 overflow-hidden" style="flex:1 1 auto; word-break:break-word">
                         <span class="badge ${item.milestone.status === 'completed' ? 'bg-success' : 'bg-warning text-dark'} mb-2">
                             ${item.milestone.status === 'completed' ? 'Selesai' : 'Pending'}
                         </span>
                         <h6 class="fw-bold mb-1">${getPriorityFlag(item.content.priority)}${item.content.title}</h6>
                         <small class="text-muted d-block">Milestone: <strong>${item.milestone.name}</strong></small>
-                        <small class="text-muted d-block">${item.content.description || 'Tidak ada deskripsi'}</small>
+                        <small class="text-muted d-block text-break">${item.content.description || 'Tidak ada deskripsi'}</small>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 flex-shrink-0">
                         ${item.milestone.status !== 'completed' ? `
                             <button class="btn btn-sm btn-success rounded-pill px-3" onclick="markMilestoneComplete('${item.content.id}', ${item.milestoneIndex})">
                                 Selesaikan
@@ -712,6 +813,25 @@
                         <button class="btn btn-sm btn-outline-danger rounded-circle p-2 lh-1" onclick="deleteContent('${item.content.id}')">
                             <i class="bi bi-trash"></i>
                         </button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            matchedDuties.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'p-3 border rounded-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 overflow-hidden';
+                div.style.borderColor = item.schedule.type_color || '#0B2B6A';
+                div.style.borderLeft = `5px solid ${item.schedule.type_color || '#0B2B6A'}`;
+                div.innerHTML = `
+                    <div class="min-w-0 overflow-hidden" style="flex:1 1 auto; word-break:break-word">
+                        <h6 class="fw-bold mb-1">Piket: ${item.schedule.type_name || 'Tugas'}</h6>
+                        <small class="text-muted d-block text-break">${item.schedule.title}</small>
+                    </div>
+                    <div class="d-flex gap-2 flex-shrink-0">
+                        <a href="piket-branding.html" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            Lihat Piket
+                        </a>
                     </div>
                 `;
                 list.appendChild(div);
@@ -753,8 +873,8 @@
                     (data.milestones || []).forEach(m => {
                         let dateStr = '';
                         if (m.deadline) {
-                            const d = m.deadline.toDate ? m.deadline.toDate() : new Date(m.deadline);
-                            dateStr = d.toISOString().split('T')[0];
+                            const d = toDate(m.deadline);
+                            dateStr = d ? d.toISOString().split('T')[0] : '';
                         }
                         addMilestoneRow(m.name, dateStr, m.status);
                     });
