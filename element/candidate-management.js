@@ -360,7 +360,9 @@ async function ensureUsersLoaded(cat) {
   const state = getTabState(cat);
   if (Object.keys(state.usersMap).length > 0) return state.usersMap;
   if (window.questUsersById && Object.keys(window.questUsersById).length > 0) { Object.assign(state.usersMap, window.questUsersById); return state.usersMap; }
-  try { const snap = await getDocs(collection(db, "users")); snap.forEach(ds => { const d = ds.data()||{}; state.usersMap[ds.id] = { name: d.displayName||d.name||d.email||"User", photo: d.photo||d.photoURL||d.avatar_url||d.avatar||null, specialization: resolveInterviewerSpecialization(d), availability: normalizeInterviewerAvailability(d.interview_availability||d.availability||d.interviewer_status||d.status) }; }); } catch(e) {}
+  const cc = window.__appCache__;
+  if (cc && cc.users && Date.now() - cc.usersLoadedAt < 300000) { Object.assign(state.usersMap, cc.users); return state.usersMap; }
+  try { const snap = await getDocs(collection(db, "users")); snap.forEach(ds => { const d = ds.data()||{}; state.usersMap[ds.id] = { name: d.displayName||d.name||d.email||"User", photo: d.photo||d.photoURL||d.avatar_url||d.avatar||null, specialization: resolveInterviewerSpecialization(d), availability: normalizeInterviewerAvailability(d.interview_availability||d.availability||d.interviewer_status||d.status) }; }); if (cc) { cc.users = Object.assign({}, state.usersMap); cc.usersLoadedAt = Date.now(); } } catch(e) {}
   return state.usersMap;
 }
 
@@ -442,7 +444,6 @@ function subscribeRealtimeUpdates(cat) {
   state.unsubUsers = onSnapshot(collection(db, "users"), snap => {
     Object.keys(state.usersMap).forEach(k => delete state.usersMap[k]);
     snap.forEach(ds => { const d = ds.data()||{}; state.usersMap[ds.id] = { name: d.displayName||d.name||d.email||"User", photo: d.photo||d.photoURL||d.avatar_url||d.avatar||null, specialization: resolveInterviewerSpecialization(d), availability: normalizeInterviewerAvailability(d.interview_availability||d.availability||d.interviewer_status||d.status) }; });
-    loadCandidates(cat);
   }, err => { console.error("Realtime users gagal", err); });
 }
 

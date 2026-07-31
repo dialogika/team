@@ -932,12 +932,38 @@
             messageBoostEmojiEl.innerText = myEmoji;
             messageBoostLabelEl.innerText = isBoosted ? "Boosted" : "Boost this";
         }
+        let commentsUnsubscribe = null;
+        let subscribersUnsubscribe = null;
+        let boostsUnsubscribe = null;
+
+        function cleanupFileDocListeners() {
+            if (commentsUnsubscribe) {
+                commentsUnsubscribe();
+                commentsUnsubscribe = null;
+            }
+            if (subscribersUnsubscribe) {
+                subscribersUnsubscribe();
+                subscribersUnsubscribe = null;
+            }
+            if (boostsUnsubscribe) {
+                boostsUnsubscribe();
+                boostsUnsubscribe = null;
+            }
+        }
+
+        window.addEventListener('beforeunload', cleanupFileDocListeners);
+        window.addEventListener('unload', cleanupFileDocListeners);
+
         function listenComments() {
             try {
+                if (commentsUnsubscribe) {
+                    commentsUnsubscribe();
+                    commentsUnsubscribe = null;
+                }
                 if (!projectId || !fileId) return;
                 const ref = collection(db, "projects", projectId, "files", fileId, "comments");
                 const q = query(ref, orderBy("created_at", "asc"));
-                onSnapshot(q, (snapshot) => {
+                commentsUnsubscribe = onSnapshot(q, (snapshot) => {
                     const comments = [];
                     snapshot.forEach(docSnap => comments.push({ id: docSnap.id, ...docSnap.data() }));
                     currentComments = comments;
@@ -951,9 +977,13 @@
         }
         function listenSubscribers() {
             try {
+                if (subscribersUnsubscribe) {
+                    subscribersUnsubscribe();
+                    subscribersUnsubscribe = null;
+                }
                 const ref = getSubscribersCollectionRef();
                 if (!ref) return;
-                onSnapshot(ref, (snapshot) => {
+                subscribersUnsubscribe = onSnapshot(ref, (snapshot) => {
                     const subs = [];
                     snapshot.forEach(docSnap => subs.push({ id: docSnap.id, ...docSnap.data() }));
                     currentSubscribers = subs;
@@ -970,9 +1000,13 @@
         }
         function listenBoosts() {
             try {
+                if (boostsUnsubscribe) {
+                    boostsUnsubscribe();
+                    boostsUnsubscribe = null;
+                }
                 const ref = getBoostsCollectionRef();
                 if (!ref) return;
-                onSnapshot(ref, (snapshot) => {
+                boostsUnsubscribe = onSnapshot(ref, (snapshot) => {
                     const boosts = [];
                     snapshot.forEach(docSnap => boosts.push({ id: docSnap.id, ...docSnap.data() }));
                     currentBoosts = boosts;

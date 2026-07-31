@@ -1180,9 +1180,30 @@
             }
         }
 
+        let listsUnsubscribe = null;
+        let tasksUnsubscribe = null;
+
+        function cleanupListListeners() {
+            if (listsUnsubscribe) {
+                listsUnsubscribe();
+                listsUnsubscribe = null;
+            }
+            if (tasksUnsubscribe) {
+                tasksUnsubscribe();
+                tasksUnsubscribe = null;
+            }
+        }
+
+        window.addEventListener('beforeunload', cleanupListListeners);
+        window.addEventListener('unload', cleanupListListeners);
+
         function listenToLists() {
+            if (listsUnsubscribe) {
+                listsUnsubscribe();
+                listsUnsubscribe = null;
+            }
             const q = query(collection(db, "projects", projectId, "lists"), orderBy("position", "asc"));
-            onSnapshot(q, (snapshot) => {
+            listsUnsubscribe = onSnapshot(q, (snapshot) => {
                 projectLists = [];
                 snapshot.forEach(docSnap => projectLists.push({ id: docSnap.id, ...docSnap.data() }));
                 renderUI();
@@ -1190,8 +1211,12 @@
         }
 
         function listenToTasks() {
+            if (tasksUnsubscribe) {
+                tasksUnsubscribe();
+                tasksUnsubscribe = null;
+            }
             const q = query(collection(db, "tasks"), where("project_id", "==", projectId));
-            onSnapshot(q, (snapshot) => {
+            tasksUnsubscribe = onSnapshot(q, (snapshot) => {
                 allTasks = [];
                 snapshot.forEach(docSnap => allTasks.push({ id: docSnap.id, ...docSnap.data() }));
                 allTasks.sort((a, b) => {

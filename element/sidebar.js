@@ -1,57 +1,98 @@
 export function renderSidebar(target) {
-    if (!target) return;
+  if (!target) return;
 
-    // Provide a shared sidebar toggle for pages that render topbar+sidebar
-    // but do not define window.toggleSidebar locally.
-    if (typeof window !== 'undefined' && typeof window.toggleSidebar !== 'function') {
-        window.toggleSidebar = function () {
-            var sidebar = document.getElementById('sidebarNav');
-            if (!sidebar) return;
-            var isMobile = window.innerWidth <= 991;
-            if (isMobile) {
-                sidebar.classList.toggle('show');
-                return;
-            }
-            document.body.classList.toggle('sidebar-collapsed');
-        };
+  // Provide a shared sidebar toggle for pages that render topbar+sidebar
+  // but do not define window.toggleSidebar locally.
+  if (
+    typeof window !== "undefined" &&
+    typeof window.toggleSidebar !== "function"
+  ) {
+    window.toggleSidebar = function () {
+      var sidebar = document.getElementById("sidebarNav");
+      if (!sidebar) return;
+      var isMobile = window.innerWidth <= 991;
+      if (isMobile) {
+        sidebar.classList.toggle("show");
+        return;
+      }
+      document.body.classList.toggle("sidebar-collapsed");
+    };
+  }
+
+  // --- INITIALIZE GLOBAL DATA ---
+  if (typeof window !== "undefined") {
+    if (!window.questTasksById) window.questTasksById = {};
+    if (!window.questUsersById) window.questUsersById = {};
+
+    if (!window.__appCacheInit && typeof window !== "undefined") {
+      window.__appCacheInit = true;
+      const userCacheTTL = 300000;
+      window.initGlobalUsers = async function () {
+        const w = window.parent && window.parent.db ? window.parent : window;
+        if (!w.db || !w.getDocs || !w.collection) return;
+
+        if (
+          window.questUsersById &&
+          Object.keys(window.questUsersById).length > 0
+        ) {
+          console.log(
+            "Global users already initialized, reusing cache:",
+            Object.keys(window.questUsersById).length,
+          );
+          return;
+        }
+
+        const cc = window.__appCache__;
+        if (cc && cc.users && Date.now() - cc.usersLoadedAt < userCacheTTL) {
+          window.questUsersById = cc.users;
+          if (window.parent && window.parent !== window) {
+            window.parent.questUsersById = cc.users;
+          }
+          console.log(
+            "Reusing global user cache:",
+            Object.keys(cc.users).length,
+          );
+          return;
+        }
+
+        try {
+          const snap = await w.getDocs(w.collection(w.db, "users"));
+          var usersMap = {};
+          snap.forEach((docSnap) => {
+            var d = docSnap.data() || {};
+            usersMap[docSnap.id] = {
+              uid: docSnap.id,
+              name: d.name || d.email || "Unknown",
+              email: d.email || "",
+              photo: d.photo || "",
+            };
+          });
+          window.questUsersById = usersMap;
+          if (window.parent && window.parent !== window) {
+            window.parent.questUsersById = usersMap;
+          }
+
+          if (cc) {
+            cc.users = Object.assign({}, usersMap);
+            cc.usersLoadedAt = Date.now();
+          }
+          console.log(
+            "Global users initialized:",
+            Object.keys(usersMap).length,
+          );
+        } catch (e) {
+          console.error("Failed to init global users:", e);
+        }
+      };
+
+      window.initGlobalUsers();
     }
 
-    // --- INITIALIZE GLOBAL DATA ---
-    if (typeof window !== 'undefined') {
-        if (!window.questTasksById) window.questTasksById = {};
-        if (!window.questUsersById) window.questUsersById = {};
-        
-        // Expose helper to fetch users once and share it
-        window.initGlobalUsers = async function() {
-            var w = window.parent && window.parent.db ? window.parent : window;
-            if (!w.db || !w.getDocs || !w.collection) return;
-            try {
-                const snap = await w.getDocs(w.collection(w.db, 'users'));
-                var usersMap = {};
-                snap.forEach(docSnap => {
-                    var d = docSnap.data() || {};
-                    usersMap[docSnap.id] = {
-                        uid: docSnap.id,
-                        name: d.name || d.email || 'Unknown',
-                        email: d.email || '',
-                        photo: d.photo || ''
-                    };
-                });
-                window.questUsersById = usersMap;
-                if (window.parent && window.parent !== window) {
-                    window.parent.questUsersById = usersMap;
-                }
-                console.log('Global users initialized:', Object.keys(usersMap).length);
-            } catch (e) {
-                console.error('Failed to init global users:', e);
-            }
-        };
+    // Trigger initialization immediately
+    window.initGlobalUsers();
+  }
 
-        // Trigger initialization immediately
-        window.initGlobalUsers();
-    }
-
-    target.innerHTML = `
+  target.innerHTML = /* html */ `
         <style>
             #questBoardModal,
             #reportBoardModal {
@@ -220,7 +261,7 @@ export function renderSidebar(target) {
 
                 <!-- Navigation Links -->
                 <div class="nav-category">Main Navigation</div>
-                <a href="javascript:void(0)" class="sidebar-link active" onclick="window.toggleDashboardMenu(this)">
+                <a href="../home.html" class="sidebar-link active" onclick="window.toggleDashboardMenu(this)">
                     <i class="bi bi-columns-gap"></i> Dashboard 
                     <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="dashboard"></span>
                     <span class="sidebar-badge">
@@ -233,13 +274,14 @@ export function renderSidebar(target) {
                     <a href="javascript:void(0)" class="sidebar-submenu-link">Happy</a>
                     <a href="javascript:void(0)" class="sidebar-submenu-link">Branding</a>
                 </div>
+
                 <a href="#" class="sidebar-link"><i class="bi bi-list-columns-reverse"></i> Shortcut 
                     <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="shortcut"></span>
                 </a>
                 <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-chat-dots"></i> Pings
                     <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="pings"></span>
                 </a>
-                <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-bell"></i> Hey!
+                <a href="/setting/announcement.html" class="sidebar-link"><i class="bi bi-bell"></i> Announcement!
                     <span class="menu-badge menu-badge-inline menu-badge-hidden" data-menu-badge="hey"></span>
                 </a>
                 <a href="javascript:void(0)" class="sidebar-link" onclick="alert('Under Development')"><i class="bi bi-activity"></i> Activity
@@ -314,195 +356,241 @@ export function renderSidebar(target) {
         </div>
         `;
 
-    var cachedTasks = null;
-    var cachedTasksTime = 0;
+  var cachedTasks = null;
+  var cachedTasksTime = 0;
 
-    async function getTasksCached(w) {
-        var now = Date.now();
-        if (cachedTasks && (now - cachedTasksTime < 5000)) {
-            return cachedTasks;
-        }
-        var snap = await w.getDocs(w.collection(w.db, 'tasks'));
-        cachedTasks = snap;
-        cachedTasksTime = now;
-        return snap;
+  async function getTasksCached(w) {
+    var now = Date.now();
+    if (cachedTasks && now - cachedTasksTime < 5000) {
+      return cachedTasks;
     }
-    window.getTasksCached = getTasksCached;
+    var snap = await w.getDocs(w.collection(w.db, "tasks"));
+    cachedTasks = snap;
+    cachedTasksTime = now;
+    return snap;
+  }
+  window.getTasksCached = getTasksCached;
 
-    async function refreshSidebarCounts(snapshotOrAttempt) {
-        var mainCountEl = document.getElementById('mainQuestCount');
-        var sideCountEl = document.getElementById('sideQuestCount');
-        var reportCountEl = document.getElementById('reportPendingApprovalCount');
-        
-        var w = window;
-        if (!w || !w.db || !w.collection || !w.getDocs) {
-            var attempt = typeof snapshotOrAttempt === 'number' ? snapshotOrAttempt : 0;
-            var nextAttempt = attempt + 1;
-            if (nextAttempt <= 30) {
-                setTimeout(function () { refreshSidebarCounts(nextAttempt); }, 500);
-            }
-            return;
-        }
+  async function refreshSidebarCounts(snapshotOrAttempt) {
+    var mainCountEl = document.getElementById("mainQuestCount");
+    var sideCountEl = document.getElementById("sideQuestCount");
+    var reportCountEl = document.getElementById("reportPendingApprovalCount");
 
-        try {
-            var tasksSnap;
-            if (snapshotOrAttempt && typeof snapshotOrAttempt === 'object' && typeof snapshotOrAttempt.forEach === 'function') {
-                tasksSnap = snapshotOrAttempt;
-                // Update cache
-                cachedTasks = tasksSnap;
-                cachedTasksTime = Date.now();
-            } else {
-                tasksSnap = await getTasksCached(w);
-            }
-
-            var totalMain = 0;
-            var totalSide = 0;
-            var completeIds = [];
-            var completeSet = {};
-
-            tasksSnap.forEach(function (docSnap) {
-                var data = docSnap.data() || {};
-                // Projects have project_id, Quests do not.
-                if (data.project_id || data.projectId) return;
-
-                var archived = !!(data.archived || data.is_archived);
-                
-                // Status normalization
-                var statusRaw = '';
-                if (typeof data.status === 'string') statusRaw = data.status;
-                else if (data.status && typeof data.status === 'object') statusRaw = data.status.name || data.status.label || '';
-                var normStatus = String(statusRaw || '').trim().toLowerCase().replace(/[\s_]/g, '');
-                
-                // Task Status normalization
-                var tsRaw = '';
-                if (typeof data.task_status === 'string') tsRaw = data.task_status;
-                else if (data.task_status && typeof data.task_status === 'object') tsRaw = data.task_status.name || data.task_status.label || '';
-                var normTaskStatus = String(tsRaw || '').trim().toLowerCase().replace(/[\s_]/g, '');
-
-                var isComplete = normStatus === 'complete' || normStatus === 'done' || normTaskStatus === 'complete' || normTaskStatus === 'done';
-
-                // Count Main Quest (Recurring tasks that are not complete/archived)
-                if (data.recur && !isComplete && !archived) {
-                    totalMain++;
-                }
-
-                // Count Side Quest (Tasks with type sidequest OR has task_status, and not complete/archived)
-                var rawType = String(data.type || '').toLowerCase();
-                var isSideQuest = rawType === 'sidequest' || rawType === 'side-quest' || normStatus === 'sidequest' || !!data.task_status;
-                if (isSideQuest && !isComplete && !archived) {
-                    totalSide++;
-                }
-
-                if (isComplete && !archived) {
-                    completeIds.push(docSnap.id);
-                    completeSet[docSnap.id] = true;
-                }
-            });
-
-            if (mainCountEl) mainCountEl.innerText = String(totalMain);
-            if (sideCountEl) sideCountEl.innerText = String(totalSide);
-
-            // Report Pending Approval Logic
-            if (reportCountEl) {
-                function timeKey(v) {
-                    if (!v) return '';
-                    if (v.toDate && typeof v.toDate === 'function') {
-                        var d = v.toDate();
-                        if (!isNaN(d.getTime())) return d.toISOString();
-                        return '';
-                    }
-                    if (typeof v === 'number') {
-                        var d2 = new Date(v);
-                        if (!isNaN(d2.getTime())) return d2.toISOString();
-                        return '';
-                    }
-                    return String(v);
-                }
-
-                var rootSnap = await w.getDocs(w.collection(w.db, 'quest_reports'));
-                var latestByTaskId = {};
-                rootSnap.forEach(function (repSnap) {
-                    var rdataRoot = repSnap.data() || {};
-                    var taskIdRoot = rdataRoot.taskId || rdataRoot.task_id || '';
-                    if (!taskIdRoot || !completeSet[taskIdRoot]) return;
-                    var prevRoot = latestByTaskId[taskIdRoot];
-                    var prevTimeRoot = prevRoot ? String(prevRoot._time || '') : '';
-                    var currTimeRoot = timeKey(rdataRoot.submittedAt || rdataRoot.createdAt || rdataRoot.timestamp || '');
-                    if (!prevRoot || currTimeRoot > prevTimeRoot) {
-                        latestByTaskId[taskIdRoot] = { data: rdataRoot, _time: currTimeRoot };
-                    }
-                });
-
-                var tasksToFetchSub = completeIds.filter(id => !latestByTaskId[id]);
-                if (tasksToFetchSub.length > 0) {
-                    const batchSize = 10;
-                    for (let i = 0; i < tasksToFetchSub.length; i += batchSize) {
-                        const batch = tasksToFetchSub.slice(i, i + batchSize);
-                        await Promise.all(batch.map(async (taskId) => {
-                            try {
-                                var repSnap0 = await w.getDocs(w.collection(w.db, 'tasks', taskId, 'reports'));
-                                repSnap0.forEach(function (docRep) {
-                                    var rdata = docRep.data() || {};
-                                    var prev = latestByTaskId[taskId];
-                                    var prevTime = prev ? String(prev._time || '') : '';
-                                    var currTime = timeKey(rdata.submittedAt || rdata.createdAt || rdata.timestamp || '');
-                                    if (!prev || currTime > prevTime) {
-                                        latestByTaskId[taskId] = { data: rdata, _time: currTime };
-                                    }
-                                });
-                            } catch (eSub) {}
-                        }));
-                    }
-                }
-
-                var pendingCount = 0;
-                for (var j = 0; j < completeIds.length; j++) {
-                    var tid = completeIds[j];
-                    var entry = latestByTaskId[tid];
-                    if (!entry || !entry.data) continue;
-                    var appr = (entry.data.approval_status || entry.data.approvalStatus || '').toLowerCase();
-                    if (appr !== 'approved') pendingCount++;
-                }
-                reportCountEl.innerText = String(pendingCount);
-            }
-        } catch (e) {
-            console.error('Error refreshing sidebar counts:', e);
-        }
+    var w = window;
+    if (!w || !w.db || !w.collection || !w.getDocs) {
+      var attempt =
+        typeof snapshotOrAttempt === "number" ? snapshotOrAttempt : 0;
+      var nextAttempt = attempt + 1;
+      if (nextAttempt <= 3) {
+        setTimeout(function () {
+          refreshSidebarCounts(nextAttempt);
+        }, 500);
+      }
+      return;
     }
 
-    window.refreshSidebarCounts = refreshSidebarCounts;
+    try {
+      var tasksSnap;
+      if (
+        snapshotOrAttempt &&
+        typeof snapshotOrAttempt === "object" &&
+        typeof snapshotOrAttempt.forEach === "function"
+      ) {
+        tasksSnap = snapshotOrAttempt;
+        // Update cache
+        cachedTasks = tasksSnap;
+        cachedTasksTime = Date.now();
+      } else {
+        tasksSnap = await getTasksCached(w);
+      }
 
-    refreshSidebarCounts(0);
+      var totalMain = 0;
+      var totalSide = 0;
+      var completeIds = [];
+      var completeSet = {};
 
-    const questCard = target.querySelector('.smart-filters-grid .filter-card');
-    if (questCard) {
-        questCard.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (typeof window.closeReportBoardModal === 'function') {
-                try { window.closeReportBoardModal(); } catch (err) {}
-            } else {
-                try {
-                    var rbm = document.getElementById('reportBoardModal');
-                    if (rbm && typeof bootstrap !== "undefined" && bootstrap.Modal) {
-                        bootstrap.Modal.getOrCreateInstance(rbm).hide();
-                    }
-                    var ov0 = document.getElementById('questBoardOverlay');
-                    if (ov0) ov0.classList.remove('show');
-                } catch (err2) {}
-            }
-            const modalEl = document.getElementById('questBoardModal');
-            const frame = document.getElementById('questBoardFrame');
-            window.closeQuestBoardModal = function () {
-                const overlay = document.getElementById('questBoardOverlay');
-                if (overlay) {
-                    overlay.classList.remove('show');
-                }
-                if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
-                    const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    instance.hide();
-                }
+      tasksSnap.forEach(function (docSnap) {
+        var data = docSnap.data() || {};
+        // Projects have project_id, Quests do not.
+        if (data.project_id || data.projectId) return;
+
+        var archived = !!(data.archived || data.is_archived);
+
+        // Status normalization
+        var statusRaw = "";
+        if (typeof data.status === "string") statusRaw = data.status;
+        else if (data.status && typeof data.status === "object")
+          statusRaw = data.status.name || data.status.label || "";
+        var normStatus = String(statusRaw || "")
+          .trim()
+          .toLowerCase()
+          .replace(/[\s_]/g, "");
+
+        // Task Status normalization
+        var tsRaw = "";
+        if (typeof data.task_status === "string") tsRaw = data.task_status;
+        else if (data.task_status && typeof data.task_status === "object")
+          tsRaw = data.task_status.name || data.task_status.label || "";
+        var normTaskStatus = String(tsRaw || "")
+          .trim()
+          .toLowerCase()
+          .replace(/[\s_]/g, "");
+
+        var isComplete =
+          normStatus === "complete" ||
+          normStatus === "done" ||
+          normTaskStatus === "complete" ||
+          normTaskStatus === "done";
+
+        // Count Main Quest (Recurring tasks that are not complete/archived)
+        if (data.recur && !isComplete && !archived) {
+          totalMain++;
+        }
+
+        // Count Side Quest (Tasks with type sidequest OR has task_status, and not complete/archived)
+        var rawType = String(data.type || "").toLowerCase();
+        var isSideQuest =
+          rawType === "sidequest" ||
+          rawType === "side-quest" ||
+          normStatus === "sidequest" ||
+          !!data.task_status;
+        if (isSideQuest && !isComplete && !archived) {
+          totalSide++;
+        }
+
+        if (isComplete && !archived) {
+          completeIds.push(docSnap.id);
+          completeSet[docSnap.id] = true;
+        }
+      });
+
+      if (mainCountEl) mainCountEl.innerText = String(totalMain);
+      if (sideCountEl) sideCountEl.innerText = String(totalSide);
+
+      // Report Pending Approval Logic
+      if (reportCountEl) {
+        function timeKey(v) {
+          if (!v) return "";
+          if (v.toDate && typeof v.toDate === "function") {
+            var d = v.toDate();
+            if (!isNaN(d.getTime())) return d.toISOString();
+            return "";
+          }
+          if (typeof v === "number") {
+            var d2 = new Date(v);
+            if (!isNaN(d2.getTime())) return d2.toISOString();
+            return "";
+          }
+          return String(v);
+        }
+
+        var rootSnap = await w.getDocs(w.collection(w.db, "quest_reports"));
+        var latestByTaskId = {};
+        rootSnap.forEach(function (repSnap) {
+          var rdataRoot = repSnap.data() || {};
+          var taskIdRoot = rdataRoot.taskId || rdataRoot.task_id || "";
+          if (!taskIdRoot || !completeSet[taskIdRoot]) return;
+          var prevRoot = latestByTaskId[taskIdRoot];
+          var prevTimeRoot = prevRoot ? String(prevRoot._time || "") : "";
+          var currTimeRoot = timeKey(
+            rdataRoot.submittedAt ||
+              rdataRoot.createdAt ||
+              rdataRoot.timestamp ||
+              "",
+          );
+          if (!prevRoot || currTimeRoot > prevTimeRoot) {
+            latestByTaskId[taskIdRoot] = {
+              data: rdataRoot,
+              _time: currTimeRoot,
             };
-            const html = `
+          }
+        });
+
+        var tasksToFetchSub = completeIds.filter((id) => !latestByTaskId[id]);
+        if (tasksToFetchSub.length > 0) {
+          const batchSize = 10;
+          for (let i = 0; i < tasksToFetchSub.length; i += batchSize) {
+            const batch = tasksToFetchSub.slice(i, i + batchSize);
+            await Promise.all(
+              batch.map(async (taskId) => {
+                try {
+                  var repSnap0 = await w.getDocs(
+                    w.collection(w.db, "tasks", taskId, "reports"),
+                  );
+                  repSnap0.forEach(function (docRep) {
+                    var rdata = docRep.data() || {};
+                    var prev = latestByTaskId[taskId];
+                    var prevTime = prev ? String(prev._time || "") : "";
+                    var currTime = timeKey(
+                      rdata.submittedAt ||
+                        rdata.createdAt ||
+                        rdata.timestamp ||
+                        "",
+                    );
+                    if (!prev || currTime > prevTime) {
+                      latestByTaskId[taskId] = { data: rdata, _time: currTime };
+                    }
+                  });
+                } catch (eSub) {}
+              }),
+            );
+          }
+        }
+
+        var pendingCount = 0;
+        for (var j = 0; j < completeIds.length; j++) {
+          var tid = completeIds[j];
+          var entry = latestByTaskId[tid];
+          if (!entry || !entry.data) continue;
+          var appr = (
+            entry.data.approval_status ||
+            entry.data.approvalStatus ||
+            ""
+          ).toLowerCase();
+          if (appr !== "approved") pendingCount++;
+        }
+        reportCountEl.innerText = String(pendingCount);
+      }
+    } catch (e) {
+      console.error("Error refreshing sidebar counts:", e);
+    }
+  }
+
+  window.refreshSidebarCounts = refreshSidebarCounts;
+
+  refreshSidebarCounts(0);
+
+  const questCard = target.querySelector(".smart-filters-grid .filter-card");
+  if (questCard) {
+    questCard.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (typeof window.closeReportBoardModal === "function") {
+        try {
+          window.closeReportBoardModal();
+        } catch (err) {}
+      } else {
+        try {
+          var rbm = document.getElementById("reportBoardModal");
+          if (rbm && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+            bootstrap.Modal.getOrCreateInstance(rbm).hide();
+          }
+          var ov0 = document.getElementById("questBoardOverlay");
+          if (ov0) ov0.classList.remove("show");
+        } catch (err2) {}
+      }
+      const modalEl = document.getElementById("questBoardModal");
+      const frame = document.getElementById("questBoardFrame");
+      window.closeQuestBoardModal = function () {
+        const overlay = document.getElementById("questBoardOverlay");
+        if (overlay) {
+          overlay.classList.remove("show");
+        }
+        if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+          const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+          instance.hide();
+        }
+      };
+      const html = `
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -3748,6 +3836,14 @@ export function renderSidebar(target) {
         async function loadQuestDepartments() {
             var dropdown = document.getElementById('questDepartmentDropdown');
             if (!dropdown) return;
+            
+            const cc = window.__appCache__;
+            const masterTTL = 1800000;
+            if (cc && cc.departments && Date.now() - cc.departmentsLoadedAt < masterTTL) {
+                renderDeptDropdown(cc.departments);
+                return;
+            }
+
             dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading departments...</span>';
             try {
                 var parentWin = window.parent;
@@ -3756,17 +3852,29 @@ export function renderSidebar(target) {
                     return;
                 }
                 var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "departments"));
-                dropdown.innerHTML = '';
+                var deptData = {};
                 snap.forEach(function (docSnap) {
                     var d = docSnap.data() || {};
-                    var name = d.name || "Untitled";
-                    var color = d.color || "#0B2B6A";
+                    deptData[docSnap.id] = { name: d.name || "Untitled", color: d.color || "#0B2B6A" };
+                });
+                if (cc) { cc.departments = deptData; cc.departmentsLoadedAt = Date.now(); }
+                renderDeptDropdown(deptData);
+            } catch (e) {
+                console.error('Failed to load departments for quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load departments.</span>';
+            }
+
+            function renderDeptDropdown(data) {
+                dropdown.innerHTML = '';
+                Object.entries(data).forEach(function ([id, d]) {
+                    var name = d.name;
+                    var color = d.color;
                     var row = document.createElement('div');
                     row.className = 'quest-dept-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
                     row.innerHTML =
                         '<span class="inline-flex w-2.5 h-2.5 rounded-full" style="background:' + color + ';"></span>' +
                         '<span class="quest-dept-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
-                        '<input type="checkbox" class="ml-2 accent-blue-600" data-dept-id="' + docSnap.id + '">';
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-dept-id="' + id + '">';
                     dropdown.appendChild(row);
                     var checkbox = row.querySelector('input[type="checkbox"]');
                     checkbox.addEventListener('change', updateQuestDepartmentLabel);
@@ -3783,14 +3891,19 @@ export function renderSidebar(target) {
                 } else {
                     updateQuestDepartmentLabel();
                 }
-            } catch (e) {
-                console.error('Failed to load departments for quest', e);
-                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load departments.</span>';
             }
         }
         async function loadQuestPositions() {
             var dropdown = document.getElementById('questPositionDropdown');
             if (!dropdown) return;
+
+            const cc = window.__appCache__;
+            const masterTTL = 1800000;
+            if (cc && cc.positions && Date.now() - cc.positionsLoadedAt < masterTTL) {
+                renderPositionDropdown(cc.positions);
+                return;
+            }
+
             dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading positions...</span>';
             try {
                 var parentWin = window.parent;
@@ -3799,15 +3912,26 @@ export function renderSidebar(target) {
                     return;
                 }
                 var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "positions"));
-                dropdown.innerHTML = '';
+                var positionData = {};
                 snap.forEach(function (docSnap) {
                     var d = docSnap.data() || {};
-                    var name = d.name || "Untitled";
+                    positionData[docSnap.id] = d.name || "Untitled";
+                });
+                if (cc) { cc.positions = positionData; cc.positionsLoadedAt = Date.now(); }
+                renderPositionDropdown(positionData);
+            } catch (e) {
+                console.error('Failed to load positions for quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load positions.</span>';
+            }
+
+            function renderPositionDropdown(data) {
+                dropdown.innerHTML = '';
+                Object.entries(data).forEach(function ([id, name]) {
                     var row = document.createElement('div');
                     row.className = 'quest-position-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
                     row.innerHTML =
                         '<span class="quest-position-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
-                        '<input type="checkbox" class="ml-2 accent-blue-600" data-position-id="' + docSnap.id + '">';
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-position-id="' + id + '">';
                     dropdown.appendChild(row);
                     var checkbox = row.querySelector('input[type="checkbox"]');
                     checkbox.addEventListener('change', updateQuestPositionLabel);
@@ -3824,9 +3948,6 @@ export function renderSidebar(target) {
                 } else {
                     updateQuestPositionLabel();
                 }
-            } catch (e) {
-                console.error('Failed to load positions for quest', e);
-                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load positions.</span>';
             }
         }
         function updateSideQuestDepartmentLabel() {
@@ -4720,71 +4841,80 @@ export function renderSidebar(target) {
 </body>
 </html>`;
 
-            if (frame) {
-                frame.removeAttribute('src');
-                frame.onload = function() {
-                    try {
-                        if (frame.contentWindow) {
-                            if (window.openSideQuestDescription) {
-                                frame.contentWindow.openSideQuestDescription = window.openSideQuestDescription;
-                                console.log('Injected openSideQuestDescription into iframe');
-                            } else {
-                                console.warn('window.openSideQuestDescription not available to inject');
-                            }
-                        }
-                    } catch (e) {
-                        console.error('Failed to inject openSideQuestDescription', e);
-                    }
-                };
-                frame.srcdoc = html;
+      if (frame) {
+        frame.removeAttribute("src");
+        frame.onload = function () {
+          try {
+            if (frame.contentWindow) {
+              if (window.openSideQuestDescription) {
+                frame.contentWindow.openSideQuestDescription =
+                  window.openSideQuestDescription;
+                console.log("Injected openSideQuestDescription into iframe");
+              } else {
+                console.warn(
+                  "window.openSideQuestDescription not available to inject",
+                );
+              }
             }
-            if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
-                const overlay = document.getElementById('questBoardOverlay');
-                if (overlay) {
-                    overlay.classList.add('show');
-                }
-                modalEl.addEventListener('hidden.bs.modal', () => {
-                    const ov = document.getElementById('questBoardOverlay');
-                    if (ov) {
-                        ov.classList.remove('show');
-                    }
-                }, { once: true });
-                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                modal.show();
-            } else {
-                var newWin = window.open('', '_blank');
-                if (newWin && newWin.document) {
-                    newWin.document.open();
-                    newWin.document.write(html);
-                    newWin.document.close();
-                }
+          } catch (e) {
+            console.error("Failed to inject openSideQuestDescription", e);
+          }
+        };
+        frame.srcdoc = html;
+      }
+      if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+        const overlay = document.getElementById("questBoardOverlay");
+        if (overlay) {
+          overlay.classList.add("show");
+        }
+        modalEl.addEventListener(
+          "hidden.bs.modal",
+          () => {
+            const ov = document.getElementById("questBoardOverlay");
+            if (ov) {
+              ov.classList.remove("show");
             }
-        });
-    }
+          },
+          { once: true },
+        );
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      } else {
+        var newWin = window.open("", "_blank");
+        if (newWin && newWin.document) {
+          newWin.document.open();
+          newWin.document.write(html);
+          newWin.document.close();
+        }
+      }
+    });
+  }
 
-    const reportCard = target.querySelector('#reportFilterCard');
-    if (reportCard) {
-        reportCard.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (typeof refreshSidebarCounts === 'function') {
-                refreshSidebarCounts(0);
-            }
-            if (typeof window.closeQuestBoardModal === 'function') {
-                try { window.closeQuestBoardModal(); } catch (err) {}
-            }
-            const modalEl = document.getElementById('reportBoardModal');
-            const frame = document.getElementById('reportBoardFrame');
-            window.closeReportBoardModal = function () {
-                const overlay = document.getElementById('questBoardOverlay');
-                if (overlay) {
-                    overlay.classList.remove('show');
-                }
-                if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
-                    const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    instance.hide();
-                }
-            };
-            const html = `<!DOCTYPE html>
+  const reportCard = target.querySelector("#reportFilterCard");
+  if (reportCard) {
+    reportCard.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (typeof refreshSidebarCounts === "function") {
+        refreshSidebarCounts(0);
+      }
+      if (typeof window.closeQuestBoardModal === "function") {
+        try {
+          window.closeQuestBoardModal();
+        } catch (err) {}
+      }
+      const modalEl = document.getElementById("reportBoardModal");
+      const frame = document.getElementById("reportBoardFrame");
+      window.closeReportBoardModal = function () {
+        const overlay = document.getElementById("questBoardOverlay");
+        if (overlay) {
+          overlay.classList.remove("show");
+        }
+        if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+          const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+          instance.hide();
+        }
+      };
+      const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -5117,9 +5247,21 @@ export function renderSidebar(target) {
     var pendingFeedbackFiles = [];
     function loadReportUsers(attempt) {
         var parentWin = window.parent;
+        var cc = window.__appCache__;
+        if (cc && cc.users && Date.now() - cc.usersLoadedAt < 300000) {
+            window.reportUsersById = cc.users;
+            if (typeof renderReports === 'function') {
+                renderReports();
+            }
+            if (typeof updateActiveReportModalUsers === 'function') {
+                updateActiveReportModalUsers();
+            }
+            return;
+        }
+
         if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
             var nextAttempt = typeof attempt === 'number' ? attempt + 1 : 1;
-            if (nextAttempt <= 30) {
+            if (nextAttempt <= 3) {
                 setTimeout(function () { loadReportUsers(nextAttempt); }, 500);
             }
             return;
@@ -5136,6 +5278,7 @@ export function renderSidebar(target) {
                 };
             });
             window.reportUsersById = map;
+            if (cc) { cc.users = map; cc.usersLoadedAt = Date.now(); }
             if (typeof renderReports === 'function') {
                 renderReports();
             }
@@ -6230,15 +6373,15 @@ export function renderSidebar(target) {
         var parentWin = window.parent;
         allReports = [];
         currentReports = [];
-        if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
-            var nextAttempt = typeof attempt === 'number' ? attempt + 1 : 1;
-            if (nextAttempt <= 30) {
-                setTimeout(function () { loadReportsFromTasks(nextAttempt); }, 500);
-            }
-            updateStats();
-            renderReports();
-            return;
-        }
+                if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                    var nextAttempt = typeof attempt === 'number' ? attempt + 1 : 1;
+                    if (nextAttempt <= 3) {
+                        setTimeout(function () { loadReportsFromTasks(nextAttempt); }, 500);
+                    }
+                    updateStats();
+                    renderReports();
+                    return;
+                }
         try {
             var tasksSnap = await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks'));
             var tasksById = {};
@@ -6475,55 +6618,63 @@ export function renderSidebar(target) {
 </script>
 </body>
 </html>`;
-            if (frame) {
-                frame.removeAttribute('src');
-                frame.srcdoc = html;
+      if (frame) {
+        frame.removeAttribute("src");
+        frame.srcdoc = html;
+      }
+      if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+        const overlay = document.getElementById("questBoardOverlay");
+        if (overlay) {
+          overlay.classList.add("show");
+        }
+        modalEl.addEventListener(
+          "hidden.bs.modal",
+          () => {
+            const ov = document.getElementById("questBoardOverlay");
+            if (ov) {
+              ov.classList.remove("show");
             }
-            if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
-                const overlay = document.getElementById('questBoardOverlay');
-                if (overlay) {
-                    overlay.classList.add('show');
-                }
-                modalEl.addEventListener('hidden.bs.modal', () => {
-                    const ov = document.getElementById('questBoardOverlay');
-                    if (ov) {
-                        ov.classList.remove('show');
-                    }
-                }, { once: true });
-                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                modal.show();
-            }
-        });
-    }
-    const sideQuestCard = target.querySelectorAll('.smart-filters-grid .filter-card')[1];
-    if (sideQuestCard) {
-        sideQuestCard.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (typeof window.closeReportBoardModal === 'function') {
-                try { window.closeReportBoardModal(); } catch (err) {}
-            } else {
-                try {
-                    var rbm1 = document.getElementById('reportBoardModal');
-                    if (rbm1 && typeof bootstrap !== "undefined" && bootstrap.Modal) {
-                        bootstrap.Modal.getOrCreateInstance(rbm1).hide();
-                    }
-                    var ov1 = document.getElementById('questBoardOverlay');
-                    if (ov1) ov1.classList.remove('show');
-                } catch (err3) {}
-            }
-            const modalEl = document.getElementById('questBoardModal');
-            const frame = document.getElementById('questBoardFrame');
-            window.closeQuestBoardModal = function () {
-                const overlay = document.getElementById('questBoardOverlay');
-                if (overlay) {
-                    overlay.classList.remove('show');
-                }
-                if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
-                    const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    instance.hide();
-                }
-            };
-            const html = `<!DOCTYPE html>
+          },
+          { once: true },
+        );
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      }
+    });
+  }
+  const sideQuestCard = target.querySelectorAll(
+    ".smart-filters-grid .filter-card",
+  )[1];
+  if (sideQuestCard) {
+    sideQuestCard.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (typeof window.closeReportBoardModal === "function") {
+        try {
+          window.closeReportBoardModal();
+        } catch (err) {}
+      } else {
+        try {
+          var rbm1 = document.getElementById("reportBoardModal");
+          if (rbm1 && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+            bootstrap.Modal.getOrCreateInstance(rbm1).hide();
+          }
+          var ov1 = document.getElementById("questBoardOverlay");
+          if (ov1) ov1.classList.remove("show");
+        } catch (err3) {}
+      }
+      const modalEl = document.getElementById("questBoardModal");
+      const frame = document.getElementById("questBoardFrame");
+      window.closeQuestBoardModal = function () {
+        const overlay = document.getElementById("questBoardOverlay");
+        if (overlay) {
+          overlay.classList.remove("show");
+        }
+        if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+          const instance = bootstrap.Modal.getOrCreateInstance(modalEl);
+          instance.hide();
+        }
+      };
+      const html = `<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -8941,45 +9092,57 @@ export function renderSidebar(target) {
     </script>
 </body>
 </html>`;
-            if (frame) {
-                frame.removeAttribute('src');
-                frame.onload = function() {
-                    try {
-                        if (frame.contentWindow) {
-                            if (window.openSideQuestDescription) {
-                                frame.contentWindow.openSideQuestDescription = window.openSideQuestDescription;
-                                console.log('Injected openSideQuestDescription into Side Quest iframe (instance 3)');
-                            } else {
-                                console.warn('window.openSideQuestDescription not available to inject into Side Quest iframe');
-                            }
-                        }
-                    } catch (e) {
-                        console.error('Failed to inject openSideQuestDescription into Side Quest iframe', e);
-                    }
-                };
-                frame.srcdoc = html;
+      if (frame) {
+        frame.removeAttribute("src");
+        frame.onload = function () {
+          try {
+            if (frame.contentWindow) {
+              if (window.openSideQuestDescription) {
+                frame.contentWindow.openSideQuestDescription =
+                  window.openSideQuestDescription;
+                console.log(
+                  "Injected openSideQuestDescription into Side Quest iframe (instance 3)",
+                );
+              } else {
+                console.warn(
+                  "window.openSideQuestDescription not available to inject into Side Quest iframe",
+                );
+              }
             }
-            if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
-                const overlay = document.getElementById('questBoardOverlay');
-                if (overlay) {
-                    overlay.classList.add('show');
-                }
-                modalEl.addEventListener('hidden.bs.modal', () => {
-                    const ov = document.getElementById('questBoardOverlay');
-                    if (ov) {
-                        ov.classList.remove('show');
-                    }
-                }, { once: true });
-                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                modal.show();
-            } else {
-                var newWin = window.open('', '_blank');
-                if (newWin && newWin.document) {
-                    newWin.document.open();
-                    newWin.document.write(html);
-                    newWin.document.close();
-                }
+          } catch (e) {
+            console.error(
+              "Failed to inject openSideQuestDescription into Side Quest iframe",
+              e,
+            );
+          }
+        };
+        frame.srcdoc = html;
+      }
+      if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
+        const overlay = document.getElementById("questBoardOverlay");
+        if (overlay) {
+          overlay.classList.add("show");
+        }
+        modalEl.addEventListener(
+          "hidden.bs.modal",
+          () => {
+            const ov = document.getElementById("questBoardOverlay");
+            if (ov) {
+              ov.classList.remove("show");
             }
-        });
-    }
+          },
+          { once: true },
+        );
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+      } else {
+        var newWin = window.open("", "_blank");
+        if (newWin && newWin.document) {
+          newWin.document.open();
+          newWin.document.write(html);
+          newWin.document.close();
+        }
+      }
+    });
+  }
 }
