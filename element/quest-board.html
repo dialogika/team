@@ -366,7 +366,7 @@
             </button>
         </div>
 
-        <div id="questCreateForm" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+        <div id="questCreateForm" class="fixed inset-0 z-[60] flex items-center justify-center pt-10 pl-12 bg-black/50 backdrop-blur-sm hidden">
             <div class="flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" style="max-height:88vh;">
                 <div class="flex flex-shrink-0 items-center justify-between gap-3 border-b border-slate-100 bg-white px-5 py-3">
                     <div class="flex items-center gap-2.5 min-w-0">
@@ -3472,7 +3472,10 @@
                 }
             }
             if (labelEl) {
-                labelEl.textContent = '';
+                var assignCount = selected.length;
+                labelEl.textContent = assignCount > 1
+                    ? assignCount + ' people include this task'
+                    : assignCount + ' person include this task';
             }
         }
         function getQuestUserInitials(user) {
