@@ -2433,6 +2433,46 @@
       // --- 6. DAILY REPORT APPROVAL ---
       let dailyReportUnsubscribe = null;
 
+      // --- Helper: peta nama user (UID -> nama) untuk menampilkan who_did_this ---
+      let homeUsersMap = null;
+      let homeUsersMapPromise = null;
+
+      function homeEscapeHtml(value) {
+        return String(value == null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      async function ensureHomeUsersMap() {
+        if (homeUsersMap) return homeUsersMap;
+        if (homeUsersMapPromise) return homeUsersMapPromise;
+        homeUsersMapPromise = (async () => {
+          const map = {};
+          try {
+            const snap = await getDocs(collection(db, "users"));
+            snap.forEach((docSnap) => {
+              const u = docSnap.data() || {};
+              map[docSnap.id] = u.name || u.email || docSnap.id;
+            });
+            homeUsersMap = map;
+          } catch (e) {
+            // Jangan cache hasil gagal agar percobaan berikutnya bisa di-retry
+            homeUsersMapPromise = null;
+            console.warn("Gagal memuat data users untuk who_did_this:", e);
+          }
+          return map;
+        })();
+        return homeUsersMapPromise;
+      }
+
+      function homeUserName(uid) {
+        const map = homeUsersMap || {};
+        return map[uid] || uid;
+      }
+
       function loadDailyReportApprovals() {
         const list = document.getElementById("dailyReportList");
         const badge = document.getElementById("dailyReportBadge");
@@ -2470,14 +2510,26 @@
 
             snapshot.forEach((docSnap) => {
               const data = docSnap.data();
-              const reportDept = (
-                data.department ||
-                data.internship_department ||
-                data.team_department ||
-                ""
-              )
-                .toLowerCase()
-                .trim();
+              // Determine report department(s) - supports both string and array formats
+              let reportDept = "";
+              if (Array.isArray(data.departments) && data.departments.length > 0) {
+                // New format: departments is an array of strings
+                // Check if the user's department exists in the array
+                const deptArray = data.departments.map(d => String(d).toLowerCase().trim());
+                if (userDept && deptArray.includes(userDept)) {
+                  reportDept = userDept;
+                } else {
+                  reportDept = deptArray[0] || "";
+                }
+              } else {
+                reportDept = (
+                  data.department ||
+                  data.internship_department ||
+                  data.team_department ||
+                  ""
+                );
+                reportDept = String(reportDept).toLowerCase().trim();
+              }
 
               if (!userDept || !reportDept || reportDept !== userDept) {
                 return;
@@ -2514,7 +2566,7 @@
               item.innerHTML = `
                         <div>
                             <p class="fw-bold mb-0 small">${data.name || "No Name"}</p>
-                            <small class="text-muted" style="font-size:0.7rem">${data.report_date || "-"} | ${data.position || "-"}</small>
+                            <small class="text-muted" style="font-size:0.7rem">${data.date_label || data.report_date || "-"} | ${data.position || "-"}</small>
                         </div>
                         <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 daily-report-review-btn">Review</button>
                     `;
@@ -2551,27 +2603,37 @@
           data.name || "-";
         document.getElementById("modalReportNameDetail").textContent =
           data.name || "-";
+        var reportDeptName = data.department || (Array.isArray(data.departments) && data.departments.length > 0 ? data.departments[0] : '-');
+        var reportPosition = data.position || '';
         document.getElementById("modalReportPosition").textContent =
-          data.position || "-";
+          reportPosition || "-";
         document.getElementById("modalReportDeptPos").textContent =
-          `${data.department || "-"} / ${data.position || "-"}`;
+          reportDeptName + ' / ' + (reportPosition || '-');
         document.getElementById("modalReportDate").textContent =
-          data.report_date || "-";
+          data.date_label || data.report_date || "-";
 
         // Try to get photo from report data first, then from users collection
         let photoUrl = data.photo_url || data.photo || data.profile_photo;
         const userId = data.uid || data.user_id || data.reporter_id;
 
-        if (!photoUrl && userId) {
+        // If position is missing, try to fetch from users collection
+        if ((!reportPosition || !photoUrl) && userId) {
           try {
             const userDoc = await getDoc(doc(db, "users", userId));
             if (userDoc.exists()) {
               const userData = userDoc.data();
-              photoUrl =
-                userData.photo_url || userData.photo || userData.profile_photo;
+              if (!photoUrl) {
+                photoUrl =
+                  userData.photo_url || userData.photo || userData.profile_photo;
+              }
+              if (!reportPosition) {
+                reportPosition = userData.position || (userData.employment && (userData.employment.position || userData.employment.role)) || '';
+                document.getElementById("modalReportPosition").textContent = reportPosition || "-";
+                document.getElementById("modalReportDeptPos").textContent = reportDeptName + ' / ' + (reportPosition || '-');
+              }
             }
           } catch (e) {
-            console.warn("Could not fetch user photo:", e);
+            console.warn("Could not fetch user data:", e);
           }
         }
 
@@ -2586,6 +2648,9 @@
 
         const tasksList = document.getElementById("modalReportTasks");
         tasksList.innerHTML = "";
+
+        // Pastikan peta nama user siap untuk menampilkan who_did_this
+        await ensureHomeUsersMap();
 
         // Simpan data task ke element untuk nanti digunakan
         document.getElementById("modalReportId").dataset.tasks = JSON.stringify(
@@ -2602,6 +2667,42 @@
 
         if (data.tasks && Array.isArray(data.tasks)) {
           data.tasks.forEach((task, index) => {
+            // Siapa saja yang mengerjakan task ini (who_did_this = array UID)
+            const whoDidThisRaw = task.who_did_this;
+            // Normalisasi: string -> [string]; Firestore MAP bernomor ({0: uid, 1: uid}) -> array
+            let whoDidThisList = [];
+            if (typeof whoDidThisRaw === "string") {
+              whoDidThisList = [whoDidThisRaw];
+            } else if (Array.isArray(whoDidThisRaw)) {
+              whoDidThisList = whoDidThisRaw;
+            } else if (whoDidThisRaw && typeof whoDidThisRaw === "object") {
+              const keys = Object.keys(whoDidThisRaw);
+              const allNumeric =
+                keys.length > 0 &&
+                keys.every((k) => !Number.isNaN(parseInt(k, 10)));
+              if (allNumeric) {
+                whoDidThisList = keys.map((k) => whoDidThisRaw[k]);
+              } else if (whoDidThisRaw.uid || whoDidThisRaw.id) {
+                whoDidThisList = [whoDidThisRaw];
+              }
+            }
+            const whoNamesHtml = whoDidThisList
+              .map((entry) => {
+                const uid =
+                  entry && typeof entry === "object"
+                    ? entry.uid || entry.id || entry.user_id || ""
+                    : entry;
+                return uid
+                  ? `<span class="badge rounded-pill me-1" style="background-color:#e7f1ff;color:#0d6efd;font-weight:500">${homeEscapeHtml(homeUserName(uid))}</span>`
+                  : "";
+              })
+              .join("");
+            const whoBlockHtml = whoNamesHtml
+              ? `<div class="mt-1 d-flex flex-wrap align-items-center gap-1">
+                     <small class="text-muted fw-semibold me-1" style="font-size:0.72rem"><i class="bi bi-people-fill me-1"></i> Dikerjakan oleh:</small>
+                     ${whoNamesHtml}
+                   </div>`
+              : "";
             const li = document.createElement("li");
             li.className = "d-flex align-items-start mb-2";
             li.innerHTML = `
@@ -2610,8 +2711,9 @@
                         </div>
                         <span class="badge bg-primary rounded-pill me-2 mt-1" id="taskBadge_${index}" style="min-width: 24px;">${index + 1}</span>
                         <div>
-                            <div class="fw-bold text-dark">${task.task || "-"}</div>
-                            <small class="text-muted">${task.note || "-"}</small>
+                            <div class="fw-bold text-dark">${task.title || task.task || "-"}</div>
+                            <small class="text-muted">${task.detail || task.note || ""}</small>
+                            ${whoBlockHtml}
                         </div>
                     `;
             tasksList.appendChild(li);

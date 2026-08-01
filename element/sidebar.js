@@ -564,6 +564,12 @@ export function renderSidebar(target) {
   if (questCard) {
     questCard.addEventListener("click", (e) => {
       e.preventDefault();
+      // Main Quest: buka halaman quest board mandiri (team/element/quest-board.html) dengan tab main
+      window.location.href = "/element/quest-board.html?tab=main";
+      return;
+      // Kode di bawah ini (versi embedded quest board di dalam modal) sudah tidak
+      // dipakai untuk Main Quest dan dipertahankan sementara hingga versi embedded
+      // dihapus dari sidebar.js.
       if (typeof window.closeReportBoardModal === "function") {
         try {
           window.closeReportBoardModal();
@@ -852,556 +858,193 @@ export function renderSidebar(target) {
 
     <div class="max-w-4xl mx-auto">
         
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-4xl font-extrabold tracking-tight">Main Quest</h1>
+        <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div class="max-w-2xl">
+                <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                    <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                    Quest Board
+                </div>
+                <h1 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">Main Quest</h1>
+                <p class="mt-2 text-sm leading-6 text-slate-500">Ringkas, fokus, dan mudah dipantau untuk quest hari ini dan berikutnya.</p>
+            </div>
     
-            <div class="flex items-center gap-3">
-                <div class="relative">
-                    <button id="questHeaderToggleButton" type="button"
-                        class="w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm"
-                        onclick="toggleQuestHeaderMenu(event)">
-                        <i data-lucide="more-vertical" class="w-4 h-4 text-gray-600"></i>
-                    </button>
-                    <div id="questHeaderMenu"
-                        class="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-sm text-gray-700 hidden z-40">
-                        <button type="button" class="w-full text-left px-3 py-1.5 hover:bg-gray-100"
-                            onclick="questHeaderEdit()">
-                            Edit
-                        </button>
-                        <button type="button" class="w-full text-left px-3 py-1.5 hover:bg-gray-100 text-red-600"
-                            onclick="questHeaderDelete()">
-                            Delete
-                        </button>
-                    </div>
-                </div>
-                <button class="btn-dlg-yellow rounded-full px-6 py-2.5 text-sm font-semibold shadow-md"
-                    onclick="toggleQuestForm()">
-                    Add Quest
+            <div class="flex flex-wrap items-center gap-2 md:justify-end">
+                <button id="questOverdueButton" class="hidden flex h-9 w-9 items-center justify-center rounded-full border border-red-100 bg-red-50 text-red-600 transition hover:bg-red-100"
+                    onclick="var overdueSection = document.getElementById('questOverdueSection'); if (overdueSection) { overdueSection.classList.remove('hidden'); overdueSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); }">
+                    <i data-lucide="clock" class="h-4 w-4"></i>
                 </button>
-                <button class="btn-dlg-red rounded-full px-5 py-2 text-sm font-semibold shadow-md"
+                <button class="flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-white shadow-md transition hover:bg-amber-600"
+                    onclick="parent.toggleQuestForm()">
+                    <i data-lucide="plus" class="h-4 w-4"></i>
+                </button>
+                <button class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
                     onclick="if (window.parent && window.parent.closeQuestBoardModal) { window.parent.closeQuestBoardModal(); }">
-                    Close
+                    <i data-lucide="x" class="h-4 w-4"></i>
                 </button>
             </div>
         </div>
 
-        <div class="relative flex py-10 items-center">
-            <div class="flex-grow border-t border-gray-200"></div>
-            <span class="flex-shrink mx-6 text-gray-500 text-xs font-black uppercase tracking-[0.4em]">Main Quest</span>
-            <div class="flex-grow border-t border-gray-200"></div>
-        </div>
-
-        <div id="questCreateForm" class="mb-10 rounded-3xl border border-gray-200 bg-white shadow-sm p-6 md:p-8 hidden">
-            <div class="mb-6">
-                <input id="questNameInput" type="text" placeholder="Quest Name"
-                    class="w-full text-2xl md:text-3xl font-semibold text-gray-900 border-none focus:ring-0 focus:outline-none placeholder-gray-400" />
-            </div>
-            <div class="grid md:grid-cols-2 gap-6 mb-6">
-                <div class="space-y-4 text-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Department</div>
-                        <div class="flex-1">
-                            <div class="relative">
-                                <button type="button"
-                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
-                                    onclick="document.getElementById('questDepartmentDropdown').classList.toggle('hidden')">
-                                    <span class="flex items-center gap-2">
-                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-200">
-                                            <span class="text-xs font-semibold text-gray-500">D</span>
-                                        </span>
-                                        <span id="questDepartmentButtonLabel" class="text-xs md:text-sm">Select departments...</span>
-                                    </span>
-                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
-                                </button>
-                                <div id="questDepartmentDropdown"
-                                    class="absolute top-full left-0 right-0 mt-2 rounded-xl border border-gray-200 bg-white shadow-lg p-3 hidden max-h-60 overflow-y-auto text-xs md:text-sm z-20">
-                                    <span class="text-gray-400 text-xs">Loading departments...</span>
-                                </div>
+        <div id="questCreateForm" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 hidden">
+            <div class="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl md:p-8 overflow-y-auto max-h-[90vh]">
+                <div class="mb-6 flex items-center justify-between">
+                    <h2 class="text-2xl font-bold text-slate-900">Add New Quest</h2>
+                    <button type="button" class="text-slate-400 hover:text-slate-600" onclick="parent.toggleQuestForm()">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
+                </div>
+                <div class="space-y-5">
+                    <div id="questStep1">
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">Quest Title</label>
+                        <input id="questNameInput" type="text" placeholder="What needs to be done?" oninput="parent.onQuestStepChange(1)" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base font-medium text-slate-900 focus:border-blue-500 focus:outline-none" />
+                    </div>
+                    <div id="questDescStep" style="opacity:0.4;pointer-events:none;">
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">Description</label>
+                        <textarea id="questDescEditor" rows="3" placeholder="Add a description for this quest..." class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 focus:border-blue-500 focus:outline-none resize-none"></textarea>
+                    </div>
+                    <div id="questStep2" class="grid grid-cols-2 gap-4" style="opacity:0.4;pointer-events:none;">
+                        <div><label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">Department</label><select id="questDeptSelect" disabled onchange="parent.onQuestDeptChange();parent.onQuestStepChange(2)" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"><option value="">Select Department</option></select></div>
+                        <div><label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">Position</label><select id="questPosSelect" disabled onchange="parent.onQuestPosChange();parent.onQuestStepChange(3)" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"><option value="">Select Position</option></select></div>
+                    </div>
+                    <div id="questStep3" class="grid grid-cols-2 gap-4" style="opacity:0.4;pointer-events:none;">
+                        <div class="relative">
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">Assign To</label>
+                            <button type="button" onclick="if(!this.disabled){this.nextElementSibling.classList.toggle('hidden')}" disabled class="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span id="questAssignButtonLabel" class="truncate">Select users...</span>
+                                <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400"></i>
+                            </button>
+                            <div id="questAssignDropdown" class="absolute top-full left-0 right-0 mt-2 rounded-xl border border-slate-200 bg-white shadow-lg p-3 hidden max-h-60 overflow-y-auto text-xs md:text-sm z-20">
+                                <div class="mb-2"><input type="text" oninput="parent.filterQuestDropdown(this, 'questAssignDropdown')" placeholder="Search..." class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-none focus:border-blue-500" /></div>
+                                <div id="questAssignList"></div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">Notify To</label>
+                            <button type="button" onclick="if(!this.disabled){this.nextElementSibling.classList.toggle('hidden')}" disabled class="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 text-left disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span id="questNotifyButtonLabel" class="truncate">Select users...</span>
+                                <i data-lucide="chevron-down" class="h-4 w-4 text-slate-400"></i>
+                            </button>
+                            <div id="questNotifyDropdown" class="absolute top-full left-0 right-0 mt-2 rounded-xl border border-slate-200 bg-white shadow-lg p-3 hidden max-h-60 overflow-y-auto text-xs md:text-sm z-20">
+                                <div class="mb-2"><input type="text" oninput="parent.filterQuestDropdown(this, 'questNotifyDropdown')" placeholder="Search..." class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-none focus:border-blue-500" /></div>
+                                <div id="questNotifyList"></div>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Assign to</div>
-                        <div class="flex-1">
+                    <div id="questStep4" class="grid grid-cols-3 gap-4" style="opacity:0.4;pointer-events:none;">
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">Deadline Time</label>
+                            <input id="questDeadlineTime" type="time" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">Task Point</label>
                             <div class="relative">
-                                <button type="button"
-                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
-                                    onclick="document.getElementById('questAssignDropdown').classList.toggle('hidden')">
-                                    <span class="flex items-center gap-2">
-                                        <span id="questAssignAvatars" class="flex -space-x-1"></span>
-                                        <span id="questAssignButtonLabel" class="text-xs md:text-sm">Select user...</span>
-                                    </span>
-                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
-                                </button>
-                                <div id="questAssignDropdown"
-                                    class="absolute top-full left-0 mt-2 w-72 md:w-80 rounded-2xl bg-slate-900 text-white shadow-2xl p-3 hidden text-xs md:text-sm z-40">
-                                    <div class="mb-3">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                                                &#128269;
-                                            </span>
-                                            <input id="questAssignSearch" type="text"
-                                                class="w-full rounded-full bg-slate-800 text-xs md:text-sm text-white placeholder-slate-500 pl-8 pr-3 py-1.5 outline-none border border-slate-700 focus:border-sky-500 focus:ring-0"
-                                                placeholder="Search..." />
-                                        </div>
-                                    </div>
-                                    <div class="text-[10px] tracking-[0.18em] text-slate-400 font-semibold mb-2">
-                                        PEOPLE
-                                    </div>
-                                    <div id="questAssignList" class="max-h-56 overflow-y-auto flex flex-col gap-1">
-                                        <div class="text-slate-500 text-xs">Loading users...</div>
-                                    </div>
-                                </div>
+                                <select id="questPointSelect" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none appearance-none pl-3 pr-8">
+                                    <option value="">Select point...</option>
+                                    <option value="1"><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>1 - Easy</option>
+                                    <option value="2"><span class="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>2 - Medium</option>
+                                    <option value="3"><span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-2"></span>3 - Hard</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">Urgent</label>
+                            <div class="relative">
+                                <select id="questUrgencySelect" class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:border-blue-500 focus:outline-none appearance-none pl-3 pr-8">
+                                    <option value="">Select urgency...</option>
+                                    <option value="urgent"><span class="inline-block w-2 h-2 rounded-full bg-red-600 mr-2"></span>🔴 High</option>
+                                    <option value="medium"><span class="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>🟡 Medium</option>
+                                    <option value="normal"><span class="inline-block w-2 h-2 rounded-full bg-green-600 mr-2"></span>🟢 Normal</option>
+                                </select>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Dates</div>
-                        <div class="flex-1 flex flex-wrap items-center gap-2">
-                            <div class="relative">
-                                <input id="questDueDate" type="text" placeholder="dd/mm/yyyy"
-                                    class="w-28 md:w-32 rounded-xl border border-gray-200 px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                                    onclick="toggleQuestDueDropdown()" />
-                                <div id="questDueDropdown"
-                                    class="absolute left-0 mt-2 w-[420px] md:w-[460px] rounded-2xl bg-white border border-gray-200 shadow-2xl p-4 text-xs md:text-sm text-gray-800 hidden z-30">
-                                    <div class="flex gap-4">
-                                        <div class="w-40 md:w-44 border-r border-gray-100 pr-4">
-                                            <div class="font-semibold text-sm mb-2">Due date</div>
-                                            <div class="flex flex-col gap-1">
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questDueQuickSelect('today')">
-                                                    <span>Today</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questDueQuickSelect('later')">
-                                                    <span>Later</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questDueQuickSelect('tomorrow')">
-                                                    <span>Tomorrow</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questDueQuickSelect('this-weekend')">
-                                                    <span>This weekend</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questDueQuickSelect('next-week')">
-                                                    <span>Next week</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questDueQuickSelect('next-weekend')">
-                                                    <span>Next weekend</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questDueQuickSelect('two-weeks')">
-                                                    <span>2 weeks</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questDueQuickSelect('four-weeks')">
-                                                    <span>4 weeks</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="flex-1 pl-2">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <button type="button"
-                                                    class="text-[11px] text-gray-500 hover:text-gray-700"
-                                                    onclick="questDueGoToday()">
-                                                    Today
-                                                </button>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button"
-                                                        class="p-1 text-gray-400 hover:text-gray-600"
-                                                        onclick="questDueChangeMonth(-1)">
-                                                        &#10094;
-                                                    </button>
-                                                    <div id="questDueMonthLabel"
-                                                        class="text-[11px] font-semibold text-gray-700 min-w-[90px] text-center">
-                                                    </div>
-                                                    <button type="button"
-                                                        class="p-1 text-gray-400 hover:text-gray-600"
-                                                        onclick="questDueChangeMonth(1)">
-                                                        &#10095;
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div class="grid grid-cols-7 gap-1 text-[10px] text-gray-400 mb-1">
-                                                <div class="text-center">Su</div>
-                                                <div class="text-center">Mo</div>
-                                                <div class="text-center">Tu</div>
-                                                <div class="text-center">We</div>
-                                                <div class="text-center">Th</div>
-                                                <div class="text-center">Fr</div>
-                                                <div class="text-center">Sa</div>
-                                            </div>
-                                            <div id="questDueCalendarGrid"
-                                                class="grid grid-cols-7 gap-1 text-[11px] text-gray-500">
-                                            </div>
-                                        </div>
+                    <div id="questStep5" style="opacity:0.4;pointer-events:none;">
+                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">Recurring</label>
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="repeat" class="h-4 w-4 text-blue-600"></i>
+                                <span class="text-sm font-bold text-slate-900">Recurring Pattern</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 items-end">
+                                <div>
+                                    <label class="block text-[10px] uppercase tracking-[0.16em] text-gray-400 mb-1">Repeat every</label>
+                                    <div class="flex items-center gap-1">
+                                        <input id="questRecurIntervalInput" type="number" min="1" max="7" value="1" class="w-12 rounded-lg border border-gray-200 px-2 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-100" oninput="parent.questRecurUpdateInterval()" />
+                                        <select id="questRecurUnitSelect" class="flex-1 rounded-lg border border-gray-200 px-1 py-1.5 text-xs text-gray-800 bg-white" onchange="parent.questRecurUpdateUnit()">
+                                            <option value="week" selected>Week</option>
+                                            <option value="month">Month</option>
+                                        </select>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="relative">
-                                <button type="button"
-                                    class="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1.5 text-xs md:text-sm font-medium text-gray-700 bg-white"
-                                    onclick="toggleQuestRecurDropdown()">
-                                    <span class="w-3 h-3 rounded-full border border-gray-400 flex items-center justify-center text-[8px] text-gray-500">&#8635;</span>
-                                    <span>Recur</span>
-                                </button>
-                                <div id="questRecurDropdown"
-                                    class="absolute right-0 mt-2 w-[420px] md:w-[460px] rounded-2xl bg-white border border-gray-200 shadow-2xl p-4 text-xs md:text-sm text-gray-800 hidden z-30">
-                                    <div class="flex gap-4">
-                                        <div class="flex-1">
-                                            <div class="flex items-center justify-between mb-3">
-                                                <div class="font-semibold text-sm">Recurring</div>
-                                                <button type="button" class="text-gray-400 text-lg leading-none"
-                                                    onclick="document.getElementById('questRecurDropdown').classList.add('hidden')">
-                                                    &times;
-                                                </button>
-                                            </div>
-                                            <div class="space-y-3">
-                                                <div>
-                                                    <label class="block text-[10px] uppercase tracking-[0.16em] text-gray-400 mb-1">Pattern</label>
-                                                    <select id="questRecurPattern"
-                                                        class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs md:text-sm text-gray-800 bg-white"
-                                                        onchange="questRecurApplyPattern()">
-                                                        <option value="weekly">Weekly</option>
-                                                        <option value="daily">Daily</option>
-                                                        <option value="monthly">Monthly</option>
-                                                        <option value="yearly">Yearly</option>
-                                                    </select>
-                                                </div>
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-gray-500">Every</span>
-                                                    <input id="questRecurIntervalInput" type="number" min="1" value="1"
-                                                        class="w-14 rounded-lg border border-gray-200 px-2 py-1.5 text-xs md:text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                                                        oninput="questRecurUpdateInterval()" />
-                                                    <select id="questRecurUnitSelect"
-                                                        class="flex-1 rounded-lg border border-gray-200 px-2 py-1.5 text-xs md:text-sm text-gray-800 bg-white"
-                                                        onchange="questRecurUpdateUnit()">
-                                                        <option value="day">day</option>
-                                                        <option value="week" selected>week</option>
-                                                        <option value="month">month</option>
-                                                        <option value="year">year</option>
-                                                    </select>
-                                                </div>
-                                                <div>
-                                                    <div class="text-[10px] uppercase tracking-[0.16em] text-gray-400 mb-1">Repeat on</div>
-                                                    <div class="grid grid-cols-7 gap-1">
-                                                        <button type="button" data-day="0"
-                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
-                                                            onclick="questRecurToggleWeekday(0)">Su</button>
-                                                        <button type="button" data-day="1"
-                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
-                                                            onclick="questRecurToggleWeekday(1)">Mo</button>
-                                                        <button type="button" data-day="2"
-                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
-                                                            onclick="questRecurToggleWeekday(2)">Tu</button>
-                                                        <button type="button" data-day="3"
-                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
-                                                            onclick="questRecurToggleWeekday(3)">We</button>
-                                                        <button type="button" data-day="4"
-                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
-                                                            onclick="questRecurToggleWeekday(4)">Th</button>
-                                                        <button type="button" data-day="5"
-                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
-                                                            onclick="questRecurToggleWeekday(5)">Fr</button>
-                                                        <button type="button" data-day="6"
-                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
-                                                            onclick="questRecurToggleWeekday(6)">Sa</button>
-                                                    </div>
-                                                </div>
-                                                <div id="questRecurMonthlyModeWrapper" class="mt-2 hidden">
-                                                    <div class="text-[10px] uppercase tracking-[0.16em] text-gray-400 mb-1">Monthly pattern</div>
-                                                    <select id="questRecurMonthlyMode"
-                                                        class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs md:text-sm text-gray-800 bg-white"
-                                                        onchange="questRecurUpdateMonthlyMode()">
-                                                        <option value="same-day">Same day each month</option>
-                                                        <option value="first-day">First day of the month</option>
-                                                        <option value="last-day">Last day of the month</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center justify-between mt-4">
-                                                <div class="flex items-center gap-2">
-                                                    <button type="button"
-                                                        class="rounded-full px-4 py-1.5 text-xs md:text-sm font-semibold text-gray-600 bg-white border border-gray-200"
-                                                        onclick="questRecurCancel()">
-                                                        Cancel
-                                                    </button>
-                                                    <button type="button"
-                                                        class="rounded-full px-4 py-1.5 text-xs md:text-sm font-semibold text-white btn-dlg-blue"
-                                                        onclick="questRecurSave()">
-                                                        Save
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="w-48 md:w-56 border-l border-gray-100 pl-4">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <button type="button"
-                                                    class="text-[11px] text-gray-500 hover:text-gray-700"
-                                                    onclick="questRecurGoToday()">
-                                                    Today
-                                                </button>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button"
-                                                        class="p-1 text-gray-400 hover:text-gray-600"
-                                                        onclick="questRecurChangeMonth(-1)">
-                                                        &#10094;
-                                                    </button>
-                                                    <div id="questRecurMonthLabel"
-                                                        class="text-[11px] font-semibold text-gray-700 min-w-[90px] text-center">
-                                                    </div>
-                                                    <button type="button"
-                                                        class="p-1 text-gray-400 hover:text-gray-600"
-                                                        onclick="questRecurChangeMonth(1)">
-                                                        &#10095;
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div class="grid grid-cols-7 gap-1 text-[10px] text-gray-400 mb-1">
-                                                <div class="text-center">Su</div>
-                                                <div class="text-center">Mo</div>
-                                                <div class="text-center">Tu</div>
-                                                <div class="text-center">We</div>
-                                                <div class="text-center">Th</div>
-                                                <div class="text-center">Fr</div>
-                                                <div class="text-center">Sa</div>
-                                            </div>
-                                            <div id="questRecurCalendarGrid"
-                                                class="grid grid-cols-7 gap-1 text-[11px] text-gray-500">
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div id="questEverydayWrapper">
+                                    <button type="button" id="questRecurEverydayBtn" onclick="parent.questRecurToggleEveryday()" class="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50">Everyday</button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Reminder</div>
-                        <div class="flex-1">
-                            <div class="relative">
-                                <button type="button"
-                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
-                                    onclick="toggleQuestReminderDropdown()">
-                                    <span id="questReminderButtonLabel" class="text-xs md:text-sm">No reminder</span>
-                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
-                                </button>
-                                <div id="questReminderDropdown"
-                                    class="absolute left-0 mt-2 w-[420px] md:w-[460px] rounded-2xl bg-white border border-gray-200 shadow-2xl p-4 text-xs md:text-sm text-gray-800 hidden z-30">
-                                    <div class="flex gap-4">
-                                        <div class="w-40 md:w-44 border-r border-gray-100 pr-4">
-                                            <div class="font-semibold text-sm mb-2">Reminder</div>
-                                            <div class="flex flex-col gap-1">
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questReminderQuickSelect('day-before')">
-                                                    <span>A Day Before</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questReminderQuickSelect('two-days-before')">
-                                                    <span>Two Days Before</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questReminderQuickSelect('three-days-before')">
-                                                    <span>Three Days Before</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questReminderQuickSelect('weekend-before')">
-                                                    <span>At Weekend Before</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questReminderQuickSelect('everyday-before')">
-                                                    <span>Everyday Before</span>
-                                                </button>
-                                                <hr/>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questReminderQuickSelect('early-month')">
-                                                    <span>Early Day in Every Month</span>
-                                                </button>
-                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
-                                                    onclick="questReminderQuickSelect('final-month')">
-                                                    <span>Final Day in Every Month</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="flex-1 pl-2">
-                                            <div class="flex items-center justify-between mb-2">
-                                                <div id="questReminderSummary"
-                                                    class="text-[11px] text-gray-500">
-                                                </div>
-                                                <div class="flex items-center gap-1">
-                                                    <button type="button"
-                                                        class="p-1 text-gray-400 hover:text-gray-600"
-                                                        onclick="questReminderChangeMonth(-1)">
-                                                        &#10094;
-                                                    </button>
-                                                    <div id="questReminderMonthLabel"
-                                                        class="text-[11px] font-semibold text-gray-700 min-w-[90px] text-center">
-                                                    </div>
-                                                    <button type="button"
-                                                        class="p-1 text-gray-400 hover:text-gray-600"
-                                                        onclick="questReminderChangeMonth(1)">
-                                                        &#10095;
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div class="grid grid-cols-7 gap-1 text-[10px] text-gray-400 mb-1">
-                                                <div class="text-center">Su</div>
-                                                <div class="text-center">Mo</div>
-                                                <div class="text-center">Tu</div>
-                                                <div class="text-center">We</div>
-                                                <div class="text-center">Th</div>
-                                                <div class="text-center">Fr</div>
-                                                <div class="text-center">Sa</div>
-                                            </div>
-                                            <div id="questReminderCalendarGrid"
-                                                class="grid grid-cols-7 gap-1 text-[11px] text-gray-500">
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div id="questRecurWeeklyContainer">
+                                <label class="block text-[10px] uppercase tracking-[0.16em] text-gray-400 mb-1">Repeat on</label>
+                                <div class="grid grid-cols-7 gap-1">
+                                    <button type="button" data-day="0" class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium" onclick="parent.questRecurToggleWeekday(0)">Su</button>
+                                    <button type="button" data-day="1" class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium" onclick="parent.questRecurToggleWeekday(1)">Mo</button>
+                                    <button type="button" data-day="2" class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium" onclick="parent.questRecurToggleWeekday(2)">Tu</button>
+                                    <button type="button" data-day="3" class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium" onclick="parent.questRecurToggleWeekday(3)">We</button>
+                                    <button type="button" data-day="4" class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium" onclick="parent.questRecurToggleWeekday(4)">Th</button>
+                                    <button type="button" data-day="5" class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium" onclick="parent.questRecurToggleWeekday(5)">Fr</button>
+                                    <button type="button" data-day="6" class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium" onclick="parent.questRecurToggleWeekday(6)">Sa</button>
+                                </div>
+                            </div>
+                            <div id="questRecurMonthlyContainer" class="hidden">
+                                <label class="block text-[10px] uppercase tracking-[0.16em] text-gray-400 mb-1">Repeat on date</label>
+                                <div class="grid grid-cols-7 gap-1 max-h-40 overflow-y-auto p-1 bg-white border border-slate-100 rounded-lg" id="questRecurMonthlyDatesList">
+                                    <!-- Will be populated dynamically 1-31 -->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="space-y-4 text-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Positions</div>
-                        <div class="flex-1">
-                            <div class="relative">
-                                <button type="button"
-                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
-                                    onclick="document.getElementById('questPositionDropdown').classList.toggle('hidden')">
-                                    <span id="questPositionButtonLabel" class="text-xs md:text-sm">Select positions...</span>
-                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
-                                </button>
-                                <div id="questPositionDropdown"
-                                    class="absolute top-full left-0 right-0 mt-2 rounded-xl border border-gray-200 bg-white shadow-lg p-3 hidden max-h-60 overflow-y-auto text-xs md:text-sm z-20">
-                                    <span class="text-gray-400 text-xs">Loading positions...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Notify to</div>
-                        <div class="flex-1">
-                            <div class="relative">
-                                <button type="button"
-                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
-                                    onclick="document.getElementById('questNotifyDropdown').classList.toggle('hidden')">
-                                    <span class="flex items-center gap-2">
-                                        <span id="questNotifyAvatars" class="flex -space-x-1"></span>
-                                        <span id="questNotifyButtonLabel" class="text-xs md:text-sm">Select user...</span>
-                                    </span>
-                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
-                                </button>
-                                <div id="questNotifyDropdown"
-                                    class="absolute top-full left-0 mt-2 w-72 md:w-80 rounded-2xl bg-slate-900 text-white shadow-2xl p-3 hidden text-xs md:text-sm z-40">
-                                    <div class="mb-3">
-                                        <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                                                &#128269;
-                                            </span>
-                                            <input id="questNotifySearch" type="text"
-                                                class="w-full rounded-full bg-slate-800 text-xs md:text-sm text-white placeholder-slate-500 pl-8 pr-3 py-1.5 outline-none border border-slate-700 focus:border-sky-500 focus:ring-0"
-                                                placeholder="Search..." />
-                                        </div>
-                                    </div>
-                                    <div class="text-[10px] tracking-[0.18em] text-slate-400 font-semibold mb-2">
-                                        PEOPLE
-                                    </div>
-                                    <div id="questNotifyList" class="max-h-56 overflow-y-auto flex flex-col gap-1">
-                                        <div class="text-slate-500 text-xs">Loading users...</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Task point</div>
-                        <input id="questPointInput" type="number" min="0" placeholder="0"
-                            class="w-24 rounded-xl border border-gray-200 px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Tags</div>
-                        <div class="flex-1">
-                            <div class="tag-selector w-full" id="tag-selector-quest">
-                                <div class="tag-selector-control" onclick="toggleQuestTagDropdown()">
-                                    <div class="tag-selected-list" id="quest-tag-selected">
-                                        <span class="tag-placeholder">Search or add tags...</span>
-                                    </div>
-                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
-                                </div>
-                                <div class="tag-dropdown" id="quest-tag-dropdown">
-                                    <input type="text" id="quest-tag-input" class="tag-search-input" placeholder="Search or add tags..." oninput="filterQuestTagOptions()">
-                                    <div class="tag-options" id="quest-tag-options"></div>
-                                    <div class="tag-create" id="quest-tag-create" style="display:none;" onclick="createQuestTagFromInput()">
-                                        <span>Create</span>
-                                        <span class="tag-create-label" id="quest-tag-create-label"></span>
-                                    </div>
-                                </div>
-                                <input type="hidden" id="quest-tags" value="">
-                            </div>
-                        </div>
-                    </div>
+                <div class="mt-8 flex gap-3">
+                    <button type="button" onclick="parent.toggleQuestForm()" class="flex-1 rounded-xl border border-slate-200 bg-white py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50">Cancel</button>
+                    <button type="button" id="questSaveButton" onclick="saveQuest()" class="flex-1 rounded-xl bg-blue-600 py-3 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700">Create Quest</button>
                 </div>
-            </div>
-            <div class="rich-editor mb-6">
-                <div class="rich-toolbar">
-                    <div class="rich-toolbar-left">
-                        <button type="button" class="rich-btn" title="Bold" onclick="questApplyFormat('questDescEditor','bold')"><i class="bi bi-type-bold"></i></button>
-                        <button type="button" class="rich-btn" title="Italic" onclick="questApplyFormat('questDescEditor','italic')"><i class="bi bi-type-italic"></i></button>
-                        <button type="button" class="rich-btn" title="Underline" onclick="questApplyFormat('questDescEditor','underline')"><i class="bi bi-type-underline"></i></button>
-                        <div class="w-px h-4 bg-gray-300 mx-1"></div>
-                        <button type="button" class="rich-btn" title="Bullet List" onclick="questApplyFormat('questDescEditor','insertUnorderedList')"><i class="bi bi-list-ul"></i></button>
-                        <button type="button" class="rich-btn" title="Numbered List" onclick="questApplyFormat('questDescEditor','insertOrderedList')"><i class="bi bi-list-ol"></i></button>
-                        <div class="w-px h-4 bg-gray-300 mx-1"></div>
-                        <button type="button" class="rich-btn" title="Add Link" onclick="addLinkToEditor('questDescEditor')"><i class="bi bi-link-45deg"></i></button>
-                    </div>
-                    <div class="rich-toolbar-right">
-                        <button type="button" class="rich-btn" title="Add Files" onclick="document.getElementById('quest-desc-file-input').click()"><i class="bi bi-paperclip"></i></button>
-                        <input type="file" id="quest-desc-file-input" class="hidden" multiple onchange="questHandleDescFiles(this)" />
-                    </div>
-                </div>
-                <div id="questDescEditor" class="rich-editor-body outline-none" contenteditable="true" data-placeholder="Task description or notes..."></div>
-            </div>
-            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3">
-                <button type="button"
-                    class="rounded-full px-7 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200"
-                    onclick="toggleQuestForm()">
-                    Cancel
-                </button>
-                <button type="button"
-                    id="questSaveButton"
-                    class="rounded-full px-8 py-2.5 text-sm font-semibold text-white btn-dlg-blue"
-                    box-shadow: 0 10px 25px rgba(59,130,246,0.35);"
-                    onclick="saveQuest()">
-                    Create Quest    
-                </button>
             </div>
         </div>
 
-        <section class="mb-12">
-            <div class="flex items-center gap-2 mb-6">
-                <h2 class="text-2xl font-bold text-red-600">Overdue</h2>
-            </div>
-            
-            <div class="space-y-8" id="questOverdueList">
+        <section id="questOverdueSection" class="mb-8 hidden">
+            <div class="rounded-2xl border border-red-200 bg-red-50/70 p-4 md:p-5">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-red-600">Overdue</h2>
+                        <p class="mt-1 text-xs text-red-500">Quest yang lewat dari tanggalnya.</p>
+                    </div>
+                    <button type="button" class="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100"
+                        onclick="var overdueSection = document.getElementById('questOverdueSection'); if (overdueSection) overdueSection.classList.add('hidden');">
+                        Hide
+                    </button>
+                </div>
+                <div class="space-y-3" id="questOverdueList"></div>
             </div>
         </section>
 
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6 text-blue-600">Todays</h2>
-            <div class="space-y-6" id="questTodayList">
+        <section class="mb-6 rounded-2xl border border-slate-200 bg-white shadow-sm p-4 md:p-5">
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-900">Today</h2>
+                    <p class="mt-1 text-xs text-slate-500">Quest yang dikerjakan untuk hari ini.</p>
+                </div>
+                <button type="button" onclick="openDailyReportModal()" class="flex items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                    Submit Report
+                </button>
             </div>
+            <div class="space-y-3" id="questTodayList"></div>
         </section>
 
-        <section class="mb-12">
-            <h2 class="text-2xl font-bold mb-6 text-green-600">Upcoming</h2>
-            <div class="space-y-6" id="questUpcomingList">
+        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm p-4 md:p-5">
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-900">Upcoming</h2>
+                    <p class="mt-1 text-xs text-slate-500">Maksimal 2 quest berikutnya.</p>
+                </div>
             </div>
+            <div class="space-y-3" id="questUpcomingList"></div>
         </section>
 
     </div>
@@ -1458,9 +1101,70 @@ export function renderSidebar(target) {
         </div>
     </div>
 
+    <!-- Quest Detail Modal -->
+    <div id="questDetailModal"
+        class="fixed inset-0 flex items-center justify-center bg-black/40 z-50 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl px-6 py-6 max-w-xl w-full mx-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-5">
+                <h3 id="questDetailTitle" class="text-lg font-bold text-slate-900">Quest Detail</h3>
+                <button type="button"
+                    class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition"
+                    onclick="closeQuestDetailModal()">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="questDetailBody" class="space-y-4 text-sm text-slate-700"></div>
+        </div>
+    </div>
+
+    <!-- Daily Report Modal -->
+    <div id="dailyReportModal"
+        class="fixed inset-0 flex items-center justify-center bg-black/40 z-50 hidden">
+        <div class="bg-white rounded-3xl shadow-2xl px-6 py-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-slate-900">Daily Report</h3>
+                <button type="button"
+                    class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition"
+                    onclick="closeDailyReportModal()">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="dailyReportBody" class="space-y-5">
+                <!-- Auto-filled Info -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Date</label>
+                        <input id="reportDateInput" type="text" readonly class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700" />
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Name</label>
+                        <input id="reportNameInput" type="text" readonly class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700" />
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Department</label>
+                        <input id="reportDeptInput" type="text" readonly class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700" />
+                    </div>
+                </div>
+                <!-- Checked Tasks -->
+                <div>
+                    <label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2">Completed Tasks</label>
+                    <div id="reportTasksContainer" class="space-y-3"></div>
+                </div>
+                <!-- Submit Button -->
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeDailyReportModal()" class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50">Cancel</button>
+                    <button type="button" id="submitReportBtn" onclick="submitDailyReport()" class="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition hover:bg-emerald-700 active:scale-95">
+                        <i data-lucide="send" class="w-4 h-4 inline mr-1"></i> Submit Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         var questTasksById = {};
         var questUsersById = {};
+        var questCheckedTasks = {};
         var questActionMode = null;
         var questEditingTaskId = null;
         var questCurrentPriority = 'urgent';
@@ -1609,10 +1313,19 @@ export function renderSidebar(target) {
                 
                 await parentWin.addDoc(parentWin.collection(parentWin.db, 'quest_reports'), reportPayload);
 
-                // Update task status to complete if not already
-                if (questTasksById[taskId] && (questTasksById[taskId].status || questTasksById[taskId].Status) !== 'Complete') {
-                    await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskId), { status: 'Complete' });
-                    questTasksById[taskId].status = 'Complete';
+                // Update task status to reported if not already
+                if (questTasksById[taskId] && (questTasksById[taskId].status || questTasksById[taskId].Status) !== 'reported') {
+                    var patch = { status: 'reported' };
+                    var taskPayload = patch;
+                    if (parentWin.JSON && parentWin.JSON.stringify && parentWin.JSON.parse) {
+                        try {
+                            taskPayload = parentWin.JSON.parse(parentWin.JSON.stringify(patch));
+                        } catch (err) {
+                            taskPayload = patch;
+                        }
+                    }
+                    await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskId), taskPayload);
+                    questTasksById[taskId].status = 'reported';
                 }
 
                 alert('Report submitted successfully!');
@@ -1823,6 +1536,63 @@ export function renderSidebar(target) {
             });
         }
 
+        function showSuccessToast(title, message, icon) {
+            icon = icon || 'check-circle';
+            var toastEl = document.createElement('div');
+            toastEl.className = 'fixed top-6 right-6 z-[9999] flex items-start gap-3 bg-white rounded-2xl shadow-2xl border border-emerald-100 px-5 py-4 min-w-[320px] max-w-md transition-all duration-500 ease-out';
+            toastEl.style.transform = 'translateX(120%)';
+            toastEl.style.opacity = '0';
+
+            var iconDiv = document.createElement('div');
+            iconDiv.className = 'flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center';
+            iconDiv.innerHTML = '<i class="bi bi-' + icon + '-fill text-emerald-600 text-lg"></i>';
+            toastEl.appendChild(iconDiv);
+
+            var textDiv = document.createElement('div');
+            textDiv.className = 'flex-1 min-w-0 pt-0.5';
+            textDiv.innerHTML = '<div class="text-sm font-bold text-slate-900">' + (title || 'Sukses') + '</div><div class="text-xs text-slate-500 mt-0.5">' + (message || '') + '</div>';
+            toastEl.appendChild(textDiv);
+
+            var closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'flex-shrink-0 w-6 h-6 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition';
+            closeBtn.innerHTML = '<i class="bi bi-x text-sm"></i>';
+            closeBtn.addEventListener('click', function() {
+                toastEl.style.transform = 'translateX(120%)';
+                toastEl.style.opacity = '0';
+                setTimeout(function() { if (toastEl.parentNode) toastEl.remove(); }, 500);
+            });
+            toastEl.appendChild(closeBtn);
+
+            document.body.appendChild(toastEl);
+
+            requestAnimationFrame(function() {
+                toastEl.style.transform = 'translateX(0)';
+                toastEl.style.opacity = '1';
+            });
+
+            var autoRemove = setTimeout(function() {
+                toastEl.style.transform = 'translateX(120%)';
+                toastEl.style.opacity = '0';
+                setTimeout(function() {
+                    if (toastEl.parentNode) toastEl.remove();
+                }, 500);
+            }, 4000);
+
+            toastEl.addEventListener('mouseenter', function() {
+                clearTimeout(autoRemove);
+            });
+            toastEl.addEventListener('mouseleave', function() {
+                autoRemove = setTimeout(function() {
+                    toastEl.style.transform = 'translateX(120%)';
+                    toastEl.style.opacity = '0';
+                    setTimeout(function() {
+                        if (toastEl.parentNode) toastEl.remove();
+                    }, 500);
+                }, 2000);
+            });
+        }
+
         function showQuestAlert(title, message) {
             var modal = document.getElementById('questUniversalAlert');
             var titleEl = document.getElementById('questAlertTitle');
@@ -1936,9 +1706,509 @@ export function renderSidebar(target) {
                 modal.classList.add('hidden');
             }
         }
+
+        function openQuestDetail(taskId) {
+            var data = questTasksById && questTasksById[taskId] ? questTasksById[taskId] : null;
+            if (!data) {
+                showQuestAlert('Perhatian', 'Data quest tidak ditemukan.');
+                return;
+            }
+            var modal = document.getElementById('questDetailModal');
+            var titleEl = document.getElementById('questDetailTitle');
+            var bodyEl = document.getElementById('questDetailBody');
+            if (!modal || !bodyEl) return;
+
+            var titleText = data.title || 'Untitled Quest';
+            if (titleEl) titleEl.textContent = titleText;
+
+            var deadlineTime = data.deadline_time || '—';
+            var priority = data.priority || 'normal';
+            var points = typeof data.points === 'number' ? data.points : 0;
+            var descHtml = data.description || '<em class="text-gray-400">No description</em>';
+            var departmentNames = [];
+            if (Array.isArray(data.departments)) {
+                data.departments.forEach(function(d) {
+                    if (d && d.name) departmentNames.push(d.name);
+                });
+            }
+            var positionNames = [];
+            if (Array.isArray(data.positions)) {
+                data.positions.forEach(function(p) {
+                    if (p && p.name) positionNames.push(p.name);
+                });
+            }
+
+            var priorityColor = '#16a34a';
+            var priorityLabel = 'Normal';
+            if (priority === 'urgent') { priorityColor = '#dc2626'; priorityLabel = 'High'; }
+            else if (priority === 'medium') { priorityColor = '#f59e0b'; priorityLabel = 'Medium'; }
+
+            var html = '';
+            html += '<div class="grid grid-cols-2 gap-4">';
+            html += '<div class="col-span-2"><label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Description</label><div class="text-sm text-slate-700 leading-relaxed">' + descHtml + '</div></div>';
+            html += '<div><label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Deadline Time</label><div class="text-sm font-semibold text-slate-800">' + deadlineTime + '</div></div>';
+            html += '<div><label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Priority</label><div class="flex items-center gap-1.5 text-sm font-semibold" style="color:' + priorityColor + ';"><span class="w-2 h-2 rounded-full" style="background:' + priorityColor + ';"></span>' + priorityLabel + '</div></div>';
+            html += '<div><label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Points</label><div class="text-sm font-semibold text-slate-800">' + points + ' Point</div></div>';
+            html += '<div><label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Status</label><div class="text-sm font-semibold text-slate-800">' + (data.status || 'Initiate') + '</div></div>';
+            if (departmentNames.length > 0) {
+                html += '<div><label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Department</label><div class="text-sm font-semibold text-slate-800">' + departmentNames.join(', ') + '</div></div>';
+            }
+            if (positionNames.length > 0) {
+                html += '<div><label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Position</label><div class="text-sm font-semibold text-slate-800">' + positionNames.join(', ') + '</div></div>';
+            }
+            html += '</div>';
+
+            // Recurring info
+            var recur = data.recur;
+            if (recur) {
+                var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                var dayNames = [];
+                if (recur.unit === 'week' && Array.isArray(recur.weekdays)) {
+                    recur.weekdays.forEach(function(d) { dayNames.push(days[d] || d); });
+                    html += '<div class="mt-4 pt-4 border-t border-slate-100"><label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Recurring</label><div class="text-sm text-slate-700">Every ' + (recur.interval || 1) + ' week(s) on ' + dayNames.join(', ') + '</div></div>';
+                } else if (recur.unit === 'month' && Array.isArray(recur.monthly_dates)) {
+                    html += '<div class="mt-4 pt-4 border-t border-slate-100"><label class="block text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Recurring</label><div class="text-sm text-slate-700">Every ' + (recur.interval || 1) + ' month(s) on date ' + recur.monthly_dates.join(', ') + '</div></div>';
+                }
+            }
+
+            bodyEl.innerHTML = html;
+            modal.classList.remove('hidden');
+
+            // Initialize lucide icons in modal
+            if (window.lucide && window.lucide.createIcons) {
+                window.lucide.createIcons();
+            }
+        }
+
+        function closeQuestDetailModal() {
+            var modal = document.getElementById('questDetailModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function openDailyReportModal() {
+            var modal = document.getElementById('dailyReportModal');
+            if (!modal) return;
+
+            // --- Auto-fill date ---
+            var now = new Date();
+            var dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            var dateInput = document.getElementById('reportDateInput');
+            if (dateInput) dateInput.value = dateStr;
+
+            // --- Auto-fill user name ---
+            var nameInput = document.getElementById('reportNameInput');
+            if (nameInput) {
+                try {
+                    var localData = JSON.parse(localStorage.getItem('userData') || 'null');
+                    if (localData && localData.name) {
+                        nameInput.value = localData.name;
+                    } else {
+                        nameInput.value = 'Intern';
+                    }
+                } catch (e) {
+                    nameInput.value = 'Intern';
+                }
+            }
+
+            // --- Auto-fill department from checked tasks ---
+            var deptInput = document.getElementById('reportDeptInput');
+            var deptSet = {};
+            var checkedIds = Object.keys(questCheckedTasks);
+            checkedIds.forEach(function(id) {
+                var task = questTasksById[id];
+                if (task && Array.isArray(task.departments)) {
+                    task.departments.forEach(function(d) {
+                        if (d && d.name) deptSet[d.name] = true;
+                    });
+                }
+            });
+            var deptNames = Object.keys(deptSet);
+            if (deptInput) deptInput.value = deptNames.length > 0 ? deptNames.join(', ') : '—';
+
+            // --- Populate checked tasks ---
+            var container = document.getElementById('reportTasksContainer');
+            if (container) {
+                container.innerHTML = '';
+                if (checkedIds.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400 italic text-sm text-center py-4">Belum ada quest yang dicentang. Centang quest terlebih dahulu di board.</p>';
+                } else {
+                    checkedIds.forEach(function(id, idx) {
+                        var task = questTasksById[id];
+                        if (!task) return;
+                        var taskTitle = task.title || 'Untitled';
+                        var taskPoints = typeof task.points === 'number' ? task.points : 0;
+                        var assignList = [];
+                        if (task.assign_to) {
+                            if (Array.isArray(task.assign_to)) {
+                                assignList = task.assign_to;
+                            } else {
+                                assignList = [task.assign_to];
+                            }
+                        }
+                        var itemDiv = document.createElement('div');
+                        itemDiv.className = 'rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2';
+                        // Build who_did_this dropdown HTML (only if multiple assignees)
+                        var whoDidThisHtml = '';
+                        if (assignList.length > 1) {
+                            whoDidThisHtml = '<div class="who-did-this-wrapper pt-1">' +
+                                '<div class="flex items-center gap-1 mb-1.5">' +
+                                    '<i class="bi bi-people-fill text-[10px] text-slate-400"></i>' +
+                                    '<span class="text-[10px] font-semibold text-slate-500">Who did this?</span>' +
+                                '</div>' +
+                                '<p class="text-[9px] text-amber-600 mb-1.5">Centang hanya yang benar-benar mengerjakan quest ini.</p>' +
+                                '<div class="relative">' +
+                                    '<button type="button" onclick="toggleWhoDidThis(event, \'' + id + '\')" class="who-did-this-btn w-full flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 transition" data-task-id="' + id + '">' +
+                                        '<span class="who-did-this-label truncate" data-task-id="' + id + '">Select who worked...</span>' +
+                                        '<i class="bi bi-chevron-down text-[10px] text-slate-400"></i>' +
+                                    '</button>' +
+                                    '<div id="whoDidThisDropdown_' + id + '" class="absolute top-full left-0 right-0 mt-1 rounded-lg border border-slate-200 bg-white shadow-lg p-2 hidden z-30 max-h-44 overflow-y-auto">' +
+                                        '<div class="who-did-this-options space-y-1" data-task-id="' + id + '"></div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>';
+                        }
+                        itemDiv.innerHTML = '<div class="flex items-center justify-between">' +
+                            '<span class="text-sm font-semibold text-slate-800">' + (idx + 1) + '. ' + String(taskTitle) + '</span>' +
+                            '<span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">' + taskPoints + ' Point</span>' +
+                            '</div>' +
+                            '<textarea rows="2" placeholder="Detail pekerjaan (opsional)..." class="task-detail-input w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none resize-none" data-task-id="' + id + '"></textarea>' +
+                            whoDidThisHtml;
+                        container.appendChild(itemDiv);
+                        // Populate who_did_this dropdown options after appending
+                        if (assignList.length > 0) {
+                            var optionsDiv = document.getElementById('whoDidThisDropdown_' + id);
+                            if (optionsDiv) {
+                                var optionsContainer = optionsDiv.querySelector('.who-did-this-options');
+                                if (optionsContainer) {
+                                    var users = typeof window.parent !== 'undefined' && window.parent.questUsersById ? window.parent.questUsersById : (window.questUsersById || {});
+                                    assignList.forEach(function(uid) {
+                                        var user = users[uid] || { uid: uid, name: uid };
+                                        var userName = user.name || user.email || uid;
+                                        var initials = (userName.split(' ').slice(0, 2).map(function(w) { return w[0] || ''; }).join('').toUpperCase()) || '?';
+                                        var opt = document.createElement('label');
+                                        opt.className = 'flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer text-xs';
+                                        var escName = String(userName || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                                        opt.innerHTML = '<input type="checkbox" class="who-did-this-cb form-check-input m-0" value="' + uid + '" data-task-id="' + id + '" onchange="updateWhoDidThisLabel(\'' + id + '\')"> ' +
+                                            '<span class="w-5 h-5 rounded-full bg-slate-200 text-slate-600 text-[8px] font-semibold flex items-center justify-center flex-shrink-0">' + initials + '</span> ' +
+                                            '<span class="truncate">' + escName + '</span>';
+                                        optionsContainer.appendChild(opt);
+                                    });
+                                    updateWhoDidThisLabel(id);
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            modal.classList.remove('hidden');
+            if (window.lucide && window.lucide.createIcons) {
+                window.lucide.createIcons();
+            }
+        }
+
+        function closeDailyReportModal() {
+            var modal = document.getElementById('dailyReportModal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // --- Who Did This helpers (fair points: only people who actually worked get credited) ---
+        function toggleWhoDidThis(event, taskId) {
+            if (event && event.stopPropagation) event.stopPropagation();
+            var dropdown = document.getElementById('whoDidThisDropdown_' + taskId);
+            if (!dropdown) return;
+            dropdown.classList.toggle('hidden');
+        }
+        function updateWhoDidThisLabel(taskId) {
+            var cbs = document.querySelectorAll('#whoDidThisDropdown_' + taskId + ' .who-did-this-cb:checked');
+            var label = document.querySelector('.who-did-this-label[data-task-id="' + taskId + '"]');
+            if (!label) return;
+            var users = typeof window.parent !== 'undefined' && window.parent.questUsersById ? window.parent.questUsersById : (window.questUsersById || {});
+            var names = [];
+            cbs.forEach(function(cb) {
+                var uid = cb.value;
+                var user = users[uid];
+                if (user && user.name) {
+                    names.push(user.name);
+                }
+            });
+            label.textContent = names.length > 0 ? names.join(', ') : 'Select who worked...';
+        }
+        // Close who_did_this dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            document.querySelectorAll('[id^="whoDidThisDropdown_"]').forEach(function(dd) {
+                if (!dd.classList.contains('hidden')) {
+                    var btn = document.querySelector('.who-did-this-btn[data-task-id="' + dd.id.replace('whoDidThisDropdown_', '') + '"]');
+                    if (btn && !btn.contains(event.target) && !dd.contains(event.target)) {
+                        dd.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        async function submitDailyReport() {
+            var parentWin = window.parent;
+            if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.addDoc || !parentWin.serverTimestamp) {
+                alert('Koneksi database tidak tersedia.');
+                return;
+            }
+
+            var btn = document.getElementById('submitReportBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = 'Submitting...';
+            }
+
+            try {
+                var checkedIds = Object.keys(questCheckedTasks);
+                if (checkedIds.length === 0) {
+                    alert('Belum ada quest yang dicentang. Silakan centang quest terlebih dahulu.');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i data-lucide="send" class="w-4 h-4 inline mr-1"></i> Submit Report';
+                    }
+                    return;
+                }
+
+                // Get user data
+                var localData = null;
+                try {
+                    localData = JSON.parse(localStorage.getItem('userData') || 'null');
+                } catch (e) {}
+                var uid = localData && localData.uid ? localData.uid : '';
+                var userName = localData && localData.name ? localData.name : '';
+
+                // Fairness guard: block quests already claimed by someone else today
+                var claimedByOthers = [];
+                checkedIds.forEach(function(id) {
+                    var task = questTasksById[id];
+                    if (!task || !task.last_reported_by) return;
+                    var lrb = task.last_reported_by;
+                    var lra = task.last_reported_at;
+                    if (!Array.isArray(lrb) || lrb.length === 0 || !lra) return;
+                    var rd = null;
+                    if (typeof lra.toDate === 'function') rd = lra.toDate();
+                    else if (lra instanceof Date) rd = lra;
+                    else if (typeof lra === 'string') { var dStr = new Date(lra); if (!isNaN(dStr.getTime())) rd = dStr; }
+                    else if (typeof lra === 'number') { var dNum = new Date(lra); if (!isNaN(dNum.getTime())) rd = dNum; }
+                    if (!rd || isNaN(rd.getTime())) return;
+                    var today = new Date();
+                    var isToday = rd.getFullYear() === today.getFullYear() && rd.getMonth() === today.getMonth() && rd.getDate() === today.getDate();
+                    if (!isToday) return;
+                    if (!uid || lrb.indexOf(uid) === -1) {
+                        claimedByOthers.push(task.title || id);
+                    }
+                });
+                if (claimedByOthers.length > 0) {
+                    alert('Quest berikut sudah diklaim/direport orang lain hari ini:\n- ' + claimedByOthers.join('\n- ') + '\n\nHapus centang quest tersebut untuk melanjutkan.');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i data-lucide="send" class="w-4 h-4 inline mr-1"></i> Submit Report';
+                    }
+                    return;
+                }
+
+                // Require explicit who_did_this selection for multi-assignee quests
+                var missingWhoDidThis = [];
+                checkedIds.forEach(function(id) {
+                    var task = questTasksById[id];
+                    if (!task) return;
+                    var assignList = [];
+                    if (task.assign_to) {
+                        assignList = Array.isArray(task.assign_to) ? task.assign_to : [task.assign_to];
+                    }
+                    if (assignList.length <= 1) return; // single assignee auto-set later
+                    var cbs = document.querySelectorAll('#whoDidThisDropdown_' + id + ' .who-did-this-cb:checked');
+                    if (cbs.length === 0) missingWhoDidThis.push(task.title || id);
+                });
+                if (missingWhoDidThis.length > 0) {
+                    alert('Pilih siapa yang benar-benar mengerjakan (Who did this?) untuk quest berikut:\n- ' + missingWhoDidThis.join('\n- ') + '\n\nCentang minimal satu orang yang mengerjakan quest tersebut.');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i data-lucide="send" class="w-4 h-4 inline mr-1"></i> Submit Report';
+                    }
+                    return;
+                }
+
+                // Get department from checked tasks
+                var deptSet = {};
+                checkedIds.forEach(function(id) {
+                    var task = questTasksById[id];
+                    if (task && Array.isArray(task.departments)) {
+                        task.departments.forEach(function(d) {
+                            if (d && d.name) deptSet[d.name] = true;
+                        });
+                    }
+                });
+
+                // Build tasks detail array with points + who_did_this
+                var tasksDetail = [];
+                var totalPoints = 0;
+                var detailInputs = document.querySelectorAll('.task-detail-input');
+                checkedIds.forEach(function(id, index) {
+                    var task = questTasksById[id];
+                    if (!task) return;
+                    var points = typeof task.points === 'number' ? task.points : 0;
+                    totalPoints += points;
+                    var detail = '';
+                    if (detailInputs[index]) {
+                        detail = detailInputs[index].value.trim();
+                    }
+                    // Read who_did_this checkboxes for this task
+                    var whoDidThis = [];
+                    var cbs = document.querySelectorAll('#whoDidThisDropdown_' + id + ' .who-did-this-cb:checked');
+                    cbs.forEach(function(cb) {
+                        whoDidThis.push(cb.value);
+                    });
+                    // For single-assignee tasks (dropdown hidden), auto-set to current user
+                    if (whoDidThis.length === 0) {
+                        var assignTo = task && task.assign_to;
+                        var isSingle = Array.isArray(assignTo) && assignTo.length <= 1;
+                        if (!isSingle) isSingle = typeof assignTo === 'string';
+                        if (isSingle && uid) whoDidThis.push(uid);
+                    }
+                    var taskEntry = {
+                        task_id: id,
+                        title: task.title || 'Untitled',
+                        points: points,
+                        detail: detail
+                    };
+                    if (whoDidThis.length > 0) {
+                        taskEntry.who_did_this = whoDidThis;
+                    }
+                    tasksDetail.push(taskEntry);
+                });
+
+                var now = new Date();
+                var reportPayload = {
+                    date: now.toISOString(),
+                    date_label: now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                    user_id: uid,
+                    name: userName,
+                    departments: Object.keys(deptSet),
+                    tasks: tasksDetail,
+                    total_points: totalPoints,
+                    status: 'Pending Review'
+                };
+
+                // Deep copy for safety (before adding serverTimestamp)
+                if (parentWin.JSON && parentWin.JSON.stringify && parentWin.JSON.parse) {
+                    try {
+                        reportPayload = parentWin.JSON.parse(parentWin.JSON.stringify(reportPayload));
+                    } catch (e) {}
+                }
+                reportPayload.created_at = parentWin.serverTimestamp();
+
+                console.log('Submitting report to intern_dailyreport...', reportPayload);
+                var docRef = await parentWin.addDoc(parentWin.collection(parentWin.db, 'intern_dailyreport'), reportPayload);
+                console.log('Report saved successfully, docRef.id:', docRef.id, 'path:', docRef.path);
+
+                // Update each checked task's status to "reported" in Firebase
+                // Also update last_reported_by based on who_did_this selection
+                var statusUpdatePromises = [];
+                checkedIds.forEach(function(id) {
+                    var task = questTasksById[id];
+                    if (task) {
+                        // Read who_did_this for this task
+                        var whoDidThis = [];
+                        var cbs = document.querySelectorAll('#whoDidThisDropdown_' + id + ' .who-did-this-cb:checked');
+                        cbs.forEach(function(cb) {
+                            whoDidThis.push(cb.value);
+                        });
+                        // For single-assignee tasks (dropdown hidden), auto-set to current user
+                        if (whoDidThis.length === 0) {
+                            var assignTo = task && task.assign_to;
+                            var isSingle = Array.isArray(assignTo) && assignTo.length <= 1;
+                            if (!isSingle) isSingle = typeof assignTo === 'string';
+                            if (isSingle && uid) whoDidThis.push(uid);
+                        }
+                        var patch = { status: 'reported' };
+                        if (whoDidThis.length > 0) {
+                            patch.last_reported_by = whoDidThis;
+                            patch.last_reported_at = parentWin.serverTimestamp();
+                        }
+                        var taskPayload = patch;
+                        if (parentWin.JSON && parentWin.JSON.stringify && parentWin.JSON.parse) {
+                            try {
+                                taskPayload = parentWin.JSON.parse(parentWin.JSON.stringify(patch));
+                            } catch (err) {
+                                taskPayload = patch;
+                            }
+                        }
+                        statusUpdatePromises.push(
+                            parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', id), taskPayload)
+                                .then(function() {
+                                    task.status = 'reported';
+                                })
+                                .catch(function(err) {
+                                    console.warn('Failed to update task status for', id, err);
+                                })
+                        );
+                    }
+                });
+                await Promise.all(statusUpdatePromises);
+
+                // Mark reported quests with strikethrough
+                questCheckedTasks = {};
+                var allCards = document.querySelectorAll('.quest-card.quest-checked');
+                allCards.forEach(function(card) {
+                    card.classList.remove('quest-checked');
+                    card.style.opacity = '0.6';
+                    // Add strikethrough to the title
+                    var titleEl = card.querySelector('h3');
+                    if (titleEl) {
+                        titleEl.style.textDecoration = 'line-through';
+                        titleEl.style.color = '#94a3b8';
+                    }
+                    var cb = card.querySelector('.quest-card-check-btn');
+                    if (cb) {
+                        cb.disabled = true;
+                        cb.classList.add('opacity-40', 'cursor-not-allowed');
+                        cb.classList.remove('bg-emerald-500', 'border-emerald-500');
+                        cb.classList.add('bg-gray-100', 'border-gray-300');
+                        var icon = cb.firstElementChild;
+                        if (icon) {
+                            icon.classList.add('text-gray-400');
+                            icon.classList.remove('text-white');
+                        }
+                    }
+                    // Add strikethrough to dueText badge
+                    try {
+                        var badges = card.querySelectorAll('span.inline-flex.items-center.gap-1');
+                        badges.forEach(function(b) {
+                            b.style.textDecoration = 'line-through';
+                            b.style.opacity = '0.5';
+                        });
+                    } catch(e) {}
+                });
+
+                closeDailyReportModal();
+                showSuccessToast('Daily Report', 'Laporan harian berhasil dikirim! 🎉', 'check-circle');
+            } catch (err) {
+                console.error('Gagal mengirim report', err);
+                alert('Gagal mengirim report: ' + (err && err.message ? err.message : String(err)));
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="send" class="w-4 h-4 inline mr-1"></i> Submit Report';
+                }
+            }
+        }
+
         if (typeof window !== 'undefined') {
             window.openSideQuestDescription = openSideQuestDescription;
             window.closeSideQuestDescModal = closeSideQuestDescModal;
+            window.openQuestDetail = openQuestDetail;
+            window.closeQuestDetailModal = closeQuestDetailModal;
+            window.openDailyReportModal = openDailyReportModal;
+            window.closeDailyReportModal = closeDailyReportModal;
+            window.submitDailyReport = submitDailyReport;
+            window.toggleWhoDidThis = toggleWhoDidThis;
+            window.updateWhoDidThisLabel = updateWhoDidThisLabel;
         }
 
         function switchTab(priority, element) {
@@ -1960,23 +2230,7 @@ export function renderSidebar(target) {
         if (typeof window !== 'undefined') {
             window.switchTab = switchTab;
         }
-        function toggleQuestForm() {
-            var el = document.getElementById('questCreateForm');
-            if (!el) return;
-            var headerToggle = document.getElementById('questHeaderToggleButton');
-            var headerMenu = document.getElementById('questHeaderMenu');
-            var willShow = el.classList.contains('hidden');
-            if (willShow) {
-                el.classList.remove('hidden');
-                if (headerToggle) headerToggle.classList.add('hidden');
-                if (headerMenu) headerMenu.classList.add('hidden');
-                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                el.classList.add('hidden');
-                if (headerToggle) headerToggle.classList.remove('hidden');
-                if (headerMenu) headerMenu.classList.add('hidden');
-            }
-        }
+
         function setSideQuestPriority(priority, element) {
             sideQuestCurrentPriority = priority || 'normal';
             var buttons = document.querySelectorAll('.side-quest-priority-btn');
@@ -2946,188 +3200,6 @@ export function renderSidebar(target) {
                 }
             }
         }
-        function openQuestRecur() {
-            var panel = document.getElementById('questRecurDropdown');
-            if (!panel) return;
-            var base = getQuestRecurBaseDate();
-            var intervalInput = document.getElementById('questRecurIntervalInput');
-            var unitSelect = document.getElementById('questRecurUnitSelect');
-            var interval = 1;
-            if (intervalInput) {
-                var iv = parseInt(intervalInput.value, 10);
-                if (!isNaN(iv) && iv > 0) {
-                    interval = iv;
-                }
-            }
-            var unit = 'week';
-            if (unitSelect && unitSelect.value) {
-                unit = unitSelect.value;
-            }
-            questRecurState = {
-                baseDate: base,
-                month: base.getMonth(),
-                year: base.getFullYear(),
-                interval: interval,
-                unit: unit,
-                weekdays: [base.getDay()],
-                monthlyMode: 'same-day'
-            };
-            questRecurPrevState = {
-                baseDate: new Date(questRecurState.baseDate.getTime()),
-                month: questRecurState.month,
-                year: questRecurState.year,
-                interval: questRecurState.interval,
-                unit: questRecurState.unit,
-                weekdays: questRecurState.weekdays.slice(),
-                monthlyMode: questRecurState.monthlyMode
-            };
-            panel.classList.remove('hidden');
-            questRecurSyncControls();
-            renderQuestRecurWeekdays();
-            renderQuestRecurCalendar();
-        }
-        function questRecurApplyPattern() {
-            var select = document.getElementById('questRecurPattern');
-            if (!select) return;
-            if (!questRecurState) {
-                openQuestRecur();
-            }
-            if (!questRecurState) return;
-            var val = select.value || 'weekly';
-            if (val === 'daily') {
-                questRecurState.unit = 'day';
-            } else if (val === 'weekly') {
-                questRecurState.unit = 'week';
-            } else if (val === 'monthly') {
-                questRecurState.unit = 'month';
-                if (!questRecurState.monthlyMode) {
-                    questRecurState.monthlyMode = 'same-day';
-                }
-            } else if (val === 'yearly') {
-                questRecurState.unit = 'year';
-            }
-            questRecurSyncControls();
-            renderQuestRecurWeekdays();
-            renderQuestRecurCalendar();
-        }
-        function questRecurCancel() {
-            var panel = document.getElementById('questRecurDropdown');
-            if (!panel) return;
-            if (questRecurPrevState) {
-                questRecurState = {
-                    baseDate: new Date(questRecurPrevState.baseDate.getTime()),
-                    month: questRecurPrevState.month,
-                    year: questRecurPrevState.year,
-                    interval: questRecurPrevState.interval,
-                    unit: questRecurPrevState.unit,
-                    weekdays: questRecurPrevState.weekdays.slice(),
-                    monthlyMode: questRecurPrevState.monthlyMode
-                };
-                questRecurSyncControls();
-                renderQuestRecurWeekdays();
-                renderQuestRecurCalendar();
-            }
-            panel.classList.add('hidden');
-        }
-        function questRecurSave() {
-            var panel = document.getElementById('questRecurDropdown');
-            if (!panel) return;
-            panel.classList.add('hidden');
-        }
-        function questRecurUpdateInterval() {
-            var input = document.getElementById('questRecurIntervalInput');
-            if (!input) return;
-            var v = parseInt(input.value, 10);
-            if (!questRecurState) {
-                openQuestRecur();
-            }
-            if (!questRecurState) return;
-            if (isNaN(v) || v <= 0) {
-                questRecurState.interval = 1;
-                input.value = '1';
-            } else {
-                questRecurState.interval = v;
-            }
-            renderQuestRecurCalendar();
-        }
-        function questRecurUpdateUnit() {
-            var select = document.getElementById('questRecurUnitSelect');
-            if (!select) return;
-            if (!questRecurState) {
-                openQuestRecur();
-            }
-            if (!questRecurState) return;
-            questRecurState.unit = select.value || 'week';
-            questRecurSyncControls();
-            renderQuestRecurCalendar();
-        }
-        function questRecurUpdateMonthlyMode() {
-            var select = document.getElementById('questRecurMonthlyMode');
-            if (!select) return;
-            if (!questRecurState) {
-                openQuestRecur();
-            }
-            if (!questRecurState) return;
-            questRecurState.monthlyMode = select.value || 'same-day';
-            renderQuestRecurCalendar();
-        }
-        function questRecurToggleWeekday(day) {
-            if (!questRecurState) {
-                openQuestRecur();
-            }
-            if (!questRecurState) return;
-            var idx = questRecurState.weekdays.indexOf(day);
-            if (idx === -1) {
-                questRecurState.weekdays.push(day);
-            } else if (questRecurState.weekdays.length > 1) {
-                questRecurState.weekdays.splice(idx, 1);
-            }
-            renderQuestRecurWeekdays();
-            renderQuestRecurCalendar();
-        }
-        function renderQuestRecurWeekdays() {
-            var buttons = document.querySelectorAll('#questRecurDropdown .quest-recur-day');
-            if (!buttons || !buttons.length) return;
-            buttons.forEach(function (btn) {
-                var dayAttr = btn.getAttribute('data-day');
-                var day = parseInt(dayAttr, 10);
-                var active = questRecurState && questRecurState.weekdays.indexOf(day) !== -1;
-                btn.classList.remove('bg-blue-600', 'text-white', 'bg-gray-100', 'text-gray-700');
-                if (active) {
-                    btn.classList.add('bg-blue-600', 'text-white');
-                } else {
-                    btn.classList.add('bg-gray-100', 'text-gray-700');
-                }
-            });
-        }
-        function questRecurGoToday() {
-            if (!questRecurState) {
-                openQuestRecur();
-            }
-            if (!questRecurState) return;
-            var today = new Date();
-            questRecurState.month = today.getMonth();
-            questRecurState.year = today.getFullYear();
-            renderQuestRecurCalendar();
-        }
-        function questRecurChangeMonth(delta) {
-            if (!questRecurState) {
-                openQuestRecur();
-            }
-            if (!questRecurState) return;
-            var m = questRecurState.month + delta;
-            var y = questRecurState.year;
-            if (m < 0) {
-                m = 11;
-                y -= 1;
-            } else if (m > 11) {
-                m = 0;
-                y += 1;
-            }
-            questRecurState.month = m;
-            questRecurState.year = y;
-            renderQuestRecurCalendar();
-        }
         function questRecurIsOccurrence(date) {
             if (!questRecurState || !questRecurState.baseDate) return false;
             var base = new Date(questRecurState.baseDate.getFullYear(), questRecurState.baseDate.getMonth(), questRecurState.baseDate.getDate());
@@ -3578,7 +3650,7 @@ export function renderSidebar(target) {
         }
         function buildQuestTaskCard(task, category, taskId) {
             var title = task && task.title ? String(task.title) : 'Untitled Quest';
-            var dueText = task && (task.due_date || task.dueDate) ? String(task.due_date || task.dueDate) : '';
+            var dueText = task && (task.deadline_time) ? String(task.deadline_time) : '';
             var priority = task && task.priority ? String(task.priority).toLowerCase() : '';
             var categoryType = String(category || '').toLowerCase();
             var id = taskId || (task && task.id ? String(task.id) : '');
@@ -3604,58 +3676,82 @@ export function renderSidebar(target) {
             function esc(str) {
                 return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             }
-            function renderCollectionNames(arr) {
-                if (!Array.isArray(arr) || arr.length === 0) return '';
-                var names = arr.map(function (x) {
-                    if (!x) return '';
-                    if (typeof x === 'string') return x;
-                    if (x.name) return String(x.name);
-                    return '';
-                }).filter(function (v) { return v; });
-                return names.join(', ');
-            }
-            var borderClass = 'border-blue-500';
-            var badgeClass = 'bg-blue-600';
+
+            // --- Urgency indicator ---
+            var urgencyLabel = '';
+            var urgencyColor = '';
             if (priority === 'urgent') {
-                borderClass = 'border-orange-500';
+                urgencyLabel = 'High';
+                urgencyColor = '#dc2626';
+            } else if (priority === 'medium') {
+                urgencyLabel = 'Medium';
+                urgencyColor = '#f59e0b';
+            } else if (priority === 'normal') {
+                urgencyLabel = 'Normal';
+                urgencyColor = '#16a34a';
+            }
+
+            var borderColor = '#3b82f6';
+            var badgeBg = '#2563eb';
+            if (priority === 'urgent') {
+                borderColor = '#f97316';
             } else if (priority === 'high') {
-                borderClass = 'border-red-500';
+                borderColor = '#ef4444';
             } else if (priority === 'low') {
-                borderClass = 'border-gray-400';
+                borderColor = '#9ca3af';
             }
             if (categoryType === 'overdue') {
-                badgeClass = 'bg-red-600';
+                badgeBg = '#dc2626';
             } else if (categoryType === 'upcoming') {
-                badgeClass = 'bg-green-600';
+                badgeBg = '#16a34a';
             } else if (categoryType === 'today' || categoryType === 'todays') {
-                badgeClass = 'bg-blue-600';
+                badgeBg = '#2563eb';
             }
+
             var wrapper = document.createElement('div');
-            wrapper.className = 'flex items-start gap-4 quest-card';
+            var cardStyle = 'border-left: 4px solid ' + borderColor + '; transition: all 0.2s ease;';
+            wrapper.className = 'flex items-start gap-4 quest-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md cursor-pointer';
+            wrapper.setAttribute('style', cardStyle);
             if (id) {
                 wrapper.setAttribute('data-task-id', id);
             }
+            // Click handler to open detail modal
+            wrapper.onclick = function(e) {
+                // Don't open if clicking the check button
+                if (e.target.closest('.quest-card-check-btn')) return;
+                openQuestDetail(id);
+            };
+
             var html = '';
-            html += '<button type="button" class="w-6 h-6 border-2 ' + borderClass + ' rounded-full mt-1.5 flex-shrink-0 flex items-center justify-center bg-white quest-card-check-btn">';
-            html += '<i data-lucide="check" class="w-3 h-3 text-gray-400" style=""></i>';
-            html += '</button>';
-            html += '<div class="flex-1">';
-            html += '<div class="flex flex-wrap items-center gap-2 mb-1">';
-            html += '<h3 class="text-xl font-bold leading-tight">' + esc(title) + '</h3>';
+            html += '<div class="flex-1 min-w-0">';
+            // Title + urgency badge row
+            html += '<div class="flex flex-wrap items-center gap-2 mb-1.5">';
+            html += '<h3 class="text-base font-bold leading-tight text-slate-800 truncate">' + esc(title) + '</h3>';
+            // Urgency indicator dot + label
+            if (urgencyLabel) {
+                html += '<span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:' + urgencyColor + '20; color:' + urgencyColor + ';">';
+                html += '<span class="w-1.5 h-1.5 rounded-full" style="background:' + urgencyColor + ';"></span>';
+                html += esc(urgencyLabel);
+                html += '</span>';
+            }
+            html += '</div>';
+            // Deadline time badge
+            html += '<div class="flex flex-wrap items-center gap-2 mb-2">';
             if (dueText) {
-                html += '<span class="inline-flex items-center gap-1 ' + badgeClass + ' text-white text-xs font-bold px-2 py-1 rounded">';
+                html += '<span class="inline-flex items-center gap-1 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:' + badgeBg + ';">';
+                html += '<i data-lucide="clock" class="w-3 h-3"></i>';
                 html += esc(dueText);
                 if (task && task.recur) {
-                    html += '&nbsp;&nbsp; <i data-lucide="repeat" class="w-4 h-4 text-white"></i>';
+                    html += ' <i data-lucide="repeat" class="w-3 h-3"></i>';
                 }
                 html += '</span>';
             }
             html += '</div>';
-            html += '<div class="flex flex-wrap items-center gap-2 mb-2 quest-card-actions hidden">';
-            html += '<button type="button" class="px-3 py-1 text-xs font-semibold rounded-full border border-red-500 text-red-600 quest-card-delete-btn">Delete</button>';
-            html += '</div>';
-            html += '<p class="text-gray-600 italic description-truncate text-sm mb-3">' + esc(descText) + '</p>';
-            html += '<div class="flex flex-col gap-2 mt-2">';
+            // Description
+            html += '<p class="text-gray-500 description-truncate text-xs mb-2">' + esc(descText) + '</p>';
+            // Bottom metadata row
+            html += '<div class="flex flex-col gap-2">';
+            // Assignees
             if (assignList.length > 0) {
                 html += '<div class="flex items-center gap-2">';
                 var maxAvatars = 4;
@@ -3665,92 +3761,205 @@ export function renderSidebar(target) {
                     var initials = getQuestUserInitials(user);
                     var titleText = user && user.name ? user.name : initials;
                     if (user.photo) {
-                        html += '<img src="' + esc(user.photo) + '" alt="' + esc(titleText) + '" title="' + esc(titleText) + '" data-bs-toggle="tooltip" data-bs-title="' + esc(titleText) + '" class="w-7 h-7 rounded-full object-cover border border-slate-700">';
+                        html += '<img src="' + esc(user.photo) + '" alt="' + esc(titleText) + '" title="' + esc(titleText) + '" data-bs-toggle="tooltip" data-bs-title="' + esc(titleText) + '" class="w-6 h-6 rounded-full object-cover border-2 border-white -ml-1 first:ml-0 shadow-sm">';
                     } else {
-                        html += '<span class="w-7 h-7 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center" title="' + esc(titleText) + '" data-bs-toggle="tooltip" data-bs-title="' + esc(titleText) + '">';
+                        html += '<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-[9px] font-semibold flex items-center justify-center border-2 border-white -ml-1 first:ml-0 shadow-sm" title="' + esc(titleText) + '" data-bs-toggle="tooltip" data-bs-title="' + esc(titleText) + '">';
                         html += esc(initials);
                         html += '</span>';
                     }
                 });
                 if (assignList.length > maxAvatars) {
-                    html += '<span class="w-7 h-7 rounded-full bg-slate-800 text-slate-100 text-[10px] font-semibold flex items-center justify-center">';
+                    html += '<span class="w-6 h-6 rounded-full bg-slate-200 text-slate-600 text-[9px] font-semibold flex items-center justify-center border-2 border-white shadow-sm">';
                     html += esc('+' + (assignList.length - maxAvatars));
                     html += '</span>';
                 }
                 html += '</div>';
             }
-            var deptNames = renderCollectionNames(departments);
-            var posNames = renderCollectionNames(positions);
-            if (deptNames || posNames) {
-                html += '<div class="flex flex-wrap items-center gap-2 text-[11px] text-gray-500">';
-                if (departments && departments.length) {
-                    departments.forEach(function (d) {
-                        var name = '';
-                        if (typeof d === 'string') {
-                            name = d;
-                        } else if (d && d.name) {
-                            name = String(d.name);
-                        }
-                        if (!name) return;
-                        var hash = 0;
-                        for (var i = 0; i < name.length; i++) {
-                            hash = ((hash << 5) - hash) + name.charCodeAt(i);
-                            hash |= 0;
-                        }
-                        var colorIndex = Math.abs(hash) % 5;
-                        var cls = '';
-                        if (colorIndex === 0) cls = 'bg-blue-50 text-blue-700 border-blue-100';
-                        else if (colorIndex === 1) cls = 'bg-emerald-50 text-emerald-700 border-emerald-100';
-                        else if (colorIndex === 2) cls = 'bg-amber-50 text-amber-700 border-amber-100';
-                        else if (colorIndex === 3) cls = 'bg-purple-50 text-purple-700 border-purple-100';
-                        else cls = 'bg-rose-50 text-rose-700 border-rose-100';
-                        html += '<span class="inline-flex items-center px-2 py-0.5 rounded-full border text-[10px] font-semibold ' + cls + '">';
-                        html += esc(name);
-                        html += '</span>';
-                    });
-                }
-                if (posNames) {
-                    if (departments && departments.length) {
-                        html += '<span class="text-gray-300 text-[11px]">|</span>';
-                    }
-                    html += '<span>' + esc(posNames) + '</span>';
-                }
-                html += '</div>';
-            }
+            // Tags + Points
             var hasTags = tags && tags.length;
             var hasPoints = points && points > 0;
             if (hasTags || hasPoints) {
-                html += '<div class="flex flex-wrap items-center gap-2 text-[11px] text-gray-600">';
+                html += '<div class="flex flex-wrap items-center gap-2 text-[10px] text-gray-500">';
                 if (hasTags) {
                     tags.forEach(function (t) {
                         if (!t) return;
-                        html += '<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">';
+                        html += '<span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">';
                         html += esc(String(t));
                         html += '</span>';
                     });
                 }
                 if (hasPoints) {
-                    html += '<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 font-semibold">';
-                    html += esc(String(points) + ' XP');
+                    html += '<span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 font-semibold">';
+                    html += esc(String(points) + ' Point');
                     html += '</span>';
                 }
                 html += '</div>';
             }
             html += '</div>';
             html += '</div>';
+            // Bigger, more visible checklist button (only for today/overdue, not upcoming)
+            if (categoryType !== 'upcoming') {
+                html += '<button type="button" class="quest-card-check-btn w-6 h-6 min-w-[24px] rounded flex-shrink-0 flex items-center justify-center transition-all duration-200 border-2 ';
+                html += 'bg-white border-slate-300 hover:bg-emerald-100 hover:border-emerald-400 active:scale-90">';
+                html += '<i data-lucide="check" class="w-4 h-4 text-transparent transition-all duration-200"></i>';
+                html += '</button>';
+            }
             wrapper.innerHTML = html;
+
+            // If task is already reported, apply strikethrough styling
+            var taskStatus = String(task && task.status || '').toLowerCase().replace(/[\s_]/g, '');
+            if (taskStatus === 'reported') {
+                wrapper.style.opacity = '0.6';
+                var reportedTitle = wrapper.querySelector('h3');
+                if (reportedTitle) {
+                    reportedTitle.style.textDecoration = 'line-through';
+                    reportedTitle.style.color = '#94a3b8';
+                }
+                var reportedBtn = wrapper.querySelector('.quest-card-check-btn');
+                if (reportedBtn) {
+                    reportedBtn.disabled = true;
+                    reportedBtn.classList.add('opacity-40', 'cursor-not-allowed');
+                    reportedBtn.classList.add('bg-gray-100', 'border-gray-300');
+                    reportedBtn.classList.remove('bg-white', 'border-slate-300');
+                    var reportedIcon = reportedBtn.firstElementChild;
+                    if (reportedIcon) {
+                        reportedIcon.classList.add('text-transparent');
+                        reportedIcon.classList.remove('text-white');
+                    }
+                }
+            }
+
+            // Check if task was claimed by someone else via "who_did_this" mechanism
+            var lastReportedBy = task && task.last_reported_by;
+            var lastReportedAt = task && task.last_reported_at;
+            if (lastReportedBy && Array.isArray(lastReportedBy) && lastReportedBy.length > 0 && lastReportedAt) {
+                // Check if the report was from today
+                var reportedDate = null;
+                if (typeof lastReportedAt.toDate === 'function') {
+                    reportedDate = lastReportedAt.toDate();
+                } else if (lastReportedAt instanceof Date) {
+                    reportedDate = lastReportedAt;
+                } else if (typeof lastReportedAt === 'string') {
+                    var dStr = new Date(lastReportedAt);
+                    if (!isNaN(dStr.getTime())) reportedDate = dStr;
+                } else if (typeof lastReportedAt === 'number') {
+                    var dNum = new Date(lastReportedAt);
+                    if (!isNaN(dNum.getTime())) reportedDate = dNum;
+                }
+                
+                if (reportedDate && !isNaN(reportedDate.getTime())) {
+                    var today = new Date();
+                    var isToday = reportedDate.getFullYear() === today.getFullYear() &&
+                        reportedDate.getMonth() === today.getMonth() &&
+                        reportedDate.getDate() === today.getDate();
+                    
+                    if (isToday) {
+                        // Check if current user is in last_reported_by
+                        var currentUid = '';
+                        try {
+                            var ld = JSON.parse(localStorage.getItem('userData') || 'null');
+                            if (ld && ld.uid) currentUid = ld.uid;
+                        } catch (e) {}
+                        
+                        var isCurrentUserReported = currentUid && lastReportedBy.indexOf(currentUid) !== -1;
+                        
+                        if (isCurrentUserReported) {
+                            // Current user already reported - mark as done
+                            wrapper.style.opacity = '0.5';
+                            var doneTitle = wrapper.querySelector('h3');
+                            if (doneTitle) {
+                                doneTitle.style.textDecoration = 'line-through';
+                                doneTitle.style.color = '#94a3b8';
+                            }
+                            var doneBtn = wrapper.querySelector('.quest-card-check-btn');
+                            if (doneBtn) {
+                                doneBtn.disabled = true;
+                                doneBtn.classList.add('opacity-40', 'cursor-not-allowed');
+                                doneBtn.classList.add('bg-gray-100', 'border-gray-300');
+                                doneBtn.classList.remove('bg-white', 'border-slate-300');
+                            }
+                            // Add 'Already reported' badge after title
+                            var h3El = wrapper.querySelector('h3');
+                            if (h3El) {
+                                var badge = document.createElement('span');
+                                badge.className = 'inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-500 ml-1';
+                                badge.textContent = '✓ Reported';
+                                h3El.parentNode.insertBefore(badge, h3El.nextSibling);
+                            }
+                        } else {
+                            // Someone else already claimed this task today - lock it
+                            wrapper.style.opacity = '0.4';
+                            wrapper.style.pointerEvents = 'none';
+                            
+                            // Get who claimed it
+                            var users = typeof window.parent !== 'undefined' && window.parent.questUsersById ? window.parent.questUsersById : (window.questUsersById || {});
+                            var claimedNames = [];
+                            lastReportedBy.forEach(function(uid) {
+                                var u = users[uid];
+                                if (u && u.name) claimedNames.push(u.name);
+                            });
+                            var claimedText = claimedNames.length > 0 ? claimedNames.join(', ') : 'someone';
+                            
+                            var lockedBtn = wrapper.querySelector('.quest-card-check-btn');
+                            if (lockedBtn) {
+                                lockedBtn.disabled = true;
+                                lockedBtn.classList.add('opacity-30', 'cursor-not-allowed');
+                                lockedBtn.classList.add('bg-gray-100', 'border-gray-300');
+                                lockedBtn.classList.remove('bg-white', 'border-slate-300');
+                            }
+                            // Add lock badge after title
+                            var h3El = wrapper.querySelector('h3');
+                            if (h3El) {
+                                var badge = document.createElement('span');
+                                badge.className = 'inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600 border border-orange-200 ml-1';
+                                badge.innerHTML = '🔒 Claimed by ' + claimedText;
+                                h3El.parentNode.insertBefore(badge, h3El.nextSibling);
+                            }
+                        }
+                    }
+                }
+            }
+
             var checkBtn = wrapper.querySelector('.quest-card-check-btn');
             if (checkBtn) {
                 checkBtn.setAttribute('data-original-class', checkBtn.className);
                 checkBtn.setAttribute('data-original-html', checkBtn.innerHTML);
+                // Prevent card click when clicking check button
+                checkBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    // Toggle checked state
+                    var taskId = wrapper.getAttribute('data-task-id');
+                    if (!taskId) return;
+                    var isChecked = wrapper.classList.toggle('quest-checked');
+                    var iconEl = checkBtn.firstElementChild;
+                    if (isChecked) {
+                        checkBtn.classList.add('bg-emerald-500', 'border-emerald-500');
+                        checkBtn.classList.remove('bg-white', 'border-slate-300');
+                        if (iconEl) {
+                            iconEl.classList.remove('text-transparent');
+                            iconEl.classList.add('text-white');
+                        }
+                        questCheckedTasks[taskId] = true;
+                    } else {
+                        checkBtn.classList.remove('bg-emerald-500', 'border-emerald-500');
+                        checkBtn.classList.add('bg-white', 'border-slate-300');
+                        if (iconEl) {
+                            iconEl.classList.add('text-transparent');
+                            iconEl.classList.remove('text-white');
+                        }
+                        delete questCheckedTasks[taskId];
+                    }
+                };
             }
             return wrapper;
         }
         async function loadQuestTasks() {
             var overdueList = document.getElementById('questOverdueList');
+            var overdueSection = document.getElementById('questOverdueSection');
+            var overdueButton = document.getElementById('questOverdueButton');
             var todayList = document.getElementById('questTodayList');
             var upcomingList = document.getElementById('questUpcomingList');
-            if (!overdueList && !todayList && !upcomingList) return;
+            if (!overdueSection && !todayList && !upcomingList) return;
             var parentWin = window.parent;
             if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) return;
             try {
@@ -3762,53 +3971,214 @@ export function renderSidebar(target) {
                 var snap = fetchFn ? await fetchFn(parentWin) : await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks'));
                 
                 var now = new Date();
-                var todayNum = questDateToNumber(now);
                 var totalMainQuest = 0;
+                var hasOverdue = false;
+                var upcomingQuests = [];
+                var currentUid = parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : '';
 
                 snap.forEach(function (docSnap) {
                     var data = docSnap.data() || {};
                     if (data.project_id || data.projectId) return;
 
-                    // Update Main Quest Count: must be recurring and not complete/archived
+                    // Filter Team: show quests assigned to current user OR created by current user
+                    if (currentUid) {
+                        var assignList = data.assign_to || data.assignTo || [];
+                        if (!Array.isArray(assignList)) assignList = assignList ? [assignList] : [];
+                        var hasValidUID = false;
+                        assignList.forEach(function(uid) {
+                            if (typeof uid === 'string' && uid.length >= 20) {
+                                hasValidUID = true;
+                            }
+                        });
+                        var isAssignee = assignList.indexOf(currentUid) !== -1;
+                        var isCreator = data.created_by === currentUid || data.createdBy === currentUid;
+                        if (hasValidUID && assignList.length > 0 && !isAssignee && !isCreator) return;
+                    }
+
                     var statusRaw = String(data.status || '').toLowerCase();
                     if (data.recur && statusRaw !== 'complete' && !data.archived) {
                         totalMainQuest++;
                     }
 
                     if (statusRaw === 'complete') return;
-                    var dueText = data.due_date || data.dueDate || '';
-                    if (!dueText) return;
-                    var dueDate = parseQuestDueDateString(dueText);
-                    if (!dueDate) return;
-                    var dayNum = questDateToNumber(dueDate);
-                    var targetList = null;
-                    var category = '';
-                    if (dayNum < todayNum) {
-                        targetList = overdueList;
-                        category = 'overdue';
-                    } else if (dayNum === todayNum) {
-                        targetList = todayList;
-                        category = 'today';
-                    } else if (dayNum > todayNum) {
-                        targetList = upcomingList;
-                        category = 'upcoming';
-                    }
-                    if (!targetList) return;
+
                     var id = docSnap.id;
-                    if (id) {
-                        questTasksById[id] = data;
+                    if (id) questTasksById[id] = data;
+
+                    // Only show recurring quests with a valid pattern
+                    var recur = data.recur;
+                    var deadlineTime = data.deadline_time || '';
+
+                    function normalizeNumberList(value) {
+                        if (!value) return [];
+                        // Handle Firestore MAP format (plain object with numeric keys like {0: 0, 1: 1})
+                        if (!Array.isArray(value) && typeof value === 'object') {
+                            var keys = Object.keys(value);
+                            var allNumeric = keys.length > 0 && keys.every(function(k) { return !isNaN(parseInt(k, 10)); });
+                            if (allNumeric) {
+                                var vals = [];
+                                keys.forEach(function(k) {
+                                    var v = value[k];
+                                    if (typeof v === 'number') vals.push(v);
+                                    else if (typeof v === 'string') vals.push(parseInt(v, 10));
+                                    else if (typeof v === 'object' && v !== null) vals.push(parseInt(v.value || v.day || v.date || v.id, 10));
+                                });
+                                return vals.filter(function (num) { return !isNaN(num); });
+                            }
+                        }
+                        var arr = Array.isArray(value) ? value : [value];
+                        return arr.map(function (item) {
+                            if (typeof item === 'number') return item;
+                            if (typeof item === 'string') return parseInt(item, 10);
+                            if (item && typeof item === 'object') return parseInt(item.value || item.day || item.date || item.id, 10);
+                            return NaN;
+                        }).filter(function (num) { return !isNaN(num); });
                     }
-                    var card = buildQuestTaskCard(data, category, id);
-                    targetList.appendChild(card);
+
+                    function parseTaskDate(value) {
+                        if (!value) return null;
+                        if (value.toDate && typeof value.toDate === 'function') {
+                            var firestoreDate = value.toDate();
+                            return isNaN(firestoreDate.getTime()) ? null : firestoreDate;
+                        }
+                        if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
+                        if (typeof value === 'number') {
+                            var numericDate = new Date(value);
+                            return isNaN(numericDate.getTime()) ? null : numericDate;
+                        }
+                        var str = String(value || '').trim();
+                        if (!str) return null;
+                        var slashParts = str.split('/');
+                        if (slashParts.length === 3) {
+                            var d = parseInt(slashParts[0], 10);
+                            var m = parseInt(slashParts[1], 10) - 1;
+                            var y = parseInt(slashParts[2], 10);
+                            var slashDate = new Date(y, m, d);
+                            if (!isNaN(slashDate.getTime())) return slashDate;
+                        }
+                        var parsed = new Date(str);
+                        return isNaN(parsed.getTime()) ? null : parsed;
+                    }
+
+                    function dayKey(date) {
+                        return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+                    }
+
+                    function normalizeRecurUnit(recur) {
+                        var unit = recur && (recur.unit || recur.type || recur.frequency) ? String(recur.unit || recur.type || recur.frequency).toLowerCase() : '';
+                        if (unit === 'daily') return 'day';
+                        if (unit === 'weekly') return 'week';
+                        if (unit === 'monthly') return 'month';
+                        // Default to week if weekdays exist but unit is missing/invalid
+                        var weekdays = recur && (recur.weekdays || recur.days || recur.repeat_on || recur.repeatOn);
+                        if (weekdays && Array.isArray(weekdays) && weekdays.length > 0) return 'week';
+                        var monthlyDates = recur && (recur.monthly_dates || recur.monthlyDates || recur.dates);
+                        if (monthlyDates && Array.isArray(monthlyDates) && monthlyDates.length > 0) return 'month';
+                        return unit;
+                    }
+
+                    function findNextOccurrenceKey(recur, fromDate, maxDays) {
+                        var unit = normalizeRecurUnit(recur);
+                        if (unit === 'day') return dayKey(fromDate);
+                        var weekdays = normalizeNumberList(recur.weekdays || recur.days || recur.repeat_on || recur.repeatOn);
+                        var monthlyDates = normalizeNumberList(recur.monthly_dates || recur.monthlyDates || recur.dates);
+                        // If no pattern found but recur exists, default to showing in today
+                        if ((!weekdays || weekdays.length === 0) && (!monthlyDates || monthlyDates.length === 0)) {
+                            return dayKey(fromDate);
+                        }
+                        if (unit === 'day') return dayKey(fromDate);
+                        for (var offset = 0; offset <= maxDays; offset++) {
+                            var candidate = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+                            candidate.setDate(candidate.getDate() + offset);
+                            if (unit === 'week' && weekdays.indexOf(candidate.getDay()) !== -1) {
+                                return dayKey(candidate);
+                            }
+                            if (unit === 'month' && monthlyDates.indexOf(candidate.getDate()) !== -1) {
+                                return dayKey(candidate);
+                            }
+                        }
+                        // If no occurrence found in range but pattern exists, fallback to today
+                        if (weekdays.length > 0 || monthlyDates.length > 0) {
+                            return dayKey(fromDate);
+                        }
+                        return null;
+                    }
+
+                    var todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    var todayKey = dayKey(todayDate);
+                    var matchedDay = null;
+                    var nextKey = null;
+                    var taskDate = parseTaskDate(data.due_date || data.dueDate || data.deadline_date || data.deadlineDate || data.date || data.start_date || data.startDate);
+
+                    // Non-recurring quests use their date when available, otherwise show in Today.
+                    if (!recur) {
+                        if (!taskDate) {
+                            matchedDay = 'today';
+                        } else {
+                            var taskKey = dayKey(taskDate);
+                            if (taskKey <= todayKey) {
+                                matchedDay = 'today';
+                            } else {
+                                matchedDay = 'upcoming';
+                                nextKey = taskKey;
+                            }
+                        }
+                    } else {
+                        nextKey = findNextOccurrenceKey(recur, todayDate, 62);
+                        if (nextKey === todayKey) {
+                            matchedDay = 'today';
+                        } else if (nextKey) {
+                            matchedDay = 'upcoming';
+                        }
+                    }
+
+                    if (matchedDay === 'today') {
+                        todayList.appendChild(buildQuestTaskCard(data, 'today', id));
+                    } else if (matchedDay === 'upcoming') {
+                        upcomingQuests.push({ data: data, id: id, nextKey: nextKey || 99999999 });
+                    }
                 });
-                if (overdueList && !overdueList.innerHTML.trim()) {
-                    overdueList.innerHTML = '<p class="text-gray-400 italic text-sm">No overdue quests.</p>';
+
+                // Sort upcoming quests by next occurrence key, then by deadline_time
+                upcomingQuests.sort(function (a, b) {
+                    if (a.nextKey !== b.nextKey) return a.nextKey - b.nextKey;
+                    var aTime = a.data.deadline_time || '00:00';
+                    var bTime = b.data.deadline_time || '00:00';
+                    if (aTime < bTime) return -1;
+                    if (aTime > bTime) return 1;
+                    return 0;
+                });
+                
+                // Render upcoming quests (max 2)
+                upcomingQuests.slice(0, 2).forEach(function (item) {
+                    upcomingList.appendChild(buildQuestTaskCard(item.data, 'upcoming', item.id));
+                });
+
+                // Add "More" button if there are more than 2 upcoming quests
+                if (upcomingQuests.length > 2) {
+                    let moreButton = document.createElement('button');
+                    moreButton.className = 'w-full mt-3 rounded-lg bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-100';
+                    moreButton.innerText = 'More';
+                    moreButton.onclick = function () {
+                        upcomingList.innerHTML = '';
+                        upcomingQuests.forEach(function (item) {
+                            upcomingList.appendChild(buildQuestTaskCard(item.data, 'upcoming', item.id));
+                        });
+                    };
+                    upcomingList.appendChild(moreButton);
                 }
+
+                if (!hasOverdue && overdueButton) {
+                    overdueButton.classList.add('hidden');
+                } else if (hasOverdue && overdueButton) {
+                    overdueButton.classList.remove('hidden');
+                }
+
                 if (todayList && !todayList.innerHTML.trim()) {
-                    todayList.innerHTML = '<p class="text-gray-400 italic text-sm">No quests for today.</p>';
+                    todayList.innerHTML = '<p class="text-gray-400 italic text-sm text-center py-2">No quests for today.</p>';
                 }
                 if (upcomingList && !upcomingList.innerHTML.trim()) {
-                    upcomingList.innerHTML = '<p class="text-gray-400 italic text-sm">No upcoming quests.</p>';
+                    upcomingList.innerHTML = '<p class="text-gray-400 italic text-sm text-center py-2">No upcoming quests.</p>';
                 }
 
                 var mainCountEl = document.getElementById('mainQuestCount');
@@ -4510,55 +4880,23 @@ export function renderSidebar(target) {
                     return;
                 }
                 var descEl = document.getElementById('questDescEditor');
-                var descHtml = descEl ? descEl.innerHTML : '';
-                var dueInput = document.getElementById('questDueDate');
-                var dueText = dueInput ? String(dueInput.value || '').trim() : '';
-                if (!dueText) {
-                    showQuestAlert('Perhatian', 'task (atau Quest) tidak ada tanggalnya');
-                    return;
-                }
-                var pointInput = document.getElementById('questPointInput');
-                var points = 0;
-                if (pointInput && pointInput.value) {
-                    var p = parseFloat(pointInput.value);
-                    if (!isNaN(p) && p > 0) {
-                        points = p;
-                    }
-                }
-                var deptSelected = [];
-                Array.prototype.slice.call(
-                    document.querySelectorAll('#questDepartmentDropdown input[type="checkbox"]:checked')
-                ).forEach(function (cb) {
-                    var id = cb.getAttribute('data-dept-id') || '';
-                    var row = cb.closest('.quest-dept-option');
-                    var nameEl = row ? row.querySelector('.quest-dept-name') : null;
-                    var name = nameEl ? nameEl.textContent.trim() : '';
-                    deptSelected.push({ id: id, name: name });
-                });
-                var positionSelected = [];
-                Array.prototype.slice.call(
-                    document.querySelectorAll('#questPositionDropdown input[type="checkbox"]:checked')
-                ).forEach(function (cb) {
-                    var id = cb.getAttribute('data-position-id') || '';
-                    var row = cb.closest('.quest-position-option');
-                    var nameEl = row ? row.querySelector('.quest-position-name') : null;
-                    var name = nameEl ? nameEl.textContent.trim() : '';
-                    positionSelected.push({ id: id, name: name });
-                });
+                var descHtml = descEl ? descEl.value : '';
+                var deadlineTimeInput = document.getElementById('questDeadlineTime');
+                var deadlineTime = deadlineTimeInput ? deadlineTimeInput.value || '' : '';
+
+                var priorityInput = document.getElementById('questUrgencySelect');
+                var priority = priorityInput ? priorityInput.value : 'normal';
+
+                var pointInput = document.getElementById('questPointSelect');
+                var points = pointInput ? parseInt(pointInput.value) || 1 : 1;
+                var deptSelect = document.getElementById('questDeptSelect');
+                var deptSelected = deptSelect ? [{id: deptSelect.value, name: deptSelect.options[deptSelect.selectedIndex].getAttribute('data-name')}] : [];
+                var posSelect = document.getElementById('questPosSelect');
+                var positionSelected = posSelect ? [{id: posSelect.value, name: posSelect.options[posSelect.selectedIndex].getAttribute('data-name')}] : [];
                 var assignSelected = [];
-                Array.prototype.slice.call(
-                    document.querySelectorAll('#questAssignDropdown input[type="checkbox"]:checked')
-                ).forEach(function (cb) {
-                    var uid = cb.getAttribute('data-user-id') || '';
-                    assignSelected.push(uid);
-                });
+                Array.prototype.slice.call(document.getElementById('questAssignList') ? document.getElementById('questAssignList').querySelectorAll('input:checked') : []).forEach(function(cb) { assignSelected.push(cb.value); });
                 var notifySelected = [];
-                Array.prototype.slice.call(
-                    document.querySelectorAll('#questNotifyDropdown input[type="checkbox"]:checked')
-                ).forEach(function (cb) {
-                    var uid = cb.getAttribute('data-user-id') || '';
-                    notifySelected.push(uid);
-                });
+                Array.prototype.slice.call(document.getElementById('questNotifyList') ? document.getElementById('questNotifyList').querySelectorAll('input:checked') : []).forEach(function(cb) { notifySelected.push(cb.value); });
                 var tags = getQuestTags();
                 var reminderMode = questReminderState && questReminderState.mode ? questReminderState.mode : null;
                 var reminderDates = [];
@@ -4571,19 +4909,32 @@ export function renderSidebar(target) {
                     }
                 }
                 var recur = null;
-                if (questRecurState) {
-                    recur = {
-                        base_date: questRecurState.baseDate ? questDueFormatDate(questRecurState.baseDate) : null,
-                        unit: questRecurState.unit || null,
-                        interval: typeof questRecurState.interval === 'number' ? questRecurState.interval : 1,
-                        weekdays: Array.isArray(questRecurState.weekdays) ? questRecurState.weekdays.slice() : [],
-                        monthly_mode: questRecurState.monthlyMode || null
-                    };
+                var frame = document.getElementById('questBoardFrame');
+                var doc = frame && frame.contentDocument ? frame.contentDocument : document;
+                var intervalInput = doc.getElementById('questRecurIntervalInput');
+                var unitSelect = doc.getElementById('questRecurUnitSelect');
+                var iv = intervalInput ? parseInt(intervalInput.value, 10) : 1;
+                var unit = unitSelect ? unitSelect.value : 'week';
+                
+                // questRecurState lives on the parent window (set outside the iframe)
+                var qrs = parentWin && parentWin.questRecurState ? parentWin.questRecurState : null;
+                if (qrs) {
+                    if (unit === 'week' && qrs.weekdays.length > 0) {
+                        recur = {
+                            interval: iv,
+                            unit: unit,
+                            weekdays: qrs.weekdays.slice()
+                        };
+                    } else if (unit === 'month' && qrs.monthlyDates && qrs.monthlyDates.length > 0) {
+                        recur = {
+                            interval: iv,
+                            unit: unit,
+                            monthly_dates: qrs.monthlyDates.slice()
+                        };
+                    }
                 }
-                if (!recur) {
-                    showQuestAlert('Perhatian', 'Quest tidak berulang atau hanya di jalankan sekali');
-                    return;
-                }
+
+
                 if (notifySelected.length === 0) {
                     showQuestAlert('Perhatian', 'Quest tidak dilaporkan ke siapa-siapa');
                     return;
@@ -4604,7 +4955,7 @@ export function renderSidebar(target) {
                     title: title,
                     description: descHtml,
                     priority: questCurrentPriority || 'normal',
-                    due_date: dueText,
+                    deadline_time: deadlineTime,
                     points: points,
                     departments: deptSelected,
                     positions: positionSelected,
@@ -4632,7 +4983,7 @@ export function renderSidebar(target) {
                     loadQuestTasks();
                 }
                 if (nameInput) nameInput.value = '';
-                if (dueInput) dueInput.value = '';
+                if (deadlineTimeInput) deadlineTimeInput.value = '';
                 if (pointInput) pointInput.value = '';
                 if (descEl) descEl.innerHTML = '';
                 Array.prototype.slice.call(
@@ -4659,7 +5010,7 @@ export function renderSidebar(target) {
                 if (labelReminder) {
                     labelReminder.textContent = 'No reminder';
                 }
-                toggleQuestForm();
+                parent.toggleQuestForm();
                 showQuestAlert('Sukses', 'Quest berhasil disimpan.');
             } catch (err) {
                 console.error('Gagal menyimpan quest', err);
@@ -6648,6 +6999,9 @@ export function renderSidebar(target) {
   if (sideQuestCard) {
     sideQuestCard.addEventListener("click", (e) => {
       e.preventDefault();
+      // Side Quest: buka halaman quest board mandiri dengan tab side
+      window.location.href = "/element/quest-board.html?tab=side";
+      return;
       if (typeof window.closeReportBoardModal === "function") {
         try {
           window.closeReportBoardModal();
@@ -8592,6 +8946,30 @@ export function renderSidebar(target) {
                     htmlCard += '</div>';
 
                     el.innerHTML = htmlCard;
+
+                    // If task is already reported, apply strikethrough styling
+                    var normTaskStatus = String(data.status || '').toLowerCase().replace(/[\s_]/g, '');
+                    if (normTaskStatus === 'reported') {
+                        el.style.opacity = '0.6';
+                        var titleEl2 = el.querySelector('h3');
+                        if (titleEl2) {
+                            titleEl2.style.textDecoration = 'line-through';
+                            titleEl2.style.color = '#94a3b8';
+                        }
+                        var cb2 = el.querySelector('.quest-card-check-btn');
+                        if (cb2) {
+                            cb2.disabled = true;
+                            cb2.classList.add('opacity-40', 'cursor-not-allowed');
+                            cb2.classList.add('bg-gray-100', 'border-gray-300');
+                            cb2.classList.remove('bg-white', 'border-slate-300');
+                            var icon2 = cb2.firstElementChild;
+                            if (icon2) {
+                                icon2.classList.add('text-transparent');
+                                icon2.classList.remove('text-white');
+                            }
+                        }
+                    }
+
                     (function () {
                         var editorId = 'reportEditor-' + taskId;
                         var toolbarButtons = el.querySelectorAll('[data-editor-id="' + editorId + '"][data-command]');
@@ -9145,4 +9523,656 @@ export function renderSidebar(target) {
       }
     });
   }
+}
+
+window.toggleQuestForm = function() {
+    // Halaman quest-board.html standalone sudah punya implementasi sendiri
+    // (bekerja di dokumen utama). Override di bawah hanya untuk halaman lain
+    // yang membuka quest board via iframe (questBoardFrame).
+    var mainEl = document.getElementById('questCreateForm');
+    if (mainEl) {
+        mainEl.classList.toggle('hidden');
+        if (!mainEl.classList.contains('hidden')) {
+            if (typeof window.loadQuestFormDepartments === 'function') {
+                window.loadQuestFormDepartments();
+            }
+        }
+        return;
+    }
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var el = frame.contentDocument.getElementById("questCreateForm");
+    if (!el) return;
+    el.classList.toggle("hidden");
+    if (!el.classList.contains("hidden")) {
+        window.loadQuestFormDepartments();
+    }
+}
+
+window.loadQuestFormDepartments = async function() {
+    var select = document.getElementById('questDeptSelect');
+    if (!select) {
+        var frame = document.getElementById('questBoardFrame');
+        if (!frame || !frame.contentDocument) return;
+        select = frame.contentDocument.getElementById("questDeptSelect");
+    }
+    if (!select) return;
+    select.innerHTML = '<option value="">Select Department</option>';
+    try {
+        var snap = await window.getDocs(window.collection(window.db, "departments"));
+        snap.forEach(function(docSnap) {
+            var d = docSnap.data() || {};
+            var name = d.name || d.label || d.title || d.department || docSnap.id;
+            var opt = document.createElement("option");
+            opt.value = docSnap.id;
+            opt.textContent = name;
+            opt.setAttribute("data-name", name);
+            select.appendChild(opt);
+        });
+    } catch(e) {
+        console.error("Failed loading departments", e);
+    }
+}
+
+window.onQuestDeptChange = async function() {
+    var doc = null;
+    var frame = null;
+    if (document.getElementById('questDeptSelect')) {
+        doc = document;
+    } else {
+        frame = document.getElementById('questBoardFrame');
+        if (!frame || !frame.contentDocument) return;
+        doc = frame.contentDocument;
+    }
+    var deptSelect = doc.getElementById("questDeptSelect");
+    var deptId = deptSelect ? deptSelect.value : "";
+    var deptName = deptSelect && deptSelect.options[deptSelect.selectedIndex] ? deptSelect.options[deptSelect.selectedIndex].getAttribute("data-name") || deptSelect.options[deptSelect.selectedIndex].textContent : "";
+    var posSelect = doc.getElementById("questPosSelect");
+    var assignSelect = doc.getElementById("questAssignSelect");
+    var notifySelect = doc.getElementById("questNotifySelect");
+    if (posSelect) posSelect.innerHTML = '<option value="">Select Position</option>';
+    if (assignSelect) assignSelect.innerHTML = '<option value="">Select User</option>';
+    if (notifySelect) notifySelect.innerHTML = '<option value="">Select User</option>';
+    if (!deptId) {
+        // Halaman quest-board standalone: reset daftar user ke semua
+        if (typeof window.questFilterUsersByDept === 'function') {
+            window.questFilterUsersByDept('', '');
+        }
+        return;
+    }
+
+    try {
+        var snap = await window.getDocs(window.collection(window.db, "positions"));
+        snap.forEach(function(docSnap) {
+            var d = docSnap.data() || {};
+            var deptValue = d.department || d.department_id || d.departmentId || d.department_name || d.departmentName || "";
+            if (String(deptValue).toLowerCase() === String(deptId).toLowerCase() || String(deptValue).toLowerCase() === String(deptName).toLowerCase()) {
+                var name = d.name || d.label || d.title || d.position || docSnap.id;
+                var opt = document.createElement("option");
+                opt.value = docSnap.id;
+                opt.textContent = name;
+                opt.setAttribute("data-name", name);
+                posSelect.appendChild(opt);
+            }
+        });
+    } catch(e) {
+        console.error("Failed loading positions", e);
+    }
+    // Halaman quest-board standalone: filter daftar user (Assign/Notify) sesuai divisi
+    if (typeof window.questFilterUsersByDept === 'function') {
+        window.questFilterUsersByDept(deptId, deptName);
+    }
+}
+
+window.onQuestPosChange = async function() {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    var deptSelect = doc.getElementById("questDeptSelect");
+    var deptId = deptSelect ? deptSelect.value : "";
+    var deptName = deptSelect && deptSelect.options[deptSelect.selectedIndex] ? deptSelect.options[deptSelect.selectedIndex].getAttribute("data-name") || deptSelect.options[deptSelect.selectedIndex].textContent : "";
+    var posSelect = doc.getElementById("questPosSelect");
+    var posId = posSelect ? posSelect.value : "";
+    var posName = posSelect && posSelect.options[posSelect.selectedIndex] ? posSelect.options[posSelect.selectedIndex].getAttribute("data-name") || posSelect.options[posSelect.selectedIndex].textContent : "";
+    
+    var assignList = doc.getElementById("questAssignList");
+    var notifyList = doc.getElementById("questNotifyList");
+    var assignLabel = doc.getElementById("questAssignButtonLabel");
+    var notifyLabel = doc.getElementById("questNotifyButtonLabel");
+    if (assignList) assignList.innerHTML = '';
+    if (notifyList) notifyList.innerHTML = '';
+    if (assignLabel) assignLabel.textContent = 'Select users...';
+    if (notifyLabel) notifyLabel.textContent = 'Select users...';
+
+    if (!deptId || !posId) return;
+
+    try {
+        var snap = await window.getDocs(window.collection(window.db, "users"));
+        snap.forEach(function(docSnap) {
+            var u = docSnap.data() || {};
+            var emp = u.employment || {};
+            var userDept = emp.department || emp.department_id || emp.departmentId || "";
+            var userPos = emp.position || emp.position_id || emp.positionId || "";
+            var deptMatch = String(userDept).toLowerCase() === String(deptId).toLowerCase() || String(userDept).toLowerCase() === String(deptName).toLowerCase();
+            var posMatch = String(userPos).toLowerCase() === String(posId).toLowerCase() || String(userPos).toLowerCase() === String(posName).toLowerCase();
+            var userStatus = String(u.status || '').toLowerCase();
+            if (deptMatch && posMatch && userStatus === 'active') {
+                var name = u.name || u.displayName || docSnap.id;
+                var uid = docSnap.id;
+                
+                if (assignList) {
+                    var row = doc.createElement("div");
+                    row.className = "flex items-center gap-2 p-2 hover:bg-slate-50 rounded-lg cursor-pointer";
+                    row.innerHTML = '<input type="checkbox" value="' + uid + '" data-name="' + name + '" onchange="parent.updateQuestMultiLabel(\'questAssign\')" class="accent-blue-600"><span>' + name + '</span>';
+                    assignList.appendChild(row);
+                }
+                if (notifyList) {
+                    var row2 = doc.createElement("div");
+                    row2.className = "flex items-center gap-2 p-2 hover:bg-slate-50 rounded-lg cursor-pointer";
+                    row2.innerHTML = '<input type="checkbox" value="' + uid + '" data-name="' + name + '" onchange="parent.updateQuestMultiLabel(\'questNotify\')" class="accent-blue-600"><span>' + name + '</span>';
+                    notifyList.appendChild(row2);
+                }
+            }
+        });
+    } catch(e) {
+        console.error("Failed loading users", e);
+    }
+}
+        window.updateQuestMultiLabel = function(prefix) {
+            var frame = document.getElementById('questBoardFrame');
+            if (!frame || !frame.contentDocument) return;
+            var list = frame.contentDocument.getElementById(prefix + 'List');
+            var label = frame.contentDocument.getElementById(prefix + 'ButtonLabel');
+            if (!list || !label) return;
+            var checked = list.querySelectorAll('input:checked');
+            if (checked.length === 0) {
+                label.textContent = 'Select users...';
+            } else if (checked.length === 1) {
+                label.textContent = checked[0].getAttribute('data-name');
+            } else {
+                label.textContent = checked.length + ' users selected';
+            }
+            if (!window._questStepGuard) {
+                window._questStepGuard = true;
+                try {
+                    window.onQuestStepChange(3);
+                } finally {
+                    window._questStepGuard = false;
+                }
+            }
+        }
+
+async function loadQuestFormDepartments() {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var select = frame.contentDocument.getElementById("questDeptSelect");
+    if (!select) return;
+    select.innerHTML = '<option value="">Select Department</option>';
+    try {
+        var parentWin = window;
+        var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "departments"));
+        snap.forEach(function(docSnap) {
+            var d = docSnap.data() || {};
+            var name = d.name || d.label || d.title || d.department || docSnap.id;
+            var opt = document.createElement("option");
+            opt.value = docSnap.id;
+            opt.textContent = name;
+            opt.setAttribute("data-name", name);
+            select.appendChild(opt);
+        });
+    } catch(e) {
+        console.error("Failed loading departments", e);
+    }
+}
+
+async function onQuestDeptChange() {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    var deptSelect = doc.getElementById("questDeptSelect");
+    var deptId = deptSelect ? deptSelect.value : "";
+    var deptName = deptSelect && deptSelect.options[deptSelect.selectedIndex] ? deptSelect.options[deptSelect.selectedIndex].getAttribute("data-name") || deptSelect.options[deptSelect.selectedIndex].textContent : "";
+    var posSelect = doc.getElementById("questPosSelect");
+    var assignSelect = doc.getElementById("questAssignSelect");
+    var notifySelect = doc.getElementById("questNotifySelect");
+    if (posSelect) posSelect.innerHTML = '<option value="">Select Position</option>';
+    if (assignSelect) assignSelect.innerHTML = '<option value="">Select User</option>';
+    if (notifySelect) notifySelect.innerHTML = '<option value="">Select User</option>';
+    if (!deptId) {
+        // Halaman quest-board standalone: reset daftar user ke semua
+        if (typeof window.questFilterUsersByDept === 'function') {
+            window.questFilterUsersByDept('', '');
+        }
+        return;
+    }
+
+    try {
+        var parentWin = window;
+        var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "positions"));
+        snap.forEach(function(docSnap) {
+            var d = docSnap.data() || {};
+            var deptValue = d.department || d.department_id || d.departmentId || d.department_name || d.departmentName || "";
+            if (String(deptValue).toLowerCase() === String(deptId).toLowerCase() || String(deptValue).toLowerCase() === String(deptName).toLowerCase()) {
+                var name = d.name || d.label || d.title || d.position || docSnap.id;
+                var opt = document.createElement("option");
+                opt.value = docSnap.id;
+                opt.textContent = name;
+                opt.setAttribute("data-name", name);
+                posSelect.appendChild(opt);
+            }
+        });
+    } catch(e) {
+        console.error("Failed loading positions", e);
+    }
+}
+
+async function onQuestPosChange() {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    var deptSelect = doc.getElementById("questDeptSelect");
+    var deptId = deptSelect ? deptSelect.value : "";
+    var deptName = deptSelect && deptSelect.options[deptSelect.selectedIndex] ? deptSelect.options[deptSelect.selectedIndex].getAttribute("data-name") || deptSelect.options[deptSelect.selectedIndex].textContent : "";
+    var posSelect = doc.getElementById("questPosSelect");
+    var posId = posSelect ? posSelect.value : "";
+    var posName = posSelect && posSelect.options[posSelect.selectedIndex] ? posSelect.options[posSelect.selectedIndex].getAttribute("data-name") || posSelect.options[posSelect.selectedIndex].textContent : "";
+    var assignSelect = doc.getElementById("questAssignSelect");
+    var notifySelect = doc.getElementById("questNotifySelect");
+    if (assignSelect) assignSelect.innerHTML = '<option value="">Select User</option>';
+    if (notifySelect) notifySelect.innerHTML = '<option value="">Select User</option>';
+    if (!deptId || !posId) return;
+
+    try {
+        var parentWin = window;
+        var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "users"));
+        snap.forEach(function(docSnap) {
+            var u = docSnap.data() || {};
+            var emp = u.employment || {};
+            var userDept = emp.department || emp.department_id || emp.departmentId || "";
+            var userPos = emp.position || emp.position_id || emp.positionId || "";
+            var deptMatch = String(userDept).toLowerCase() === String(deptId).toLowerCase() || String(userDept).toLowerCase() === String(deptName).toLowerCase();
+            var posMatch = String(userPos).toLowerCase() === String(posId).toLowerCase() || String(userPos).toLowerCase() === String(posName).toLowerCase();
+            var userStatus = String(u.status || '').toLowerCase();
+            if (deptMatch && posMatch && userStatus === 'active') {
+                var name = u.name || u.displayName || docSnap.id;
+                var opt1 = document.createElement("option");
+                opt1.value = docSnap.id;
+                opt1.textContent = name;
+                var opt2 = document.createElement("option");
+                opt2.value = docSnap.id;
+                opt2.textContent = name;
+                if (assignSelect) assignSelect.appendChild(opt1);
+                if (notifySelect) notifySelect.appendChild(opt2);
+            }
+        });
+    } catch(e) {
+        console.error("Failed loading users", e);
+    }
+}
+
+window.filterQuestDropdown = function(input, dropdownId) {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var container = frame.contentDocument.getElementById(dropdownId.replace('Dropdown', 'List'));
+    if (!container) return;
+    var filter = input.value.toLowerCase();
+    var items = container.children;
+    for (var i = 0; i < items.length; i++) {
+        var text = items[i].textContent.toLowerCase();
+        items[i].style.display = text.indexOf(filter) > -1 ? '' : 'none';
+    }
+}
+
+window.onQuestStepChange = function(step) {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    
+    // Input elements
+    var titleInput = doc.getElementById('questNameInput');
+    var deptSelect = doc.getElementById('questDeptSelect');
+    var posSelect = doc.getElementById('questPosSelect');
+    var assignList = doc.getElementById('questAssignList');
+    var notifyList = doc.getElementById('questNotifyList');
+    
+    // Step Wrappers/Buttons
+    var step2 = doc.getElementById('questStep2'); // Dept + Pos wrapper
+    var step3 = doc.getElementById('questStep3'); // Assign + Notify wrapper
+    var assignBtn = doc.getElementById('questAssignButtonLabel') ? doc.getElementById('questAssignButtonLabel').parentElement : null;
+    var notifyBtn = doc.getElementById('questNotifyButtonLabel') ? doc.getElementById('questNotifyButtonLabel').parentElement : null;
+    var step4 = doc.getElementById('questStep4'); // Point + Urgency wrapper
+    var descStep = doc.getElementById('questDescStep'); // Description step
+    var step5 = doc.getElementById('questStep5'); // Recurring wrapper
+
+    // Values
+    var title = titleInput ? titleInput.value.trim() : '';
+    var deptVal = deptSelect ? deptSelect.value : '';
+    var posVal = posSelect ? posSelect.value : '';
+    var hasAssign = assignList ? assignList.querySelector('input:checked') : null;
+    var hasNotify = notifyList ? notifyList.querySelector('input:checked') : null;
+
+    // Enable Description step if Title is filled
+    if (descStep) {
+        if (title.length > 0) {
+            descStep.style.opacity = '1';
+            descStep.style.pointerEvents = 'auto';
+        } else {
+            descStep.style.opacity = '0.4';
+            descStep.style.pointerEvents = 'none';
+        }
+    }
+
+    // STEP 2: Enable Department if Title is filled
+    if (title.length > 0) {
+        step2.style.opacity = '1';
+        step2.style.pointerEvents = 'auto';
+        if (deptSelect) deptSelect.disabled = false;
+        
+        // Enable Position ONLY if Department is selected
+        if (deptVal) {
+            if (posSelect) posSelect.disabled = false;
+        } else {
+            if (posSelect) {
+                posSelect.disabled = true;
+                posSelect.value = '';
+            }
+            window.resetQuestSteps(3);
+        }
+    } else {
+        step2.style.opacity = '0.4';
+        step2.style.pointerEvents = 'none';
+        if (deptSelect) { deptSelect.disabled = true; deptSelect.value = ''; }
+        if (posSelect) { posSelect.disabled = true; posSelect.value = ''; }
+        window.resetQuestSteps(3);
+    }
+    
+    // STEP 3: Assign & Notify logic
+    if (title.length > 0 && deptVal && posVal) {
+        step3.style.opacity = '1';
+        step3.style.pointerEvents = 'auto';
+        if (assignBtn) assignBtn.disabled = false;
+        
+        // Enable Notify ONLY if Assign is selected
+        if (hasAssign) {
+            if (notifyBtn) notifyBtn.disabled = false;
+        } else {
+            if (notifyBtn) notifyBtn.disabled = true;
+            // Clear notify selection
+            if (notifyList) {
+                var checkedNotify = notifyList.querySelectorAll('input:checked');
+                for(var i=0; i<checkedNotify.length; i++) checkedNotify[i].checked = false;
+                window.updateQuestMultiLabel('questNotify');
+            }
+            window.resetQuestSteps(4);
+        }
+    } else {
+        step3.style.opacity = '0.4';
+        step3.style.pointerEvents = 'none';
+        if (assignBtn) assignBtn.disabled = true;
+        if (notifyBtn) notifyBtn.disabled = true;
+        window.resetQuestSteps(3);
+    }
+    
+    // STEP 4: Point + Urgency
+    if (hasNotify) {
+        if (step4) {
+            step4.style.opacity = '1';
+            step4.style.pointerEvents = 'auto';
+        }
+    } else {
+        if (step4) {
+            step4.style.opacity = '0.4';
+            step4.style.pointerEvents = 'none';
+        }
+    }
+
+    // STEP 5: Recurring
+    if (title.length > 0 && deptVal && posVal && hasAssign) {
+        if (step5) {
+            step5.style.opacity = '1';
+            step5.style.pointerEvents = 'auto';
+        }
+    } else {
+        if (step5) {
+            step5.style.opacity = '0.4';
+            step5.style.pointerEvents = 'none';
+        }
+    }
+}
+
+window.resetQuestSteps = function(fromStep) {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    
+    if (fromStep <= 2) {
+        var deptSelect = doc.getElementById('questDeptSelect');
+        var posSelect = doc.getElementById('questPosSelect');
+        if (deptSelect) deptSelect.value = '';
+        if (posSelect) { posSelect.innerHTML = '<option value="">Select Position</option>'; }
+    }
+    if (fromStep <= 3) {
+        var assignList = doc.getElementById('questAssignList');
+        var notifyList = doc.getElementById('questNotifyList');
+        var assignLabel = doc.getElementById('questAssignButtonLabel');
+        var notifyLabel = doc.getElementById('questNotifyButtonLabel');
+        if (assignList) assignList.innerHTML = '';
+        if (notifyList) notifyList.innerHTML = '';
+        if (assignLabel) assignLabel.textContent = 'Select users...';
+        if (notifyLabel) notifyLabel.textContent = 'Select users...';
+        var assignDd = doc.getElementById('questAssignDropdown');
+        var notifyDd = doc.getElementById('questNotifyDropdown');
+        if (assignDd) assignDd.classList.add('hidden');
+        if (notifyDd) notifyDd.classList.add('hidden');
+    }
+    if (fromStep <= 4) {
+        var pointSelect = doc.getElementById('questPointSelect');
+        var urgencySelect = doc.getElementById('questUrgencySelect');
+        if (pointSelect) pointSelect.value = '1';
+        if (urgencySelect) urgencySelect.value = 'urgent';
+    }
+    if (fromStep <= 5) {
+        var step5 = doc.getElementById('questStep5');
+        if (step5) { step5.style.opacity = '0.4'; step5.style.pointerEvents = 'none'; }
+    }
+}
+
+
+// New Recurring Logic & Helper Functions
+window.questRecurState = {
+    unit: 'week',
+    interval: 1,
+    weekdays: [],
+    monthlyDates: []
+};
+
+window.questRecurUpdateInterval = function() {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    var input = doc.getElementById('questRecurIntervalInput');
+    if (!input) return;
+    var val = parseInt(input.value, 10);
+    if (isNaN(val) || val <= 0) val = 1;
+    if (val > 31) val = 31; // Max 31 for months
+    if (window.questRecurState.unit === 'week' && val > 7) val = 7; // Max 7 for weeks
+    input.value = val;
+    window.questRecurState.interval = val;
+
+    if (window.questRecurState.unit === 'week') {
+        if (window.questRecurState.weekdays.length > val) {
+            window.questRecurState.weekdays = window.questRecurState.weekdays.slice(0, val);
+        }
+        window.renderQuestRecurWeekdays();
+    } else if (window.questRecurState.unit === 'month') {
+        if (window.questRecurState.monthlyDates.length > val) {
+            window.questRecurState.monthlyDates = window.questRecurState.monthlyDates.slice(0, val);
+        }
+        window.populateQuestRecurMonthlyDates();
+    }
+}
+
+window.questRecurUpdateUnit = function() {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    var select = doc.getElementById('questRecurUnitSelect');
+    if (!select) return;
+    var unit = select.value || 'week';
+    window.questRecurState.unit = unit;
+
+    var weeklyContainer = doc.getElementById('questRecurWeeklyContainer');
+    var monthlyContainer = doc.getElementById('questRecurMonthlyContainer');
+    var everydayWrapper = doc.getElementById('questEverydayWrapper');
+
+    if (unit === 'week') {
+        if (weeklyContainer) weeklyContainer.classList.remove('hidden');
+        if (monthlyContainer) monthlyContainer.classList.add('hidden');
+        if (everydayWrapper) everydayWrapper.classList.remove('hidden');
+        window.renderQuestRecurWeekdays();
+    } else {
+        if (weeklyContainer) weeklyContainer.classList.add('hidden');
+        if (monthlyContainer) monthlyContainer.classList.remove('hidden');
+        if (everydayWrapper) everydayWrapper.classList.add('hidden');
+        window.populateQuestRecurMonthlyDates();
+    }
+}
+
+window.questRecurToggleWeekday = function(day) {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    var limit = parseInt(window.questRecurState.interval, 10) || 1;
+    if (limit > 7) limit = 7;
+    if (limit < 1) limit = 1;
+    
+    var idx = window.questRecurState.weekdays.indexOf(day);
+    if (idx !== -1) {
+        window.questRecurState.weekdays.splice(idx, 1);
+    } else {
+        // If limit reached, clear previous selections first
+        if (window.questRecurState.weekdays.length >= limit) {
+            window.questRecurState.weekdays = [];
+        }
+        window.questRecurState.weekdays.push(day);
+    }
+
+    window.renderQuestRecurWeekdays();
+}
+
+window.renderQuestRecurWeekdays = function() {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    var buttons = doc.querySelectorAll('.quest-recur-day');
+    var everydayBtn = doc.getElementById('questRecurEverydayBtn');
+    var everydayWrapper = doc.getElementById('questEverydayWrapper');
+    var limit = parseInt(window.questRecurState.interval, 10) || 1;
+    if (limit > 7) limit = 7;
+    if (limit < 1) limit = 1;
+
+    if (everydayWrapper) {
+        everydayWrapper.style.display = window.questRecurState.unit === 'week' ? '' : 'none';
+    }
+    
+    buttons.forEach(function(btn) {
+        var day = parseInt(btn.getAttribute('data-day'), 10);
+        var active = window.questRecurState.weekdays.indexOf(day) !== -1;
+        if (active) {
+            btn.classList.add('bg-blue-600', 'text-white');
+            btn.classList.remove('bg-gray-100', 'text-gray-700');
+        } else {
+            btn.classList.remove('bg-blue-600', 'text-white');
+            btn.classList.add('bg-gray-100', 'text-gray-700');
+        }
+    });
+
+    if (everydayBtn) {
+        if (window.questRecurState.weekdays.length === 7 && limit === 7) {
+            everydayBtn.classList.add('bg-blue-600', 'text-white');
+            everydayBtn.classList.remove('bg-white', 'text-slate-600');
+        } else {
+            everydayBtn.classList.remove('bg-blue-600', 'text-white');
+            everydayBtn.classList.add('bg-white', 'text-slate-600');
+        }
+    }
+}
+
+window.questRecurToggleEveryday = function() {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    var btn = doc.getElementById('questRecurEverydayBtn');
+    var intervalInput = doc.getElementById('questRecurIntervalInput');
+    var unitSelect = doc.getElementById('questRecurUnitSelect');
+
+    if (!btn || !intervalInput || !unitSelect) return;
+
+    var isEverydayActive = btn.classList.contains('bg-blue-600');
+
+    if (isEverydayActive) {
+        // Toggle off Everyday
+        window.questRecurState.weekdays = [];
+        window.questRecurState.interval = 1;
+        intervalInput.value = '1';
+        unitSelect.value = 'week';
+        window.questRecurState.unit = 'week';
+    } else {
+        // Toggle on Everyday
+        window.questRecurState.weekdays = [0, 1, 2, 3, 4, 5, 6];
+        window.questRecurState.interval = 7;
+        intervalInput.value = '7';
+        unitSelect.value = 'week';
+        window.questRecurState.unit = 'week';
+    }
+    window.renderQuestRecurWeekdays();
+    window.questRecurUpdateUnit(); // To hide monthly dates if it was month
+}
+
+window.populateQuestRecurMonthlyDates = function() {
+    var frame = document.getElementById('questBoardFrame');
+    if (!frame || !frame.contentDocument) return;
+    var doc = frame.contentDocument;
+    var list = doc.getElementById('questRecurMonthlyDatesList');
+    if (!list) return;
+
+    list.innerHTML = '';
+    var limit = parseInt(window.questRecurState.interval, 10) || 1;
+
+    for (var d = 1; d <= 31; d++) {
+        var btn = doc.createElement('button');
+        btn.type = 'button';
+        btn.className = 'p-1 rounded-md text-[10px] font-medium border transition cursor-pointer';
+        btn.setAttribute('data-date', d);
+        btn.textContent = d;
+        
+        var active = window.questRecurState.monthlyDates.indexOf(d) !== -1;
+        if (active) {
+            btn.className += ' bg-blue-600 text-white border-blue-600';
+        } else {
+            btn.className += ' bg-gray-100 text-gray-700 border-slate-100';
+        }
+        
+        btn.onclick = (function(val) {
+            return function() {
+                window.questRecurToggleMonthlyDate(val);
+            }
+        })(d);
+        list.appendChild(btn);
+    }
+}
+
+window.questRecurToggleMonthlyDate = function(date) {
+    var limit = parseInt(window.questRecurState.interval, 10) || 1;
+    
+    var idx = window.questRecurState.monthlyDates.indexOf(date);
+    if (idx !== -1) {
+        window.questRecurState.monthlyDates.splice(idx, 1);
+    } else {
+        if (window.questRecurState.monthlyDates.length >= limit) {
+            window.questRecurState.monthlyDates = [];
+        }
+        window.questRecurState.monthlyDates.push(date);
+    }
+    window.populateQuestRecurMonthlyDates();
 }
