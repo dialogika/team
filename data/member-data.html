@@ -805,10 +805,10 @@
                       >
                       <select id="memberFormProduk" class="form-select">
                         <option value="">Pilih produk</option>
-                        <option value="fisrt class">fisrt class</option>
-                        <option value="fistr kids">fistr kids</option>
-                        <option value="prive first class/kids">
-                          prive first class/kids
+                        <option value="first class">first class</option>
+                        <option value="first kids">first kids</option>
+                        <option value="private first class/kids">
+                          private first class/kids
                         </option>
                         <option value="master class">master class</option>
                         <option value="mc class">mc class</option>
@@ -819,14 +819,14 @@
                         <option value="private basic plus">
                           private basic plus
                         </option>
-                        <option value="private kids oplus">
-                          private kids oplus
+                        <option value="private kids plus">
+                          private kids plus
                         </option>
                         <option value="basic play">basic play</option>
                         <option value="private level 02">
                           private level 02
                         </option>
-                        <option value="private lvl 03">private lvl 03</option>
+                        <option value="private level 03">private level 03</option>
                         <option value="public speaking class">
                           public speaking class
                         </option>
@@ -1023,6 +1023,67 @@
       let sortKey = "created_at";
       let sortDir = "desc";
       let paymentFilter = "all";
+      let restoredPage = 1;
+
+      /* ── filter persistence (localStorage) ── */
+      const FILTER_STORAGE_KEY = "memberDataFilters_v1";
+
+      function saveFilters() {
+        try {
+          localStorage.setItem(
+            FILTER_STORAGE_KEY,
+            JSON.stringify({
+              search: searchInput?.value || "",
+              startDate: startDateInput?.value || "",
+              endDate: endDateInput?.value || "",
+              payment: paymentFilter,
+              pageSize: pageSize,
+              sortKey: sortKey,
+              sortDir: sortDir,
+              page: currentPage,
+            }),
+          );
+        } catch (e) {
+          /* abaikan jika localStorage tidak tersedia */
+        }
+      }
+
+      function restoreFilters() {
+        try {
+          const raw = localStorage.getItem(FILTER_STORAGE_KEY);
+          if (!raw) return;
+          const s = JSON.parse(raw);
+          if (searchInput && typeof s.search === "string") {
+            searchInput.value = s.search;
+          }
+          if (startDateInput && typeof s.startDate === "string") {
+            startDateInput.value = s.startDate;
+          }
+          if (endDateInput && typeof s.endDate === "string") {
+            endDateInput.value = s.endDate;
+          }
+          if (s.payment === "full" || s.payment === "dp" || s.payment === "all") {
+            paymentFilter = s.payment;
+            if (paymentFilterSelect) paymentFilterSelect.value = s.payment;
+          }
+          if (s.pageSize && !isNaN(parseInt(s.pageSize, 10))) {
+            pageSize = parseInt(s.pageSize, 10);
+            if (pageSizeSelect) pageSizeSelect.value = String(pageSize);
+          }
+          if (
+            typeof s.sortKey === "string" &&
+            COLUMNS.some((c) => c.key === s.sortKey)
+          ) {
+            sortKey = s.sortKey;
+          }
+          if (s.sortDir === "asc" || s.sortDir === "desc") sortDir = s.sortDir;
+          if (s.page && !isNaN(parseInt(s.page, 10))) {
+            restoredPage = parseInt(s.page, 10);
+          }
+        } catch (e) {
+          /* abaikan jika data tersimpan rusak */
+        }
+      }
 
       const MONTHS = [
         "Jan",
@@ -1668,6 +1729,11 @@
           summaryText.textContent = `Memuat ${allMembers.length} member dari Firebase`;
           loadingState.style.display = "none";
           applyFilters();
+          if (restoredPage > 1) {
+            currentPage = restoredPage;
+            restoredPage = 1;
+            renderTable();
+          }
         } catch (e) {
           console.error("Gagal memuat data_member:", e);
           loadingState.style.display = "none";
@@ -1808,22 +1874,34 @@
       }
 
       /* ── event bindings ── */
-      searchInput?.addEventListener("input", () => applyFilters());
-      startDateInput?.addEventListener("change", applyFilters);
-      endDateInput?.addEventListener("change", applyFilters);
+      searchInput?.addEventListener("input", () => {
+        applyFilters();
+        saveFilters();
+      });
+      startDateInput?.addEventListener("change", () => {
+        applyFilters();
+        saveFilters();
+      });
+      endDateInput?.addEventListener("change", () => {
+        applyFilters();
+        saveFilters();
+      });
       btnResetDate?.addEventListener("click", () => {
         startDateInput.value = "";
         endDateInput.value = "";
         applyFilters();
+        saveFilters();
       });
       pageSizeSelect?.addEventListener("change", () => {
         pageSize = parseInt(pageSizeSelect.value, 10);
         currentPage = 1;
         renderTable();
+        saveFilters();
       });
       paymentFilterSelect?.addEventListener("change", () => {
         paymentFilter = paymentFilterSelect.value;
         applyFilters();
+        saveFilters();
       });
       btnAddMember?.addEventListener("click", openAddMemberForm);
       statCards?.addEventListener("click", (e) => {
@@ -1838,6 +1916,7 @@
           paymentFilterSelect.value = f;
         }
         applyFilters();
+        saveFilters();
       });
       thead?.addEventListener("click", (e) => {
         const th = e.target.closest("th[data-sort-key]");
@@ -1849,12 +1928,14 @@
           sortDir = "asc";
         }
         applyFilters();
+        saveFilters();
       });
       pgnControls?.addEventListener("click", (e) => {
         const btn = e.target.closest("button[data-page]");
         if (!btn || btn.disabled) return;
         currentPage = parseInt(btn.dataset.page, 10);
         renderTable();
+        saveFilters();
       });
       memberFormBuktiFile?.addEventListener("change", () => {
         const file = memberFormBuktiFile.files?.[0] || null;
@@ -1889,6 +1970,7 @@
       });
       memberFormSubmitBtn?.addEventListener("click", saveMemberForm);
 
+      restoreFilters();
       renderHead();
       loadMembers();
     </script>
