@@ -2434,7 +2434,12 @@
             let list = classesState.slice();
             if (currentFilters.search) {
                 const q = currentFilters.search.toLowerCase();
-                list = list.filter(c => (c.name || "").toLowerCase().includes(q) || (c.location || "").toLowerCase().includes(q));
+                list = list.filter(c => {
+                    const nameHit = (c.name || "").toLowerCase().includes(q);
+                    const locationHit = (c.location || "").toLowerCase().includes(q);
+                    const mentorHit = Array.isArray(c.mentors) && c.mentors.some(m => (m.name || "").toLowerCase().includes(q));
+                    return nameHit || locationHit || mentorHit;
+                });
             }
             if (currentFilters.status) {
                 list = list.filter(c => (c.status || "") === currentFilters.status);

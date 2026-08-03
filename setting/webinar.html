@@ -441,11 +441,18 @@
                     <small class="text-muted">Kelola section webinar secara dinamis. Hanya satu webinar yang boleh aktif
                         dalam satu waktu.</small>
                 </div>
-                <button class="btn btn-dark rounded-pill px-4 d-flex align-items-center gap-2"
-                    onclick="openAddModal()">
-                    <i class="bi bi-plus-lg"></i>
-                    <span>Tambah Webinar</span>
-                </button>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-dark rounded-pill px-4 d-flex align-items-center gap-2"
+                        onclick="openMemberModal()">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Daftar Member</span>
+                    </button>
+                    <button class="btn btn-dark rounded-pill px-4 d-flex align-items-center gap-2"
+                        onclick="openAddModal()">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Tambah Webinar</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Stats Cards -->
@@ -627,6 +634,69 @@
         </div>
     </div>
 
+    <!-- MODAL: Daftar Member Webinar -->
+    <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title">Daftar Member Webinar</h5>
+                        <small class="text-muted">Data pendaftar yang mengisi form join grup WhatsApp.</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Search -->
+                    <div class="position-relative mb-3">
+                        <i class="bi bi-search position-absolute" style="left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;"></i>
+                        <input type="text" id="memberSearchInput" class="form-control ps-5"
+                            placeholder="Cari nama, domisili, profesi, nomor WhatsApp, sumber tahu, riwayat webinar..."
+                            style="border-radius:12px;padding-top:10px;padding-bottom:10px;">
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                        <div class="text-muted" style="font-size:0.75rem;" id="memberInfoText">Memuat data...</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="memberPrevBtn" disabled>
+                                <i class="bi bi-chevron-left me-1"></i>Sebelumnya
+                            </button>
+                            <span class="badge bg-light text-dark border" id="memberPageLabel" style="font-size:0.7rem;font-weight:600;">Halaman 1</span>
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="memberNextBtn" disabled>
+                                Berikutnya<i class="bi bi-chevron-right ms-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="memberTableWrap" style="overflow-x:auto;border:1px solid #e2e8f0;border-radius:14px;">
+                        <table class="table table-hover align-middle mb-0" style="min-width:880px;font-size:0.78rem;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="padding:10px 12px;">Nama</th>
+                                    <th>WhatsApp</th>
+                                    <th>Domisili</th>
+                                    <th>Profesi</th>
+                                    <th>Sumber Tahu</th>
+                                    <th>Pernah Ikut</th>
+                                    <th>Webinar</th>
+                                    <th>Tanggal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="memberTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div id="memberEmpty" class="text-center text-muted py-5" style="display:none;">
+                        <i class="bi bi-inbox display-5 d-block mb-2 text-secondary opacity-50"></i>
+                        <div id="memberEmptyText">Belum ada data member.</div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-between align-items-center flex-wrap">
+                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" id="memberLoadMoreBtn" style="display:none;">
+                        <i class="bi bi-arrow-down-circle me-1"></i>Muat Lebih Banyak
+                    </button>
+                    <span class="text-muted" style="font-size:0.7rem;" id="memberLoadHint"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
@@ -639,7 +709,7 @@
         import { renderSidebar } from "../element/sidebar.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDoc, getDocs, serverTimestamp, onSnapshot, orderBy, doc, deleteDoc, updateDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDoc, getDocs, serverTimestamp, onSnapshot, orderBy, limit, startAfter, doc, deleteDoc, updateDoc, setDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         // ─── Firebase Config ───
@@ -1158,6 +1228,227 @@
             const div = document.createElement('div');
             div.textContent = str;
             return div.innerHTML;
+        }
+
+        // ─── Daftar Member Webinar (member_webinar) ───
+        const MEMBER_PAGE_SIZE = 25;
+        let memberModalInstance = null;
+        let memberSearchTimer = null;
+        const memberState = {
+            buffer: [],        // docs yang sudah dimuat (semua halaman)
+            pageIndex: 0,      // halaman aktif saat mode browse
+            lastVisible: null, // cursor Firestore (DocumentSnapshot terakhir)
+            hasMore: true,
+            loading: false,
+            search: ""
+        };
+
+        function memberMatchesQuery(doc, q) {
+            const needle = q.toLowerCase();
+            if (!needle) return true;
+            const textFields = [doc.namaLengkap, doc.domisili, doc.profesi, doc.pernahIkutWebinar, doc.webinarName]
+                .map((v) => String(v || "").toLowerCase());
+            if (textFields.some((h) => h.includes(needle))) return true;
+            const sumber = Array.isArray(doc.sumberTahu) ? doc.sumberTahu : [];
+            if (sumber.some((s) => String(s || "").toLowerCase().includes(needle))) return true;
+            // Pencarian nomor WhatsApp: cocokkan berdasarkan digit saja
+            const waDigits = String(doc.nomorWhatsapp || "").replace(/\D/g, "");
+            const qDigits = needle.replace(/\D/g, "");
+            if (qDigits && waDigits.includes(qDigits)) return true;
+            return false;
+        }
+
+        function memberVisibleDocs() {
+            if (memberState.search) {
+                return memberState.buffer.filter((d) => memberMatchesQuery(d, memberState.search));
+            }
+            const start = memberState.pageIndex * MEMBER_PAGE_SIZE;
+            return memberState.buffer.slice(start, start + MEMBER_PAGE_SIZE);
+        }
+
+        function memberFormatDate(ts) {
+            if (!ts) return "-";
+            let d = ts;
+            if (d && typeof d.toDate === "function") d = d.toDate();
+            if (d instanceof Date && !isNaN(d.getTime())) {
+                return d.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+            }
+            return "-";
+        }
+
+        function renderMemberModal() {
+            const body = document.getElementById("memberTableBody");
+            const wrap = document.getElementById("memberTableWrap");
+            const empty = document.getElementById("memberEmpty");
+            const emptyText = document.getElementById("memberEmptyText");
+            const info = document.getElementById("memberInfoText");
+            const pageLabel = document.getElementById("memberPageLabel");
+            const prevBtn = document.getElementById("memberPrevBtn");
+            const nextBtn = document.getElementById("memberNextBtn");
+            const loadMoreBtn = document.getElementById("memberLoadMoreBtn");
+            const loadHint = document.getElementById("memberLoadHint");
+            const searching = !!memberState.search;
+
+            const visible = memberVisibleDocs();
+
+            if (visible.length) {
+                body.innerHTML = visible.map((m) => {
+                    const sumber = Array.isArray(m.sumberTahu) && m.sumberTahu.length
+                        ? m.sumberTahu.map((s) => `<span class="badge rounded-pill text-bg-light border me-1" style="font-weight:500;color:#334155;">${escapeHtml(s)}</span>`).join("")
+                        : '<span class="text-muted">-</span>';
+                    const profesiBadge = m.profesi
+                        ? `<span class="badge rounded-pill text-bg-${m.profesi === "Pelajar" ? "info" : m.profesi === "Mahasiswa" ? "primary" : "success"}" style="font-weight:600;">${escapeHtml(m.profesi)}</span>`
+                        : '<span class="text-muted">-</span>';
+                    const pernahBadge = m.pernahIkutWebinar
+                        ? (String(m.pernahIkutWebinar).toLowerCase().includes("sudah")
+                            ? '<span class="badge rounded-pill text-bg-warning" style="font-weight:600;">Sudah pernah</span>'
+                            : '<span class="badge rounded-pill text-bg-secondary" style="font-weight:600;">Pertama kali</span>')
+                        : '<span class="text-muted">-</span>';
+                    const waDigits = String(m.nomorWhatsapp || "").replace(/\D/g, "");
+                    return `<tr>
+                        <td class="fw-semibold" style="padding:10px 12px;">${escapeHtml(m.namaLengkap) || "-"}</td>
+                        <td>${waDigits ? `<a href="https://wa.me/${waDigits}" target="_blank" rel="noopener noreferrer" class="text-decoration-none">${escapeHtml(m.nomorWhatsapp)}</a>` : '<span class="text-muted">-</span>'}</td>
+                        <td>${escapeHtml(m.domisili) || '<span class="text-muted">-</span>'}</td>
+                        <td>${profesiBadge}</td>
+                        <td style="max-width:230px;">${sumber}</td>
+                        <td>${pernahBadge}</td>
+                        <td style="max-width:160px;">${escapeHtml(m.webinarName) || '<span class="text-muted">-</span>'}</td>
+                        <td class="text-muted" style="white-space:nowrap;">${memberFormatDate(m.createdAt)}</td>
+                    </tr>`;
+                }).join("");
+                if (wrap) wrap.style.display = "";
+                if (empty) empty.style.display = "none";
+            } else {
+                body.innerHTML = "";
+                if (wrap) wrap.style.display = "none";
+                if (empty) {
+                    empty.style.display = "block";
+                    if (emptyText) {
+                        emptyText.textContent = memberState.search
+                            ? 'Tidak ada hasil yang cocok pada data yang sudah dimuat. Klik "Muat Lebih Banyak" untuk mencari pada data berikutnya.'
+                            : "Belum ada data member webinar.";
+                    }
+                }
+            }
+
+            const totalLoaded = memberState.buffer.length;
+            const maxPage = Math.max(0, Math.ceil(totalLoaded / MEMBER_PAGE_SIZE) - 1);
+
+            if (memberState.loading) {
+                info.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Memuat data...';
+                if (prevBtn) prevBtn.disabled = true;
+                if (nextBtn) nextBtn.disabled = true;
+                if (loadMoreBtn) loadMoreBtn.disabled = true;
+                if (pageLabel) pageLabel.textContent = "Halaman " + (memberState.pageIndex + 1);
+                if (loadHint) loadHint.textContent = "";
+                return;
+            }
+
+            if (searching) {
+                info.textContent = `${visible.length} hasil dari ${totalLoaded} data yang dimuat`;
+                if (prevBtn) prevBtn.style.display = "none";
+                if (nextBtn) nextBtn.style.display = "none";
+                if (pageLabel) pageLabel.style.display = "none";
+            } else {
+                info.textContent = `Menampilkan ${visible.length} data — halaman ${memberState.pageIndex + 1}`;
+                if (prevBtn) { prevBtn.style.display = ""; prevBtn.disabled = memberState.pageIndex === 0; }
+                if (nextBtn) { nextBtn.style.display = ""; nextBtn.disabled = !memberState.hasMore && memberState.pageIndex >= maxPage; }
+                if (pageLabel) { pageLabel.style.display = ""; pageLabel.textContent = `Halaman ${memberState.pageIndex + 1}`; }
+            }
+
+            if (loadMoreBtn) {
+                loadMoreBtn.style.display = memberState.hasMore ? "" : "none";
+                loadMoreBtn.disabled = false;
+            }
+            if (loadHint) {
+                loadHint.textContent = memberState.hasMore
+                    ? "Klik untuk memuat 25 data berikutnya"
+                    : (totalLoaded ? `Semua data telah dimuat (${totalLoaded})` : "");
+            }
+        }
+
+        async function memberLoadNextPage() {
+            if (memberState.loading || !memberState.hasMore) return;
+            memberState.loading = true;
+            renderMemberModal();
+            try {
+                let q = query(
+                    collection(db, "member_webinar"),
+                    orderBy("createdAt", "desc"),
+                    orderBy("__name__", "desc"),
+                    limit(MEMBER_PAGE_SIZE)
+                );
+                if (memberState.lastVisible) q = query(q, startAfter(memberState.lastVisible));
+                const snap = await getDocs(q);
+                const docs = [];
+                snap.forEach((ds) => docs.push({ id: ds.id, ...ds.data() }));
+                if (docs.length < MEMBER_PAGE_SIZE) memberState.hasMore = false;
+                memberState.buffer = memberState.buffer.concat(docs);
+                if (docs.length) memberState.lastVisible = snap.docs[snap.docs.length - 1];
+            } catch (e) {
+                console.error("Gagal memuat member_webinar:", e);
+                showToast("Gagal memuat data member.", "error");
+            } finally {
+                memberState.loading = false;
+                renderMemberModal();
+            }
+        }
+
+        window.openMemberModal = function () {
+            const modalEl = document.getElementById("memberModal");
+            if (!modalEl) return;
+            memberState.buffer = [];
+            memberState.pageIndex = 0;
+            memberState.lastVisible = null;
+            memberState.hasMore = true;
+            memberState.loading = false;
+            memberState.search = "";
+            const searchInput = document.getElementById("memberSearchInput");
+            if (searchInput) searchInput.value = "";
+            if (!memberModalInstance) memberModalInstance = new bootstrap.Modal(modalEl);
+            memberModalInstance.show();
+            renderMemberModal();
+            memberLoadNextPage();
+        };
+
+        // Event bindings (sekali saja)
+        const memberSearchInput = document.getElementById("memberSearchInput");
+        if (memberSearchInput) {
+            memberSearchInput.addEventListener("input", () => {
+                clearTimeout(memberSearchTimer);
+                memberSearchTimer = setTimeout(() => {
+                    memberState.search = memberSearchInput.value.trim();
+                    memberState.pageIndex = 0;
+                    renderMemberModal();
+                }, 250);
+            });
+        }
+        const memberPrevBtn = document.getElementById("memberPrevBtn");
+        const memberNextBtn = document.getElementById("memberNextBtn");
+        const memberLoadMoreBtn = document.getElementById("memberLoadMoreBtn");
+        if (memberPrevBtn) {
+            memberPrevBtn.addEventListener("click", () => {
+                if (memberState.pageIndex > 0) {
+                    memberState.pageIndex--;
+                    renderMemberModal();
+                }
+            });
+        }
+        if (memberNextBtn) {
+            memberNextBtn.addEventListener("click", async () => {
+                const maxPage = Math.max(0, Math.ceil(memberState.buffer.length / MEMBER_PAGE_SIZE) - 1);
+                if (memberState.pageIndex < maxPage) {
+                    memberState.pageIndex++;
+                    renderMemberModal();
+                } else if (memberState.hasMore) {
+                    await memberLoadNextPage();
+                    memberState.pageIndex = Math.max(0, Math.ceil(memberState.buffer.length / MEMBER_PAGE_SIZE) - 1);
+                    renderMemberModal();
+                }
+            });
+        }
+        if (memberLoadMoreBtn) {
+            memberLoadMoreBtn.addEventListener("click", () => memberLoadNextPage());
         }
 
         // ─── Logout ───
