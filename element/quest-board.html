@@ -1367,7 +1367,7 @@
 
             var deadlineTime = data.deadline_time || '—';
             var priority = data.priority || 'normal';
-            var points = typeof data.points === 'number' ? data.points : 0;
+            var points = typeof data.points === 'number' ? data.points : (data.points ? Number(data.points) || 0 : 0);
             var hasRawDesc = data.description && String(data.description).replace(/<[^>]*>/g, '').trim().length > 0;
             var descHtml = hasRawDesc ? data.description : '<em class="text-gray-400">No description</em>';
             var departmentNames = [];
@@ -1929,7 +1929,7 @@
                         var task = questTasksById[id];
                         if (!task) return;
                         var taskTitle = task.title || 'Untitled';
-                        var taskPoints = typeof task.points === 'number' ? task.points : 0;
+                        var taskPoints = typeof task.points === 'number' ? task.points : (task.points ? Number(task.points) || 0 : 0);
                         var assignList = [];
                         if (task.assign_to) {
                             if (Array.isArray(task.assign_to)) {
@@ -2117,7 +2117,7 @@
                 checkedIds.forEach(function(id, index) {
                     var task = questTasksById[id];
                     if (!task) return;
-                    var points = typeof task.points === 'number' ? task.points : 0;
+                    var points = typeof task.points === 'number' ? task.points : (task.points ? Number(task.points) || 0 : 0);
                     totalPoints += points;
                     var detail = '';
                     if (detailInputs[index]) {
