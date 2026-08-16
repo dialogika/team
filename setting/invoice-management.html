@@ -370,7 +370,15 @@
                         <div class="flex items-center justify-between mb-6">
                             <div>
                                 <h2 class="text-xl md:text-2xl font-extrabold text-slate-800">Daftar Invoice</h2>
-                                <p class="text-slate-500 text-sm">Kelola invoice yang sudah dibuat.</p>
+                                <p class="text-slate-500 text-sm">Kelola invoice yang sudah dibuat. Termasuk invoice
+                                    hasil deal chat WhatsApp (Keyla).</p>
+                            </div>
+                            <div class="flex flex-col items-end gap-1">
+                                <button type="button" id="btnSyncWaLeads"
+                                    class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 transition-all text-xs shadow-sm">
+                                    <i class="fa-solid fa-arrows-rotate text-emerald-500"></i> Sync WA Leads
+                                </button>
+                                <p id="syncWaLeadsStatus" class="text-[10px] text-slate-400"></p>
                             </div>
                         </div>
                         <div
@@ -1357,6 +1365,75 @@
             return "INV-" + yy + mm + dd + "-" + random;
         }
 
+        const WA_LEADS_SYNCABLE_STATUSES = ["invoice", "closing"];
+
+        async function syncWaLeadsToInvoices() {
+            if (!(window.dlgDb && window.dlgCollection && window.dlgGetDocs && window.dlgDoc && window.dlgGetDoc && window.dlgSetDoc && window.dlgUpdateDoc)) {
+                return { synced: 0, error: null };
+            }
+            const statusEl = document.getElementById("syncWaLeadsStatus");
+            try {
+                if (statusEl) statusEl.textContent = "Menyinkronkan dari WA Leads...";
+                const snap = await window.dlgGetDocs(window.dlgCollection(window.dlgDb, "wa_leads"));
+                let synced = 0;
+                for (const leadSnap of snap.docs) {
+                    const lead = leadSnap.data() || {};
+                    const statusKey = String(lead.status || "").trim().toLowerCase();
+                    const nominal = Number(lead.nominal_deal) || 0;
+                    if (!WA_LEADS_SYNCABLE_STATUSES.includes(statusKey) || nominal <= 0) {
+                        continue;
+                    }
+                    const invoiceId = "wa_" + leadSnap.id;
+                    const invoiceRef = window.dlgDoc(window.dlgDb, "invoices", invoiceId);
+                    const leadName = lead.nama || "";
+                    const className = lead.offering || lead.program || "";
+                    const dynamicPayload = {
+                        leadName: leadName,
+                        className: className,
+                        location: lead.alamat || "",
+                        leadPhone: lead.whatsapp || "",
+                        basePrice: nominal,
+                        source: "wa_leads",
+                        sourceWaLeadId: leadSnap.id,
+                        sourceStatus: lead.status || "",
+                        notes: lead.notes || "",
+                        updatedAtMs: Date.now()
+                    };
+                    const existingSnap = await window.dlgGetDoc(invoiceRef);
+                    if (existingSnap.exists()) {
+                        await window.dlgUpdateDoc(invoiceRef, dynamicPayload);
+                    } else {
+                        const createdAt = lead.date_in || lead.date_close || "";
+                        const createdAtMs = createdAt ? new Date(createdAt).getTime() : Date.now();
+                        await window.dlgSetDoc(invoiceRef, Object.assign({}, dynamicPayload, {
+                            batchLabel: "",
+                            classType: "",
+                            seatsLeft: 0,
+                            deadlineMinutes: 0,
+                            dpPercent: 0,
+                            dpAmount: 0,
+                            productId: "",
+                            productName: "",
+                            productMaterials: [],
+                            productFeatures: [],
+                            productSpecifications: [],
+                            invoiceNumber: generateInvoiceNumber(),
+                            createdAtMs: isNaN(createdAtMs) ? Date.now() : createdAtMs
+                        }));
+                    }
+                    synced++;
+                }
+                if (statusEl) {
+                    statusEl.textContent = synced ? ("Tersinkron " + synced + " invoice dari WA Leads.") : "Tidak ada WA Leads baru untuk disinkron.";
+                    setTimeout(function () { statusEl.textContent = ""; }, 4000);
+                }
+                return { synced: synced, error: null };
+            } catch (e) {
+                if (statusEl) statusEl.textContent = "Gagal sync WA Leads: " + (e && e.message ? e.message : e);
+                return { synced: 0, error: e };
+            }
+        }
+
         function formatCurrencyId(amount) {
             const n = typeof amount === "number" ? amount : parseInt(amount, 10) || 0;
             return n.toLocaleString("id-ID");
@@ -1640,9 +1717,12 @@
                 } else {
                     expiryHtml = '<span class="inv-expiry font-mono text-[11px] font-bold text-emerald-600" data-expiry-ms="' + expiryMeta.expiryMs + '">' + formatRemainingMs(expiryMeta.remainingMs) + "</span>";
                 }
+                const waBadge = inv.source === "wa_leads"
+                    ? ' <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md align-middle" title="Dari WA Leads (' + (inv.sourceStatus || "-") + ')">WA</span>'
+                    : "";
                 const tr = document.createElement("tr");
                 tr.innerHTML = [
-                    '<td class="px-3 py-2 font-semibold text-slate-800">' + (inv.leadName || "-") + "</td>",
+                    '<td class="px-3 py-2 font-semibold text-slate-800">' + (inv.leadName || "-") + waBadge + "</td>",
                     '<td class="px-3 py-2 text-slate-700">' + (inv.className || "-") + "</td>",
                     '<td class="px-3 py-2 font-mono text-[11px] text-slate-600">' + (invoiceNumber || "-") + "</td>",
                     '<td class="px-3 py-2 text-slate-500">' + createdAtLabel + "</td>",
@@ -2057,7 +2137,10 @@
                         paymentType: d.paymentType || "",
                         finalBasePrice: typeof d.finalBasePrice === "number" ? d.finalBasePrice : 0,
                         transferProofUrl: d.transferProofUrl || "",
-                        verificationStatus: d.verificationStatus || "legit"
+                        verificationStatus: d.verificationStatus || "legit",
+                        source: d.source || "",
+                        sourceWaLeadId: d.sourceWaLeadId || "",
+                        sourceStatus: d.sourceStatus || ""
                     });
                 });
                 currentInvoices = list;
@@ -3372,6 +3455,16 @@
                 }
             });
 
+            const btnSyncWaLeads = document.getElementById("btnSyncWaLeads");
+            if (btnSyncWaLeads) {
+                btnSyncWaLeads.addEventListener("click", async function () {
+                    btnSyncWaLeads.disabled = true;
+                    await syncWaLeadsToInvoices();
+                    await loadInvoicesFromFirestore();
+                    btnSyncWaLeads.disabled = false;
+                });
+            }
+
             const invoiceTableBody = document.getElementById("invoiceTableBody");
             if (invoiceTableBody) {
                 invoiceTableBody.addEventListener("click", async function (e) {
@@ -3450,7 +3543,10 @@
             renderBanks();
             renderReferrals();
             attachEvents();
-            loadInvoicesFromFirestore();
+            (async function () {
+                await syncWaLeadsToInvoices();
+                await loadInvoicesFromFirestore();
+            })();
             loadClassAvailabilityStats();
 
             (async function () {
