@@ -1261,9 +1261,27 @@
               const data = userDocSnap.data();
               const role = data.access?.role_id;
               const employment = data.employment || {};
-              window.teamMemberDepartment = employment.department || "";
-              loadDailyReportApprovals();
-              window.teamMemberDepartment = employment.department || "";
+              const rawDepts =
+                employment.departments ||
+                employment.department ||
+                data.departments ||
+                data.department ||
+                [];
+              let userDepts = [];
+              if (Array.isArray(rawDepts)) {
+                userDepts = rawDepts
+                  .map((d) => String(d).toLowerCase().trim())
+                  .filter(Boolean);
+              } else if (typeof rawDepts === "string" && rawDepts.trim()) {
+                userDepts = [rawDepts.toLowerCase().trim()];
+              }
+              window.teamMemberDepartments = userDepts;
+              window.teamMemberDepartment = userDepts[0] || "";
+              window.teamMemberPosition =
+                employment.position ||
+                data.position ||
+                localData?.position ||
+                "";
               loadDailyReportApprovals();
               listenToHomeAnnouncements(); // <-- tambahkan baris ini
               if (role) {
@@ -2514,34 +2532,92 @@
             }
 
             const reports = [];
-            const userDept = (window.teamMemberDepartment || "")
+            const localData = JSON.parse(
+              localStorage.getItem("userData") || "null",
+            );
+            const userPosition = (
+              window.teamMemberPosition ||
+              localData?.position ||
+              ""
+            )
               .toLowerCase()
               .trim();
 
+            const isHappyHead =
+              userPosition === "head of department of happy team" ||
+              userPosition.includes("head of department of happy") ||
+              (userPosition.includes("happy team") &&
+                userPosition.includes("head"));
+
+            // Hanya Head of Department of Happy Team yang memiliki wewenang untuk menyetujui laporan
+            if (!isHappyHead) {
+              list.innerHTML =
+                '<p class="text-muted small mb-0">Tidak ada laporan perlu persetujuan.</p>';
+              badge.textContent = "0";
+              return;
+            }
+
+            // Ambil array departemen user (Happy, Branding)
+            let userDepts =
+              Array.isArray(window.teamMemberDepartments) &&
+              window.teamMemberDepartments.length > 0
+                ? window.teamMemberDepartments
+                : [];
+            if (userDepts.length === 0) {
+              const rawDeptFallback = (window.teamMemberDepartment || "")
+                .toLowerCase()
+                .trim();
+              if (rawDeptFallback) userDepts.push(rawDeptFallback);
+              if (!userDepts.includes("happy")) userDepts.push("happy");
+              if (!userDepts.includes("branding")) userDepts.push("branding");
+            }
+
             snapshot.forEach((docSnap) => {
               const data = docSnap.data();
-              // Determine report department(s) - supports both string and array formats
-              let reportDept = "";
-              if (Array.isArray(data.departments) && data.departments.length > 0) {
-                // New format: departments is an array of strings
-                // Check if the user's department exists in the array
-                const deptArray = data.departments.map(d => String(d).toLowerCase().trim());
-                if (userDept && deptArray.includes(userDept)) {
-                  reportDept = userDept;
-                } else {
-                  reportDept = deptArray[0] || "";
-                }
+              // Ambil semua departemen dari laporan (format array maupun string)
+              let reportDepts = [];
+              if (
+                Array.isArray(data.departments) &&
+                data.departments.length > 0
+              ) {
+                reportDepts = data.departments
+                  .map((d) => String(d).toLowerCase().trim())
+                  .filter(Boolean);
               } else {
-                reportDept = (
+                const singleDept = (
                   data.department ||
                   data.internship_department ||
                   data.team_department ||
                   ""
-                );
-                reportDept = String(reportDept).toLowerCase().trim();
+                )
+                  .toLowerCase()
+                  .trim();
+                if (singleDept) reportDepts.push(singleDept);
               }
 
-              if (!userDept || !reportDept || reportDept !== userDept) {
+              // Cek kecocokan antara departemen laporan dengan departemen yang dipegang Head (Happy & Branding)
+              const hasMatchingDept = reportDepts.some((rd) =>
+                userDepts.some(
+                  (ud) =>
+                    ud === rd ||
+                    (ud.includes("branding") && rd.includes("branding")) ||
+                    (ud.includes("happy") && rd.includes("happy")),
+                ),
+              );
+
+              // Cek alokasi eksplisit ke user / departemen ini
+              const isAllocatedToUser =
+                (data.allocated_to &&
+                  (data.allocated_to === currentUser?.uid ||
+                    data.allocated_to === currentUser?.email)) ||
+                (data.allocated_to_email &&
+                  data.allocated_to_email === currentUser?.email) ||
+                (data.allocated_department &&
+                  userDepts.includes(
+                    String(data.allocated_department).toLowerCase().trim(),
+                  ));
+
+              if (!hasMatchingDept && !isAllocatedToUser) {
                 return;
               }
 
@@ -2613,7 +2689,7 @@
           data.name || "-";
         document.getElementById("modalReportNameDetail").textContent =
           data.name || "-";
-        var reportDeptName = data.department || (Array.isArray(data.departments) && data.departments.length > 0 ? data.departments[0] : '-');
+        var reportDeptName = data.department || (Array.isArray(data.departments) && data.departments.length > 0 ? data.departments.join(', ') : '-');
         var reportPosition = data.position || '';
         document.getElementById("modalReportPosition").textContent =
           reportPosition || "-";
