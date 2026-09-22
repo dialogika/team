@@ -21,6 +21,7 @@
       rel="stylesheet"
     />
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
       body {
         font-family: "Plus Jakarta Sans", sans-serif;
@@ -470,6 +471,15 @@
                     <option value="approved">Approved</option>
                     <option value="rejected">Rejected</option>
                   </select>
+                  <button
+                    id="btnExportExcelPermit"
+                    type="button"
+                    class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition whitespace-nowrap"
+                    title="Export Data Izin ke Excel"
+                  >
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    <span>Export Excel</span>
+                  </button>
                 </div>
               </div>
 
@@ -536,6 +546,15 @@
                       class="pl-10 pr-4 py-2 text-sm rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-64"
                     />
                   </div>
+                  <button
+                    id="btnExportExcelReimburse"
+                    type="button"
+                    class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-sm transition whitespace-nowrap"
+                    title="Export Data Reimburse ke Excel"
+                  >
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    <span>Export Excel</span>
+                  </button>
                 </div>
               </div>
 
@@ -862,6 +881,186 @@
                 class="bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-semibold"
               >
                 Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Export Excel Modal -->
+        <div
+          id="exportExcelModal"
+          class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 hidden"
+        >
+          <div
+            class="bg-white rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl border border-slate-100 transform transition-transform duration-200 modal-panel"
+            role="dialog"
+            aria-modal="true"
+          >
+            <div
+              class="flex justify-between items-start border-b border-slate-100 pb-3"
+            >
+              <div class="flex items-center gap-2.5">
+                <div
+                  class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold"
+                >
+                  <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-slate-900">
+                    Export ke Excel
+                  </h3>
+                  <p class="text-xs text-slate-500">
+                    Pilih periode dan format data laporan
+                  </p>
+                </div>
+              </div>
+              <button
+                id="exportExcelModalClose"
+                class="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition"
+              >
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <div class="mt-4 space-y-4">
+              <!-- Data Scope -->
+              <div>
+                <label
+                  for="exportDataScope"
+                  class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5"
+                >
+                  Data Yang Diexport
+                </label>
+                <select
+                  id="exportDataScope"
+                  class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-medium bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"
+                >
+                  <option value="permit">Data Izin (Permit Management)</option>
+                  <option value="reimburse">Data Reimburse</option>
+                  <option value="all">Semua Data (Izin & Reimburse)</option>
+                </select>
+              </div>
+
+              <!-- Export Period Option -->
+              <div>
+                <label
+                  class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5"
+                >
+                  Pilihan Rentang Waktu
+                </label>
+                <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    id="exportTypeMonthBtn"
+                    class="py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-sm"
+                  >
+                    <i data-lucide="calendar" class="w-3.5 h-3.5 inline mr-1"></i> Per Bulan
+                  </button>
+                  <button
+                    type="button"
+                    id="exportTypeWeekBtn"
+                    class="py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900"
+                  >
+                    <i data-lucide="calendar-range" class="w-3.5 h-3.5 inline mr-1"></i> Per Minggu
+                  </button>
+                </div>
+              </div>
+
+              <!-- Month Box -->
+              <div id="exportMonthBox" class="space-y-1.5">
+                <label
+                  for="exportMonthInput"
+                  class="block text-xs font-semibold text-slate-700"
+                >
+                  Pilih Bulan & Tahun
+                </label>
+                <input
+                  id="exportMonthInput"
+                  type="month"
+                  class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"
+                />
+                <p class="text-[11px] text-slate-400">
+                  Semua pengajuan pada bulan yang dipilih akan dimasukkan ke dalam file Excel.
+                </p>
+              </div>
+
+              <!-- Week Box -->
+              <div id="exportWeekBox" class="space-y-1.5 hidden">
+                <label class="block text-xs font-semibold text-slate-700">
+                  Pilih Rentang Minggu
+                </label>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <span class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Dari Tanggal</span>
+                    <input
+                      id="exportWeekStart"
+                      type="date"
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"
+                    />
+                  </div>
+                  <div>
+                    <span class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Sampai Tanggal</span>
+                    <input
+                      id="exportWeekEnd"
+                      type="date"
+                      class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition"
+                    />
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    id="btnQuickThisWeek"
+                    class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+                  >
+                    Minggu Ini
+                  </button>
+                  <span class="text-slate-300">|</span>
+                  <button
+                    type="button"
+                    id="btnQuickLastWeek"
+                    class="text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline"
+                  >
+                    Minggu Lalu
+                  </button>
+                </div>
+              </div>
+
+              <!-- Status Filter Box -->
+              <div id="exportStatusBox">
+                <label
+                  for="exportStatusFilter"
+                  class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5"
+                >
+                  Filter Status Izin
+                </label>
+                <select
+                  id="exportStatusFilter"
+                  class="text-sm bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium text-slate-700 cursor-pointer w-full transition"
+                >
+                  <option value="">Semua Status (Pending, Approved, Rejected)</option>
+                  <option value="approved">Hanya Approved</option>
+                  <option value="pending">Hanya Pending</option>
+                  <option value="rejected">Hanya Rejected</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mt-5 flex gap-2.5 justify-end border-t border-slate-100 pt-4">
+              <button
+                id="exportExcelModalCancel"
+                type="button"
+                class="bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-700 transition"
+              >
+                Batalkan
+              </button>
+              <button
+                id="exportExcelModalSubmit"
+                type="button"
+                class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition"
+              >
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Download Excel</span>
               </button>
             </div>
           </div>
@@ -2378,7 +2577,12 @@
             if (ev.target === changeToRejectedEl) closeChangeToRejectedModal();
           });
 
-        return { init };
+        return {
+          init,
+          getAllPermits: () => allPermits,
+          getPermitJenisLabel,
+          formatFullDate,
+        };
       })();
 
       const ReimburseModule = (() => {
@@ -3072,7 +3276,473 @@
             if (ev.target === detailModalEl) closeDetailModal();
           });
 
-        return { init };
+        return {
+          init,
+          getAllReimburse: () => allReimburse,
+          getGroupedReimburse: () => groupedReimburse,
+        };
+      })();
+
+      const ExportExcelModule = (() => {
+        let periodMode = "month"; // "month" | "week"
+
+        function padZero(num) {
+          return String(num).padStart(2, "0");
+        }
+
+        function formatDateToYMD(d) {
+          if (!d || isNaN(d.getTime())) return "";
+          return `${d.getFullYear()}-${padZero(d.getMonth() + 1)}-${padZero(d.getDate())}`;
+        }
+
+        function getMondayOfWeek(d) {
+          const date = new Date(d);
+          const day = date.getDay(); // 0 is Sunday
+          const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+          return new Date(date.setDate(diff));
+        }
+
+        function getSundayOfWeek(d) {
+          const monday = getMondayOfWeek(d);
+          const sunday = new Date(monday);
+          sunday.setDate(monday.getDate() + 6);
+          return sunday;
+        }
+
+        function getCurrentMonthStr() {
+          const now = new Date();
+          return `${now.getFullYear()}-${padZero(now.getMonth() + 1)}`;
+        }
+
+        function extractDateString(val) {
+          if (!val) return "";
+          if (typeof val === "object" && typeof val.toDate === "function") {
+            return formatDateToYMD(val.toDate());
+          }
+          if (typeof val === "number") {
+            return formatDateToYMD(new Date(val));
+          }
+          const str = String(val).trim();
+          if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+            return str.slice(0, 10);
+          }
+          const parsed = new Date(str);
+          if (!isNaN(parsed.getTime())) {
+            return formatDateToYMD(parsed);
+          }
+          return "";
+        }
+
+        function isDateInRange(dateVal, startStr, endStr) {
+          const targetStr = extractDateString(dateVal);
+          if (!targetStr) return false;
+          if (startStr && targetStr < startStr) return false;
+          if (endStr && targetStr > endStr) return false;
+          return true;
+        }
+
+        function openModal(defaultScope = "permit") {
+          const modal = document.getElementById("exportExcelModal");
+          const scopeSelect = document.getElementById("exportDataScope");
+          const monthInput = document.getElementById("exportMonthInput");
+          const weekStartInput = document.getElementById("exportWeekStart");
+          const weekEndInput = document.getElementById("exportWeekEnd");
+
+          if (!modal) return;
+
+          if (scopeSelect) {
+            scopeSelect.value = defaultScope;
+          }
+          updateStatusBoxVisibility();
+
+          // Set default values if empty
+          if (monthInput && !monthInput.value) {
+            monthInput.value = getCurrentMonthStr();
+          }
+
+          if (weekStartInput && !weekStartInput.value) {
+            const now = new Date();
+            weekStartInput.value = formatDateToYMD(getMondayOfWeek(now));
+            if (weekEndInput) {
+              weekEndInput.value = formatDateToYMD(getSundayOfWeek(now));
+            }
+          }
+
+          setPeriodMode("month");
+
+          modal.classList.remove("hidden");
+          modal.classList.add("modal-open");
+          if (window.lucide && typeof window.lucide.createIcons === "function") {
+            window.lucide.createIcons();
+          }
+        }
+
+        function closeModal() {
+          const modal = document.getElementById("exportExcelModal");
+          if (modal) {
+            modal.classList.add("hidden");
+            modal.classList.remove("modal-open");
+          }
+        }
+
+        function setPeriodMode(mode) {
+          periodMode = mode;
+          const monthBtn = document.getElementById("exportTypeMonthBtn");
+          const weekBtn = document.getElementById("exportTypeWeekBtn");
+          const monthBox = document.getElementById("exportMonthBox");
+          const weekBox = document.getElementById("exportWeekBox");
+
+          if (mode === "month") {
+            if (monthBtn) {
+              monthBtn.className =
+                "py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-sm";
+            }
+            if (weekBtn) {
+              weekBtn.className =
+                "py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900";
+            }
+            if (monthBox) monthBox.classList.remove("hidden");
+            if (weekBox) weekBox.classList.add("hidden");
+          } else {
+            if (weekBtn) {
+              weekBtn.className =
+                "py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-sm";
+            }
+            if (monthBtn) {
+              monthBtn.className =
+                "py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900";
+            }
+            if (weekBox) weekBox.classList.remove("hidden");
+            if (monthBox) monthBox.classList.add("hidden");
+          }
+        }
+
+        function updateStatusBoxVisibility() {
+          const scopeSelect = document.getElementById("exportDataScope");
+          const statusBox = document.getElementById("exportStatusBox");
+          if (!statusBox || !scopeSelect) return;
+          if (scopeSelect.value === "reimburse") {
+            statusBox.classList.add("hidden");
+          } else {
+            statusBox.classList.remove("hidden");
+          }
+        }
+
+        function performExport() {
+          if (!window.XLSX) {
+            showToast("Library Excel belum siap. Silakan coba lagi.", "error");
+            return;
+          }
+
+          const scopeSelect = document.getElementById("exportDataScope");
+          const scope = scopeSelect ? scopeSelect.value : "permit";
+          const statusFilterSelect = document.getElementById("exportStatusFilter");
+          const statusFilter = statusFilterSelect
+            ? String(statusFilterSelect.value || "").toLowerCase().trim()
+            : "";
+
+          let startStr = "";
+          let endStr = "";
+          let periodLabel = "";
+
+          if (periodMode === "month") {
+            const monthInput = document.getElementById("exportMonthInput");
+            const monthVal = monthInput ? monthInput.value : "";
+            if (!monthVal) {
+              showToast("Pilih bulan terlebih dahulu.", "error");
+              return;
+            }
+            const parts = monthVal.split("-");
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const lastDay = new Date(year, month, 0).getDate();
+            startStr = `${monthVal}-01`;
+            endStr = `${monthVal}-${padZero(lastDay)}`;
+            periodLabel = `Bulan_${monthVal}`;
+          } else {
+            const weekStartInput = document.getElementById("exportWeekStart");
+            const weekEndInput = document.getElementById("exportWeekEnd");
+            startStr = weekStartInput ? weekStartInput.value : "";
+            endStr = weekEndInput ? weekEndInput.value : "";
+            if (!startStr || !endStr) {
+              showToast("Pilih rentang tanggal minggu terlebih dahulu.", "error");
+              return;
+            }
+            if (startStr > endStr) {
+              showToast("Tanggal mulai tidak boleh melebihi tanggal akhir.", "error");
+              return;
+            }
+            periodLabel = `Minggu_${startStr}_sd_${endStr}`;
+          }
+
+          const includePermits = scope === "permit" || scope === "all";
+          const includeReimburse = scope === "reimburse" || scope === "all";
+
+          const allPermits =
+            typeof PermitModule.getAllPermits === "function"
+              ? PermitModule.getAllPermits()
+              : [];
+          const allReimburse =
+            typeof ReimburseModule.getAllReimburse === "function"
+              ? ReimburseModule.getAllReimburse()
+              : [];
+
+          // Filter Permits
+          const filteredPermits = allPermits.filter((p) => {
+            if (statusFilter && String(p.status || "").toLowerCase() !== statusFilter) {
+              return false;
+            }
+            const startDate = p.start_date || "";
+            const endDate = p.end_date || p.start_date || "";
+            const createdAt = p.created_at || "";
+
+            // Check if start_date, end_date, or created_at matches range
+            const matchStart = isDateInRange(startDate, startStr, endStr);
+            const matchEnd = isDateInRange(endDate, startStr, endStr);
+            const matchCreated = isDateInRange(createdAt, startStr, endStr);
+
+            // Also check interval overlap
+            const startStrExt = extractDateString(startDate);
+            const endStrExt = extractDateString(endDate);
+            const overlap =
+              startStrExt &&
+              endStrExt &&
+              startStrExt <= endStr &&
+              endStrExt >= startStr;
+
+            return matchStart || matchEnd || matchCreated || overlap;
+          });
+
+          // Filter Reimburse
+          const filteredReimburse = allReimburse.filter((r) => {
+            const startDate = r.start_date || "";
+            const endDate = r.end_date || r.start_date || "";
+            const matchStart = isDateInRange(startDate, startStr, endStr);
+            const matchEnd = isDateInRange(endDate, startStr, endStr);
+            const hasEntryInRange = (r.dailyEntries || []).some((e) =>
+              isDateInRange(e.date, startStr, endStr),
+            );
+            return matchStart || matchEnd || hasEntryInRange;
+          });
+
+          const permitDataRows = [];
+          if (includePermits) {
+            filteredPermits.forEach((p, idx) => {
+              const startFull = PermitModule.formatFullDate(p.start_date);
+              const endFull = PermitModule.formatFullDate(p.end_date || p.start_date);
+              let izinDate = startFull || "-";
+              if (startFull && endFull && endFull !== startFull) {
+                izinDate = `${startFull} - ${endFull}`;
+              }
+              permitDataRows.push({
+                "No": idx + 1,
+                "Tanggal Pengajuan": PermitModule.formatFullDate(p.created_at) || "-",
+                "Nama Karyawan": p.user_name || "-",
+                "Posisi / Jabatan": p.user_position || "-",
+                "Tanggal Izin": izinDate,
+                "Jenis Izin": PermitModule.getPermitJenisLabel(p) || "-",
+                "Alasan Izin": p.reason || "-",
+                "Status": String(p.status || "Pending").toUpperCase(),
+                "Disetujui / Ditolak Oleh":
+                  p.approved_by_name || p.rejected_by_name || "-",
+                "Tanggal Approval":
+                  PermitModule.formatFullDate(p.approved_at || p.rejected_at) || "-",
+                "Link Lampiran": p.attachment_url || "-",
+              });
+            });
+          }
+
+          const reimburseSummaryRows = [];
+          const reimburseDetailRows = [];
+          if (includeReimburse) {
+            filteredReimburse.forEach((r, idx) => {
+              reimburseSummaryRows.push({
+                "No": idx + 1,
+                "Nama Karyawan": r.user_name || "-",
+                "Tanggal Mulai": r.start_date || "-",
+                "Tanggal Selesai": r.end_date || r.start_date || "-",
+                "Total Hari": Number(r.total_days ?? r.days ?? 0),
+                "Total Jam": Number(r.total_hours ?? r.hours ?? 0),
+                "Status": String(r.status || "pending").toUpperCase(),
+                "Diselesaikan Oleh": r.completed_by_name || "-",
+                "Alasan / Keterangan":
+                  (r.related && r.related.reason) || r.reason || "-",
+              });
+            });
+
+            let detailCount = 1;
+            filteredReimburse.forEach((r) => {
+              const entries = r.dailyEntries || [];
+              entries.forEach((entry) => {
+                if (isDateInRange(entry.date, startStr, endStr)) {
+                  reimburseDetailRows.push({
+                    "No": detailCount++,
+                    "Nama Karyawan": r.user_name || "-",
+                    "Tanggal Reimburse": entry.date || "-",
+                    "Status Hari": String(entry.status || "pending").toUpperCase(),
+                    "Diselesaikan Oleh": r.completed_by_name || "-",
+                    "Alasan / Keterangan":
+                      (r.related && r.related.reason) || r.reason || "-",
+                  });
+                }
+              });
+            });
+          }
+
+          const totalRowsCount =
+            permitDataRows.length +
+            reimburseSummaryRows.length +
+            reimburseDetailRows.length;
+
+          if (totalRowsCount === 0) {
+            showToast("Tidak ada data pada periode dan filter yang dipilih.", "error");
+            return;
+          }
+
+          const wb = window.XLSX.utils.book_new();
+
+          if (includePermits && permitDataRows.length > 0) {
+            const wsPermit = window.XLSX.utils.json_to_sheet(permitDataRows);
+            wsPermit["!cols"] = [
+              { wch: 6 },
+              { wch: 18 },
+              { wch: 24 },
+              { wch: 22 },
+              { wch: 26 },
+              { wch: 22 },
+              { wch: 36 },
+              { wch: 14 },
+              { wch: 24 },
+              { wch: 18 },
+              { wch: 32 },
+            ];
+            window.XLSX.utils.book_append_sheet(wb, wsPermit, "Data Izin");
+          }
+
+          if (includeReimburse) {
+            if (reimburseSummaryRows.length > 0) {
+              const wsReimburse = window.XLSX.utils.json_to_sheet(reimburseSummaryRows);
+              wsReimburse["!cols"] = [
+                { wch: 6 },
+                { wch: 24 },
+                { wch: 16 },
+                { wch: 16 },
+                { wch: 12 },
+                { wch: 12 },
+                { wch: 14 },
+                { wch: 24 },
+                { wch: 35 },
+              ];
+              window.XLSX.utils.book_append_sheet(
+                wb,
+                wsReimburse,
+                "Ringkasan Reimburse",
+              );
+            }
+
+            if (reimburseDetailRows.length > 0) {
+              const wsDetail = window.XLSX.utils.json_to_sheet(reimburseDetailRows);
+              wsDetail["!cols"] = [
+                { wch: 6 },
+                { wch: 24 },
+                { wch: 18 },
+                { wch: 16 },
+                { wch: 24 },
+                { wch: 35 },
+              ];
+              window.XLSX.utils.book_append_sheet(
+                wb,
+                wsDetail,
+                "Detail Harian Reimburse",
+              );
+            }
+          }
+
+          let fileScope = "Izin_Reimburse";
+          if (scope === "permit") fileScope = "Data_Izin";
+          if (scope === "reimburse") fileScope = "Data_Reimburse";
+
+          const fileName = `Dialogika_${fileScope}_${periodLabel}.xlsx`;
+          window.XLSX.writeFile(wb, fileName);
+          closeModal();
+          showToast(`File ${fileName} berhasil diexport!`, "success");
+        }
+
+        function init() {
+          const btnPermit = document.getElementById("btnExportExcelPermit");
+          const btnReimburse = document.getElementById("btnExportExcelReimburse");
+          const modalClose = document.getElementById("exportExcelModalClose");
+          const modalCancel = document.getElementById("exportExcelModalCancel");
+          const modalSubmit = document.getElementById("exportExcelModalSubmit");
+          const monthBtn = document.getElementById("exportTypeMonthBtn");
+          const weekBtn = document.getElementById("exportTypeWeekBtn");
+          const scopeSelect = document.getElementById("exportDataScope");
+          const quickThisWeek = document.getElementById("btnQuickThisWeek");
+          const quickLastWeek = document.getElementById("btnQuickLastWeek");
+          const weekStartInput = document.getElementById("exportWeekStart");
+          const modalEl = document.getElementById("exportExcelModal");
+
+          if (btnPermit) {
+            btnPermit.addEventListener("click", () => openModal("permit"));
+          }
+          if (btnReimburse) {
+            btnReimburse.addEventListener("click", () => openModal("reimburse"));
+          }
+          if (modalClose) modalClose.addEventListener("click", closeModal);
+          if (modalCancel) modalCancel.addEventListener("click", closeModal);
+          if (modalSubmit) modalSubmit.addEventListener("click", performExport);
+
+          if (monthBtn) monthBtn.addEventListener("click", () => setPeriodMode("month"));
+          if (weekBtn) weekBtn.addEventListener("click", () => setPeriodMode("week"));
+
+          if (scopeSelect) {
+            scopeSelect.addEventListener("change", updateStatusBoxVisibility);
+          }
+
+          if (quickThisWeek) {
+            quickThisWeek.addEventListener("click", () => {
+              const now = new Date();
+              const start = document.getElementById("exportWeekStart");
+              const end = document.getElementById("exportWeekEnd");
+              if (start) start.value = formatDateToYMD(getMondayOfWeek(now));
+              if (end) end.value = formatDateToYMD(getSundayOfWeek(now));
+            });
+          }
+
+          if (quickLastWeek) {
+            quickLastWeek.addEventListener("click", () => {
+              const now = new Date();
+              now.setDate(now.getDate() - 7);
+              const start = document.getElementById("exportWeekStart");
+              const end = document.getElementById("exportWeekEnd");
+              if (start) start.value = formatDateToYMD(getMondayOfWeek(now));
+              if (end) end.value = formatDateToYMD(getSundayOfWeek(now));
+            });
+          }
+
+          if (weekStartInput) {
+            weekStartInput.addEventListener("change", (e) => {
+              const val = e.target.value;
+              if (val) {
+                const startD = new Date(val);
+                if (!isNaN(startD.getTime())) {
+                  const endD = new Date(startD);
+                  endD.setDate(startD.getDate() + 6);
+                  const endInput = document.getElementById("exportWeekEnd");
+                  if (endInput) endInput.value = formatDateToYMD(endD);
+                }
+              }
+            });
+          }
+
+          if (modalEl) {
+            modalEl.addEventListener("click", (ev) => {
+              if (ev.target === modalEl) closeModal();
+            });
+          }
+        }
+
+        return { init, openModal };
       })();
 
       onAuthStateChanged(auth, async (user) => {
@@ -3085,6 +3755,7 @@
           }
           PermitModule.init(user, userData);
           ReimburseModule.init(user, userData);
+          ExportExcelModule.init();
         } else {
           window.location.href = "../index.html";
         }
