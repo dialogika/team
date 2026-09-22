@@ -907,10 +907,10 @@
                 </div>
                 <div>
                   <h3 class="text-base font-bold text-slate-900">
-                    Export ke Excel
+                    Export Data (Excel / CSV)
                   </h3>
                   <p class="text-xs text-slate-500">
-                    Pilih periode dan format data laporan
+                    Pilih format file, periode, dan jenis data laporan
                   </p>
                 </div>
               </div>
@@ -923,6 +923,31 @@
             </div>
 
             <div class="mt-4 space-y-4">
+              <!-- File Format Selector -->
+              <div>
+                <label
+                  class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5"
+                >
+                  Format File
+                </label>
+                <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    id="exportFormatXlsxBtn"
+                    class="py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-sm"
+                  >
+                    <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 inline mr-1 text-emerald-600"></i> Excel (.xlsx)
+                  </button>
+                  <button
+                    type="button"
+                    id="exportFormatCsvBtn"
+                    class="py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900"
+                  >
+                    <i data-lucide="file-text" class="w-3.5 h-3.5 inline mr-1 text-indigo-600"></i> CSV (.csv)
+                  </button>
+                </div>
+              </div>
+
               <!-- Data Scope -->
               <div>
                 <label
@@ -1060,7 +1085,7 @@
                 class="bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition"
               >
                 <i data-lucide="download" class="w-4 h-4"></i>
-                <span>Download Excel</span>
+                <span id="exportSubmitBtnText">Download Excel (.xlsx)</span>
               </button>
             </div>
           </div>
@@ -3285,6 +3310,7 @@
 
       const ExportExcelModule = (() => {
         let periodMode = "month"; // "month" | "week"
+        let fileFormat = "xlsx"; // "xlsx" | "csv"
 
         function padZero(num) {
           return String(num).padStart(2, "0");
@@ -3341,6 +3367,20 @@
           return true;
         }
 
+        function downloadCsvBlob(csvContent, fileName) {
+          const blob = new Blob(["\uFEFF" + csvContent], {
+            type: "text/csv;charset=utf-8;",
+          });
+          const link = document.createElement("a");
+          const url = URL.createObjectURL(blob);
+          link.setAttribute("href", url);
+          link.setAttribute("download", fileName);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+
         function openModal(defaultScope = "permit") {
           const modal = document.getElementById("exportExcelModal");
           const scopeSelect = document.getElementById("exportDataScope");
@@ -3369,6 +3409,7 @@
           }
 
           setPeriodMode("month");
+          setFileFormat("xlsx");
 
           modal.classList.remove("hidden");
           modal.classList.add("modal-open");
@@ -3417,6 +3458,39 @@
           }
         }
 
+        function setFileFormat(format) {
+          fileFormat = format;
+          const xlsxBtn = document.getElementById("exportFormatXlsxBtn");
+          const csvBtn = document.getElementById("exportFormatCsvBtn");
+          const submitText = document.getElementById("exportSubmitBtnText");
+
+          if (format === "xlsx") {
+            if (xlsxBtn) {
+              xlsxBtn.className =
+                "py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-sm";
+            }
+            if (csvBtn) {
+              csvBtn.className =
+                "py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900";
+            }
+            if (submitText) {
+              submitText.textContent = "Download Excel (.xlsx)";
+            }
+          } else {
+            if (csvBtn) {
+              csvBtn.className =
+                "py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-sm";
+            }
+            if (xlsxBtn) {
+              xlsxBtn.className =
+                "py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900";
+            }
+            if (submitText) {
+              submitText.textContent = "Download CSV (.csv)";
+            }
+          }
+        }
+
         function updateStatusBoxVisibility() {
           const scopeSelect = document.getElementById("exportDataScope");
           const statusBox = document.getElementById("exportStatusBox");
@@ -3430,7 +3504,7 @@
 
         function performExport() {
           if (!window.XLSX) {
-            showToast("Library Excel belum siap. Silakan coba lagi.", "error");
+            showToast("Library Excel / CSV belum siap. Silakan coba lagi.", "error");
             return;
           }
 
@@ -3496,12 +3570,10 @@
             const endDate = p.end_date || p.start_date || "";
             const createdAt = p.created_at || "";
 
-            // Check if start_date, end_date, or created_at matches range
             const matchStart = isDateInRange(startDate, startStr, endStr);
             const matchEnd = isDateInRange(endDate, startStr, endStr);
             const matchCreated = isDateInRange(createdAt, startStr, endStr);
 
-            // Also check interval overlap
             const startStrExt = extractDateString(startDate);
             const endStrExt = extractDateString(endDate);
             const overlap =
@@ -3599,6 +3671,57 @@
             return;
           }
 
+          // EXPORT CSV
+          if (fileFormat === "csv") {
+            if (scope === "permit") {
+              const ws = window.XLSX.utils.json_to_sheet(permitDataRows);
+              const csv = window.XLSX.utils.sheet_to_csv(ws);
+              downloadCsvBlob(csv, `Dialogika_Data_Izin_${periodLabel}.csv`);
+              closeModal();
+              showToast(`File CSV Data Izin berhasil diexport!`, "success");
+              return;
+            }
+            if (scope === "reimburse") {
+              const ws = window.XLSX.utils.json_to_sheet(reimburseSummaryRows);
+              const csv = window.XLSX.utils.sheet_to_csv(ws);
+              downloadCsvBlob(csv, `Dialogika_Data_Reimburse_${periodLabel}.csv`);
+              if (reimburseDetailRows.length > 0) {
+                const wsDetail = window.XLSX.utils.json_to_sheet(reimburseDetailRows);
+                const csvDetail = window.XLSX.utils.sheet_to_csv(wsDetail);
+                setTimeout(() => {
+                  downloadCsvBlob(
+                    csvDetail,
+                    `Dialogika_Detail_Harian_Reimburse_${periodLabel}.csv`,
+                  );
+                }, 300);
+              }
+              closeModal();
+              showToast(`File CSV Data Reimburse berhasil diexport!`, "success");
+              return;
+            }
+            if (scope === "all") {
+              if (permitDataRows.length > 0) {
+                const wsP = window.XLSX.utils.json_to_sheet(permitDataRows);
+                const csvP = window.XLSX.utils.sheet_to_csv(wsP);
+                downloadCsvBlob(csvP, `Dialogika_Data_Izin_${periodLabel}.csv`);
+              }
+              if (reimburseSummaryRows.length > 0) {
+                setTimeout(() => {
+                  const wsR = window.XLSX.utils.json_to_sheet(reimburseSummaryRows);
+                  const csvR = window.XLSX.utils.sheet_to_csv(wsR);
+                  downloadCsvBlob(
+                    csvR,
+                    `Dialogika_Data_Reimburse_${periodLabel}.csv`,
+                  );
+                }, 300);
+              }
+              closeModal();
+              showToast(`File CSV Data Izin & Reimburse berhasil diexport!`, "success");
+              return;
+            }
+          }
+
+          // EXPORT EXCEL (.XLSX)
           const wb = window.XLSX.utils.book_new();
 
           if (includePermits && permitDataRows.length > 0) {
@@ -3676,6 +3799,8 @@
           const modalSubmit = document.getElementById("exportExcelModalSubmit");
           const monthBtn = document.getElementById("exportTypeMonthBtn");
           const weekBtn = document.getElementById("exportTypeWeekBtn");
+          const formatXlsxBtn = document.getElementById("exportFormatXlsxBtn");
+          const formatCsvBtn = document.getElementById("exportFormatCsvBtn");
           const scopeSelect = document.getElementById("exportDataScope");
           const quickThisWeek = document.getElementById("btnQuickThisWeek");
           const quickLastWeek = document.getElementById("btnQuickLastWeek");
@@ -3694,6 +3819,13 @@
 
           if (monthBtn) monthBtn.addEventListener("click", () => setPeriodMode("month"));
           if (weekBtn) weekBtn.addEventListener("click", () => setPeriodMode("week"));
+
+          if (formatXlsxBtn) {
+            formatXlsxBtn.addEventListener("click", () => setFileFormat("xlsx"));
+          }
+          if (formatCsvBtn) {
+            formatCsvBtn.addEventListener("click", () => setFileFormat("csv"));
+          }
 
           if (scopeSelect) {
             scopeSelect.addEventListener("change", updateStatusBoxVisibility);
