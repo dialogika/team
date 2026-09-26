@@ -144,6 +144,13 @@
             border-color: #fdba74;
         }
 
+        .status-follow_up,
+        .status-follow-up {
+            background: #fefce8;
+            color: #854d0e;
+            border-color: #fef08a;
+        }
+
         .status-accepted {
              background: #ecfdf5;
              color: #047857;
@@ -212,7 +219,7 @@
 
         .pipeline-stepper {
              display: grid;
-             grid-template-columns: repeat(6, minmax(0, 1fr));
+             grid-template-columns: repeat(8, minmax(0, 1fr));
              gap: 12px;
              margin-bottom: 1.25rem;
          }
@@ -270,6 +277,24 @@
         .pipeline-step.is-active .pipeline-step-index {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
+        }
+
+        .pipeline-step.is-active.is-follow_up {
+            background: #fefce8;
+            border-color: #fde047;
+        }
+
+        .pipeline-step.is-active.is-follow_up .pipeline-step-index {
+            background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+            color: #ffffff;
+        }
+
+        .pipeline-step.is-active.is-follow_up .pipeline-step-label {
+            color: #854d0e;
+        }
+
+        .pipeline-step.is-active.is-follow_up .pipeline-step-caption {
+            color: #ca8a04;
         }
 
         .pipeline-step.is-active.is-on_job_training {
@@ -2377,6 +2402,7 @@
         const STATUS_PIPELINE = [
              { value: "screening", label: "Screening", caption: "", badgeClass: "status-screening" },
              { value: "interview", label: "Interview", caption: "", badgeClass: "status-interview" },
+             { value: "follow_up", label: "Follow Up", caption: "", badgeClass: "status-follow_up" },
              { value: "on_job_training", label: "On Job Test", caption: "", badgeClass: "status-On-job-training" },
              { value: "accepted", label: "Accepted", caption: "", badgeClass: "status-accepted" },
              { value: "onboarding", label: "On Boarding", caption: "", badgeClass: "status-onboarding" },
@@ -2826,6 +2852,7 @@
          function normalizeStatus(value) {
              const raw = (value || "").toString().trim().toLowerCase();
              if (raw === "interview") return "interview";
+             if (raw === "follow_up" || raw === "followup" || raw === "follow up") return "follow_up";
              if (raw === "accepted" || raw === "accept" || raw === "decision") return "accepted";
              if (raw === "rejected" || raw === "reject") return "rejected";
              if (raw === "on_job_training" || raw === "on_job_test" || raw === "ojt" || raw === "on job test" || raw === "on job training") return "on_job_training";
@@ -3150,19 +3177,20 @@
                 if (status === "rejected") {
                     if (step.value === "rejected") {
                         classes += " is-active is-rejected";
-                    } else if (step.value === "screening" || step.value === "interview") {
+                    } else if (step.value === "screening" || step.value === "interview" || step.value === "follow_up") {
                         classes += " is-complete";
                     }
                 } else if (status === "withdrawn") {
                     if (step.value === "withdrawn") {
                         classes += " is-active";
-                    } else if (step.value === "screening" || step.value === "interview") {
+                    } else if (step.value === "screening" || step.value === "interview" || step.value === "follow_up") {
                         classes += " is-complete";
                     }
                  } else {
                      if (index < currentIndex) classes += " is-complete";
                      if (index === currentIndex) {
                          classes += " is-active";
+                         if (step.value === "follow_up") classes += " is-follow_up";
                          if (step.value === "accepted") classes += " is-accepted";
                          if (step.value === "on_job_training") classes += " is-on_job_training";
                          if (step.value === "onboarding") classes += " is-onboarding";
@@ -3380,6 +3408,8 @@
             const interviewMeetingLink = recruitment.interview_meeting_link || data.interview_meeting_link || "";
             const interviewLocation = recruitment.interview_location || data.interview_location || INTERVIEW_LOCATION_URL;
             const interviewNotes = recruitment.interview_notes || "";
+            const followUpAt = recruitment.follow_up_at || data.follow_up_at || null;
+            const followUpNotes = recruitment.follow_up_notes || data.follow_up_notes || "";
             const finalDecision = normalizeDecision(recruitment.final_decision || "");
             const finalDecisionAt = recruitment.final_decision_at || null;
             const interviewerIds = Array.isArray(data.interviewers) ? data.interviewers : [];
@@ -3446,6 +3476,8 @@
                 interviewMeetingLink,
                 interviewLocation,
                 interviewNotes,
+                followUpAt,
+                followUpNotes,
                 finalDecision,
                 finalDecisionAt,
                 interviewerIds,
@@ -3754,6 +3786,12 @@
                  hasMeaningfulValue(vm.interviewNotes)
                      ? '<div class="summary-inline-item summary-inline-item-full"><i class="fa-regular fa-note-sticky"></i><span>Catatan internal: ' + escapeHtml(vm.interviewNotes) + '</span></div>'
                      : "",
+                 hasMeaningfulValue(vm.followUpAt)
+                     ? '<div class="summary-inline-item"><i class="fa-regular fa-clock"></i><span>Waktu follow up: ' + escapeHtml(formatDateTime(vm.followUpAt)) + '</span></div>'
+                     : "",
+                 hasMeaningfulValue(vm.followUpNotes)
+                     ? '<div class="summary-inline-item summary-inline-item-full"><i class="fa-regular fa-note-sticky"></i><span>Catatan follow up: ' + escapeHtml(vm.followUpNotes) + '</span></div>'
+                     : "",
                  vm.displayStatus === "onboarding" && hasMeaningfulValue(vm.raw?.recruitment_status?.onboarding_date)
                      ? '<div class="summary-inline-item"><i class="fa-solid fa-user-check"></i><span>On Boarding: ' + escapeHtml(vm.raw.recruitment_status.onboarding_date) + (vm.raw.recruitment_status.onboarding_time ? ' ' + vm.raw.recruitment_status.onboarding_time + ' WIB' : '') + (vm.raw.recruitment_status.onboarding_location ? ' - ' + escapeHtml(vm.raw.recruitment_status.onboarding_location) : '') + '</span></div>'
                      : ""
@@ -3790,6 +3828,18 @@
                     '</div>' +
                     inactiveBlockHint +
                     '</div>';
+            } else if (vm.isInactive && vm.displayStatus === "follow_up") {
+                actionHtml =
+                    '<div class="action-panel">' +
+                    '<div class="action-panel-title">Tindak Lanjut Follow Up</div>' +
+                    '<div class="action-panel-note">Aksi dinonaktifkan karena kandidat masih berstatus nonaktif/sampah.</div>' +
+                    '<div class="action-cta">' +
+                    '<button type="button" class="btn btn-success" id="btnOpenon_job_trainingModal" disabled title="Pulihkan kandidat dari menu nonaktif untuk melanjutkan."><i class="fa-solid fa-lock me-2"></i>Jadwalkan On Job Test</button>' +
+                    '<button type="button" class="btn btn-danger" id="btnOpenDecisionModal" disabled title="Pulihkan kandidat dari menu nonaktif untuk melanjutkan."><i class="fa-solid fa-lock me-2"></i>Tolak/Pengunduran Diri</button>' +
+                    '<a href="' + buildInactiveRedirectUrl(vm.id) + '" class="btn btn-outline-warning"><i class="fa-solid fa-arrow-rotate-left me-2"></i>Buka Menu Kandidat Nonaktif</a>' +
+                    '</div>' +
+                    inactiveBlockHint +
+                    '</div>';
             } else if (vm.displayStatus === "screening") {
                 actionHtml =
                     '<div class="action-panel">' +
@@ -3803,10 +3853,21 @@
             } else if (vm.displayStatus === "interview") {
                 actionHtml =
                     '<div class="action-panel">' +
-                    '<div class="action-panel-title">Lanjutkan ke On Job Test</div>' +
-                    '<div class="action-panel-note">Saat status berada di tahap interview, recruiter perlu menjadwalkan On Job Test sebagai tahapan lanjutan.</div>' +
+                    '<div class="action-panel-title">Tindak Lanjut Interview</div>' +
+                    '<div class="action-panel-note">Saat status berada di tahap interview, recruiter dapat melakukan follow up, menjadwalkan On Job Test, atau memproses penolakan/pengunduran diri.</div>' +
                     '<div class="action-cta">' +
                     '<button type="button" class="btn btn-outline-primary" id="btnEditInterviewSchedule"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Jadwal</button>' +
+                    '<button type="button" class="btn btn-warning text-dark fw-semibold" id="btnFollowUpCandidate"><i class="fa-solid fa-clock-rotate-left me-2"></i>Follow Up</button>' +
+                    '<button type="button" class="btn btn-success" id="btnOpenon_job_trainingModal"><i class="fa-solid fa-clipboard-check me-2"></i>Jadwalkan On Job Test</button>' +
+                    '<button type="button" class="btn btn-danger" id="btnOpenDecisionModal"><i class="fa-solid fa-xmark me-2"></i>Tolak/Pengunduran Diri</button>' +
+                    '</div>' +
+                    '</div>';
+            } else if (vm.displayStatus === "follow_up") {
+                actionHtml =
+                    '<div class="action-panel">' +
+                    '<div class="action-panel-title">Tindak Lanjut Follow Up</div>' +
+                    '<div class="action-panel-note">Kandidat dalam tahap follow up. Recruiter dapat melanjutkan ke On Job Test atau memproses penolakan/pengunduran diri.</div>' +
+                    '<div class="action-cta">' +
                     '<button type="button" class="btn btn-success" id="btnOpenon_job_trainingModal"><i class="fa-solid fa-clipboard-check me-2"></i>Jadwalkan On Job Test</button>' +
                     '<button type="button" class="btn btn-danger" id="btnOpenDecisionModal"><i class="fa-solid fa-xmark me-2"></i>Tolak/Pengunduran Diri</button>' +
                     '</div>' +
@@ -5581,8 +5642,8 @@
          async function openDecisionModal(isRejectionOnly = false) {
              if (!(await ensureCandidateActiveForProgress("open_decision_modal"))) return;
              const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
-             if (!vm || !(vm.displayStatus === "screening" || vm.displayStatus === "interview" || vm.displayStatus === "on_job_training")) {
-                 showWarning("Keputusan (reject/withdraw) hanya dapat diproses saat status kandidat berada pada tahap Screening, Interview, atau On Job Test.");
+             if (!vm || !(vm.displayStatus === "screening" || vm.displayStatus === "interview" || vm.displayStatus === "follow_up" || vm.displayStatus === "on_job_training")) {
+                 showWarning("Keputusan (reject/withdraw) hanya dapat diproses saat status kandidat berada pada tahap Screening, Interview, Follow Up, atau On Job Test.");
                  return;
              }
              decisionModalContext = "interview";
@@ -5607,8 +5668,8 @@
          async function openon_job_trainingModal() {
              if (!(await ensureCandidateActiveForProgress("open_on_job_training_modal"))) return;
              const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
-             if (!vm || vm.displayStatus !== "interview") {
-                 showWarning("Pengaturan On Job Test hanya dapat dibuka saat status kandidat berada pada tahap interview.");
+             if (!vm || !(vm.displayStatus === "interview" || vm.displayStatus === "follow_up")) {
+                 showWarning("Pengaturan On Job Test hanya dapat dibuka saat status kandidat berada pada tahap Interview atau Follow Up.");
                  return;
              }
              decisionModalContext = "on_job_training";
@@ -5848,23 +5909,25 @@
             const latestVm = await getLatestCandidateSnapshot(currentCandidate.id);
             
             if (activeDecisionAction === "accepted") {
-                const expectedStatus = decisionModalContext === "on_job_training" ? "interview" : "on_job_training";
-                if (latestVm.displayStatus !== expectedStatus) {
+                if (decisionModalContext === "on_job_training") {
+                    if (latestVm.displayStatus !== "interview" && latestVm.displayStatus !== "follow_up") {
+                        decisionModal.hide();
+                        renderCandidateDetail();
+                        showWarning("Status kandidat berubah. Pengaturan On Job Test hanya dapat dilakukan saat kandidat berada di tahap interview atau follow up.");
+                        return;
+                    }
+                } else if (latestVm.displayStatus !== "on_job_training") {
                     decisionModal.hide();
                     renderCandidateDetail();
-                    showWarning(
-                        decisionModalContext === "on_job_training"
-                            ? "Status kandidat berubah. Pengaturan On Job Training hanya dapat dilakukan saat kandidat berada di tahap interview."
-                            : "Status kandidat berubah. Proses keputusan final hanya bisa dilakukan saat kandidat berada di tahap On Job Training."
-                    );
+                    showWarning("Status kandidat berubah. Proses keputusan final hanya bisa dilakukan saat kandidat berada di tahap On Job Test.");
                     return;
                 }
             } else if (activeDecisionAction === "rejected" || activeDecisionAction === "withdrawn") {
-                const allowedStatuses = ["screening", "interview", "on_job_training"];
+                const allowedStatuses = ["screening", "interview", "follow_up", "on_job_training"];
                 if (!allowedStatuses.includes(latestVm.displayStatus)) {
                     decisionModal.hide();
                     renderCandidateDetail();
-                    showWarning("Status kandidat berubah. Penolakan/Pengunduran Diri hanya dapat dilakukan saat status kandidat berada pada tahap Screening, Interview, atau On Job Training.");
+                    showWarning("Status kandidat berubah. Penolakan/Pengunduran Diri hanya dapat dilakukan saat status kandidat berada pada tahap Screening, Interview, Follow Up, atau On Job Test.");
                     return;
                 }
             }
@@ -5878,7 +5941,8 @@
                     
                     const auditReason = latestVm.displayStatus === "screening" ? "Kandidat mengundurkan diri saat screening" : 
                                         latestVm.displayStatus === "interview" ? "Kandidat mengundurkan diri saat interview" : 
-                                        "Kandidat mengundurkan diri saat On Job Training";
+                                        latestVm.displayStatus === "follow_up" ? "Kandidat mengundurkan diri saat follow up" : 
+                                        "Kandidat mengundurkan diri saat On Job Test";
                     const auditEntry = {
                         ...getAuditBase(actor, latestVm.displayStatus, "withdrawn", auditReason, withdrawnNotes),
                         timestamp: nowIso,
@@ -6159,7 +6223,7 @@
                     const departmentId = "";
                     const departmentName = "";
                     const auditEntry = {
-                        ...getAuditBase(actor, "interview", "on_job_training", "Lanjutkan kandidat ke tahap on_job_training", ""),
+                        ...getAuditBase(actor, latestVm.displayStatus, "on_job_training", "Lanjutkan kandidat ke tahap On Job Test", ""),
                         timestamp: nowIso,
                         on_job_trainingStart: on_job_trainingDateTime.toISOString(),
                         on_job_trainingEnd: endDate.toISOString(),
@@ -6192,7 +6256,7 @@
                         "recruitment_status.on_job_training_whatsapp_message_preview": on_job_trainingMessage,
                         "recruitment_status.history": arrayUnion({
                             status: "on_job_training",
-                            previousStatus: "interview",
+                            previousStatus: latestVm.displayStatus,
                             date: nowIso,
                             on_job_trainingStart: on_job_trainingDateTime.toISOString(),
                             on_job_trainingEnd: endDate.toISOString(),
@@ -6206,7 +6270,7 @@
                         logs: arrayUnion({
                             action: "team_status_change",
                             decision: "progress",
-                            from: "interview",
+                            from: latestVm.displayStatus,
                             to: "on_job_training",
                             by: actor.name,
                             uid: actor.id,
@@ -6236,7 +6300,7 @@
                         action: "schedule-On-job-training",
                         decision: "progress",
                         candidateId: currentCandidate.id,
-                        statusFrom: "interview",
+                        statusFrom: latestVm.displayStatus,
                         statusTo: "on_job_training",
                         on_job_trainingStart: on_job_trainingDateTime.toISOString(),
                         on_job_trainingEnd: endDate.toISOString(),
@@ -6252,7 +6316,7 @@
                     });
 
                     decisionModal.hide();
-                    showSuccess("Kandidat berhasil diproses ke tahap On Job Training.");
+                    showSuccess("Kandidat berhasil diproses ke tahap On Job Test.");
                     return;
                 }
 
@@ -6282,7 +6346,8 @@
 
                 const auditReason = latestVm.displayStatus === "screening" ? "Kandidat ditolak saat screening" : 
                                     latestVm.displayStatus === "interview" ? "Kandidat ditolak saat interview" : 
-                                    "Kandidat ditolak setelah On Job Training";
+                                    latestVm.displayStatus === "follow_up" ? "Kandidat ditolak saat follow up" : 
+                                    "Kandidat ditolak setelah On Job Test";
                 const auditEntry = {
                     ...getAuditBase(actor, latestVm.displayStatus, "rejected", auditReason, rejectionNotes),
                     timestamp: nowIso,
@@ -6360,10 +6425,90 @@
             }
         }
 
+        async function handleFollowUpCandidate(vm) {
+            if (!(await ensureCandidateActiveForProgress("follow_up_candidate"))) return;
+            const latestVm = await getLatestCandidateSnapshot(currentCandidate.id);
+            if (!latestVm || latestVm.displayStatus !== "interview") {
+                showWarning("Follow Up hanya dapat dilakukan saat status kandidat berada pada tahap Interview.");
+                return;
+            }
+
+            const result = await Swal.fire({
+                title: "Follow Up Kandidat?",
+                text: "Status kandidat akan diperbarui menjadi Follow Up setelah tahap interview.",
+                icon: "question",
+                input: "textarea",
+                inputLabel: "Catatan Follow Up (Opsional)",
+                inputPlaceholder: "Tuliskan catatan tindak lanjut atau rencana follow up...",
+                inputAttributes: {
+                    maxlength: "500"
+                },
+                showCancelButton: true,
+                confirmButtonText: "Ya, Follow Up",
+                cancelButtonText: "Batal",
+                confirmButtonColor: "#eab308",
+                reverseButtons: true
+            });
+
+            if (!result.isConfirmed) return;
+
+            const actor = getActor();
+            const nowIso = new Date().toISOString();
+            const followUpNotes = (result.value || "").trim();
+
+            const auditReason = "Kandidat dipindahkan ke tahap Follow Up setelah Interview";
+            const auditEntry = {
+                ...getAuditBase(actor, "interview", "follow_up", auditReason, followUpNotes),
+                timestamp: nowIso,
+                followUpNotes
+            };
+
+            const firestorePayload = {
+                "recruitment_status.current": "follow_up",
+                "recruitment_status.follow_up_at": nowIso,
+                "recruitment_status.follow_up_notes": followUpNotes,
+                "recruitment_status.history": arrayUnion({
+                    status: "follow_up",
+                    previousStatus: "interview",
+                    date: nowIso,
+                    note: followUpNotes,
+                    by: actor.name
+                }),
+                "audit_trail": arrayUnion(auditEntry),
+                logs: arrayUnion({
+                    action: "team_status_change",
+                    decision: "follow_up",
+                    from: "interview",
+                    to: "follow_up",
+                    by: actor.name,
+                    uid: actor.id,
+                    date: nowIso,
+                    note: followUpNotes
+                })
+            };
+
+            try {
+                await persistCandidateUpdate(currentCandidate.id, firestorePayload, "POST", {
+                    action: "follow-up-candidate",
+                    decision: "follow_up",
+                    candidateId: currentCandidate.id,
+                    statusFrom: "interview",
+                    statusTo: "follow_up",
+                    followUpNotes,
+                    actor
+                });
+                showSuccess("Status kandidat berhasil diubah ke Follow Up.");
+            } catch (error) {
+                console.error("Gagal melakukan follow up kandidat:", error);
+                showError(error.message || "Gagal memperbarui status ke Follow Up.");
+            }
+        }
+
          function bindDetailActions(vm) {
              const openInterviewBtn = document.getElementById("btnOpenInterviewModal");
              const openDecisionBtn = document.getElementById("btnOpenDecisionModal");
              const editInterviewBtn = document.getElementById("btnEditInterviewSchedule");
+             const btnFollowUpCandidate = document.getElementById("btnFollowUpCandidate");
              const openon_job_trainingBtn = document.getElementById("btnOpenon_job_trainingModal");
              const openOnboardingBtn = document.getElementById("btnOpenOnboardingModal");
              const downloadCvBtn = document.getElementById("btnDownloadCv");
@@ -6372,8 +6517,11 @@
              if (openInterviewBtn) {
                  openInterviewBtn.addEventListener("click", () => openInterviewModal("schedule"));
              }
+             if (btnFollowUpCandidate) {
+                 btnFollowUpCandidate.addEventListener("click", () => handleFollowUpCandidate(vm));
+             }
              if (openDecisionBtn) {
-                 const isRejectionOnly = (vm.displayStatus === "screening" || vm.displayStatus === "interview");
+                 const isRejectionOnly = (vm.displayStatus === "screening" || vm.displayStatus === "interview" || vm.displayStatus === "follow_up");
                  openDecisionBtn.addEventListener("click", () => openDecisionModal(isRejectionOnly));
              }
              if (editInterviewBtn) {

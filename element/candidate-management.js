@@ -38,6 +38,7 @@ const TAB_CONFIG = {
     statusPipeline: [
       { value: "screening", label: "Screening", badgeClass: "status-screening", caption: "Seleksi awal" },
       { value: "interview", label: "Interview", badgeClass: "status-interview", caption: "Proses wawancara" },
+      { value: "follow_up", label: "Follow Up", badgeClass: "status-follow_up", caption: "Tahap tindak lanjut" },
       { value: "on_job_training", label: "On Job Test", badgeClass: "status-On-job-training", caption: "Tahap uji coba kerja" },
       { value: "accepted", label: "Accepted", badgeClass: "status-accepted", caption: "Lolos seleksi" },
       { value: "onboarding", label: "On Boarding", badgeClass: "status-onboarding", caption: "Siap bergabung" },
@@ -55,6 +56,7 @@ const TAB_CONFIG = {
     },
     normalizeStatus(raw) {
       if (raw === "interview") return "interview";
+      if (["follow_up","followup","follow up"].includes(raw)) return "follow_up";
       if (["on_job_training","on_job_test","ojt","on job test","on job training"].includes(raw)) return "on_job_training";
       if (["accept","accepted","decision"].includes(raw)) return "accepted";
       if (raw === "onboarding") return "onboarding";
