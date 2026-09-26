@@ -660,6 +660,7 @@
                     <option value="">Semua status</option>
                     <option value="radar">Radar</option>
                     <option value="contacted">Contacted</option>
+                    <option value="follow_up">Follow Up</option>
                     <option value="respond">Respond</option>
                     <option value="interview">Interview</option>
                     <option value="ojt">On Job Test</option>
@@ -881,9 +882,10 @@
                         class="form-select rounded-3 py-2 border-1 bg-white fw-medium shadow-none"
                         style="font-size: 0.88rem;"
                       >
-                        <option value="">Semua Status (Radar, Contacted, Respond, dll)</option>
+                        <option value="">Semua Status (Radar, Contacted, Follow Up, Respond, dll)</option>
                         <option value="radar">Radar</option>
                         <option value="contacted">Contacted</option>
+                        <option value="follow_up">Follow Up</option>
                         <option value="respond">Respond</option>
                         <option value="interview">Interview</option>
                         <option value="ojt">On Job Test</option>
@@ -1323,6 +1325,13 @@
         const v = normalizeStatus(status);
         if (v === "radar" || v === "none" || v === "screening") return "radar";
         if (v === "contacted") return "contacted";
+        if (
+          v === "follow_up" ||
+          v === "follow up" ||
+          v === "followup" ||
+          v === "follow-up"
+        )
+          return "follow_up";
         if (v === "replied" || v === "respond") return "replied";
         if (v === "interview") return "interview";
         if (v === "ojt" || v === "microteaching") return "ojt";
@@ -1336,6 +1345,13 @@
         const v = normalizeStatus(status);
         if (v === "radar" || v === "none" || v === "screening") return "radar";
         if (v === "contacted") return "contacted";
+        if (
+          v === "follow_up" ||
+          v === "follow up" ||
+          v === "followup" ||
+          v === "follow-up"
+        )
+          return "follow_up";
         if (v === "replied" || v === "respond") return "replied";
         if (v === "interview") return "interview";
         if (v === "ojt" || v === "microteaching") return "ojt";
@@ -2312,6 +2328,10 @@
           '<option value="contacted"' +
           (selectValue === "contacted" ? " selected" : "") +
           ">Contacted</option>";
+        statusOptionsHtml +=
+          '<option value="follow_up"' +
+          (selectValue === "follow_up" ? " selected" : "") +
+          ">Follow Up</option>";
         statusOptionsHtml +=
           '<option value="replied"' +
           (selectValue === "replied" ? " selected" : "") +
