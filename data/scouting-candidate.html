@@ -618,10 +618,12 @@
                   </button>
                 </div>
                 <button
-                  class="btn btn-success rounded-pill px-4 fw-bold border-0"
-                  id="btnExportExcel"
+                  class="btn btn-success rounded-pill px-4 fw-bold border-0 d-flex align-items-center gap-2"
+                  id="btnExport"
+                  data-bs-toggle="modal"
+                  data-bs-target="#candidateExportModal"
                 >
-                  <i class="fas fa-file-excel me-2"></i>Export Excel
+                  <i class="fas fa-file-export"></i>Export
                 </button>
                 <button
                   class="btn btn-dlg-blue rounded-pill px-4 fw-bold border-0"
@@ -692,6 +694,229 @@
             </div>
 
             <div id="gridView" class="row g-4"></div>
+
+            <!-- Modal Export Data (Excel / CSV) -->
+            <div
+              class="modal fade"
+              id="candidateExportModal"
+              tabindex="-1"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 rounded-4 shadow-lg">
+                  <div class="modal-header border-0 pb-2">
+                    <div class="d-flex align-items-center gap-3">
+                      <div
+                        class="rounded-3 d-flex align-items-center justify-content-center"
+                        style="width: 42px; height: 42px; background-color: #ecfdf5; color: #059669; border-radius: 12px;"
+                      >
+                        <i class="fas fa-file-excel fs-5"></i>
+                      </div>
+                      <div>
+                        <h5 class="modal-title fw-bold mb-0 text-dark" style="font-size: 1.15rem;">
+                          Export Data (Excel / CSV)
+                        </h5>
+                        <p class="text-muted small mb-0" style="font-size: 0.8rem;">
+                          Pilih format file, periode, dan jenis data laporan
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="modal"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div class="modal-body pt-2 pb-3">
+                    <!-- Format File Selector -->
+                    <div class="mb-3">
+                      <label class="form-label text-xs fw-bold text-uppercase text-secondary mb-1.5" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                        FORMAT FILE
+                      </label>
+                      <div class="d-flex gap-2 p-1 rounded-3" style="background-color: #f1f5f9;">
+                        <button
+                          type="button"
+                          id="exportFormatXlsxBtn"
+                          class="btn btn-sm w-50 py-2 fw-bold text-dark bg-white shadow-sm border-0 rounded-3 d-flex align-items-center justify-content-center gap-1.5 transition"
+                          style="font-size: 0.82rem;"
+                        >
+                          <i class="fas fa-file-excel text-success me-1"></i> Excel (.xlsx)
+                        </button>
+                        <button
+                          type="button"
+                          id="exportFormatCsvBtn"
+                          class="btn btn-sm w-50 py-2 fw-bold text-secondary bg-transparent border-0 rounded-3 d-flex align-items-center justify-content-center gap-1.5 transition"
+                          style="font-size: 0.82rem;"
+                        >
+                          <i class="fas fa-file-lines text-primary me-1"></i> CSV (.csv)
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Data Scope -->
+                    <div class="mb-3">
+                      <label class="form-label text-xs fw-bold text-uppercase text-secondary mb-1.5" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                        DATA YANG DIEXPORT
+                      </label>
+                      <select
+                        id="exportCandidateScope"
+                        class="form-select rounded-3 py-2 border-1 bg-white fw-medium shadow-none"
+                        style="font-size: 0.88rem;"
+                      >
+                        <option value="all">Data Scouting Candidate</option>
+                      </select>
+                    </div>
+
+                    <!-- Period Option -->
+                    <div class="mb-3">
+                      <label class="form-label text-xs fw-bold text-uppercase text-secondary mb-1.5" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                        PILIHAN RENTANG WAKTU
+                      </label>
+                      <div class="d-flex gap-1 p-1 rounded-3" style="background-color: #f1f5f9;">
+                        <button
+                          type="button"
+                          id="exportPeriodAllBtn"
+                          class="btn btn-sm flex-fill py-2 fw-bold text-dark bg-white shadow-sm border-0 rounded-3 d-flex align-items-center justify-content-center gap-1 transition"
+                          style="font-size: 0.8rem;"
+                        >
+                          <i class="fas fa-globe text-primary me-1"></i> Semua Data
+                        </button>
+                        <button
+                          type="button"
+                          id="exportPeriodMonthBtn"
+                          class="btn btn-sm flex-fill py-2 fw-bold text-secondary bg-transparent border-0 rounded-3 d-flex align-items-center justify-content-center gap-1 transition"
+                          style="font-size: 0.8rem;"
+                        >
+                          <i class="fas fa-calendar-alt me-1"></i> Per Bulan
+                        </button>
+                        <button
+                          type="button"
+                          id="exportPeriodWeekBtn"
+                          class="btn btn-sm flex-fill py-2 fw-bold text-secondary bg-transparent border-0 rounded-3 d-flex align-items-center justify-content-center gap-1 transition"
+                          style="font-size: 0.8rem;"
+                        >
+                          <i class="fas fa-calendar-week me-1"></i> Per Minggu
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- All Data Info Box -->
+                    <div id="exportAllInfoBox" class="mb-3 p-3 rounded-3" style="background-color: #f8fafc; border: 1px dashed #cbd5e1;">
+                      <div class="d-flex align-items-center gap-2 text-primary small fw-semibold">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Ekspor Semua Data Kandidat</span>
+                      </div>
+                      <p class="text-muted small mb-0 mt-1" style="font-size: 0.78rem;">
+                        Semua data kandidat dari awal hingga saat ini akan dimasukkan ke dalam file export tanpa batasan tanggal.
+                      </p>
+                    </div>
+
+                    <!-- Month Box -->
+                    <div id="exportMonthBox" class="mb-3 d-none">
+                      <label for="exportMonthInput" class="form-label text-xs fw-semibold text-dark mb-1" style="font-size: 0.82rem;">
+                        Pilih Bulan & Tahun
+                      </label>
+                      <input
+                        id="exportMonthInput"
+                        type="month"
+                        class="form-control rounded-3 py-2 border-1 bg-white shadow-none"
+                      />
+                      <p class="text-muted small mb-0 mt-1" style="font-size: 0.78rem;">
+                        Semua kandidat pada bulan yang dipilih akan dimasukkan ke dalam file.
+                      </p>
+                    </div>
+
+                    <!-- Week Box -->
+                    <div id="exportWeekBox" class="mb-3 d-none">
+                      <label class="form-label text-xs fw-semibold text-dark mb-1" style="font-size: 0.82rem;">
+                        Pilih Rentang Minggu
+                      </label>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <span class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 0.7rem;">Dari Tanggal</span>
+                          <input
+                            id="exportWeekStart"
+                            type="date"
+                            class="form-control form-control-sm rounded-3 py-2 border-1 bg-white shadow-none"
+                          />
+                        </div>
+                        <div class="col-6">
+                          <span class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 0.7rem;">Sampai Tanggal</span>
+                          <input
+                            id="exportWeekEnd"
+                            type="date"
+                            class="form-control form-control-sm rounded-3 py-2 border-1 bg-white shadow-none"
+                          />
+                        </div>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 pt-2">
+                        <button
+                          type="button"
+                          id="btnQuickThisWeek"
+                          class="btn btn-link btn-sm p-0 text-decoration-none fw-bold text-primary"
+                          style="font-size: 0.78rem;"
+                        >
+                          Minggu Ini
+                        </button>
+                        <span class="text-muted small">|</span>
+                        <button
+                          type="button"
+                          id="btnQuickLastWeek"
+                          class="btn btn-link btn-sm p-0 text-decoration-none fw-bold text-primary"
+                          style="font-size: 0.78rem;"
+                        >
+                          Minggu Lalu
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Status Filter Box -->
+                    <div class="mb-2">
+                      <label for="exportStatusFilterSelect" class="form-label text-xs fw-bold text-uppercase text-secondary mb-1.5" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                        FILTER STATUS KANDIDAT
+                      </label>
+                      <select
+                        id="exportStatusFilterSelect"
+                        class="form-select rounded-3 py-2 border-1 bg-white fw-medium shadow-none"
+                        style="font-size: 0.88rem;"
+                      >
+                        <option value="">Semua Status (Radar, Contacted, Respond, dll)</option>
+                        <option value="radar">Radar</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="respond">Respond</option>
+                        <option value="interview">Interview</option>
+                        <option value="ojt">On Job Test</option>
+                        <option value="decision">Decision</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="accepted">Accepted</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="modal-footer border-0 pt-0 pb-3 px-3 d-flex justify-content-end gap-2">
+                    <button
+                      type="button"
+                      class="btn btn-light rounded-pill px-4 fw-bold border text-secondary"
+                      data-bs-dismiss="modal"
+                      id="exportModalCancelBtn"
+                      style="font-size: 0.85rem;"
+                    >
+                      Batalkan
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-success rounded-pill px-4 fw-bold d-flex align-items-center gap-2 border-0 shadow-sm"
+                      id="exportModalSubmitBtn"
+                      style="background-color: #059669; font-size: 0.85rem;"
+                    >
+                      <i class="fas fa-download"></i>
+                      <span id="exportSubmitBtnText">Download Excel (.xlsx)</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div
               class="modal fade"
@@ -2324,26 +2549,179 @@
         return loader;
       }
 
-      async function exportScoutingToExcel() {
-        try {
-          if (!window.ExcelJS) {
-            alert("Library Excel image export belum tersedia.");
+      // ==========================================
+      // EXPORT CANDIDATES (EXCEL / CSV WITH MODAL)
+      // ==========================================
+      let candidateExportFormat = "xlsx"; // "xlsx" | "csv"
+      let candidateExportPeriod = "all";  // "all" | "month" | "week"
+
+      function setCandidateExportFormat(format) {
+        candidateExportFormat = format;
+        const xlsxBtn = document.getElementById("exportFormatXlsxBtn");
+        const csvBtn = document.getElementById("exportFormatCsvBtn");
+        const submitText = document.getElementById("exportSubmitBtnText");
+
+        if (format === "xlsx") {
+          if (xlsxBtn) {
+            xlsxBtn.className =
+              "btn btn-sm w-50 py-2 fw-bold text-dark bg-white shadow-sm border-0 rounded-3 d-flex align-items-center justify-content-center gap-1.5 transition";
+          }
+          if (csvBtn) {
+            csvBtn.className =
+              "btn btn-sm w-50 py-2 fw-bold text-secondary bg-transparent border-0 rounded-3 d-flex align-items-center justify-content-center gap-1.5 transition";
+          }
+          if (submitText) {
+            submitText.textContent = "Download Excel (.xlsx)";
+          }
+        } else {
+          if (csvBtn) {
+            csvBtn.className =
+              "btn btn-sm w-50 py-2 fw-bold text-dark bg-white shadow-sm border-0 rounded-3 d-flex align-items-center justify-content-center gap-1.5 transition";
+          }
+          if (xlsxBtn) {
+            xlsxBtn.className =
+              "btn btn-sm w-50 py-2 fw-bold text-secondary bg-transparent border-0 rounded-3 d-flex align-items-center justify-content-center gap-1.5 transition";
+          }
+          if (submitText) {
+            submitText.textContent = "Download CSV (.csv)";
+          }
+        }
+      }
+
+      function setCandidateExportPeriod(period) {
+        candidateExportPeriod = period;
+        const allBtn = document.getElementById("exportPeriodAllBtn");
+        const monthBtn = document.getElementById("exportPeriodMonthBtn");
+        const weekBtn = document.getElementById("exportPeriodWeekBtn");
+        const allInfoBox = document.getElementById("exportAllInfoBox");
+        const monthBox = document.getElementById("exportMonthBox");
+        const weekBox = document.getElementById("exportWeekBox");
+
+        const activeClass =
+          "btn btn-sm flex-fill py-2 fw-bold text-dark bg-white shadow-sm border-0 rounded-3 d-flex align-items-center justify-content-center gap-1 transition";
+        const inactiveClass =
+          "btn btn-sm flex-fill py-2 fw-bold text-secondary bg-transparent border-0 rounded-3 d-flex align-items-center justify-content-center gap-1 transition";
+
+        if (allBtn)
+          allBtn.className = period === "all" ? activeClass : inactiveClass;
+        if (monthBtn)
+          monthBtn.className = period === "month" ? activeClass : inactiveClass;
+        if (weekBtn)
+          weekBtn.className = period === "week" ? activeClass : inactiveClass;
+
+        if (allInfoBox)
+          allInfoBox.classList.toggle("d-none", period !== "all");
+        if (monthBox)
+          monthBox.classList.toggle("d-none", period !== "month");
+        if (weekBox)
+          weekBox.classList.toggle("d-none", period !== "week");
+      }
+
+      function parseCandidateDate(val) {
+        if (!val) return null;
+        if (typeof val.toDate === "function") return val.toDate();
+        if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+        if (typeof val === "object" && typeof val.seconds === "number") {
+          return new Date(val.seconds * 1000);
+        }
+        const d = new Date(val);
+        return isNaN(d.getTime()) ? null : d;
+      }
+
+      function toDateYMDString(d) {
+        if (!d) return "";
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function isDateWithinRange(dateObj, startStr, endStr) {
+        if (!dateObj) return false;
+        const ymd = toDateYMDString(dateObj);
+        if (!ymd) return false;
+        return ymd >= startStr && ymd <= endStr;
+      }
+
+      function setupExportModalDefaults() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, "0");
+        const monthInput = document.getElementById("exportMonthInput");
+        if (monthInput && !monthInput.value) {
+          monthInput.value = `${y}-${m}`;
+        }
+
+        // Set default quick week (this week)
+        const currentDay = now.getDay();
+        const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + diffToMonday);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        const startInput = document.getElementById("exportWeekStart");
+        const endInput = document.getElementById("exportWeekEnd");
+        if (startInput && !startInput.value)
+          startInput.value = toDateYMDString(monday);
+        if (endInput && !endInput.value)
+          endInput.value = toDateYMDString(sunday);
+      }
+
+      async function performCandidateExport() {
+        const submitBtn = document.getElementById("exportModalSubmitBtn");
+        const statusFilterEl = document.getElementById(
+          "exportStatusFilterSelect",
+        );
+        const selectedStatus = statusFilterEl
+          ? statusFilterEl.value.trim().toLowerCase()
+          : "";
+
+        let startStr = "";
+        let endStr = "";
+        let periodLabel = "Semua_Data";
+
+        if (candidateExportPeriod === "month") {
+          const monthInput = document.getElementById("exportMonthInput");
+          const monthVal = monthInput ? monthInput.value : "";
+          if (!monthVal) {
+            alert("Silakan pilih bulan terlebih dahulu.");
             return;
           }
+          const parts = monthVal.split("-");
+          const year = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10);
+          const lastDay = new Date(year, month, 0).getDate();
+          startStr = `${monthVal}-01`;
+          endStr = `${monthVal}-${String(lastDay).padStart(2, "0")}`;
+          periodLabel = `Bulan_${monthVal}`;
+        } else if (candidateExportPeriod === "week") {
+          const startInput = document.getElementById("exportWeekStart");
+          const endInput = document.getElementById("exportWeekEnd");
+          startStr = startInput ? startInput.value : "";
+          endStr = endInput ? endInput.value : "";
+          if (!startStr || !endStr) {
+            alert("Silakan pilih rentang tanggal minggu terlebih dahulu.");
+            return;
+          }
+          if (startStr > endStr) {
+            alert("Tanggal mulai tidak boleh melebihi tanggal akhir.");
+            return;
+          }
+          periodLabel = `Minggu_${startStr}_sd_${endStr}`;
+        }
 
-          // Ambil status filter yang sedang dipilih
-          const statusFilterEl = document.getElementById(
-            "candidateStatusFilter",
-          );
-          const selectedFilterStatus = statusFilterEl
-            ? statusFilterEl.value
-            : "";
-          const filterStatusKey = selectedFilterStatus
-            ? selectedFilterStatus.toString().trim().toLowerCase()
-            : "";
+        const originalBtnHtml = submitBtn ? submitBtn.innerHTML : "";
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
+        }
 
+        try {
           const snap = await getDocs(collection(db, "talents"));
           const talents = [];
+
           snap.forEach((docSnap) => {
             const data = docSnap.data() || {};
             const basic = data.basic_info || {};
@@ -2355,10 +2733,30 @@
               .trim()
               .toLowerCase();
 
-            // Filter berdasarkan status jika ada filter yang dipilih
-            if (filterStatusKey) {
+            // Filter Status
+            if (selectedStatus) {
               const matchStatus = mapToSelectStatus(currentStatus);
-              if (matchStatus !== filterStatusKey) return;
+              if (matchStatus !== selectedStatus) return;
+            }
+
+            // Filter Tanggal jika bukan "all"
+            if (candidateExportPeriod !== "all") {
+              const createdAtDate = parseCandidateDate(data.created_at);
+              const interviewDate = parseCandidateDate(scouting.interview_due);
+              const matchCreated = isDateWithinRange(
+                createdAtDate,
+                startStr,
+                endStr,
+              );
+              const matchInterview = isDateWithinRange(
+                interviewDate,
+                startStr,
+                endStr,
+              );
+
+              if (!matchCreated && !matchInterview) {
+                return;
+              }
             }
 
             const assignedIds = Array.isArray(scouting.assigned_to)
@@ -2368,6 +2766,7 @@
               .map((uid) => assignUsersMap[uid]?.name || "")
               .filter(Boolean)
               .join(", ");
+
             talents.push({
               photoUrl: basic.avatar_url || "",
               nama: basic.full_name || scouting.full_name || "Tanpa Nama",
@@ -2386,124 +2785,216 @@
           });
 
           if (!talents.length) {
-            const filterLabel = filterStatusKey
-              ? `dengan status "${filterStatusKey}"`
-              : "";
             alert(
-              `Tidak ada data scouting talent ${filterLabel} untuk diexport.`,
+              "Tidak ada data kandidat yang sesuai dengan filter yang dipilih.",
             );
             return;
           }
 
-          const workbook = new window.ExcelJS.Workbook();
-          const worksheet = workbook.addWorksheet("Scouting Talent");
-          worksheet.columns = [
-            { header: "Foto", key: "foto", width: 14 },
-            { header: "Nama", key: "nama", width: 24 },
-            { header: "No. WhatsApp", key: "whatsapp", width: 18 },
-            { header: "Email", key: "email", width: 28 },
-            { header: "Kota/Domisili", key: "kota", width: 22 },
-            { header: "Role", key: "role", width: 20 },
-            { header: "Posisi", key: "posisi", width: 22 },
-            { header: "Platform", key: "platform", width: 14 },
-            { header: "Link Profile", key: "linkProfile", width: 34 },
-            { header: "Status", key: "status", width: 14 },
-            { header: "Tanggal Input", key: "tanggalInput", width: 18 },
-            { header: "Tanggal Interview", key: "tanggalInterview", width: 22 },
-            { header: "Assigned To", key: "assignedTo", width: 24 },
-          ];
+          const todayStr = toDateYMDString(new Date());
 
-          const headerRow = worksheet.getRow(1);
-          headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
-          headerRow.alignment = { vertical: "middle", horizontal: "center" };
-          headerRow.fill = {
-            type: "pattern",
-            pattern: "solid",
-            fgColor: { argb: "FF0B2B6A" },
-          };
-          headerRow.height = 24;
+          if (candidateExportFormat === "csv") {
+            // EXPORT CSV
+            const headers = [
+              "No",
+              "Nama",
+              "No. WhatsApp",
+              "Email",
+              "Kota/Domisili",
+              "Role",
+              "Posisi",
+              "Platform",
+              "Link Profile",
+              "Status",
+              "Tanggal Input",
+              "Tanggal Interview",
+              "Assigned To",
+            ];
 
-          const imageCache = new Map();
-          for (const talent of talents) {
-            const row = worksheet.addRow({
-              foto: talent.photoUrl ? "" : "No Image",
-              nama: talent.nama,
-              whatsapp: talent.whatsapp,
-              email: talent.email,
-              kota: talent.kota,
-              role: talent.role,
-              posisi: talent.posisi,
-              platform: talent.platform,
-              linkProfile: talent.linkProfile,
-              status: talent.status,
-              tanggalInput: talent.tanggalInput,
-              tanggalInterview: talent.tanggalInterview,
-              assignedTo: talent.assignedTo,
+            const escapeCsv = (val) => {
+              if (val === null || val === undefined) return '""';
+              const s = String(val).replace(/"/g, '""');
+              return `"${s}"`;
+            };
+
+            const csvRows = [headers.map(escapeCsv).join(",")];
+            talents.forEach((t, idx) => {
+              csvRows.push(
+                [
+                  idx + 1,
+                  t.nama || "-",
+                  t.whatsapp || "-",
+                  t.email || "-",
+                  t.kota || "-",
+                  t.role || "-",
+                  t.posisi || "-",
+                  t.platform || "-",
+                  t.linkProfile || "-",
+                  t.status || "-",
+                  t.tanggalInput || "-",
+                  t.tanggalInterview || "-",
+                  t.assignedTo || "-",
+                ]
+                  .map(escapeCsv)
+                  .join(","),
+              );
             });
-            row.height = 64;
-            row.alignment = { vertical: "middle", wrapText: true };
-          }
 
-          for (let i = 0; i < talents.length; i += 1) {
-            const talent = talents[i];
-            const rowNumber = i + 2;
-            const photoCell = worksheet.getCell("A" + rowNumber);
-            photoCell.alignment = { vertical: "middle", horizontal: "center" };
-            if (!talent.photoUrl) continue;
-            const imageData = await fetchImageAsBase64(
-              talent.photoUrl,
-              imageCache,
-            );
-            if (!imageData) {
-              photoCell.value = "No Image";
-              continue;
+            const csvContent = "\uFEFF" + csvRows.join("\r\n");
+            const blob = new Blob([csvContent], {
+              type: "text/csv;charset=utf-8;",
+            });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `Dialogika_Scouting_Candidate_${periodLabel}_${todayStr}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          } else {
+            // EXPORT EXCEL (.XLSX)
+            if (!window.ExcelJS) {
+              alert(
+                "Library ExcelJS belum siap. Silakan refresh halaman dan coba lagi.",
+              );
+              return;
             }
-            try {
-              const imageId = workbook.addImage({
-                base64: imageData.base64,
-                extension: imageData.extension,
-              });
-              worksheet.addImage(imageId, {
-                tl: { col: 0.15, row: rowNumber - 1 + 0.1 },
-                ext: { width: 80, height: 80 },
-              });
-              photoCell.value = "";
-            } catch (_) {
-              photoCell.value = "No Image";
-            }
-          }
 
-          worksheet.eachRow((row, rowNumber) => {
-            row.eachCell((cell) => {
-              cell.alignment =
-                rowNumber === 1
-                  ? { vertical: "middle", horizontal: "center" }
-                  : { vertical: "middle", wrapText: true };
-              cell.border = {
-                top: { style: "thin", color: { argb: "FFD1D5DB" } },
-                left: { style: "thin", color: { argb: "FFD1D5DB" } },
-                bottom: { style: "thin", color: { argb: "FFD1D5DB" } },
-                right: { style: "thin", color: { argb: "FFD1D5DB" } },
+            const workbook = new window.ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("Scouting Talent");
+            worksheet.columns = [
+              { header: "Foto", key: "foto", width: 14 },
+              { header: "Nama", key: "nama", width: 24 },
+              { header: "No. WhatsApp", key: "whatsapp", width: 18 },
+              { header: "Email", key: "email", width: 28 },
+              { header: "Kota/Domisili", key: "kota", width: 22 },
+              { header: "Role", key: "role", width: 20 },
+              { header: "Posisi", key: "posisi", width: 22 },
+              { header: "Platform", key: "platform", width: 14 },
+              { header: "Link Profile", key: "linkProfile", width: 34 },
+              { header: "Status", key: "status", width: 14 },
+              { header: "Tanggal Input", key: "tanggalInput", width: 18 },
+              {
+                header: "Tanggal Interview",
+                key: "tanggalInterview",
+                width: 22,
+              },
+              { header: "Assigned To", key: "assignedTo", width: 24 },
+            ];
+
+            const headerRow = worksheet.getRow(1);
+            headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+            headerRow.alignment = {
+              vertical: "middle",
+              horizontal: "center",
+            };
+            headerRow.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "FF0B2B6A" },
+            };
+            headerRow.height = 24;
+
+            const imageCache = new Map();
+            for (const talent of talents) {
+              const row = worksheet.addRow({
+                foto: talent.photoUrl ? "" : "No Image",
+                nama: talent.nama,
+                whatsapp: talent.whatsapp,
+                email: talent.email,
+                kota: talent.kota,
+                role: talent.role,
+                posisi: talent.posisi,
+                platform: talent.platform,
+                linkProfile: talent.linkProfile,
+                status: talent.status,
+                tanggalInput: talent.tanggalInput,
+                tanggalInterview: talent.tanggalInterview,
+                assignedTo: talent.assignedTo,
+              });
+              row.height = 64;
+              row.alignment = { vertical: "middle", wrapText: true };
+            }
+
+            for (let i = 0; i < talents.length; i += 1) {
+              const talent = talents[i];
+              const rowNumber = i + 2;
+              const photoCell = worksheet.getCell("A" + rowNumber);
+              photoCell.alignment = {
+                vertical: "middle",
+                horizontal: "center",
               };
-            });
-          });
+              if (!talent.photoUrl) continue;
+              const imageData = await fetchImageAsBase64(
+                talent.photoUrl,
+                imageCache,
+              );
+              if (!imageData) {
+                photoCell.value = "No Image";
+                continue;
+              }
+              try {
+                const imageId = workbook.addImage({
+                  base64: imageData.base64,
+                  extension: imageData.extension,
+                });
+                worksheet.addImage(imageId, {
+                  tl: { col: 0.15, row: rowNumber - 1 + 0.1 },
+                  ext: { width: 80, height: 80 },
+                });
+                photoCell.value = "";
+              } catch (_) {
+                photoCell.value = "No Image";
+              }
+            }
 
-          const today = new Date().toISOString().split("T")[0];
-          const buffer = await workbook.xlsx.writeBuffer();
-          const blob = new Blob([buffer], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = "scouting-talent-" + today + ".xlsx";
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
-        } catch (e) {
-          console.error("Gagal export scouting talent", e);
-          alert("Gagal mengexport data. Silakan coba lagi.");
+            worksheet.eachRow((row, rowNumber) => {
+              row.eachCell((cell) => {
+                cell.alignment =
+                  rowNumber === 1
+                    ? { vertical: "middle", horizontal: "center" }
+                    : { vertical: "middle", wrapText: true };
+                cell.border = {
+                  top: { style: "thin", color: { argb: "FFD1D5DB" } },
+                  left: { style: "thin", color: { argb: "FFD1D5DB" } },
+                  bottom: { style: "thin", color: { argb: "FFD1D5DB" } },
+                  right: { style: "thin", color: { argb: "FFD1D5DB" } },
+                };
+              });
+            });
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], {
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `Dialogika_Scouting_Candidate_${periodLabel}_${todayStr}.xlsx`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          }
+
+          // Tutup modal secara otomatis setelah selesai
+          const exportModalEl = document.getElementById(
+            "candidateExportModal",
+          );
+          if (exportModalEl) {
+            const modalInstance =
+              window.bootstrap.Modal.getInstance(exportModalEl);
+            if (modalInstance) modalInstance.hide();
+          }
+        } catch (err) {
+          console.error("Gagal export scouting candidate", err);
+          alert("Gagal melakukan ekspor data. Silakan coba lagi.");
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+          }
         }
       }
 
@@ -2642,18 +3133,99 @@
       }
       setPhotoState("idle", "Belum ada foto");
 
-      const btnExportExcel = document.getElementById("btnExportExcel");
-      if (btnExportExcel) {
-        btnExportExcel.addEventListener("click", async () => {
-          const previousHtml = btnExportExcel.innerHTML;
-          btnExportExcel.disabled = true;
-          btnExportExcel.innerHTML =
-            '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Exporting...';
-          try {
-            await exportScoutingToExcel();
-          } finally {
-            btnExportExcel.disabled = false;
-            btnExportExcel.innerHTML = previousHtml;
+      // Modal Export Event Listeners
+      const exportFormatXlsxBtn = document.getElementById(
+        "exportFormatXlsxBtn",
+      );
+      const exportFormatCsvBtn = document.getElementById("exportFormatCsvBtn");
+      if (exportFormatXlsxBtn) {
+        exportFormatXlsxBtn.addEventListener("click", () =>
+          setCandidateExportFormat("xlsx"),
+        );
+      }
+      if (exportFormatCsvBtn) {
+        exportFormatCsvBtn.addEventListener("click", () =>
+          setCandidateExportFormat("csv"),
+        );
+      }
+
+      const exportPeriodAllBtn = document.getElementById("exportPeriodAllBtn");
+      const exportPeriodMonthBtn = document.getElementById(
+        "exportPeriodMonthBtn",
+      );
+      const exportPeriodWeekBtn = document.getElementById(
+        "exportPeriodWeekBtn",
+      );
+      if (exportPeriodAllBtn) {
+        exportPeriodAllBtn.addEventListener("click", () =>
+          setCandidateExportPeriod("all"),
+        );
+      }
+      if (exportPeriodMonthBtn) {
+        exportPeriodMonthBtn.addEventListener("click", () =>
+          setCandidateExportPeriod("month"),
+        );
+      }
+      if (exportPeriodWeekBtn) {
+        exportPeriodWeekBtn.addEventListener("click", () =>
+          setCandidateExportPeriod("week"),
+        );
+      }
+
+      const btnQuickThisWeek = document.getElementById("btnQuickThisWeek");
+      const btnQuickLastWeek = document.getElementById("btnQuickLastWeek");
+      if (btnQuickThisWeek) {
+        btnQuickThisWeek.addEventListener("click", () => {
+          const now = new Date();
+          const currentDay = now.getDay();
+          const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+          const monday = new Date(now);
+          monday.setDate(now.getDate() + diffToMonday);
+          const sunday = new Date(monday);
+          sunday.setDate(monday.getDate() + 6);
+          const s = document.getElementById("exportWeekStart");
+          const e = document.getElementById("exportWeekEnd");
+          if (s) s.value = toDateYMDString(monday);
+          if (e) e.value = toDateYMDString(sunday);
+        });
+      }
+      if (btnQuickLastWeek) {
+        btnQuickLastWeek.addEventListener("click", () => {
+          const now = new Date();
+          const currentDay = now.getDay();
+          const diffToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+          const monday = new Date(now);
+          monday.setDate(now.getDate() + diffToMonday - 7);
+          const sunday = new Date(monday);
+          sunday.setDate(monday.getDate() + 6);
+          const s = document.getElementById("exportWeekStart");
+          const e = document.getElementById("exportWeekEnd");
+          if (s) s.value = toDateYMDString(monday);
+          if (e) e.value = toDateYMDString(sunday);
+        });
+      }
+
+      const exportModalSubmitBtn = document.getElementById(
+        "exportModalSubmitBtn",
+      );
+      if (exportModalSubmitBtn) {
+        exportModalSubmitBtn.addEventListener("click", performCandidateExport);
+      }
+
+      const candidateExportModalEl = document.getElementById(
+        "candidateExportModal",
+      );
+      if (candidateExportModalEl) {
+        candidateExportModalEl.addEventListener("show.bs.modal", () => {
+          setupExportModalDefaults();
+          const pageStatusFilter = document.getElementById(
+            "candidateStatusFilter",
+          );
+          const modalStatusFilter = document.getElementById(
+            "exportStatusFilterSelect",
+          );
+          if (pageStatusFilter && modalStatusFilter && pageStatusFilter.value) {
+            modalStatusFilter.value = pageStatusFilter.value;
           }
         });
       }
