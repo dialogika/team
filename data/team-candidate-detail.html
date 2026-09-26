@@ -2377,7 +2377,7 @@
         const STATUS_PIPELINE = [
              { value: "screening", label: "Screening", caption: "", badgeClass: "status-screening" },
              { value: "interview", label: "Interview", caption: "", badgeClass: "status-interview" },
-             { value: "on_job_training", label: "On Job Training", caption: "", badgeClass: "status-On-job-training" },
+             { value: "on_job_training", label: "On Job Test", caption: "", badgeClass: "status-On-job-training" },
              { value: "accepted", label: "Accepted", caption: "", badgeClass: "status-accepted" },
              { value: "onboarding", label: "On Boarding", caption: "", badgeClass: "status-onboarding" },
              { value: "rejected", label: "Rejected", caption: "", badgeClass: "decision-rejected" },
@@ -2828,7 +2828,7 @@
              if (raw === "interview") return "interview";
              if (raw === "accepted" || raw === "accept" || raw === "decision") return "accepted";
              if (raw === "rejected" || raw === "reject") return "rejected";
-             if (raw === "on_job_training") return "on_job_training";
+             if (raw === "on_job_training" || raw === "on_job_test" || raw === "ojt" || raw === "on job test" || raw === "on job training") return "on_job_training";
              if (raw === "onboarding") return "onboarding";
              if (raw === "withdrawn" || raw === "mengundurkan_diri" || raw === "mengundurkan diri") return "withdrawn";
              return "screening";
