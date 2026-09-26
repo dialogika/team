@@ -1990,7 +1990,7 @@
                             <div class="modal-section-card d-none mt-3" id="on_job_trainingSetupCard">
                                 <div class="modal-section-header">
                                     <div>
-                                        <h6 class="modal-section-title">Pengaturan On Job Training</h6>
+                                        <h6 class="modal-section-title">Pengaturan On Job Test</h6>
                                     </div>
                                     <div class="modal-section-icon"><i class="fa-regular fa-circle-check"></i></div>
                                 </div>
@@ -2000,8 +2000,8 @@
                                             <label for="on_job_trainingStartInput"
                                                 class="form-label form-label-soft">Tanggal Mulai</label>
                                             <input type="text" class="form-control" id="on_job_trainingStartInput"
-                                                placeholder="Pilih tanggal On Job Training">
-                                            <div class="invalid-feedback">Tanggal mulai On Job Training wajib diisi.
+                                                placeholder="Pilih tanggal On Job Test">
+                                            <div class="invalid-feedback">Tanggal mulai On Job Test wajib diisi.
                                             </div>
                                         </div>
                                     </div>
@@ -2010,18 +2010,18 @@
                                             <label for="on_job_trainingEndInput"
                                                 class="form-label form-label-soft">Tanggal Selesai</label>
                                             <input type="text" class="form-control" id="on_job_trainingEndInput"
-                                                placeholder="Pilih tanggal selesai On Job Training">
-                                            <div class="invalid-feedback">Tanggal selesai On Job Training wajib diisi.
+                                                placeholder="Pilih tanggal selesai On Job Test">
+                                            <div class="invalid-feedback">Tanggal selesai On Job Test wajib diisi.
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="modal-field-shell is-highlight">
                                             <label for="on_job_trainingTimeInput"
-                                                class="form-label form-label-soft">Waktu On Job Training</label>
+                                                class="form-label form-label-soft">Waktu On Job Test</label>
                                             <input type="time" class="form-control" id="on_job_trainingTimeInput"
                                                 step="900" value="14:00">
-                                            <div class="invalid-feedback">Waktu On Job Training wajib diisi.</div>
+                                            <div class="invalid-feedback">Waktu On Job Test wajib diisi.</div>
                                         </div>
                                     </div>
                                     <div class="col-md-4 d-none">
@@ -2037,7 +2037,7 @@
                                     <div class="col-md-4">
                                         <div class="modal-field-shell">
                                             <label for="on_job_trainingModeSelect"
-                                                class="form-label form-label-soft">Mode On Job Training</label>
+                                                class="form-label form-label-soft">Mode On Job Test</label>
                                             <select class="form-select" id="on_job_trainingModeSelect">
                                                 <option value="offline">Offline</option>
                                                 <option value="online">Online</option>
@@ -2050,7 +2050,7 @@
                                                 class="form-label form-label-soft">Link Meeting</label>
                                             <input type="url" class="form-control" id="on_job_trainingMeetingLinkInput"
                                                 placeholder="https://meet.google.com/...">
-                                            <div class="invalid-feedback">Link Meeting wajib diisi untuk On Job Training
+                                            <div class="invalid-feedback">Link Meeting wajib diisi untuk On Job Test
                                                 online.</div>
                                         </div>
                                     </div>
@@ -2059,8 +2059,8 @@
                                             <label for="on_job_trainingLocationInput"
                                                 class="form-label form-label-soft">Tempat</label>
                                             <input type="text" class="form-control" id="on_job_trainingLocationInput"
-                                                placeholder="Isi lokasi On Job Training offline">
-                                            <div class="invalid-feedback">Tempat wajib diisi untuk On Job Training
+                                                placeholder="Isi lokasi On Job Test offline">
+                                            <div class="invalid-feedback">Tempat wajib diisi untuk On Job Test
                                                 offline.</div>
                                         </div>
                                     </div>
@@ -2073,12 +2073,12 @@
                                     id="on_job_trainingWhatsappValidationMessage"></div>
                                 <div class="action-cta mt-3">
                                     <button type="button" class="btn btn-outline-primary"
-                                        id="prepareon_job_trainingWhatsappButton">Atur Jadwal On Job Training</button>
+                                        id="prepareon_job_trainingWhatsappButton">Atur Jadwal On Job Test</button>
                                 </div>
                                 <div class="whatsapp-preview-shell d-none mt-3" id="on_job_trainingWhatsappShell">
                                     <div class="whatsapp-preview-header">
                                         <div>
-                                            <div class="whatsapp-preview-title">Undangan On Job Training WhatsApp</div>
+                                            <div class="whatsapp-preview-title">Undangan On Job Test WhatsApp</div>
                                             <div class="whatsapp-preview-subtitle"
                                                 id="on_job_trainingWhatsappTargetInfo">Nomor kandidat belum tersedia.
                                             </div>
@@ -2105,7 +2105,7 @@
                                         <input class="form-check-input" type="checkbox" value=""
                                             id="confirmon_job_trainingWhatsappCheckbox" disabled>
                                         <label class="form-check-label" for="confirmon_job_trainingWhatsappCheckbox">
-                                            Sudah mengirim pesan undangan On Job Training ke kandidat.
+                                            Sudah mengirim pesan undangan On Job Test ke kandidat.
                                         </label>
                                     </div>
                                 </div>
@@ -3803,11 +3803,11 @@
             } else if (vm.displayStatus === "interview") {
                 actionHtml =
                     '<div class="action-panel">' +
-                    '<div class="action-panel-title">Lanjutkan ke On Job Training</div>' +
-                    '<div class="action-panel-note">Saat status berada di tahap interview, recruiter perlu menjadwalkan On Job Training sebagai tahapan lanjutan.</div>' +
+                    '<div class="action-panel-title">Lanjutkan ke On Job Test</div>' +
+                    '<div class="action-panel-note">Saat status berada di tahap interview, recruiter perlu menjadwalkan On Job Test sebagai tahapan lanjutan.</div>' +
                     '<div class="action-cta">' +
                     '<button type="button" class="btn btn-outline-primary" id="btnEditInterviewSchedule"><i class="fa-solid fa-pen-to-square me-2"></i>Edit Jadwal</button>' +
-                    '<button type="button" class="btn btn-success" id="btnOpenon_job_trainingModal"><i class="fa-solid fa-clipboard-check me-2"></i>Jadwalkan On Job Training</button>' +
+                    '<button type="button" class="btn btn-success" id="btnOpenon_job_trainingModal"><i class="fa-solid fa-clipboard-check me-2"></i>Jadwalkan On Job Test</button>' +
                     '<button type="button" class="btn btn-danger" id="btnOpenDecisionModal"><i class="fa-solid fa-xmark me-2"></i>Tolak/Pengunduran Diri</button>' +
                     '</div>' +
                     '</div>';
@@ -3827,7 +3827,7 @@
                 actionHtml =
                     '<div class="action-panel">' +
                     '<div class="action-panel-title">Final Decision</div>' +
-                    '<div class="action-panel-note">Setelah On Job Training selesai, recruiter dapat menetapkan kandidat menjadi accepted atau rejected.</div>' +
+                    '<div class="action-panel-note">Setelah On Job Test selesai, recruiter dapat menetapkan kandidat menjadi accepted atau rejected.</div>' +
                     '<div class="action-cta">' +
                     '<button type="button" class="btn btn-success" id="btnOpenDecisionModal"><i class="fa-solid fa-clipboard-check me-2"></i>Proses Keputusan Final</button>' +
                     '</div>' +
@@ -4672,7 +4672,7 @@
                 retryButton.disabled = true;
                 confirmCheckbox.checked = false;
                 confirmCheckbox.disabled = true;
-                hint.textContent = "Lengkapi tanggal, mode, dan detail On Job Training terlebih dahulu, lalu klik `Atur Jadwal On Job Training` untuk menyiapkan undangan WhatsApp.";
+                hint.textContent = "Lengkapi tanggal, mode, dan detail On Job Test terlebih dahulu, lalu klik `Atur Jadwal On Job Test` untuk menyiapkan undangan WhatsApp.";
                 scheduleWhatsappPopupSizingSync();
                 return;
             }
@@ -4715,7 +4715,7 @@
                 const timeValue = document.getElementById("on_job_trainingTimeInput") ? document.getElementById("on_job_trainingTimeInput").value : "";
                 const scheduleState = getonJobTrainingScheduleState();
                 const onJobTrainingMessage = document.getElementById("on_job_trainingWhatsappText") ? (document.getElementById("on_job_trainingWhatsappText").value || "").trim() : "";
-                submitButton.textContent = "Submit On Job Training";
+                submitButton.textContent = "Submit On Job Test";
                 submitButton.disabled = !startDate || !endDate || endDate.getTime() < startDate.getTime() || !timeValue || !scheduleState.isMeetingLinkValid || !scheduleState.isLocationValid || !on_job_trainingWhatsappConfirmedAt || !onJobTrainingMessage;
                 return;
             }
@@ -5487,7 +5487,7 @@
                  } else if (isInterviewMode) {
                      modalLabel.textContent = "Keputusan Interview Kandidat";
                  } else {
-                     modalLabel.textContent = "Pengaturan On Job Training";
+                     modalLabel.textContent = "Pengaturan On Job Test";
                  }
              }
              if (modalSubtitle) {
@@ -5496,16 +5496,16 @@
                  } else if (isInterviewMode) {
                      modalSubtitle.textContent = "Pilih aksi akhir setelah interview. Recruiter wajib menyiapkan dan mengonfirmasi WhatsApp sebelum submit.";
                  } else {
-                     modalSubtitle.textContent = "Lengkapi tanggal On Job Training dan departemen, lalu kirim undangan WhatsApp On Job Training sebelum submit.";
+                     modalSubtitle.textContent = "Lengkapi tanggal On Job Test dan departemen, lalu kirim undangan WhatsApp On Job Test sebelum submit.";
                  }
              }
              if (statusHint) {
                  if (isOnboardingMode) {
                      statusHint.textContent = "Status kandidat saat ini: Accepted. Lengkapi detail On Boarding dan kirim undangan WhatsApp sebelum submit.";
                  } else if (isInterviewMode) {
-                     statusHint.textContent = "Status kandidat saat ini: On Job Training. Pilih accepted atau rejected lalu kirim template WhatsApp terkait.";
+                     statusHint.textContent = "Status kandidat saat ini: On Job Test. Pilih accepted atau rejected lalu kirim template WhatsApp terkait.";
                  } else {
-                     statusHint.textContent = "Status kandidat saat ini: Interview. Lanjutkan ke On Job Training dengan pengaturan jadwal dan undangan WhatsApp.";
+                     statusHint.textContent = "Status kandidat saat ini: Interview. Lanjutkan ke On Job Test dengan pengaturan jadwal dan undangan WhatsApp.";
                  }
              }
          }
@@ -5540,7 +5540,7 @@
              document.getElementById("decisionOnboardingSection").classList.toggle("is-active", action === "onboarding");
              if (action === "accepted") {
                  document.getElementById("decisionStatusHint").textContent = decisionModalContext === "on_job_training"
-                     ? "Lengkapi pengaturan On Job Training, kirim undangan WhatsApp On Job Training, lalu submit."
+                     ? "Lengkapi pengaturan On Job Test, kirim undangan WhatsApp On Job Test, lalu submit."
                      : "Saat kandidat diterima, recruiter perlu menyiapkan dan mengonfirmasi pengiriman Acceptance Letter WhatsApp sebelum submit.";
              } else if (action === "rejected") {
                  document.getElementById("decisionStatusHint").textContent = "Saat kandidat ditolak, recruiter perlu menyiapkan dan mengonfirmasi pengiriman WhatsApp penolakan sebelum submit.";
@@ -5582,7 +5582,7 @@
              if (!(await ensureCandidateActiveForProgress("open_decision_modal"))) return;
              const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
              if (!vm || !(vm.displayStatus === "screening" || vm.displayStatus === "interview" || vm.displayStatus === "on_job_training")) {
-                 showWarning("Keputusan (reject/withdraw) hanya dapat diproses saat status kandidat berada pada tahap Screening, Interview, atau On Job Training.");
+                 showWarning("Keputusan (reject/withdraw) hanya dapat diproses saat status kandidat berada pada tahap Screening, Interview, atau On Job Test.");
                  return;
              }
              decisionModalContext = "interview";
@@ -5608,7 +5608,7 @@
              if (!(await ensureCandidateActiveForProgress("open_on_job_training_modal"))) return;
              const vm = currentCandidate ? getCandidateViewModel(currentCandidate) : null;
              if (!vm || vm.displayStatus !== "interview") {
-                 showWarning("Pengaturan On Job Training hanya dapat dibuka saat status kandidat berada pada tahap interview.");
+                 showWarning("Pengaturan On Job Test hanya dapat dibuka saat status kandidat berada pada tahap interview.");
                  return;
              }
              decisionModalContext = "on_job_training";

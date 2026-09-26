@@ -73,21 +73,21 @@ export const CATEGORY_TEMPLATE_DEFS = {
         },
         {
             id: "on_job_training_online",
-            title: "On Job Training Online",
-            description: "Template untuk undangan On Job Training online.",
+            title: "On Job Test Online",
+            description: "Template untuk undangan On Job Test online.",
             stage: "on_job_training",
             mode: "online",
             requiredTokens: ["{candidate_name}", "{ojt_date}", "{ojt_time}", "{meeting_link}"],
-            defaultTemplate: "*[REKRUTMEN DIALOGIKA]*\n\nHalo Kak {candidate_name}!\n\nTerima kasih telah mengikuti seluruh tahapan rekrutmen Mentor di Dialogika dengan antusias. Kami mengucapkan selamat karena Kakak telah dinyatakan lolos ke tahap berikutnya, yaitu *On Job Training (OJT)*.\n\nMelalui pesan ini, kami mengundang Kakak untuk mengikuti program OJT yang akan dilaksanakan selama *3 hari* sebagai bagian dari proses penilaian dan pengenalan lingkungan kerja di Dialogika.\n\n*Periode OJT* : {ojt_date}\n*Waktu*       : {ojt_time} WIB\n*Lokasi*      : {meeting_link}\n\nSelama pelaksanaan OJT, peserta diharapkan hadir tepat waktu, menggunakan pakaian yang sopan dan rapi, serta membawa laptop untuk mendukung kegiatan pelatihan dan praktik kerja.\n\nKehadiran dan performa selama OJT akan menjadi salah satu pertimbangan dalam proses evaluasi akhir rekrutmen.\n\nTerima kasih atas perhatian dan kerja samanya.\n\nSalam,\nHuman Resource Dialogika\n\nMohon untuk mengonfirmasi kehadiran dengan membalas pesan ini.\n\n*Reschedule  maksimal H-1 sebelum hari pertama OJT.*"
+            defaultTemplate: "*[REKRUTMEN DIALOGIKA]*\n\nHalo Kak {candidate_name}!\n\nTerima kasih telah mengikuti seluruh tahapan rekrutmen di Dialogika dengan antusias. Kami mengucapkan selamat karena Kakak telah dinyatakan lolos ke tahap berikutnya, yaitu *On Job Test (OJT)*.\n\nMelalui pesan ini, kami mengundang Kakak untuk mengikuti program OJT sebagai bagian dari proses penilaian dan pengenalan lingkungan kerja di Dialogika.\n\n*Periode OJT* : {ojt_date}\n*Waktu*       : {ojt_time} WIB\n*Lokasi*      : {meeting_link}\n\nSelama pelaksanaan OJT, peserta diharapkan hadir tepat waktu, menggunakan pakaian yang sopan dan rapi, serta membawa laptop untuk mendukung kegiatan pelatihan dan praktik kerja.\n\nKehadiran dan performa selama OJT akan menjadi salah satu pertimbangan dalam proses evaluasi akhir rekrutmen.\n\nTerima kasih atas perhatian dan kerja samanya.\n\nSalam,\nHuman Resource Dialogika\n\nMohon untuk mengonfirmasi kehadiran dengan membalas pesan ini.\n\n*Reschedule  maksimal H-1 sebelum hari pertama OJT.*"
         },
         {
             id: "on_job_training_offline",
-            title: "On Job Training Offline",
-            description: "Template untuk undangan On Job Training offline.",
+            title: "On Job Test Offline",
+            description: "Template untuk undangan On Job Test offline.",
             stage: "on_job_training",
             mode: "offline",
             requiredTokens: ["{candidate_name}", "{ojt_date}", "{ojt_time}", "{ojt_location}"],
-            defaultTemplate: "*[REKRUTMEN DIALOGIKA]*\n\nHalo Kak {candidate_name}!\n\nTerima kasih telah mengikuti seluruh tahapan rekrutmen Mentor di Dialogika dengan antusias. Kami mengucapkan selamat karena Kakak telah dinyatakan lolos ke tahap berikutnya, yaitu *On Job Training (OJT)*.\n\nMelalui pesan ini, kami mengundang Kakak untuk mengikuti program OJT yang akan dilaksanakan selama *3 hari* sebagai bagian dari proses penilaian dan pengenalan lingkungan kerja di Dialogika.\n\n*Periode OJT* : {ojt_date}\n*Waktu*       : {ojt_time} WIB\n*Lokasi*      : {ojt_location}\n\nSelama pelaksanaan OJT, peserta diharapkan hadir tepat waktu, menggunakan pakaian yang sopan dan rapi, serta membawa laptop untuk mendukung kegiatan pelatihan dan praktik kerja.\n\nKehadiran dan performa selama OJT akan menjadi salah satu pertimbangan dalam proses evaluasi akhir rekrutmen.\n\nTerima kasih atas perhatian dan kerja samanya.\n\nSalam,\nHuman Resource Dialogika\n\nMohon untuk mengonfirmasi kehadiran dengan membalas pesan ini.\n\n*Reschedule  maksimal H-1 sebelum hari pertama OJT.*"
+            defaultTemplate: "*[REKRUTMEN DIALOGIKA]*\n\nHalo Kak {candidate_name}!\n\nTerima kasih telah mengikuti seluruh tahapan rekrutmen di Dialogika dengan antusias. Kami mengucapkan selamat karena Kakak telah dinyatakan lolos ke tahap berikutnya, yaitu *On Job Test (OJT)*.\n\nMelalui pesan ini, kami mengundang Kakak untuk mengikuti program OJT sebagai bagian dari proses penilaian dan pengenalan lingkungan kerja di Dialogika.\n\n*Periode OJT* : {ojt_date}\n*Waktu*       : {ojt_time} WIB\n*Lokasi*      : {ojt_location}\n\nSelama pelaksanaan OJT, peserta diharapkan hadir tepat waktu, menggunakan pakaian yang sopan dan rapi, serta membawa laptop untuk mendukung kegiatan pelatihan dan praktik kerja.\n\nKehadiran dan performa selama OJT akan menjadi salah satu pertimbangan dalam proses evaluasi akhir rekrutmen.\n\nTerima kasih atas perhatian dan kerja samanya.\n\nSalam,\nHuman Resource Dialogika\n\nMohon untuk mengonfirmasi kehadiran dengan membalas pesan ini.\n\n*Reschedule  maksimal H-1 sebelum hari pertama OJT.*"
         },
         {
             id: "accepted",
