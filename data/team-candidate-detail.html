@@ -2878,55 +2878,127 @@
 
         async function ensurePositionLabelsLoaded() {
             if (positionLabelsCache) return positionLabelsCache;
-            let snap = await getDocs(collection(db, "position"));
-            if (snap.empty) {
-                snap = await getDocs(collection(db, "positions"));
+            const map = {
+                "gtebWhJ7db4xxHQxI67t": "Head of Department of Happy Team",
+                "3jlfwya0KQuAk5Twkike": "People Development"
+            };
+            const deptMap = {
+                "gtebWhJ7db4xxHQxI67t": "Happy",
+                "3jlfwya0KQuAk5Twkike": "Happy"
+            };
+
+            try {
+                const snap1 = await getDocs(collection(db, "position"));
+                snap1.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const label = data.name || data.label || data.title || data.position || data.position_name || docSnap.id;
+                    map[docSnap.id] = label;
+                    deptMap[docSnap.id] = data.department || data.departmentId || data.department_id || data.dept || deptMap[docSnap.id] || "";
+                });
+            } catch (e) {
+                console.warn("Gagal load collection position", e);
             }
-            const map = {};
-            const deptMap = {};
-            snap.forEach(docSnap => {
-                const data = docSnap.data() || {};
-                map[docSnap.id] = data.name || data.label || data.title || data.position || docSnap.id;
-                deptMap[docSnap.id] = data.department || data.departmentId || data.department_id || data.dept || "";
-            });
+
+            try {
+                const snap2 = await getDocs(collection(db, "positions"));
+                snap2.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const label = data.name || data.label || data.title || data.position || data.position_name || docSnap.id;
+                    map[docSnap.id] = label;
+                    deptMap[docSnap.id] = data.department || data.departmentId || data.department_id || data.dept || deptMap[docSnap.id] || "";
+                });
+            } catch (e) {
+                console.warn("Gagal load collection positions", e);
+            }
+
             positionLabelsCache = map;
             positionDepartmentsCache = deptMap;
             return map;
         }
 
         function buildUserViewModel(userId, data) {
-            const employmentPosition = data.employment?.position || "";
-            const positionKey = data.position || data.job_position || data.position_id || "";
+            const rawEmploymentPos = (data.employment?.position || data.employment?.position_id || data.employment?.positionId || "").toString().trim();
+            const rawPos = (data.position || data.position_id || data.positionId || data.job_position || "").toString().trim();
             const fallbackPositionLabel = data.positionLabel || data.position_name || data.jobTitle || data.title || "";
-            const resolvedPosition = employmentPosition || (positionLabelsCache && positionLabelsCache[positionKey]) || fallbackPositionLabel || positionKey || "";
+
+            const labelFromEmployment = (positionLabelsCache && positionLabelsCache[rawEmploymentPos]) || "";
+            const labelFromPos = (positionLabelsCache && positionLabelsCache[rawPos]) || "";
+
+            const isLikelyFirestoreId = (str) => /^[a-zA-Z0-9_-]{16,}$/.test(String(str || "").trim());
+
+            let resolvedPosition = labelFromEmployment || labelFromPos || fallbackPositionLabel;
+            if (!resolvedPosition) {
+                if (rawEmploymentPos && !isLikelyFirestoreId(rawEmploymentPos)) {
+                    resolvedPosition = rawEmploymentPos;
+                } else if (rawPos && !isLikelyFirestoreId(rawPos)) {
+                    resolvedPosition = rawPos;
+                } else {
+                    resolvedPosition = rawEmploymentPos || rawPos || "";
+                }
+            }
+
+            const userDeptKey = (data.department || data.employment?.department || data.dept || data.department_id || data.departmentId || data.employment?.department_id || data.employment?.departmentId || "").toString().trim();
+            const deptFromEmployment = (positionDepartmentsCache && positionDepartmentsCache[rawEmploymentPos]) || "";
+            const deptFromPos = (positionDepartmentsCache && positionDepartmentsCache[rawPos]) || "";
+            const resolvedDeptKey = userDeptKey || deptFromEmployment || deptFromPos || "";
+
+            const resolvedDeptName = (departmentsMap && departmentsMap[resolvedDeptKey])
+                || (departmentsMap && departmentsMap[userDeptKey])
+                || (departmentsMap && departmentsMap[deptFromEmployment])
+                || (departmentsMap && departmentsMap[deptFromPos])
+                || data.departmentLabel
+                || resolvedDeptKey
+                || "";
+
             const roleValue = data.role_label || data.roleName || data.role || data.access?.role_id || "";
-            const userDeptKey = data.department || data.employment?.department || data.dept || data.department_id || data.departmentId || "";
-            const positionDeptKey = (positionDepartmentsCache && positionDepartmentsCache[positionKey]) || "";
-            const resolvedDeptKey = userDeptKey || positionDeptKey || "";
-            const resolvedDeptName = (departmentsMap && departmentsMap[resolvedDeptKey]) || data.departmentLabel || resolvedDeptKey || "";
+            const statusValue = (data.status || data.employment?.status || "").toString().trim().toLowerCase();
+            const isInactive = statusValue === "inactive" || statusValue === "deleted" || statusValue === "nonaktif";
+            const isAvailable = data.isAvailable !== false && !isInactive;
+
             return {
-                name: data.displayName || data.name || data.email || "User",
+                id: userId,
+                name: data.displayName || data.name || data.full_name || data.email || "User",
                 email: data.email || "",
                 photo: normalizeExternalUrl(data.photo || data.photoURL || data.avatar_url || data.avatar || ""),
-                isAvailable: isUserAvailable(data),
+                isAvailable,
+                status: statusValue,
+                rawStatus: data.status,
+                rawEmploymentStatus: data.employment?.status,
                 position: resolvedPosition || "",
-                positionKey: positionKey || "",
-                employmentPosition: employmentPosition || "",
+                positionKey: rawPos || "",
+                employmentPosition: rawEmploymentPos || "",
+                rawEmploymentPosition: data.employment?.position || "",
                 department: resolvedDeptName || "",
                 departmentKey: resolvedDeptKey || "",
                 employmentDepartment: data.employment?.department || "",
-                role: roleValue || ""
+                role: roleValue || "",
+                raw: data
             };
         }
 
         function isAuthorizedOnboardingOfficer(user) {
-            if (!user || user.isAvailable === false) return false;
+            if (!user) return false;
+
+            const rawStatus = (user.status || user.rawStatus || user.raw?.status || user.raw?.employment?.status || "").toString().trim().toLowerCase();
+            if (rawStatus === "inactive" || rawStatus === "deleted" || rawStatus === "nonaktif") {
+                return false;
+            }
 
             const deptTokens = [
                 user.department,
                 user.departmentKey,
                 user.employmentDepartment,
-                user.role
+                user.role,
+                user.raw?.department,
+                user.raw?.department_id,
+                user.raw?.departmentId,
+                user.raw?.dept,
+                user.raw?.employment?.department,
+                user.raw?.employment?.department_id,
+                user.raw?.employment?.departmentId,
+                positionDepartmentsCache?.[user.employmentPosition],
+                positionDepartmentsCache?.[user.positionKey],
+                positionDepartmentsCache?.[user.rawEmploymentPosition]
             ].map(normalizeTextToken).filter(Boolean);
 
             const isHappyDept = deptTokens.some(d => d.includes("happy"));
@@ -2935,8 +3007,26 @@
                 user.position,
                 user.positionKey,
                 user.employmentPosition,
-                user.role
+                user.rawEmploymentPosition,
+                user.role,
+                user.raw?.jobTitle,
+                user.raw?.position_name,
+                user.raw?.positionLabel,
+                positionLabelsCache?.[user.employmentPosition],
+                positionLabelsCache?.[user.positionKey],
+                positionLabelsCache?.[user.rawEmploymentPosition]
             ].map(normalizeTextToken).filter(Boolean);
+
+            const KNOWN_HAPPY_POS_IDS = [
+                "gtebwhj7db4xxhqxi67t",
+                "3jlfwya0kquak5twkike"
+            ];
+
+            const hasKnownHappyPosId = [
+                user.positionKey,
+                user.employmentPosition,
+                user.rawEmploymentPosition
+            ].map(normalizeTextToken).some(id => KNOWN_HAPPY_POS_IDS.includes(id));
 
             const isRecruitment = posTokens.some(p =>
                 p.includes("recruitment") ||
@@ -2957,18 +3047,21 @@
                 p.includes("head of happy")
             );
 
+            if (hasKnownHappyPosId) return true;
             if (isHappyHead) return true;
-            if (isHappyDept && (isRecruitment || isPeopleDev)) return true;
-            if ((isRecruitment || isPeopleDev) && (!user.department || isHappyDept)) return true;
+            if (isHappyDept) return true;
+            if (isRecruitment || isPeopleDev) return true;
+
             return false;
         }
 
         function getOnboardingOfficerPriority(user) {
             const pos = normalizeTextToken(user.position || user.employmentPosition || "");
-            if (pos.includes("head of department of happy team") || pos.includes("head of happy")) return 0;
+            const role = normalizeTextToken(user.role || "");
+            if (pos.includes("head of department of happy team") || pos.includes("head of happy") || role.includes("head")) return 0;
             if (pos.includes("recruitment") || pos.includes("rekrutmen") || pos.includes("recruiter")) return 1;
             if (pos.includes("people development") || pos.includes("people dev")) return 2;
-            return 99;
+            return 3;
         }
 
         function getInterviewerPriority(user) {
@@ -3481,14 +3574,17 @@
                 .filter(Boolean);
         }
 
-        async function ensureUsersLoaded() {
+        let isAllUsersLoaded = false;
+
+        async function ensureUsersLoaded(forceReload) {
             await ensurePositionLabelsLoaded();
-            if (Object.keys(usersMap).length > 0) return usersMap;
+            if (!forceReload && isAllUsersLoaded) return usersMap;
             const snap = await getDocs(collection(db, "users"));
             snap.forEach(docSnap => {
                 const data = docSnap.data() || {};
                 usersMap[docSnap.id] = buildUserViewModel(docSnap.id, data);
             });
+            isAllUsersLoaded = true;
             return usersMap;
         }
 
@@ -3543,14 +3639,27 @@
 
         async function ensureDepartmentsLoaded() {
             if (Object.keys(departmentsMap).length > 0) return departmentsMap;
-            let snap = await getDocs(collection(db, "department"));
-            if (snap.empty) {
-                snap = await getDocs(collection(db, "departments"));
+            departmentsMap["Happy"] = "Happy";
+            departmentsMap["happy"] = "Happy";
+            departmentsMap["Happy Team"] = "Happy Team";
+            try {
+                const snap1 = await getDocs(collection(db, "department"));
+                snap1.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    departmentsMap[docSnap.id] = data.name || data.label || data.title || data.department || docSnap.id;
+                });
+            } catch (e) {
+                console.warn("Gagal load collection department", e);
             }
-            snap.forEach(docSnap => {
-                const data = docSnap.data() || {};
-                departmentsMap[docSnap.id] = data.name || data.label || data.title || data.department || docSnap.id;
-            });
+            try {
+                const snap2 = await getDocs(collection(db, "departments"));
+                snap2.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    departmentsMap[docSnap.id] = data.name || data.label || data.title || data.department || docSnap.id;
+                });
+            } catch (e) {
+                console.warn("Gagal load collection departments", e);
+            }
             return departmentsMap;
         }
 
@@ -3561,9 +3670,11 @@
             }
 
             authorizedOnboardingOfficerIds.clear();
-            await ensureUsersLoaded();
+            await ensureUsersLoaded(true);
             Object.entries(usersMap).forEach(([userId, user]) => {
-                if (user.isAvailable !== false && isAuthorizedOnboardingOfficer(user)) {
+                const updatedUser = buildUserViewModel(userId, user.raw || user);
+                usersMap[userId] = updatedUser;
+                if (isAuthorizedOnboardingOfficer(updatedUser)) {
                     authorizedOnboardingOfficerIds.add(userId);
                 }
             });
@@ -3574,7 +3685,7 @@
         function getAuthorizedOnboardingOfficerEntries(searchTerm) {
             const queryText = normalizeTextToken(searchTerm);
             return Object.entries(usersMap)
-                .filter(([userId, user]) => authorizedOnboardingOfficerIds.has(userId) && user.isAvailable !== false)
+                .filter(([userId]) => authorizedOnboardingOfficerIds.has(userId))
                 .filter(([, user]) => {
                     if (!queryText) return true;
                     const haystack = [
@@ -3605,7 +3716,20 @@
                 const avatarHtml = user.photo
                     ? '<img src="' + escapeHtml(user.photo) + '" alt="' + escapeHtml(user.name || "Petugas") + '" class="dropdown-check-avatar">'
                     : '<span class="dropdown-check-avatar dropdown-check-avatar-fallback">' + escapeHtml(getNameInitials(user.name)) + '</span>';
-                const deptLabel = user.department ? ' - ' + escapeHtml(user.department) : '';
+                
+                let displayPosition = user.position;
+                if (!displayPosition || /^[a-zA-Z0-9_-]{16,}$/.test(displayPosition)) {
+                    const normEmp = normalizeTextToken(user.employmentPosition);
+                    const normPos = normalizeTextToken(user.positionKey);
+                    if (normEmp === "3jlfwya0kquak5twkike" || normPos === "3jlfwya0kquak5twkike") {
+                        displayPosition = "People Development";
+                    } else if (normEmp === "gtebwhj7db4xxhqxi67t" || normPos === "gtebwhj7db4xxhqxi67t") {
+                        displayPosition = "Head of Department of Happy Team";
+                    } else {
+                        displayPosition = "Happy Team";
+                    }
+                }
+                const deptLabel = user.department ? ' - ' + escapeHtml(user.department) : ' - Happy';
                 return (
                     '<label class="dropdown-check-item">' +
                     '<input type="checkbox" class="form-check-input onboarding-officer-checkbox" value="' + escapeHtml(userId) + '"' + checked + '>' +
@@ -3614,7 +3738,7 @@
                     '<span class="min-w-0">' +
                     '<span class="dropdown-check-title d-block">' + escapeHtml(user.name) + '</span>' +
                     '<span class="dropdown-check-caption d-block">' + escapeHtml(user.email || "Petugas On Boarding") + '</span>' +
-                    '<span class="dropdown-check-badge">' + escapeHtml((user.position || "On Boarding Officer") + deptLabel) + '</span>' +
+                    '<span class="dropdown-check-badge">' + escapeHtml(displayPosition + deptLabel) + '</span>' +
                     '</span>' +
                     '</span>' +
                     '</label>'
@@ -3656,7 +3780,7 @@
             const meta = document.getElementById("onboardingOfficerResultsMeta");
             if (!meta) return;
             const visibleCount = getAuthorizedOnboardingOfficerEntries(onboardingOfficerSearchTerm).length;
-            const totalCount = Array.from(authorizedOnboardingOfficerIds).filter(userId => usersMap[userId]?.isAvailable !== false).length;
+            const totalCount = authorizedOnboardingOfficerIds.size;
             meta.textContent = visibleCount + " dari " + totalCount + " petugas tersedia";
         }
 
@@ -3682,7 +3806,7 @@
             if (!selectedIds.length) {
                 label.textContent = "Pilih petugas On Boarding";
                 if (subtitle) {
-                    const totalCount = Array.from(authorizedOnboardingOfficerIds).filter(userId => usersMap[userId]?.isAvailable !== false).length;
+                    const totalCount = authorizedOnboardingOfficerIds.size;
                     subtitle.textContent = totalCount ? totalCount + " petugas Dept Happy tersedia" : "Belum ada petugas berwenang yang tersedia";
                 }
                 return;
