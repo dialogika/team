@@ -155,6 +155,7 @@ export function buildOnboardingMessage(options = {}) {
         onboardingDate = "-",
         onboardingTime = "-",
         onboardingLocation = "",
+        onboardingOfficers = "",
         category = "team"
     } = options;
 
@@ -162,7 +163,10 @@ export function buildOnboardingMessage(options = {}) {
         candidate_name: candidateName,
         onboarding_date: onboardingDate,
         onboarding_time: onboardingTime,
-        onboarding_location: onboardingLocation
+        onboarding_location: onboardingLocation,
+        onboarding_officers: onboardingOfficers,
+        onboarding_team: onboardingOfficers,
+        onboarding_by: onboardingOfficers
     };
 
     return buildMessageFromTemplate("onboarding", tokens, category);

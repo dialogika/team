@@ -2257,6 +2257,42 @@
                                              <div class="invalid-feedback">Lokasi On Boarding wajib diisi.</div>
                                          </div>
                                      </div>
+                                     <div class="col-md-12">
+                                         <div class="modal-field-shell is-highlight">
+                                             <label class="form-label form-label-soft">Petugas On Boarding <span class="small text-muted fw-normal">(Department Happy: Recruitment & People Development)</span></label>
+                                             <div class="dropdown w-100" data-bs-auto-close="outside">
+                                                 <button
+                                                     class="btn interviewer-trigger w-100 text-start d-flex justify-content-between align-items-center"
+                                                     type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                                     id="onboardingOfficerDropdownButton">
+                                                     <span>
+                                                         <span id="onboardingOfficerDropdownLabel">Pilih petugas On Boarding</span>
+                                                         <span class="interviewer-trigger-subtitle"
+                                                             id="onboardingOfficerDropdownSubtitle">Pilih minimal 1 petugas berwenang</span>
+                                                     </span>
+                                                     <i class="fa-solid fa-chevron-down small"></i>
+                                                 </button>
+                                                 <div class="dropdown-menu dropdown-check-menu w-100"
+                                                     id="onboardingOfficerDropdownMenu">
+                                                     <div class="dropdown-search-shell">
+                                                         <div class="position-relative">
+                                                             <i class="fa-solid fa-magnifying-glass dropdown-search-icon"></i>
+                                                             <input type="search" class="form-control dropdown-search-input"
+                                                                 id="onboardingOfficerSearchInput"
+                                                                 placeholder="Cari nama petugas...">
+                                                         </div>
+                                                     </div>
+                                                     <div class="dropdown-results-meta">
+                                                         <span id="onboardingOfficerResultsMeta">Memuat petugas...</span>
+                                                         <span>Dept Happy</span>
+                                                     </div>
+                                                     <div class="dropdown-results-list" id="onboardingOfficerDropdownList"></div>
+                                                 </div>
+                                             </div>
+                                             <div class="interviewer-selected-list mt-2" id="onboardingOfficerSelectedList"></div>
+                                             <div class="invalid-feedback d-block d-none" id="onboardingOfficerValidationMessage">Pilih minimal 1 petugas On Boarding yang memiliki otoritas.</div>
+                                         </div>
+                                     </div>
                                  </div>
                                  <div class="status-empty-note mt-3" id="onboardingStatusHint">
                                      Lengkapi semua field terlebih dahulu, lalu klik `Siapkan On Boarding` untuk menyiapkan undangan WhatsApp.
@@ -2513,6 +2549,7 @@
         const usersMap = {};
         const departmentsMap = {};
         const authorizedInterviewerIds = new Set();
+        const authorizedOnboardingOfficerIds = new Set();
         let currentCandidate = null;
         let unsubscribeCandidate = null;
         let interviewModal = null;
@@ -2521,6 +2558,7 @@
         let activeDecisionAction = "";
         let decisionModalContext = "interview";
         let interviewerSearchTerm = "";
+        let onboardingOfficerSearchTerm = "";
         let interviewModalMode = "schedule";
         let interviewWhatsappPayload = null;
         let interviewWhatsappConfirmedAt = null;
@@ -2836,6 +2874,8 @@
             return data && data.isAvailable !== false && status !== "inactive";
         }
 
+        let positionDepartmentsCache = null;
+
         async function ensurePositionLabelsLoaded() {
             if (positionLabelsCache) return positionLabelsCache;
             let snap = await getDocs(collection(db, "position"));
@@ -2843,11 +2883,14 @@
                 snap = await getDocs(collection(db, "positions"));
             }
             const map = {};
+            const deptMap = {};
             snap.forEach(docSnap => {
                 const data = docSnap.data() || {};
                 map[docSnap.id] = data.name || data.label || data.title || data.position || docSnap.id;
+                deptMap[docSnap.id] = data.department || data.departmentId || data.department_id || data.dept || "";
             });
             positionLabelsCache = map;
+            positionDepartmentsCache = deptMap;
             return map;
         }
 
@@ -2857,6 +2900,10 @@
             const fallbackPositionLabel = data.positionLabel || data.position_name || data.jobTitle || data.title || "";
             const resolvedPosition = employmentPosition || (positionLabelsCache && positionLabelsCache[positionKey]) || fallbackPositionLabel || positionKey || "";
             const roleValue = data.role_label || data.roleName || data.role || data.access?.role_id || "";
+            const userDeptKey = data.department || data.employment?.department || data.dept || data.department_id || data.departmentId || "";
+            const positionDeptKey = (positionDepartmentsCache && positionDepartmentsCache[positionKey]) || "";
+            const resolvedDeptKey = userDeptKey || positionDeptKey || "";
+            const resolvedDeptName = (departmentsMap && departmentsMap[resolvedDeptKey]) || data.departmentLabel || resolvedDeptKey || "";
             return {
                 name: data.displayName || data.name || data.email || "User",
                 email: data.email || "",
@@ -2865,8 +2912,63 @@
                 position: resolvedPosition || "",
                 positionKey: positionKey || "",
                 employmentPosition: employmentPosition || "",
+                department: resolvedDeptName || "",
+                departmentKey: resolvedDeptKey || "",
+                employmentDepartment: data.employment?.department || "",
                 role: roleValue || ""
             };
+        }
+
+        function isAuthorizedOnboardingOfficer(user) {
+            if (!user || user.isAvailable === false) return false;
+
+            const deptTokens = [
+                user.department,
+                user.departmentKey,
+                user.employmentDepartment,
+                user.role
+            ].map(normalizeTextToken).filter(Boolean);
+
+            const isHappyDept = deptTokens.some(d => d.includes("happy"));
+
+            const posTokens = [
+                user.position,
+                user.positionKey,
+                user.employmentPosition,
+                user.role
+            ].map(normalizeTextToken).filter(Boolean);
+
+            const isRecruitment = posTokens.some(p =>
+                p.includes("recruitment") ||
+                p.includes("rekrutmen") ||
+                p.includes("recruiter")
+            );
+
+            const isPeopleDev = posTokens.some(p =>
+                p.includes("people development") ||
+                p.includes("people-development") ||
+                p.includes("people dev") ||
+                p.includes("peopledev")
+            );
+
+            const isHappyHead = posTokens.some(p =>
+                p.includes("head of department of happy team") ||
+                p.includes("head of department happy team") ||
+                p.includes("head of happy")
+            );
+
+            if (isHappyHead) return true;
+            if (isHappyDept && (isRecruitment || isPeopleDev)) return true;
+            if ((isRecruitment || isPeopleDev) && (!user.department || isHappyDept)) return true;
+            return false;
+        }
+
+        function getOnboardingOfficerPriority(user) {
+            const pos = normalizeTextToken(user.position || user.employmentPosition || "");
+            if (pos.includes("head of department of happy team") || pos.includes("head of happy")) return 0;
+            if (pos.includes("recruitment") || pos.includes("rekrutmen") || pos.includes("recruiter")) return 1;
+            if (pos.includes("people development") || pos.includes("people dev")) return 2;
+            return 99;
         }
 
         function getInterviewerPriority(user) {
@@ -3452,6 +3554,163 @@
             return departmentsMap;
         }
 
+        async function ensureAuthorizedOnboardingOfficersLoaded(forceReload) {
+            await Promise.all([ensurePositionLabelsLoaded(), ensureDepartmentsLoaded()]);
+            if (!forceReload && authorizedOnboardingOfficerIds.size > 0) {
+                return authorizedOnboardingOfficerIds;
+            }
+
+            authorizedOnboardingOfficerIds.clear();
+            await ensureUsersLoaded();
+            Object.entries(usersMap).forEach(([userId, user]) => {
+                if (user.isAvailable !== false && isAuthorizedOnboardingOfficer(user)) {
+                    authorizedOnboardingOfficerIds.add(userId);
+                }
+            });
+
+            return authorizedOnboardingOfficerIds;
+        }
+
+        function getAuthorizedOnboardingOfficerEntries(searchTerm) {
+            const queryText = normalizeTextToken(searchTerm);
+            return Object.entries(usersMap)
+                .filter(([userId, user]) => authorizedOnboardingOfficerIds.has(userId) && user.isAvailable !== false)
+                .filter(([, user]) => {
+                    if (!queryText) return true;
+                    const haystack = [
+                        user.name,
+                        user.email,
+                        user.position,
+                        user.department
+                    ].map(normalizeTextToken).join(" ");
+                    return haystack.includes(queryText);
+                })
+                .sort((a, b) => {
+                    const priorityDiff = getOnboardingOfficerPriority(a[1]) - getOnboardingOfficerPriority(b[1]);
+                    if (priorityDiff !== 0) return priorityDiff;
+                    const positionDiff = (a[1].position || "").localeCompare(b[1].position || "", "id");
+                    if (positionDiff !== 0) return positionDiff;
+                    return (a[1].name || "").localeCompare(b[1].name || "", "id");
+                });
+        }
+
+        function buildOnboardingOfficerOptions(selectedIds) {
+            const selectedSet = new Set(Array.isArray(selectedIds) ? selectedIds : []);
+            const entries = getAuthorizedOnboardingOfficerEntries(onboardingOfficerSearchTerm);
+            if (!entries.length) {
+                return '<div class="dropdown-empty-state">Tidak ada petugas On Boarding yang cocok (Department Happy - Recruitment / People Development).</div>';
+            }
+            return entries.map(([userId, user]) => {
+                const checked = selectedSet.has(userId) ? ' checked' : '';
+                const avatarHtml = user.photo
+                    ? '<img src="' + escapeHtml(user.photo) + '" alt="' + escapeHtml(user.name || "Petugas") + '" class="dropdown-check-avatar">'
+                    : '<span class="dropdown-check-avatar dropdown-check-avatar-fallback">' + escapeHtml(getNameInitials(user.name)) + '</span>';
+                const deptLabel = user.department ? ' - ' + escapeHtml(user.department) : '';
+                return (
+                    '<label class="dropdown-check-item">' +
+                    '<input type="checkbox" class="form-check-input onboarding-officer-checkbox" value="' + escapeHtml(userId) + '"' + checked + '>' +
+                    '<span class="dropdown-check-main">' +
+                    avatarHtml +
+                    '<span class="min-w-0">' +
+                    '<span class="dropdown-check-title d-block">' + escapeHtml(user.name) + '</span>' +
+                    '<span class="dropdown-check-caption d-block">' + escapeHtml(user.email || "Petugas On Boarding") + '</span>' +
+                    '<span class="dropdown-check-badge">' + escapeHtml((user.position || "On Boarding Officer") + deptLabel) + '</span>' +
+                    '</span>' +
+                    '</span>' +
+                    '</label>'
+                );
+            }).join("");
+        }
+
+        function getSelectedOnboardingOfficerIds() {
+            return Array.from(document.querySelectorAll(".onboarding-officer-checkbox:checked"))
+                .map(input => input.value)
+                .filter(Boolean);
+        }
+
+        function getOnboardingOfficerNames(ids) {
+            return (Array.isArray(ids) ? ids : [])
+                .map(id => usersMap[id]?.name || id)
+                .filter(Boolean);
+        }
+
+        function refreshOnboardingOfficerDropdown(selectedIds) {
+            const list = document.getElementById("onboardingOfficerDropdownList");
+            if (!list) return;
+            list.innerHTML = buildOnboardingOfficerOptions(selectedIds);
+            list.querySelectorAll(".onboarding-officer-checkbox").forEach((input) => {
+                input.addEventListener("change", () => {
+                    updateOnboardingOfficerDropdownLabel();
+                    renderSelectedOnboardingOfficerList();
+                    toggleOnboardingOfficerValidation(false);
+                    markOnboardingWhatsappPending({ preserveIfUnchanged: true });
+                    syncDecisionSubmitState();
+                });
+            });
+            updateOnboardingOfficerResultsMeta();
+            renderSelectedOnboardingOfficerList();
+            updateOnboardingOfficerDropdownLabel();
+        }
+
+        function updateOnboardingOfficerResultsMeta() {
+            const meta = document.getElementById("onboardingOfficerResultsMeta");
+            if (!meta) return;
+            const visibleCount = getAuthorizedOnboardingOfficerEntries(onboardingOfficerSearchTerm).length;
+            const totalCount = Array.from(authorizedOnboardingOfficerIds).filter(userId => usersMap[userId]?.isAvailable !== false).length;
+            meta.textContent = visibleCount + " dari " + totalCount + " petugas tersedia";
+        }
+
+        function renderSelectedOnboardingOfficerList() {
+            const selectedList = document.getElementById("onboardingOfficerSelectedList");
+            if (!selectedList) return;
+            const selectedIds = getSelectedOnboardingOfficerIds();
+            if (!selectedIds.length) {
+                selectedList.innerHTML = "";
+                return;
+            }
+            selectedList.innerHTML = selectedIds.map(userId => {
+                const user = usersMap[userId] || {};
+                return '<span class="interviewer-selected-chip"><i class="fa-solid fa-user-check"></i><span>' + escapeHtml(user.name || userId) + '</span></span>';
+            }).join("");
+        }
+
+        function updateOnboardingOfficerDropdownLabel() {
+            const selectedIds = getSelectedOnboardingOfficerIds();
+            const label = document.getElementById("onboardingOfficerDropdownLabel");
+            const subtitle = document.getElementById("onboardingOfficerDropdownSubtitle");
+            if (!label) return;
+            if (!selectedIds.length) {
+                label.textContent = "Pilih petugas On Boarding";
+                if (subtitle) {
+                    const totalCount = Array.from(authorizedOnboardingOfficerIds).filter(userId => usersMap[userId]?.isAvailable !== false).length;
+                    subtitle.textContent = totalCount ? totalCount + " petugas Dept Happy tersedia" : "Belum ada petugas berwenang yang tersedia";
+                }
+                return;
+            }
+            const names = getOnboardingOfficerNames(selectedIds);
+            label.textContent = names.length === 1 ? names[0] : names.length + " petugas dipilih";
+            if (subtitle) {
+                subtitle.textContent = "Hanya tim Happy (Recruitment / People Development) yang dapat dipilih";
+            }
+        }
+
+        function handleOnboardingOfficerSearchInput() {
+            const input = document.getElementById("onboardingOfficerSearchInput");
+            onboardingOfficerSearchTerm = input ? input.value || "" : "";
+            refreshOnboardingOfficerDropdown(getSelectedOnboardingOfficerIds());
+        }
+
+        function toggleOnboardingOfficerValidation(show) {
+            const msg = document.getElementById("onboardingOfficerValidationMessage");
+            const btn = document.getElementById("onboardingOfficerDropdownButton");
+            if (msg) {
+                msg.classList.toggle("d-none", !show);
+            }
+            if (btn) {
+                btn.classList.toggle("is-invalid", !!show);
+            }
+        }
+
         function getCandidateViewModel(data) {
             const basic = data.basic_info || {};
             const contact = data.contact_info || {};
@@ -3591,6 +3850,9 @@
                 onboardingDate: recruitment.onboarding_date || null,
                 onboardingTime: recruitment.onboarding_time || "",
                 onboardingLocation: recruitment.onboarding_location || "",
+                onboardingOfficerIds: Array.isArray(recruitment.onboarding_officer_ids) ? recruitment.onboarding_officer_ids : (Array.isArray(data.onboarding_officer_ids) ? data.onboarding_officer_ids : []),
+                onboardingOfficerNames: recruitment.onboarding_officer_names || data.onboarding_officer_names || "",
+                onboardingBy: recruitment.onboarding_by || data.onboarding_by || "",
                 onboardingAt: recruitment.onboarding_at || null,
                 isInactive: inactiveRecord,
                 raw: data
@@ -3884,6 +4146,9 @@
                      : "",
                  vm.displayStatus === "onboarding" && hasMeaningfulValue(vm.raw?.recruitment_status?.onboarding_date)
                      ? '<div class="summary-inline-item"><i class="fa-solid fa-user-check"></i><span>On Boarding: ' + escapeHtml(vm.raw.recruitment_status.onboarding_date) + (vm.raw.recruitment_status.onboarding_time ? ' ' + vm.raw.recruitment_status.onboarding_time + ' WIB' : '') + (vm.raw.recruitment_status.onboarding_location ? ' - ' + escapeHtml(vm.raw.recruitment_status.onboarding_location) : '') + '</span></div>'
+                     : "",
+                 (vm.displayStatus === "onboarding" && (vm.onboardingOfficerNames || (vm.onboardingOfficerIds && vm.onboardingOfficerIds.length) || vm.onboardingBy))
+                     ? '<div class="summary-inline-item"><i class="fa-solid fa-user-tie"></i><span>Petugas On Boarding: ' + escapeHtml(vm.onboardingOfficerNames || getOnboardingOfficerNames(vm.onboardingOfficerIds).join(", ") || vm.onboardingBy) + '</span></div>'
                      : ""
              ].filter(Boolean);
             const processSummaryHtml = processRows.length
@@ -4141,7 +4406,7 @@
             }
 
             try {
-                await Promise.all([ensureUsersLoaded(), ensureDepartmentsLoaded(), ensureAuthorizedInterviewersLoaded()]);
+                await Promise.all([ensureUsersLoaded(), ensureDepartmentsLoaded(), ensureAuthorizedInterviewersLoaded(), ensureAuthorizedOnboardingOfficersLoaded()]);
                 const snap = await getDoc(doc(db, INTERNSHIP_CANDIDATES_COLLECTION, talentId));
                 if (!snap.exists()) {
                     detailRoot.innerHTML =
@@ -4890,8 +5155,9 @@
                  const timeValue = onboardingTimeInput ? onboardingTimeInput.value : "";
                  const locationValue = onboardingLocationInput ? onboardingLocationInput.value.trim() : "";
                  const onboardingMessage = document.getElementById("onboardingWhatsappText") ? (document.getElementById("onboardingWhatsappText").value || "").trim() : "";
+                 const selectedOfficerIds = getSelectedOnboardingOfficerIds();
                  submitButton.textContent = "Submit On Boarding";
-                 submitButton.disabled = !dateValue || !timeValue || !locationValue || !onboardingWhatsappPayload || !onboardingWhatsappConfirmedAt || !onboardingMessage;
+                 submitButton.disabled = !dateValue || !timeValue || !locationValue || !selectedOfficerIds.length || !onboardingWhatsappPayload || !onboardingWhatsappConfirmedAt || !onboardingMessage;
                  return;
              }
              const startDate = on_job_trainingPicker && on_job_trainingPicker.selectedDates ? on_job_trainingPicker.selectedDates[0] : null;
@@ -5273,6 +5539,8 @@
              const dateValue = onboardingDateInput ? onboardingDateInput.value : "";
              const timeValue = onboardingTimeInput ? onboardingTimeInput.value : "";
              const locationValue = onboardingLocationInput ? onboardingLocationInput.value : "";
+             const selectedOfficerIds = getSelectedOnboardingOfficerIds();
+             const officerNames = getOnboardingOfficerNames(selectedOfficerIds).join(", ");
              
              const dateObj = parseDateValue(dateValue);
              const onboardingDate = dateObj ? formatInterviewDateForMessage(dateObj) : "-";
@@ -5283,6 +5551,7 @@
                  onboardingDate,
                  onboardingTime,
                  onboardingLocation: locationValue,
+                 onboardingOfficers: officerNames,
                  category: "team"
              });
          }
@@ -5365,17 +5634,20 @@
              const dateValue = onboardingDateInput ? onboardingDateInput.value : "";
              const timeValue = onboardingTimeInput ? onboardingTimeInput.value : "";
              const locationValue = onboardingLocationInput ? onboardingLocationInput.value.trim() : "";
+             const selectedOfficerIds = getSelectedOnboardingOfficerIds();
+             const hasOfficers = selectedOfficerIds.length > 0;
 
              if (onboardingDateInput) onboardingDateInput.classList.toggle("is-invalid", !dateValue);
              if (onboardingTimeInput) onboardingTimeInput.classList.toggle("is-invalid", !timeValue);
              if (onboardingLocationInput) onboardingLocationInput.classList.toggle("is-invalid", !locationValue);
+             toggleOnboardingOfficerValidation(!hasOfficers);
 
              if (!vm) {
                  setOnboardingWhatsappValidation("Data kandidat tidak tersedia.", "danger");
                  return null;
              }
-             if (!dateValue || !timeValue || !locationValue) {
-                 setOnboardingWhatsappValidation("Lengkapi tanggal, waktu, dan lokasi On Boarding sebelum menyiapkan pesan WhatsApp.", "warning");
+             if (!dateValue || !timeValue || !locationValue || !hasOfficers) {
+                 setOnboardingWhatsappValidation("Lengkapi tanggal, waktu, lokasi, dan pilih minimal 1 petugas On Boarding sebelum menyiapkan pesan WhatsApp.", "warning");
                  return null;
              }
 
@@ -5610,6 +5882,11 @@
             if (onboardingWhatsappText) onboardingWhatsappText.value = "";
             markOnboardingWhatsappPending({ silent: true });
             setOnboardingWhatsappValidation("", "");
+            onboardingOfficerSearchTerm = "";
+            const onboardingOfficerSearchInput = document.getElementById("onboardingOfficerSearchInput");
+            if (onboardingOfficerSearchInput) onboardingOfficerSearchInput.value = "";
+            refreshOnboardingOfficerDropdown([]);
+            toggleOnboardingOfficerValidation(false);
             updateCounter("rejectionNotesInput", "rejectionNotesCounter");
             updateCounter("withdrawnNotesInput", "withdrawnNotesCounter");
             syncDecisionSubmitState();
@@ -5776,6 +6053,10 @@
                  showWarning("Jadwalkan On Boarding hanya dapat dibuka saat status kandidat berada pada tahap Accepted.");
                  return;
              }
+             await ensureAuthorizedOnboardingOfficersLoaded(true);
+             if (!authorizedOnboardingOfficerIds.size) {
+                 showWarning("Belum ada petugas On Boarding dari Department Happy (posisi Recruitment atau People Development) yang tersedia.");
+             }
              decisionModalContext = "onboarding";
              resetDecisionModal();
              document.querySelectorAll(".decision-toggle-btn").forEach((button) => {
@@ -5786,6 +6067,7 @@
                  onboardingToggle.style.display = "block";
              }
              syncDecisionModalContextUi();
+             refreshOnboardingOfficerDropdown(vm.onboardingOfficerIds || []);
              setDecisionAction("onboarding");
              decisionModal.show();
          }
@@ -6087,13 +6369,16 @@
                     const dateValue = onboardingDateInput ? onboardingDateInput.value : "";
                     const timeValue = onboardingTimeInput ? onboardingTimeInput.value : "";
                     const locationValue = onboardingLocationInput ? onboardingLocationInput.value.trim() : "";
+                    const selectedOfficerIds = getSelectedOnboardingOfficerIds();
+                    const hasOfficers = selectedOfficerIds.length > 0;
                     const onboardingMessage = normalizeWhatsappMessage((document.getElementById("onboardingWhatsappText").value || "").trim());
 
                     if (onboardingDateInput) onboardingDateInput.classList.toggle("is-invalid", !dateValue);
                     if (onboardingTimeInput) onboardingTimeInput.classList.toggle("is-invalid", !timeValue);
                     if (onboardingLocationInput) onboardingLocationInput.classList.toggle("is-invalid", !locationValue);
+                    toggleOnboardingOfficerValidation(!hasOfficers);
 
-                    if (!dateValue || !timeValue || !locationValue) {
+                    if (!dateValue || !timeValue || !locationValue || !hasOfficers) {
                         return;
                     }
                     if (!onboardingWhatsappPayload || !onboardingWhatsappConfirmedAt || !onboardingMessage) {
@@ -6106,12 +6391,16 @@
                     onboardingWhatsappPayload.deepLink = buildWhatsAppDeepLink(onboardingWhatsappPayload.phoneNumber, onboardingMessage);
                     
                     const dateObj = parseDateValue(dateValue);
+                    const officerNames = getOnboardingOfficerNames(selectedOfficerIds).join(", ");
                     const auditEntry = {
                         ...getAuditBase(actor, "accepted", "onboarding", "Jadwalkan On Boarding", ""),
                         timestamp: nowIso,
                         onboarding_date: dateValue,
                         onboarding_time: timeValue,
                         onboarding_location: locationValue,
+                        onboarding_officer_ids: selectedOfficerIds,
+                        onboarding_officer_names: officerNames,
+                        onboarding_by: officerNames,
                         onboardingWhatsappStatus: "confirmed_manual",
                         onboardingWhatsappSentAt: onboardingWhatsappConfirmedAt,
                         onboardingWhatsappRetryCount: onboardingWhatsappRetryCount
@@ -6123,6 +6412,9 @@
                         "recruitment_status.onboarding_date": dateValue,
                         "recruitment_status.onboarding_time": timeValue,
                         "recruitment_status.onboarding_location": locationValue,
+                        "recruitment_status.onboarding_officer_ids": selectedOfficerIds,
+                        "recruitment_status.onboarding_officer_names": officerNames,
+                        "recruitment_status.onboarding_by": officerNames,
                         "recruitment_status.onboarding_at": nowIso,
                         "recruitment_status.onboarding_whatsapp_status": "confirmed_manual",
                         "recruitment_status.onboarding_whatsapp_sent_at": onboardingWhatsappConfirmedAt,
@@ -6137,6 +6429,9 @@
                             onboarding_date: dateValue,
                             onboarding_time: timeValue,
                             onboarding_location: locationValue,
+                            onboarding_officer_ids: selectedOfficerIds,
+                            onboarding_officer_names: officerNames,
+                            onboarding_by: officerNames,
                             by: actor.name
                         }),
                         "audit_trail": arrayUnion(auditEntry),
@@ -6150,7 +6445,10 @@
                             date: nowIso,
                             onboarding_date: dateValue,
                             onboarding_time: timeValue,
-                            onboarding_location: locationValue
+                            onboarding_location: locationValue,
+                            onboarding_officer_ids: selectedOfficerIds,
+                            onboarding_officer_names: officerNames,
+                            onboarding_by: officerNames
                         }, {
                             action: "onboarding_whatsapp",
                             decision: "onboarding",
@@ -6175,6 +6473,9 @@
                         onboarding_date: dateValue,
                         onboarding_time: timeValue,
                         onboarding_location: locationValue,
+                        onboarding_officer_ids: selectedOfficerIds,
+                        onboarding_officer_names: officerNames,
+                        onboarding_by: officerNames,
                         onboardingWhatsappStatus: "confirmed_manual",
                         onboardingWhatsappSentAt: onboardingWhatsappConfirmedAt,
                         onboardingWhatsappRecipient: onboardingWhatsappPayload.phoneNumber,
@@ -6915,6 +7216,10 @@
                 markOnboardingWhatsappPending({ preserveIfUnchanged: true });
                 syncDecisionSubmitState();
             });
+            const onboardingOfficerSearchInput = document.getElementById("onboardingOfficerSearchInput");
+            if (onboardingOfficerSearchInput) {
+                onboardingOfficerSearchInput.addEventListener("input", handleOnboardingOfficerSearchInput);
+            }
             document.querySelectorAll(".decision-toggle-btn").forEach((button) => {
                 button.addEventListener("click", () => setDecisionAction(button.dataset.decisionAction || ""));
             });
@@ -6943,6 +7248,10 @@
                 setRejectionWhatsappValidation("", "");
                 markOnboardingWhatsappPending({ silent: true });
                 setOnboardingWhatsappValidation("", "");
+                onboardingOfficerSearchTerm = "";
+                const officerSearchInput = document.getElementById("onboardingOfficerSearchInput");
+                if (officerSearchInput) officerSearchInput.value = "";
+                toggleOnboardingOfficerValidation(false);
                 decisionModalContext = "interview";
                 syncDecisionSubmitState();
             });
