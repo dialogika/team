@@ -2878,14 +2878,8 @@
 
         async function ensurePositionLabelsLoaded() {
             if (positionLabelsCache) return positionLabelsCache;
-            const map = {
-                "gtebWhJ7db4xxHQxI67t": "Head of Department of Happy Team",
-                "3jlfwya0KQuAk5Twkike": "People Development"
-            };
-            const deptMap = {
-                "gtebWhJ7db4xxHQxI67t": "Happy",
-                "3jlfwya0KQuAk5Twkike": "Happy"
-            };
+            const map = {};
+            const deptMap = {};
 
             try {
                 const snap1 = await getDocs(collection(db, "position"));
@@ -2927,7 +2921,7 @@
             const isLikelyFirestoreId = (str) => /^[a-zA-Z0-9_-]{16,}$/.test(String(str || "").trim());
 
             let resolvedPosition = labelFromEmployment || labelFromPos || fallbackPositionLabel;
-            if (!resolvedPosition) {
+            if (!resolvedPosition || (rawEmploymentPos && !isLikelyFirestoreId(rawEmploymentPos) && rawEmploymentPos.toLowerCase().includes("head of department of happy team"))) {
                 if (rawEmploymentPos && !isLikelyFirestoreId(rawEmploymentPos)) {
                     resolvedPosition = rawEmploymentPos;
                 } else if (rawPos && !isLikelyFirestoreId(rawPos)) {
@@ -2937,7 +2931,16 @@
                 }
             }
 
-            const userDeptKey = (data.department || data.employment?.department || data.dept || data.department_id || data.departmentId || data.employment?.department_id || data.employment?.departmentId || "").toString().trim();
+            let userDeptKey = (data.department || data.employment?.department || data.dept || data.department_id || data.departmentId || data.employment?.department_id || data.employment?.departmentId || "").toString().trim();
+            if (!userDeptKey && data.employment?.Department) {
+                if (Array.isArray(data.employment.Department)) {
+                    const happyDept = data.employment.Department.find(d => String(d).toLowerCase().includes("happy"));
+                    userDeptKey = (happyDept || data.employment.Department[0] || "").toString().trim();
+                } else {
+                    userDeptKey = String(data.employment.Department).trim();
+                }
+            }
+
             const deptFromEmployment = (positionDepartmentsCache && positionDepartmentsCache[rawEmploymentPos]) || "";
             const deptFromPos = (positionDepartmentsCache && positionDepartmentsCache[rawPos]) || "";
             const resolvedDeptKey = userDeptKey || deptFromEmployment || deptFromPos || "";
@@ -2970,7 +2973,7 @@
                 rawEmploymentPosition: data.employment?.position || "",
                 department: resolvedDeptName || "",
                 departmentKey: resolvedDeptKey || "",
-                employmentDepartment: data.employment?.department || "",
+                employmentDepartment: data.employment?.department || (Array.isArray(data.employment?.Department) ? data.employment.Department.join(", ") : (data.employment?.Department || "")),
                 role: roleValue || "",
                 raw: data
             };
@@ -2981,6 +2984,40 @@
 
             const rawStatus = (user.status || user.rawStatus || user.raw?.status || user.raw?.employment?.status || "").toString().trim().toLowerCase();
             if (rawStatus === "inactive" || rawStatus === "deleted" || rawStatus === "nonaktif") {
+                return false;
+            }
+
+            // Strictly reject positions from other departments (e.g. Website Development, Design, Tech, etc.)
+            const posTokens = [
+                user.position,
+                user.positionKey,
+                user.employmentPosition,
+                user.rawEmploymentPosition,
+                user.role,
+                user.raw?.jobTitle,
+                user.raw?.position_name,
+                user.raw?.positionLabel,
+                positionLabelsCache?.[user.employmentPosition],
+                positionLabelsCache?.[user.positionKey],
+                positionLabelsCache?.[user.rawEmploymentPosition]
+            ].map(normalizeTextToken).filter(Boolean);
+
+            const isExcludedPos = posTokens.some(p =>
+                p.includes("website") ||
+                p.includes("web dev") ||
+                p.includes("developer") ||
+                p.includes("programmer") ||
+                p.includes("software") ||
+                p.includes("graphic design") ||
+                p.includes("designer") ||
+                p.includes("video editor") ||
+                p.includes("content creator") ||
+                p.includes("social media") ||
+                p.includes("closing") ||
+                p.includes("sales") ||
+                p.includes("marketing")
+            );
+            if (isExcludedPos) {
                 return false;
             }
 
@@ -3003,30 +3040,11 @@
 
             const isHappyDept = deptTokens.some(d => d.includes("happy"));
 
-            const posTokens = [
-                user.position,
-                user.positionKey,
-                user.employmentPosition,
-                user.rawEmploymentPosition,
-                user.role,
-                user.raw?.jobTitle,
-                user.raw?.position_name,
-                user.raw?.positionLabel,
-                positionLabelsCache?.[user.employmentPosition],
-                positionLabelsCache?.[user.positionKey],
-                positionLabelsCache?.[user.rawEmploymentPosition]
-            ].map(normalizeTextToken).filter(Boolean);
-
-            const KNOWN_HAPPY_POS_IDS = [
-                "gtebwhj7db4xxhqxi67t",
-                "3jlfwya0kquak5twkike"
-            ];
-
-            const hasKnownHappyPosId = [
-                user.positionKey,
-                user.employmentPosition,
-                user.rawEmploymentPosition
-            ].map(normalizeTextToken).some(id => KNOWN_HAPPY_POS_IDS.includes(id));
+            const isHeadOfHappy = posTokens.some(p =>
+                p.includes("head of department of happy team") ||
+                p.includes("head of department happy team") ||
+                p.includes("head of happy")
+            );
 
             const isRecruitment = posTokens.some(p =>
                 p.includes("recruitment") ||
@@ -3041,15 +3059,16 @@
                 p.includes("peopledev")
             );
 
-            const isHappyHead = posTokens.some(p =>
-                p.includes("head of department of happy team") ||
-                p.includes("head of department happy team") ||
-                p.includes("head of happy")
+            // If user only has other department tokens and has no happy connection, reject
+            const hasOnlyOtherDept = deptTokens.length > 0 && !isHappyDept && deptTokens.every(d =>
+                d.includes("branding") || d.includes("closing") || d.includes("rebuy")
             );
+            if (hasOnlyOtherDept) {
+                return false;
+            }
 
-            if (hasKnownHappyPosId) return true;
-            if (isHappyHead) return true;
             if (isHappyDept) return true;
+            if (isHeadOfHappy) return true;
             if (isRecruitment || isPeopleDev) return true;
 
             return false;
@@ -3057,10 +3076,11 @@
 
         function getOnboardingOfficerPriority(user) {
             const pos = normalizeTextToken(user.position || user.employmentPosition || "");
+            const empPos = normalizeTextToken(user.employmentPosition || "");
             const role = normalizeTextToken(user.role || "");
-            if (pos.includes("head of department of happy team") || pos.includes("head of happy") || role.includes("head")) return 0;
-            if (pos.includes("recruitment") || pos.includes("rekrutmen") || pos.includes("recruiter")) return 1;
-            if (pos.includes("people development") || pos.includes("people dev")) return 2;
+            if (pos.includes("head") || empPos.includes("head") || role.includes("head") || role.includes("super_team")) return 0;
+            if (pos.includes("recruitment") || empPos.includes("recruitment") || pos.includes("rekrutmen") || pos.includes("recruiter")) return 1;
+            if (pos.includes("people development") || empPos.includes("people development") || pos.includes("people dev")) return 2;
             return 3;
         }
 
@@ -3723,13 +3743,16 @@
                     const normPos = normalizeTextToken(user.positionKey);
                     if (normEmp === "3jlfwya0kquak5twkike" || normPos === "3jlfwya0kquak5twkike") {
                         displayPosition = "People Development";
-                    } else if (normEmp === "gtebwhj7db4xxhqxi67t" || normPos === "gtebwhj7db4xxhqxi67t") {
+                    } else if (normEmp === "16kv158dslnjg5jnhwzd" || normPos === "16kv158dslnjg5jnhwzd") {
+                        displayPosition = "Recruitment Specialist";
+                    } else if (normEmp.includes("head") || normPos.includes("head")) {
                         displayPosition = "Head of Department of Happy Team";
                     } else {
                         displayPosition = "Happy Team";
                     }
                 }
-                const deptLabel = user.department ? ' - ' + escapeHtml(user.department) : ' - Happy';
+                const deptName = user.department && user.department.toLowerCase().includes("happy") ? user.department : "Happy";
+                const deptLabel = ' - ' + escapeHtml(deptName);
                 return (
                     '<label class="dropdown-check-item">' +
                     '<input type="checkbox" class="form-check-input onboarding-officer-checkbox" value="' + escapeHtml(userId) + '"' + checked + '>' +
