@@ -537,6 +537,72 @@
             }
         }
 
+        function parseMemberDate(value) {
+            if (!value) return null;
+            if (typeof value.toDate === "function") {
+                const d = value.toDate();
+                return isNaN(d.getTime()) ? null : d;
+            }
+            if (value instanceof Date) {
+                return isNaN(value.getTime()) ? null : value;
+            }
+            if (typeof value === "string") {
+                const trimmed = value.trim();
+                if (!trimmed) return null;
+                const parts = trimmed.split("-");
+                if (parts.length === 3) {
+                    const y = parseInt(parts[0], 10);
+                    const m = parseInt(parts[1], 10) - 1;
+                    const d = parseInt(parts[2], 10);
+                    const dateObj = new Date(y, m, d);
+                    if (!isNaN(dateObj.getTime())) return dateObj;
+                }
+                const parsed = new Date(trimmed);
+                return isNaN(parsed.getTime()) ? null : parsed;
+            }
+            if (typeof value === "number") {
+                const parsed = new Date(value);
+                return isNaN(parsed.getTime()) ? null : parsed;
+            }
+            return null;
+        }
+
+        function getEffectiveMemberStatus(member) {
+            const rawStatus = (member.status || "Active").trim();
+            // Pertahankan status manual khusus jika sudah ditandai Ghosted, Resigned, atau Inactive
+            if (rawStatus === "Ghosted" || rawStatus === "Resigned" || rawStatus === "Inactive") {
+                return rawStatus;
+            }
+
+            // Jika status tersimpan sudah On Leave
+            if (rawStatus === "On Leave") {
+                return "On Leave";
+            }
+
+            // Pengecekan otomatis berdasarkan tanggal berakhir kontrak (endDate)
+            const endDateObj = parseMemberDate(member.endDate);
+            if (!endDateObj) {
+                return rawStatus || "Active";
+            }
+
+            const today = new Date();
+            const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const endMid = new Date(endDateObj.getFullYear(), endDateObj.getMonth(), endDateObj.getDate());
+
+            // Batas 2 bulan sebelum endDate
+            const twoMonthsBefore = new Date(endMid.getFullYear(), endMid.getMonth() - 2, endMid.getDate());
+            const diffDays = Math.round((endMid - todayMid) / 86400000);
+
+            // Transisi otomatis: jika sudah memasuki rentang 2 bulan sebelum tanggal selesai
+            if ((todayMid >= twoMonthsBefore || diffDays <= 60) && diffDays >= 0) {
+                return "On Leave";
+            } else if (diffDays < 0) {
+                return "Inactive";
+            }
+
+            return "Active";
+        }
+
         function getStatusClass(status) {
             return "status-" + (status || "active").toString().trim().toLowerCase().replace(/\s+/g, "-");
         }
@@ -647,6 +713,7 @@
                     
                     const isSpecial = targetDivision === "Ghosted" || targetDivision === "Resigned";
                     const tr = document.createElement("tr");
+                    const effectiveStatus = getEffectiveMemberStatus(member);
                     
                     if (isSpecial) {
                         // For Ghosted and Resigned, include originalDivision
@@ -654,7 +721,7 @@
                         tr.innerHTML =
                             '<td><span class="member-name">' + escapeHtml(member.name || "-") + '</span></td>' +
                             '<td>' + escapeHtml(originalDiv) + '</td>' +
-                            '<td><span class="status-pill ' + getStatusClass(member.status) + '">' + escapeHtml(member.status || "-") + '</span></td>' +
+                            '<td><span class="status-pill ' + getStatusClass(effectiveStatus) + '">' + escapeHtml(effectiveStatus || "-") + '</span></td>' +
                             '<td>' + getContractBadgeHtml(member) + '</td>' +
                             '<td>' + getPkwtBadgeHtml(member) + '</td>' +
                             '<td>' + getDocumentBadgeHtml(member) + '</td>' +
@@ -677,7 +744,7 @@
                         // For active divisions, use standard layout
                         tr.innerHTML =
                             '<td><span class="member-name">' + escapeHtml(member.name || "-") + '</span></td>' +
-                            '<td><span class="status-pill ' + getStatusClass(member.status) + '">' + escapeHtml(member.status || "-") + '</span></td>' +
+                            '<td><span class="status-pill ' + getStatusClass(effectiveStatus) + '">' + escapeHtml(effectiveStatus || "-") + '</span></td>' +
                             '<td>' + getContractBadgeHtml(member) + '</td>' +
                             '<td>' + getPkwtBadgeHtml(member) + '</td>' +
                             '<td>' + getDocumentBadgeHtml(member) + '</td>' +
@@ -740,7 +807,7 @@
             
             document.getElementById("teamMemberId").value = id;
             document.getElementById("teamMemberName").value = member.name || "";
-            document.getElementById("teamMemberStatus").value = member.status || "Active";
+            document.getElementById("teamMemberStatus").value = getEffectiveMemberStatus(member) || member.status || "Active";
             document.getElementById("teamMemberContractType").value = member.contractType || "PKWT";
             document.getElementById("teamMemberWhatsapp").value = member.whatsapp || "";
             document.getElementById("teamMemberEmail").value = member.email || "";
