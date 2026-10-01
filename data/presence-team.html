@@ -353,6 +353,7 @@
             <div class="glass p-5 rounded-3xl premium-shadow">
               <p
                 class="text-slate-500 text-xs font-semibold tracking-wide uppercase mb-1"
+                id="kpiTotalLabel"
               >
                 Total Team
               </p>
@@ -403,19 +404,48 @@
                 class="px-6 py-5 flex flex-col sm:flex-row gap-3 justify-between sm:items-center border-b border-slate-100/80"
               >
                 <h2 class="text-lg font-bold text-slate-900">
-                  Tabel Presensi Team
+                  Tabel Presensi Harian
                 </h2>
-                <div class="flex items-center gap-2 sm:ml-auto flex-wrap">
+                <div class="flex items-center gap-3 sm:ml-auto flex-wrap">
+                  <!-- Segmented Category Pill [ Team | Intern | Semua ] -->
+                  <div
+                    class="inline-flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/60"
+                    id="presenceCategoryPills"
+                  >
+                    <button
+                      type="button"
+                      class="presence-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-[#0B2B6A] shadow-sm transition"
+                      data-category="team"
+                    >
+                      Team
+                    </button>
+                    <button
+                      type="button"
+                      class="presence-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition"
+                      data-category="intern"
+                    >
+                      Intern
+                    </button>
+                    <button
+                      type="button"
+                      class="presence-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition"
+                      data-category="all"
+                    >
+                      Semua
+                    </button>
+                  </div>
+
                   <input
                     type="date"
                     id="filterDate"
-                    class="min-w-[160px] px-3 py-2 rounded-xl text-xs border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]"
+                    class="px-3.5 py-1.5 rounded-xl text-xs font-medium border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]"
                   />
                   <button
                     id="btnExportXlsx"
-                    class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#0B2B6A] hover:bg-[#113981] transition whitespace-nowrap"
+                    class="px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-[#064e3b] hover:bg-[#053e2f] transition flex items-center gap-1.5 whitespace-nowrap shadow-sm"
                   >
-                    <i class="bi bi-download me-1"></i>Export XLSX
+                    <i class="bi bi-file-earmark-arrow-down text-sm"></i>
+                    <span>Export</span>
                   </button>
                   <div
                     id="loadingSpinner"
@@ -431,7 +461,7 @@
                       <tr
                         class="text-slate-400 text-[11px] font-extrabold uppercase tracking-[0.2em]"
                       >
-                        <th class="px-4 py-3 cell-name">Nama Team</th>
+                        <th class="px-4 py-3 cell-name" id="thColName">Nama Team</th>
                         <th class="px-4 py-3" style="min-width: 100px">
                           Clock In
                         </th>
@@ -455,7 +485,7 @@
                     id="emptyState"
                     class="text-xs text-slate-400 hidden px-4 py-4"
                   >
-                    Belum ada data intern/presensi pada tanggal ini.
+                    Belum ada data presensi pada tanggal ini.
                   </p>
                 </div>
               </div>
@@ -468,20 +498,49 @@
               <div
                 class="px-6 py-5 border-b border-slate-100/80 flex flex-col md:flex-row gap-3 md:items-center md:justify-between"
               >
-                <h3 class="text-lg font-bold text-[#0B2B6A]">
-                  Tabel Rekap Bulanan Team
-                </h3>
-                <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-lg font-bold text-slate-900">
+                  Tabel Rekap Bulanan
+                </h2>
+                <div class="flex items-center gap-3 sm:ml-auto flex-wrap">
+                  <!-- Segmented Category Pill [ Team | Intern | Semua ] -->
+                  <div
+                    class="inline-flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/60"
+                    id="recapCategoryPills"
+                  >
+                    <button
+                      type="button"
+                      class="recap-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-[#0B2B6A] shadow-sm transition"
+                      data-category="team"
+                    >
+                      Team
+                    </button>
+                    <button
+                      type="button"
+                      class="recap-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition"
+                      data-category="intern"
+                    >
+                      Intern
+                    </button>
+                    <button
+                      type="button"
+                      class="recap-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition"
+                      data-category="all"
+                    >
+                      Semua
+                    </button>
+                  </div>
+
                   <input
                     type="month"
                     id="recapMonthFilter"
-                    class="px-3 py-2 rounded-xl text-xs border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]"
+                    class="px-3.5 py-1.5 rounded-xl text-xs font-medium border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]"
                   />
                   <button
                     id="btnExportMonthlyRecapXlsx"
-                    class="px-3 py-2 rounded-xl text-xs font-semibold text-white bg-[#0B2B6A] hover:bg-[#113981] transition whitespace-nowrap"
+                    class="px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-[#0B2B6A] hover:bg-[#113981] transition flex items-center gap-1.5 whitespace-nowrap shadow-sm"
                   >
-                    <i class="bi bi-download me-1"></i>Export XLSX
+                    <i class="bi bi-download text-xs"></i>
+                    <span>Export XLSX</span>
                   </button>
                 </div>
               </div>
@@ -492,12 +551,15 @@
                       <tr
                         class="text-slate-400 text-[11px] font-extrabold uppercase tracking-[0.2em]"
                       >
-                        <th class="px-4 py-3 cell-name">Nama Team</th>
+                        <th class="px-4 py-3 cell-name">NAMA</th>
                         <th class="px-4 py-3" style="min-width: 120px">
-                          Hari Hadir
+                          HARI HADIR
+                        </th>
+                        <th class="px-4 py-3" style="min-width: 150px">
+                          KETERLAMBATAN
                         </th>
                         <th class="px-4 py-3" style="min-width: 160px">
-                          Total Jam Kerja
+                          TOTAL JAM KERJA
                         </th>
                       </tr>
                     </thead>
@@ -523,15 +585,44 @@
               <div
                 class="px-6 py-5 border-b border-slate-100/80 flex flex-col md:flex-row gap-3 md:items-center md:justify-between"
               >
-                <h3 class="text-lg font-bold text-[#0B2B6A]">
-                  Tabel Total Jam Team
-                </h3>
-                <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-lg font-bold text-slate-900">
+                  Tabel Total Jam
+                </h2>
+                <div class="flex items-center gap-3 sm:ml-auto flex-wrap">
+                  <!-- Segmented Category Pill [ Team | Intern | Semua ] -->
+                  <div
+                    class="inline-flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/60"
+                    id="totalCategoryPills"
+                  >
+                    <button
+                      type="button"
+                      class="total-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-[#0B2B6A] shadow-sm transition"
+                      data-category="team"
+                    >
+                      Team
+                    </button>
+                    <button
+                      type="button"
+                      class="total-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition"
+                      data-category="intern"
+                    >
+                      Intern
+                    </button>
+                    <button
+                      type="button"
+                      class="total-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition"
+                      data-category="all"
+                    >
+                      Semua
+                    </button>
+                  </div>
+
                   <button
                     id="btnExportInternshipTotalXlsx"
-                    class="px-3 py-2 rounded-xl text-xs font-semibold text-white bg-[#0B2B6A] hover:bg-[#113981] transition whitespace-nowrap"
+                    class="px-4 py-1.5 rounded-xl text-xs font-semibold text-white bg-[#0B2B6A] hover:bg-[#113981] transition flex items-center gap-1.5 whitespace-nowrap shadow-sm"
                   >
-                    <i class="bi bi-download me-1"></i>Export XLSX
+                    <i class="bi bi-download text-xs"></i>
+                    <span>Export XLSX</span>
                   </button>
                 </div>
               </div>
@@ -542,15 +633,16 @@
                       <tr
                         class="text-slate-400 text-[11px] font-extrabold uppercase tracking-[0.2em]"
                       >
-                        <th class="px-4 py-3 cell-name">Nama Team</th>
+                        <th class="px-4 py-3" style="width: 40px">#</th>
+                        <th class="px-4 py-3 cell-name">NAMA</th>
                         <th class="px-4 py-3" style="min-width: 160px">
-                          Total Jam Team
+                          TOTAL JAM
                         </th>
                         <th class="px-4 py-3" style="min-width: 150px">
-                          Jumlah Hari Hadir
+                          JUMLAH HARI HADIR
                         </th>
                         <th class="px-4 py-3" style="min-width: 160px">
-                          Rata-rata per Hari
+                          RATA-RATA PER HARI
                         </th>
                       </tr>
                     </thead>
@@ -558,12 +650,43 @@
                       id="internshipTotalBody"
                       class="text-slate-700 text-sm"
                     ></tbody>
+                    <tfoot
+                      id="internshipTotalFoot"
+                      class="border-t-2 border-slate-200 bg-slate-50/50 hidden"
+                    >
+                      <tr>
+                        <td
+                          colspan="2"
+                          class="px-4 py-3.5 text-slate-900 font-extrabold"
+                        >
+                          Total Keseluruhan
+                        </td>
+                        <td
+                          class="px-4 py-3.5 text-[#0B2B6A] font-extrabold"
+                          id="totalJamOverall"
+                        >
+                          -
+                        </td>
+                        <td
+                          class="px-4 py-3.5 text-slate-800 font-bold"
+                          id="totalHariOverall"
+                        >
+                          -
+                        </td>
+                        <td
+                          class="px-4 py-3.5 text-slate-800 font-bold"
+                          id="totalRataOverall"
+                        >
+                          -
+                        </td>
+                      </tr>
+                    </tfoot>
                   </table>
                   <p
                     id="internshipTotalEmpty"
                     class="text-xs text-slate-400 hidden px-4 py-4"
                   >
-                    Belum ada data total jam team.
+                    Belum ada data total jam.
                   </p>
                 </div>
               </div>
@@ -577,18 +700,46 @@
                 class="px-6 py-5 border-b border-slate-100/80 flex flex-col md:flex-row gap-3 md:items-center md:justify-between"
               >
                 <div>
-                  <h3 class="text-lg font-bold text-[#0B2B6A]">
-                    Gamifikasi Kehadiran Team
-                  </h3>
+                  <h2 class="text-lg font-bold text-slate-900">
+                    Gamifikasi Kehadiran
+                  </h2>
                   <p class="text-xs text-slate-400 mt-0.5">
                     Streak, progress bulanan &amp; achievement
                   </p>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-3 sm:ml-auto flex-wrap">
+                  <!-- Segmented Category Pill [ Team | Intern | Semua ] -->
+                  <div
+                    class="inline-flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/60"
+                    id="gamiCategoryPills"
+                  >
+                    <button
+                      type="button"
+                      class="gami-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-[#0B2B6A] shadow-sm transition"
+                      data-category="team"
+                    >
+                      Team
+                    </button>
+                    <button
+                      type="button"
+                      class="gami-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition"
+                      data-category="intern"
+                    >
+                      Intern
+                    </button>
+                    <button
+                      type="button"
+                      class="gami-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition"
+                      data-category="all"
+                    >
+                      Semua
+                    </button>
+                  </div>
+
                   <input
                     type="month"
                     id="gamiMonthFilter"
-                    class="px-3 py-2 rounded-xl text-xs border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]"
+                    class="px-3.5 py-1.5 rounded-xl text-xs font-medium border border-slate-200 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]"
                   />
                 </div>
               </div>
@@ -877,20 +1028,84 @@
               ? statusRaw.trim().toLowerCase()
               : statusRaw;
           const isStatusOk =
-            status === undefined || status === null || status === "active";
-          const isRoleOk = ["staff", "sub_team"].includes(roleValue);
-          if (!isStatusOk || !isRoleOk) return;
+            status === undefined || status === null || status === "active" || status === "";
+          if (!isStatusOk) return;
+
+          const isIntern =
+            roleValue === "internship" ||
+            String(d.role || "").trim().toLowerCase() === "internship" ||
+            String(access.role_id || "").trim().toLowerCase() === "internship" ||
+            String(access.role || "").trim().toLowerCase() === "internship" ||
+            String(d.role_id || "").trim().toLowerCase() === "internship";
+
+          const isTeam =
+            !isIntern &&
+            (["staff", "sub_team", "super_team", "employee", "owner"].includes(roleValue) ||
+              ["staff", "sub_team", "super_team", "employee", "owner"].includes(
+                String(access.role_id || "").toLowerCase(),
+              ) ||
+              ["staff", "sub_team", "super_team", "employee", "owner"].includes(
+                String(d.role || "").toLowerCase(),
+              ) ||
+              String(d.role_id || "").toLowerCase() === "staff");
+
+          if (!isIntern && !isTeam) return;
+
           users.push({
             id: docSnap.id,
             name: d.name || d.email || "Tanpa Nama",
             photo: d.photo || "",
+            category: isIntern ? "intern" : "team",
           });
         });
         users.sort((a, b) => a.name.localeCompare(b.name));
         allInterns = users;
       }
 
-      // ── daily attendance ──────────────────────────────────────────
+      // ── daily attendance & category switcher ──────────────────────
+      let currentCategory = "team";
+      const categoryButtons = document.querySelectorAll(".presence-cat-btn");
+      const thColName = document.getElementById("thColName");
+      const kpiTotalLabel = document.getElementById("kpiTotalLabel");
+
+      function updateCategoryUI() {
+        categoryButtons.forEach((btn) => {
+          const cat = btn.dataset.category;
+          if (cat === currentCategory) {
+            btn.className =
+              "presence-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-[#0B2B6A] shadow-sm transition";
+          } else {
+            btn.className =
+              "presence-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition";
+          }
+        });
+
+        if (thColName) {
+          if (currentCategory === "team") thColName.textContent = "Nama Team";
+          else if (currentCategory === "intern") thColName.textContent = "Nama Intern";
+          else thColName.textContent = "Nama";
+        }
+
+        if (kpiTotalLabel) {
+          if (currentCategory === "team") kpiTotalLabel.textContent = "Total Team";
+          else if (currentCategory === "intern") kpiTotalLabel.textContent = "Total Intern";
+          else kpiTotalLabel.textContent = "Total Anggota";
+        }
+
+        const dateKey = filterDateInput.value || getTodayKey();
+        const tableRows = aggregateSelectedDateRows(dateKey);
+        renderAttendanceTable(tableRows);
+        updateKpi(tableRows, dateKey);
+      }
+
+      categoryButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (currentCategory === btn.dataset.category) return;
+          currentCategory = btn.dataset.category;
+          updateCategoryUI();
+        });
+      });
+
       function aggregateSelectedDateRows(dateKey) {
         const map = new Map();
         selectedDateRecords.forEach((r) => {
@@ -919,7 +1134,13 @@
             row.logoutTime = r.time || "-";
           }
         });
-        const merged = allInterns.map((intern) => {
+
+        const filteredUsers = allInterns.filter((u) => {
+          if (currentCategory === "all") return true;
+          return u.category === currentCategory;
+        });
+
+        const merged = filteredUsers.map((intern) => {
           const hit = map.get(intern.id);
           let status = "Tidak Hadir",
             totalSeconds = null,
@@ -1053,7 +1274,44 @@
         );
       }
 
+      // ── badge helper & schedule ───────────────────────────────────
+      function categoryBadge(category) {
+        if (category === "intern") {
+          return '<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-100/60 ml-2">INTERN</span>';
+        }
+        return '<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-700 border border-indigo-100/60 ml-2">TEAM</span>';
+      }
+
+      function getDayScheduleStartSec(dateStr) {
+        if (!dateStr) return 10 * 3600;
+        const d = new Date(dateStr + "T00:00:00");
+        const dow = d.getDay(); // 0=Sun, 6=Sat
+        if (dow === 6 || dow === 0) return 9 * 3600; // 09:00 for weekend
+        return 10 * 3600; // 10:00 for weekday
+      }
+
       // ── monthly recap ─────────────────────────────────────────────
+      let currentRecapCategory = "team";
+      let allMonthlyRecapRaw = [];
+      const recapCategoryButtons = document.querySelectorAll(".recap-cat-btn");
+
+      recapCategoryButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (currentRecapCategory === btn.dataset.category) return;
+          currentRecapCategory = btn.dataset.category;
+          recapCategoryButtons.forEach((b) => {
+            if (b.dataset.category === currentRecapCategory) {
+              b.className =
+                "recap-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-[#0B2B6A] shadow-sm transition";
+            } else {
+              b.className =
+                "recap-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition";
+            }
+          });
+          renderMonthlyRecapTable();
+        });
+      });
+
       async function loadMonthlyRecap(monthKey) {
         const { startKey, endKey } = getMonthRangeFromMonthKey(monthKey);
         const snap = await getDocs(
@@ -1063,16 +1321,15 @@
             where("date", "<=", endKey),
           ),
         );
-        const allowed = new Set(allInterns.map((u) => u.id));
         const byUD = new Map();
         snap.forEach((docSnap) => {
           const d = docSnap.data() || {};
-          if (!d.user_id || !d.date || !d.type || !allowed.has(d.user_id))
-            return;
+          if (!d.user_id || !d.date || !d.type) return;
           const key = `${d.user_id}__${d.date}`;
           if (!byUD.has(key))
             byUD.set(key, {
               user_id: d.user_id,
+              date: d.date,
               name: d.name || "Tanpa Nama",
               loginSec: null,
               logoutSec: null,
@@ -1090,7 +1347,8 @@
           )
             row.logoutSec = sec;
         });
-        const perIntern = new Map();
+
+        const perUser = new Map();
         byUD.forEach((v) => {
           if (
             v.loginSec == null ||
@@ -1099,54 +1357,115 @@
           )
             return;
           const dur = v.logoutSec - v.loginSec;
-          const ex = perIntern.get(v.user_id) || {
+          const ex = perUser.get(v.user_id) || {
             name: v.name,
             total: 0,
             days: 0,
+            lateTotalSec: 0,
+            lateCount: 0,
           };
           ex.total += dur;
           ex.days++;
-          perIntern.set(v.user_id, ex);
+
+          // Keterlambatan
+          const scheduleStart = getDayScheduleStartSec(v.date);
+          if (v.loginSec > scheduleStart) {
+            const late = v.loginSec - scheduleStart;
+            ex.lateTotalSec += late;
+            ex.lateCount++;
+          }
+
+          perUser.set(v.user_id, ex);
         });
-        const recapRows = Array.from(perIntern.entries())
-          .map(([uid, v]) => ({
+
+        allMonthlyRecapRaw = Array.from(perUser.entries()).map(([uid, v]) => {
+          const userObj = allInterns.find((u) => u.id === uid);
+          return {
             userId: uid,
             name: v.name,
             photo: getInternPhoto(uid),
+            category: userObj ? userObj.category : "team",
             total: v.total,
             attendanceDays: v.days,
-          }))
-          .sort((a, b) => b.total - a.total);
-        monthlyRecapCache = recapRows;
+            lateTotalSec: v.lateTotalSec,
+            lateCount: v.lateCount,
+          };
+        });
+
+        renderMonthlyRecapTable();
+      }
+
+      function renderMonthlyRecapTable() {
         internRecapBody.innerHTML = "";
-        if (!recapRows.length) {
+        const filtered = allMonthlyRecapRaw
+          .filter((r) => {
+            if (currentRecapCategory === "all") return true;
+            return r.category === currentRecapCategory;
+          })
+          .sort((a, b) => b.total - a.total);
+
+        monthlyRecapCache = filtered;
+
+        if (!filtered.length) {
           internRecapEmpty.classList.remove("hidden");
           return;
         }
         internRecapEmpty.classList.add("hidden");
-        recapRows.forEach((r) => {
+
+        const frag = document.createDocumentFragment();
+        filtered.forEach((r) => {
+          const lateLabel =
+            r.lateTotalSec > 0
+              ? `<span class="text-red-600 font-semibold">${formatMinutes(r.lateTotalSec)} <span class="text-xs">(${r.lateCount}x)</span></span>`
+              : `<span class="text-slate-400">0 Menit</span>`;
+
           const tr = document.createElement("tr");
-          tr.className = "border-b border-slate-100";
+          tr.className = "border-b border-slate-100 hover:bg-slate-50/70 transition-colors";
           tr.innerHTML = `
             <td class="px-4 py-3 cell-name">
               <div class="flex items-center gap-3">
                 ${avatarHtml(r.photo, r.name)}
-                <span class="font-semibold">${r.name}</span>
+                <span class="font-semibold text-slate-800">${r.name}</span>
+                ${categoryBadge(r.category)}
               </div>
             </td>
-            <td class="px-4 py-3">${r.attendanceDays} hari</td>
-            <td class="px-4 py-3">${formatMinutes(r.total)}</td>`;
-          internRecapBody.appendChild(tr);
+            <td class="px-4 py-3 font-medium">${r.attendanceDays} hari</td>
+            <td class="px-4 py-3">${lateLabel}</td>
+            <td class="px-4 py-3 font-semibold text-[#0B2B6A]">${formatMinutes(r.total)}</td>`;
+          frag.appendChild(tr);
         });
+        internRecapBody.appendChild(frag);
       }
 
-      // ── internship total (realtime) ───────────────────────────────
+      // ── total jam (realtime) ──────────────────────────────────────
+      let currentTotalCategory = "team";
+      const totalCategoryButtons = document.querySelectorAll(".total-cat-btn");
+      const internshipTotalFoot = document.getElementById("internshipTotalFoot");
+      const totalJamOverall = document.getElementById("totalJamOverall");
+      const totalHariOverall = document.getElementById("totalHariOverall");
+      const totalRataOverall = document.getElementById("totalRataOverall");
+
+      totalCategoryButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (currentTotalCategory === btn.dataset.category) return;
+          currentTotalCategory = btn.dataset.category;
+          totalCategoryButtons.forEach((b) => {
+            if (b.dataset.category === currentTotalCategory) {
+              b.className =
+                "total-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-[#0B2B6A] shadow-sm transition";
+            } else {
+              b.className =
+                "total-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition";
+            }
+          });
+          renderInternshipTotalTable();
+        });
+      });
+
       function buildInternshipTotalFromRecords(records) {
-        const allowed = new Set(allInterns.map((u) => u.id));
         const byUD = new Map();
         records.forEach((d) => {
-          if (!d.user_id || !d.date || !d.type || !allowed.has(d.user_id))
-            return;
+          if (!d.user_id || !d.date || !d.type) return;
           const key = `${d.user_id}__${d.date}`;
           if (!byUD.has(key))
             byUD.set(key, {
@@ -1168,7 +1487,8 @@
           )
             row.logoutSec = sec;
         });
-        const perIntern = new Map();
+
+        const perUser = new Map();
         byUD.forEach((v) => {
           if (
             v.loginSec == null ||
@@ -1177,24 +1497,27 @@
           )
             return;
           const dur = v.logoutSec - v.loginSec;
-          const ex = perIntern.get(v.user_id) || {
+          const ex = perUser.get(v.user_id) || {
             name: v.name,
             total: 0,
             days: 0,
           };
           ex.total += dur;
           ex.days++;
-          perIntern.set(v.user_id, ex);
+          perUser.set(v.user_id, ex);
         });
-        internshipTotalCache = Array.from(perIntern.entries())
-          .map(([uid, v]) => ({
+
+        internshipTotalCache = Array.from(perUser.entries()).map(([uid, v]) => {
+          const userObj = allInterns.find((u) => u.id === uid);
+          return {
             userId: uid,
             name: v.name,
             photo: getInternPhoto(uid),
+            category: userObj ? userObj.category : "team",
             total: v.total,
             days: v.days,
-          }))
-          .sort((a, b) => b.total - a.total);
+          };
+        });
 
         // also save for gamification
         allAttendanceRecords = records;
@@ -1202,31 +1525,52 @@
 
       function renderInternshipTotalTable() {
         internshipTotalBody.innerHTML = "";
-        if (!internshipTotalCache.length) {
+        const filtered = internshipTotalCache
+          .filter((r) => {
+            if (currentTotalCategory === "all") return true;
+            return r.category === currentTotalCategory;
+          })
+          .sort((a, b) => b.total - a.total);
+
+        if (!filtered.length) {
           internshipTotalEmpty.classList.remove("hidden");
+          if (internshipTotalFoot) internshipTotalFoot.classList.add("hidden");
           return;
         }
         internshipTotalEmpty.classList.add("hidden");
+        if (internshipTotalFoot) internshipTotalFoot.classList.remove("hidden");
+
+        let grandTotalSec = 0;
+        let grandTotalDays = 0;
+
         const frag = document.createDocumentFragment();
-        internshipTotalCache.forEach((r, idx) => {
+        filtered.forEach((r, idx) => {
+          grandTotalSec += r.total || 0;
+          grandTotalDays += r.days || 0;
           const avg = r.days > 0 ? Math.floor(r.total / r.days) : 0;
           const tr = document.createElement("tr");
           tr.className =
             "border-b border-slate-100 hover:bg-slate-50/70 transition-colors";
           tr.innerHTML = `
+            <td class="px-4 py-3 text-[11px] font-semibold text-slate-400 w-10">${idx + 1}</td>
             <td class="px-4 py-3 cell-name">
               <div class="flex items-center gap-3">
-                <span class="text-[11px] font-semibold text-slate-400 w-5">${idx + 1}</span>
                 ${avatarHtml(r.photo, r.name)}
                 <span class="font-semibold text-slate-800">${r.name}</span>
+                ${categoryBadge(r.category)}
               </div>
             </td>
             <td class="px-4 py-3 font-semibold text-[#0B2B6A]">${formatMinutes(r.total)}</td>
-            <td class="px-4 py-3">${r.days} hari</td>
-            <td class="px-4 py-3">${formatMinutes(avg)}</td>`;
+            <td class="px-4 py-3 font-medium text-slate-700">${r.days} hari</td>
+            <td class="px-4 py-3 font-medium text-slate-700">${formatMinutes(avg)}</td>`;
           frag.appendChild(tr);
         });
         internshipTotalBody.appendChild(frag);
+
+        const grandAvg = grandTotalDays > 0 ? Math.floor(grandTotalSec / grandTotalDays) : 0;
+        if (totalJamOverall) totalJamOverall.textContent = formatMinutes(grandTotalSec);
+        if (totalHariOverall) totalHariOverall.textContent = `${grandTotalDays} hari`;
+        if (totalRataOverall) totalRataOverall.textContent = formatMinutes(grandAvg);
       }
 
       function setupInternshipTotalRealtime() {
@@ -1344,14 +1688,41 @@
       }
 
       // ── gamification utama ────────────────────────────────────────────
+      let currentGamiCategory = "team";
+      const gamiCategoryButtons = document.querySelectorAll(".gami-cat-btn");
+
+      gamiCategoryButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (currentGamiCategory === btn.dataset.category) return;
+          currentGamiCategory = btn.dataset.category;
+          gamiCategoryButtons.forEach((b) => {
+            if (b.dataset.category === currentGamiCategory) {
+              b.className =
+                "gami-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-[#0B2B6A] shadow-sm transition";
+            } else {
+              b.className =
+                "gami-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-800 transition";
+            }
+          });
+          renderGamification(
+            gamiMonthFilter.value || getMonthKeyFromDate(getTodayKey()),
+          );
+        });
+      });
+
       function renderGamification(monthKey) {
         if (!allInterns.length) return;
+
+        const targetUsers = allInterns.filter((u) => {
+          if (currentGamiCategory === "all") return true;
+          return u.category === currentGamiCategory;
+        });
 
         const { startKey, endKey } = getMonthRangeFromMonthKey(monthKey);
         const workDays = getWorkDaysInMonth(monthKey); // array dateKey string, urut
         const totalDays = workDays.length;
         const todayKey = getTodayKey();
-        const allowed = new Set(allInterns.map((u) => u.id));
+        const allowed = new Set(targetUsers.map((u) => u.id));
 
         // aggregate valid pairs per user per date
         const presentMap = new Map(); // uid -> Set<dateKey>
@@ -1409,22 +1780,22 @@
         // hitung earlyStreak per user (streak datang paling awal berturut-turut)
         const earlyStreakMap = new Map();
         const earlyCountMap = new Map();
-        allInterns.forEach((u) => earlyStreakMap.set(u.id, 0));
-        allInterns.forEach((u) => earlyCountMap.set(u.id, 0));
+        targetUsers.forEach((u) => earlyStreakMap.set(u.id, 0));
+        targetUsers.forEach((u) => earlyCountMap.set(u.id, 0));
         const pastWorkDays = workDays.filter((d) => d <= todayKey).sort();
         const earlyConsec = new Map();
-        allInterns.forEach((u) => earlyConsec.set(u.id, 0));
+        targetUsers.forEach((u) => earlyConsec.set(u.id, 0));
         pastWorkDays.forEach((date) => {
           const attendees = dateEarliest.get(date) || [];
           if (!attendees.length) {
-            allInterns.forEach((u) => earlyConsec.set(u.id, 0));
+            targetUsers.forEach((u) => earlyConsec.set(u.id, 0));
             return;
           }
           const minSec = Math.min(...attendees.map((a) => a.loginSec));
           const earliestUids = new Set(
             attendees.filter((a) => a.loginSec === minSec).map((a) => a.uid),
           );
-          allInterns.forEach((u) => {
+          targetUsers.forEach((u) => {
             if (earliestUids.has(u.id)) {
               earlyConsec.set(u.id, earlyConsec.get(u.id) + 1);
               earlyStreakMap.set(u.id, earlyConsec.get(u.id));
@@ -1437,7 +1808,7 @@
 
         const dayNames = { 0: "Min", 2: "Sel", 4: "Kam", 6: "Sat" };
 
-        const userData = allInterns.map((u) => {
+        const userData = targetUsers.map((u) => {
           const myPresent = presentMap.get(u.id) || new Set();
           const att = workDays.map((d) => {
             if (d > todayKey) return -1;
@@ -1460,9 +1831,11 @@
 
         if (!sorted.length) {
           gamiEmpty.classList.remove("hidden");
+          gamiLdrEmpty.classList.remove("hidden");
           return;
         }
         gamiEmpty.classList.add("hidden");
+        gamiLdrEmpty.classList.add("hidden");
 
         sorted.forEach((u) => {
           const { att, segs, bs, cs, tp, pc, es, ec } = u;
@@ -1562,7 +1935,10 @@
       <div class="flex items-center gap-3 mb-3">
         ${avatarHtml(u.photo, u.name, 38)}
         <div class="flex-1 min-w-0">
-          <p class="font-semibold text-slate-800 text-sm truncate">${u.name}</p>
+          <div class="flex items-center gap-2">
+            <p class="font-semibold text-slate-800 text-sm truncate">${u.name}</p>
+            ${categoryBadge(u.category)}
+          </div>
           <p class="text-xs text-slate-400">${tp}/${pc} hari hadir (${pct}%)</p>
           <p class="text-xs text-slate-400 mb-0">Berangkat paling awal: ${ec}x bulan ini</p>
         </div>
@@ -1610,7 +1986,10 @@
           row.innerHTML = `
       <span class="ldr-rank">${medals[i] || i + 1}</span>
       ${avatarHtml(u.photo, u.name, 32)}
-      <span class="flex-1 text-sm font-semibold text-slate-800">${u.name}</span>
+      <div class="flex-1 min-w-0 flex items-center gap-2">
+        <span class="text-sm font-semibold text-slate-800 truncate">${u.name}</span>
+        ${categoryBadge(u.category)}
+      </div>
       <div class="text-right">
         <p class="text-sm font-semibold text-slate-800">${u.tp} hari</p>
         <p class="text-xs" style="color:${u.bs >= 2 ? "#E24B4A" : "#94a3b8"}">
@@ -1643,39 +2022,109 @@
       // ── export helpers ────────────────────────────────────────────
       function exportPresenceXlsx() {
         const dateKey = filterDateInput.value || getTodayKey();
+        const catLabel =
+          currentCategory === "team"
+            ? "Team"
+            : currentCategory === "intern"
+              ? "Intern"
+              : "Semua";
         const rows = aggregateSelectedDateRows(dateKey)
           .filter((r) => r.isValidPair)
           .map((r) => ({
             Tanggal: dateKey,
-            Nama_Intern: r.name,
+            Kategori: r.category === "intern" ? "Intern" : "Team",
+            Nama: r.name,
             Clock_In: r.loginTime,
             Clock_Out: r.logoutTime,
             Total_Jam_Kerja: r.totalLabel,
             Status: r.status,
           }));
+        const fileName =
+          currentCategory === "team"
+            ? `presensi-team-${dateKey}.xlsx`
+            : currentCategory === "intern"
+              ? `presensi-intern-${dateKey}.xlsx`
+              : `presensi-harian-${dateKey}.xlsx`;
         exportToXlsx(
           rows,
-          "Presensi Harian",
-          `presensi-intern-${dateKey}.xlsx`,
+          `Presensi ${catLabel}`,
+          fileName,
         );
       }
       function exportMonthlyRecapXlsx() {
         const mk = recapMonthFilter.value || getMonthKeyFromDate(getTodayKey());
+        const catLabel =
+          currentRecapCategory === "team"
+            ? "Team"
+            : currentRecapCategory === "intern"
+              ? "Intern"
+              : "Semua";
         const rows = monthlyRecapCache.map((r) => ({
           Bulan: mk,
-          Nama_Intern: r.name,
-          Hari_Hadir: r.attendanceDays,
+          Nama: r.name,
+          Kategori: r.category === "intern" ? "Intern" : "Team",
+          Hari_Hadir: `${r.attendanceDays} hari`,
+          Keterlambatan:
+            r.lateTotalSec > 0
+              ? `${formatMinutes(r.lateTotalSec)} (${r.lateCount}x)`
+              : "0 Menit",
           Total_Jam_Kerja: formatMinutes(r.total),
         }));
-        exportToXlsx(rows, "Rekap Bulanan", `rekap-bulanan-intern-${mk}.xlsx`);
+        exportToXlsx(
+          rows,
+          `Rekap Bulanan ${catLabel}`,
+          `rekap-bulanan-${currentRecapCategory}-${mk}.xlsx`,
+        );
       }
       function exportInternshipTotalXlsx() {
-        const rows = internshipTotalCache.map((r) => ({
-          Nama_Intern: r.name,
-          Total_Hari_Hadir: r.days,
-          Total_Jam_Kerja: formatMinutes(r.total),
-        }));
-        exportToXlsx(rows, "Total Internship", "total-jam-internship.xlsx");
+        const filtered = internshipTotalCache
+          .filter((r) => {
+            if (currentTotalCategory === "all") return true;
+            return r.category === currentTotalCategory;
+          })
+          .sort((a, b) => b.total - a.total);
+
+        const catLabel =
+          currentTotalCategory === "team"
+            ? "Team"
+            : currentTotalCategory === "intern"
+              ? "Intern"
+              : "Semua";
+
+        let grandSec = 0;
+        let grandDays = 0;
+
+        const rows = filtered.map((r, idx) => {
+          grandSec += r.total || 0;
+          grandDays += r.days || 0;
+          const avg = r.days > 0 ? Math.floor(r.total / r.days) : 0;
+          return {
+            No: idx + 1,
+            Nama: r.name,
+            Kategori: r.category === "intern" ? "Intern" : "Team",
+            Total_Jam: formatMinutes(r.total),
+            Jumlah_Hari_Hadir: `${r.days} hari`,
+            Rata_Rata_Per_Hari: formatMinutes(avg),
+          };
+        });
+
+        if (rows.length > 0) {
+          const grandAvg = grandDays > 0 ? Math.floor(grandSec / grandDays) : 0;
+          rows.push({
+            No: "",
+            Nama: "Total Keseluruhan",
+            Kategori: "",
+            Total_Jam: formatMinutes(grandSec),
+            Jumlah_Hari_Hadir: `${grandDays} hari`,
+            Rata_Rata_Per_Hari: formatMinutes(grandAvg),
+          });
+        }
+
+        exportToXlsx(
+          rows,
+          `Total Jam ${catLabel}`,
+          `total-jam-${currentTotalCategory}.xlsx`,
+        );
       }
 
       // ── init ──────────────────────────────────────────────────────
