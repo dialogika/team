@@ -404,6 +404,20 @@
         <div class="container-fluid">
           <div class="container">
 
+            <!-- TOP BREADCRUMB & EXPORT BAR -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3 pt-1">
+              <nav class="d-flex align-items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                <a href="../home.html" class="text-blue-600"><i class="bi bi-house-fill"></i></a>
+                <span>/</span>
+                <span>HR Division</span>
+                <span>/</span>
+                <span class="text-slate-400">Candidate Management</span>
+              </nav>
+              <button type="button" id="btnOpenExportModal" class="btn text-white px-3.5 py-2 rounded-xl font-bold text-xs d-inline-flex align-items-center gap-2 shadow-sm transition hover:opacity-90" style="background-color: #064e3b;">
+                <i class="bi bi-file-earmark-arrow-down text-sm"></i> Export Data
+              </button>
+            </div>
+
             <!-- TAB BAR -->
             <div class="candidate-tab-bar" id="candidateTabBar">
               <button class="candidate-tab-btn active" data-tab="team"><i class="fa-solid fa-users"></i>Team<span class="tab-count" id="tabCountTeam">0</span></button>
@@ -569,6 +583,116 @@
 
     <div class="modal fade" id="positionFormModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content schedule-modal-content border-0"><div class="modal-header schedule-modal-header"><h5 class="schedule-modal-title" id="positionFormModalLabel"><i class="fa-solid fa-sliders"></i>Tambah Posisi</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body schedule-modal-body"><form id="positionForm"><input type="hidden" id="positionDocId" value="" /><div class="row g-3"><div class="col-12"><label class="form-label small fw-bold">Nama Posisi</label><input type="text" class="form-control" id="positionNameInput" placeholder="Contoh: Frontend Developer" required /></div><div class="col-12"><label class="form-label small fw-bold">Kategori</label><select class="form-select" id="positionCategoryInput" required><option value="">Pilih kategori</option><option value="team">Team</option><option value="internship">Internship</option></select></div><input type="hidden" id="positionActiveInput" value="true" /></div></form></div><div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button><button type="button" class="btn btn-dlg-blue" id="btnSavePosition">Simpan</button></div></div></div></div>
 
+    <!-- EXPORT CANDIDATE MODAL -->
+    <div class="modal fade" id="exportCandidateModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+        <div class="modal-content border-0 shadow-2xl rounded-[28px] overflow-hidden">
+          <div class="p-6 pb-2">
+            <div class="d-flex align-items-start justify-content-between gap-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 d-flex align-items-center justify-content-center text-emerald-600 flex-shrink-0">
+                  <i class="fa-solid fa-file-excel text-lg"></i>
+                </div>
+                <div>
+                  <h5 class="modal-title font-extrabold text-slate-900 text-base mb-0.5">Export Data Kandidat</h5>
+                  <p class="text-slate-500 text-xs mb-0">Unduh rekapan pipeline rekrutmen Team, Mentor, dan Internship</p>
+                </div>
+              </div>
+              <button type="button" class="btn-close text-slate-400 shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+          </div>
+
+          <div class="p-6 pt-3 space-y-4">
+            <!-- Format File -->
+            <div>
+              <label class="block text-[11px] font-black uppercase tracking-wider text-slate-600 mb-1.5">Format File</label>
+              <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl">
+                <button type="button" id="exportFormatXlsxBtn" class="py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-sm flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-file-excel text-emerald-600"></i> Excel (.xlsx)
+                </button>
+                <button type="button" id="exportFormatCsvBtn" class="py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-file-csv text-indigo-600"></i> CSV (.csv)
+                </button>
+              </div>
+            </div>
+
+            <!-- Kategori Kandidat -->
+            <div>
+              <label for="exportCategorySelect" class="block text-[11px] font-black uppercase tracking-wider text-slate-600 mb-1.5">Kategori Kandidat</label>
+              <select id="exportCategorySelect" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                <option value="all">Semua Kategori (Team, Mentor, Internship)</option>
+                <option value="team">Team Only</option>
+                <option value="mentor">Mentor Only</option>
+                <option value="internship">Internship Only</option>
+              </select>
+            </div>
+
+            <!-- Filter Status -->
+            <div>
+              <label for="exportStatusSelect" class="block text-[11px] font-black uppercase tracking-wider text-slate-600 mb-1.5">Filter Status</label>
+              <select id="exportStatusSelect" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+                <option value="all">Semua Status</option>
+                <option value="screening">Screening</option>
+                <option value="interview">Interview</option>
+                <option value="micro_teaching">Micro Teaching (MT)</option>
+                <option value="accepted">Accepted</option>
+                <option value="onboarding">Onboarding</option>
+                <option value="rejected">Rejected</option>
+                <option value="canceled">Canceled</option>
+              </select>
+            </div>
+
+            <!-- Pilihan Rentang Waktu -->
+            <div>
+              <label class="block text-[11px] font-black uppercase tracking-wider text-slate-600 mb-1.5">Pilihan Rentang Waktu</label>
+              <div class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1 rounded-xl">
+                <button type="button" id="exportTimeAllBtn" class="py-2 text-xs font-bold rounded-lg transition bg-white text-slate-900 shadow-sm flex items-center justify-center gap-1">
+                  <i class="fa-solid fa-globe text-[11px]"></i> Semua Data
+                </button>
+                <button type="button" id="exportTimeMonthBtn" class="py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1">
+                  <i class="fa-regular fa-calendar text-[11px]"></i> Per Bulan
+                </button>
+                <button type="button" id="exportTimeWeekBtn" class="py-2 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1">
+                  <i class="fa-regular fa-calendar-days text-[11px]"></i> Per Minggu
+                </button>
+              </div>
+            </div>
+
+            <!-- Time Option Dynamic Sub-views -->
+            <div id="exportTimeAllNote" class="text-xs text-slate-500 flex items-start gap-2 pt-1">
+              <i class="fa-regular fa-circle-question text-slate-400 mt-0.5"></i>
+              <span>Semua data kandidat dari awal hingga saat ini akan dimasukkan ke dalam file export.</span>
+            </div>
+
+            <div id="exportTimeMonthBox" class="space-y-1.5 hidden pt-1">
+              <label for="exportMonthInput" class="block text-xs font-bold text-slate-700">Pilih Bulan & Tahun</label>
+              <input type="month" id="exportMonthInput" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-semibold bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition" />
+            </div>
+
+            <div id="exportTimeWeekBox" class="space-y-1.5 hidden pt-1">
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label for="exportWeekStartInput" class="block text-[10px] uppercase font-bold text-slate-500 mb-1">Dari Tanggal</label>
+                  <input type="date" id="exportWeekStartInput" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition" />
+                </div>
+                <div>
+                  <label for="exportWeekEndInput" class="block text-[10px] uppercase font-bold text-slate-500 mb-1">Sampai Tanggal</label>
+                  <input type="date" id="exportWeekEndInput" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none transition" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6 pt-2 pb-5 d-flex align-items-center justify-content-end gap-3 border-t border-slate-100">
+            <button type="button" class="btn btn-light px-4 py-2 rounded-xl text-xs font-bold text-slate-600 border border-slate-200" data-bs-dismiss="modal">Batal</button>
+            <button type="button" id="btnSubmitExport" class="btn text-white px-5 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2" style="background-color: #059669;">
+              <span id="btnSubmitExportText">Download File</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       // Shared view-mode toggle + tooltip refresh (non-module)
@@ -581,6 +705,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- MAIN MODULE SCRIPT PLACEHOLDER -->
     <script type="module" src="../element/candidate-management.js"></script>
   </body>

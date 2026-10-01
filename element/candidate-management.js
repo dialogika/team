@@ -1008,6 +1008,419 @@ function bindEvents() {
       }
     }
   });
+
+  // Init Export Candidate Feature
+  initExportCandidateFeature();
+}
+
+// ===== EXPORT DATA MODAL & ENGINE =====
+function initExportCandidateFeature() {
+  const exportModalEl = document.getElementById("exportCandidateModal");
+  if (!exportModalEl) return;
+  const exportModalInstance = window.bootstrap ? bootstrap.Modal.getOrCreateInstance(exportModalEl) : null;
+
+  document.getElementById("btnOpenExportModal")?.addEventListener("click", () => {
+    if (exportModalInstance) exportModalInstance.show();
+  });
+
+  // State
+  let currentExportFormat = "xlsx"; // "xlsx" | "csv"
+  let currentTimeRange = "all";     // "all" | "month" | "week"
+
+  // Elements
+  const formatXlsxBtn = document.getElementById("exportFormatXlsxBtn");
+  const formatCsvBtn = document.getElementById("exportFormatCsvBtn");
+  const timeAllBtn = document.getElementById("exportTimeAllBtn");
+  const timeMonthBtn = document.getElementById("exportTimeMonthBtn");
+  const timeWeekBtn = document.getElementById("exportTimeWeekBtn");
+
+  const timeAllNote = document.getElementById("exportTimeAllNote");
+  const timeMonthBox = document.getElementById("exportTimeMonthBox");
+  const timeWeekBox = document.getElementById("exportTimeWeekBox");
+
+  const monthInput = document.getElementById("exportMonthInput");
+  const weekStartInput = document.getElementById("exportWeekStartInput");
+  const weekEndInput = document.getElementById("exportWeekEndInput");
+
+  const categorySelect = document.getElementById("exportCategorySelect");
+  const statusSelect = document.getElementById("exportStatusSelect");
+  const btnSubmit = document.getElementById("btnSubmitExport");
+  const btnSubmitText = document.getElementById("btnSubmitExportText");
+
+  // Set default dates
+  const now = new Date();
+  const currentYm = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+  if (monthInput) monthInput.value = currentYm;
+
+  const weekEnd = now.toISOString().slice(0, 10);
+  const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  if (weekStartInput) weekStartInput.value = weekStart;
+  if (weekEndInput) weekEndInput.value = weekEnd;
+
+  // Format Switchers
+  function setFormat(fmt) {
+    currentExportFormat = fmt;
+    if (fmt === "xlsx") {
+      formatXlsxBtn?.classList.remove("text-slate-600", "hover:text-slate-900");
+      formatXlsxBtn?.classList.add("bg-white", "text-slate-900", "shadow-sm");
+      formatCsvBtn?.classList.remove("bg-white", "text-slate-900", "shadow-sm");
+      formatCsvBtn?.classList.add("text-slate-600", "hover:text-slate-900");
+    } else {
+      formatCsvBtn?.classList.remove("text-slate-600", "hover:text-slate-900");
+      formatCsvBtn?.classList.add("bg-white", "text-slate-900", "shadow-sm");
+      formatXlsxBtn?.classList.remove("bg-white", "text-slate-900", "shadow-sm");
+      formatXlsxBtn?.classList.add("text-slate-600", "hover:text-slate-900");
+    }
+  }
+
+  formatXlsxBtn?.addEventListener("click", () => setFormat("xlsx"));
+  formatCsvBtn?.addEventListener("click", () => setFormat("csv"));
+
+  // Time Range Switchers
+  function setTimeRange(mode) {
+    currentTimeRange = mode;
+    const btns = [
+      { id: "all", btn: timeAllBtn, box: timeAllNote },
+      { id: "month", btn: timeMonthBtn, box: timeMonthBox },
+      { id: "week", btn: timeWeekBtn, box: timeWeekBox }
+    ];
+    btns.forEach(b => {
+      if (b.id === mode) {
+        b.btn?.classList.remove("text-slate-600", "hover:text-slate-900");
+        b.btn?.classList.add("bg-white", "text-slate-900", "shadow-sm");
+        b.box?.classList.remove("hidden");
+      } else {
+        b.btn?.classList.remove("bg-white", "text-slate-900", "shadow-sm");
+        b.btn?.classList.add("text-slate-600", "hover:text-slate-900");
+        b.box?.classList.add("hidden");
+      }
+    });
+  }
+
+  timeAllBtn?.addEventListener("click", () => setTimeRange("all"));
+  timeMonthBtn?.addEventListener("click", () => setTimeRange("month"));
+  timeWeekBtn?.addEventListener("click", () => setTimeRange("week"));
+
+  // Helpers
+  function formatExportWhatsapp(raw) {
+    if (!raw) return "-";
+    let digits = String(raw).replace(/\D/g, "");
+    if (!digits) return "-";
+    if (digits.startsWith("0")) digits = "62" + digits.slice(1);
+    else if (!digits.startsWith("62")) digits = "62" + digits;
+    return `https://wa.me/${digits}`;
+  }
+
+  function formatExportCreatedDate(raw) {
+    const d = toDateObject(raw);
+    if (!d) return "-";
+    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const day = String(d.getDate()).padStart(2, "0");
+    const mon = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, "0");
+    const mins = String(d.getMinutes()).padStart(2, "0");
+    return `${day} ${mon} ${year}, ${hours}.${mins}`;
+  }
+
+  function formatExportInterviewSchedule(raw) {
+    const d = toDateObject(raw);
+    if (!d) return "-";
+    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const dayName = days[d.getDay()];
+    const dayNum = String(d.getDate()).padStart(2, "0");
+    const monName = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, "0");
+    const mins = String(d.getMinutes()).padStart(2, "0");
+    return `${dayName}, ${dayNum} ${monName} ${year} - ${hours}.${mins} WIB`;
+  }
+
+  function formatExportInterviewStatus(raw) {
+    const d = toDateObject(raw);
+    if (!d) return "-";
+    const st = getInterviewScheduleStatus(d);
+    if (!st) return "-";
+    return st.charAt(0).toUpperCase() + st.slice(1);
+  }
+
+  function formatExportLastLog(data, allUsersMap) {
+    const logs = Array.isArray(data.logs) ? data.logs : (Array.isArray(data.audit_trail) ? data.audit_trail : []);
+    if (logs.length > 0) {
+      const last = logs[logs.length - 1] || {};
+      const action = last.action || last.status || "update";
+      let by = last.by || last.actor || last.author || "";
+      if (!by && last.uid && allUsersMap[last.uid]) {
+        by = allUsersMap[last.uid].name;
+      }
+      if (!by) by = "HR";
+      return `${action} oleh ${by}`;
+    }
+    const rec = data.recruitment_status || data.recruitment_system || {};
+    if (rec.rejection_whatsapp_status) {
+      return "rejection_whatsapp oleh HR";
+    }
+    return "-";
+  }
+
+  // Submit Handler
+  btnSubmit?.addEventListener("click", async () => {
+    // Validasi rentang waktu
+    if (currentTimeRange === "month" && (!monthInput || !monthInput.value)) {
+      if (window.Swal) Swal.fire({ icon: "warning", text: "Silakan pilih bulan & tahun terlebih dahulu." });
+      else alert("Silakan pilih bulan & tahun terlebih dahulu.");
+      return;
+    }
+    if (currentTimeRange === "week" && (!weekStartInput?.value || !weekEndInput?.value)) {
+      if (window.Swal) Swal.fire({ icon: "warning", text: "Silakan pilih tanggal mulai dan selesai terlebih dahulu." });
+      else alert("Silakan pilih tanggal mulai dan selesai terlebih dahulu.");
+      return;
+    }
+
+    // Set loading state
+    btnSubmit.disabled = true;
+    if (btnSubmitText) btnSubmitText.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Memproses...';
+
+    try {
+      const selectedCategory = categorySelect ? categorySelect.value : "all";
+      const selectedStatus = statusSelect ? statusSelect.value : "all";
+
+      const categoriesToProcess = (selectedCategory === "all")
+        ? ["team", "mentor", "internship"]
+        : [selectedCategory];
+
+      // Load all users for PIC resolver
+      const allUsersMap = {};
+      try {
+        const usersSnap = await getDocs(collection(db, "users"));
+        usersSnap.forEach(ds => {
+          const u = ds.data() || {};
+          allUsersMap[ds.id] = { name: u.displayName || u.name || u.email || "User" };
+        });
+      } catch (err) {
+        console.warn("[Export] Could not load all users, using cached users map", err);
+      }
+
+      // Collect rows
+      const rows = [];
+      let globalIndex = 1;
+
+      for (const cat of categoriesToProcess) {
+        const cfg = TAB_CONFIG[cat];
+        if (!cfg) continue;
+
+        let snap;
+        try {
+          snap = await getDocs(collection(db, cfg.collectionName));
+        } catch (err) {
+          console.error("[Export] Gagal mengambil koleksi: " + cfg.collectionName, err);
+          continue;
+        }
+
+        snap.forEach(ds => {
+          const data = ds.data() || {};
+          if (isInactiveCandidateRecord(data)) return;
+          if (!cfg.roleFilter(data)) return;
+
+          const basic = data.basic_info || {};
+          const scouting = data.scouting_info || {};
+          const contact = data.contact_info || {};
+          const education = data.education || {};
+          const internship = data.internship || data.internship_info || {};
+          const recruitment = data.recruitment_status || data.recruitment_system || {};
+
+          // Status check
+          const currentStatus = cfg.resolveDisplayStatus(recruitment);
+          if (selectedStatus !== "all") {
+            if (selectedStatus === "micro_teaching") {
+              if (currentStatus !== "micro_teaching" && currentStatus !== "on_job_training") return;
+            } else if (currentStatus !== selectedStatus) {
+              return;
+            }
+          }
+
+          // Date check
+          const createdRaw = data.created_at || data.createdAt || data.created || null;
+          const createdDate = toDateObject(createdRaw);
+          if (currentTimeRange === "month") {
+            if (!createdDate) return;
+            const ym = createdDate.getFullYear() + "-" + String(createdDate.getMonth() + 1).padStart(2, "0");
+            if (ym !== monthInput.value) return;
+          } else if (currentTimeRange === "week") {
+            if (!createdDate) return;
+            const cdTime = createdDate.getTime();
+            const sTime = new Date(weekStartInput.value + "T00:00:00").getTime();
+            const eTime = new Date(weekEndInput.value + "T23:59:59").getTime();
+            if (cdTime < sTime || cdTime > eTime) return;
+          }
+
+          // Extract 17 Columns
+          const colNo = globalIndex++;
+          const colKategori = cat === "team" ? "Team" : cat === "mentor" ? "Mentor" : "Internship";
+          const colId = ds.id;
+          const colNama = basic.full_name || scouting.full_name || data.full_name || "Tanpa Nama";
+          const colPosisi = cfg.positionField(data, scouting, internship) || data.role_name || "-";
+          const colStatus = (currentStatus || "").toString().toUpperCase();
+          const colTglDaftar = formatExportCreatedDate(createdRaw);
+
+          // Interviewer (PIC)
+          const interviewerIds = Array.isArray(data.interviewers) ? data.interviewers.filter(Boolean) : [];
+          const intNames = interviewerIds.map(uid => (allUsersMap[uid] && allUsersMap[uid].name) || null).filter(Boolean);
+          const colInterviewer = intNames.length ? intNames.join(", ") : "-";
+
+          // Jadwal Interview & Status Interview
+          const intScheduleRaw = cfg.interviewScheduleField(recruitment, data);
+          const colJadwalInterview = formatExportInterviewSchedule(intScheduleRaw);
+          const colStatusInterview = formatExportInterviewStatus(intScheduleRaw);
+
+          // Mode Kerja, Lokasi, Kampus, WA, Email
+          const colMode = internship.mode || data.mode || basic.mode || "-";
+          const colLokasi = contact.address || internship.address || basic.address || data.address || data.domicile || "-";
+          const colKampus = internship.campus || education.campus || education.university || basic.campus || "-";
+          const colWhatsapp = formatExportWhatsapp(contact.whatsapp || contact.phone || data.whatsapp || data.phone || basic.whatsapp);
+          const colEmail = contact.email || basic.email || internship.email || data.email || "-";
+
+          // Log Aktivitas Terakhir
+          const colLog = formatExportLastLog(data, allUsersMap);
+
+          // Catatan / Alasan
+          const colCatatan = recruitment.rejection_reason || recruitment.rejection_notes || recruitment.withdrawn_notes || recruitment.notes || data.notes || "-";
+
+          rows.push([
+            colNo,
+            colKategori,
+            colId,
+            colNama,
+            colPosisi,
+            colStatus,
+            colTglDaftar,
+            colInterviewer,
+            colJadwalInterview,
+            colStatusInterview,
+            colMode,
+            colLokasi,
+            colKampus,
+            colWhatsapp,
+            colEmail,
+            colLog,
+            colCatatan
+          ]);
+        });
+      }
+
+      if (rows.length === 0) {
+        if (window.Swal) Swal.fire({ icon: "info", title: "Data Tidak Ditemukan", text: "Tidak ada data kandidat yang sesuai dengan filter yang Anda pilih." });
+        else alert("Tidak ada data kandidat yang sesuai dengan filter yang Anda pilih.");
+        return;
+      }
+
+      // Generate File Name
+      let catLabel = "Semua";
+      if (selectedCategory === "team") catLabel = "Team";
+      else if (selectedCategory === "mentor") catLabel = "Mentor";
+      else if (selectedCategory === "internship") catLabel = "Internship";
+
+      let timeLabel = "Semua_Waktu";
+      if (currentTimeRange === "month" && monthInput.value) {
+        timeLabel = monthInput.value;
+      } else if (currentTimeRange === "week" && weekStartInput.value && weekEndInput.value) {
+        timeLabel = `${weekStartInput.value}_sd_${weekEndInput.value}`;
+      }
+
+      const fileName = `Dialogika_Data_Kandidat_${catLabel}_${timeLabel}`;
+
+      const headers = [
+        "No", "Kategori", "ID Kandidat", "Nama Lengkap", "Posisi / Role",
+        "Status Rekrutmen", "Tanggal Pendaftaran", "Interviewer (PIC)",
+        "Jadwal Interview", "Status Interview", "Mode Kerja", "Lokasi / Domisili",
+        "Asal Kampus / Sekolah", "No. WhatsApp", "Email", "Log Aktivitas Terakhir", "Catatan / Alasan"
+      ];
+
+      const aoaData = [headers, ...rows];
+
+      if (currentExportFormat === "xlsx") {
+        if (!window.XLSX) {
+          alert("Pustaka XLSX belum termuat. Silakan muat ulang halaman.");
+          return;
+        }
+        const ws = window.XLSX.utils.aoa_to_sheet(aoaData);
+        ws["!cols"] = [
+          { wch: 6 },   // No
+          { wch: 14 },  // Kategori
+          { wch: 24 },  // ID Kandidat
+          { wch: 28 },  // Nama Lengkap
+          { wch: 18 },  // Posisi / Role
+          { wch: 20 },  // Status Rekrutmen
+          { wch: 22 },  // Tanggal Pendaftaran
+          { wch: 24 },  // Interviewer (PIC)
+          { wch: 34 },  // Jadwal Interview
+          { wch: 16 },  // Status Interview
+          { wch: 14 },  // Mode Kerja
+          { wch: 22 },  // Lokasi / Domisili
+          { wch: 24 },  // Asal Kampus / Sekolah
+          { wch: 30 },  // No. WhatsApp
+          { wch: 30 },  // Email
+          { wch: 38 },  // Log Aktivitas Terakhir
+          { wch: 35 }   // Catatan / Alasan
+        ];
+        // Style Header row
+        const range = window.XLSX.utils.decode_range(ws["!ref"] || "A1:Q1");
+        for (let col = range.s.c; col <= range.e.c; col++) {
+          const cellAddr = window.XLSX.utils.encode_cell({ r: 0, c: col });
+          if (ws[cellAddr]) {
+            ws[cellAddr].s = {
+              fill: { fgColor: { rgb: "0B2B6A" } },
+              font: { bold: true, color: { rgb: "FFFFFF" } },
+              alignment: { vertical: "center", horizontal: "center" }
+            };
+          }
+        }
+        const wb = window.XLSX.utils.book_new();
+        window.XLSX.utils.book_append_sheet(wb, ws, "Data Kandidat");
+        window.XLSX.writeFile(wb, `${fileName}.xlsx`);
+      } else {
+        // CSV Format with UTF-8 BOM
+        const csvRows = aoaData.map(r => {
+          return r.map(cell => {
+            let s = (cell === null || cell === undefined) ? "" : String(cell);
+            if (s.includes('"') || s.includes(',') || s.includes('\n') || s.includes('\r')) {
+              s = '"' + s.replace(/"/g, '""') + '"';
+            }
+            return s;
+          }).join(",");
+        });
+        const csvContent = "\uFEFF" + csvRows.join("\r\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${fileName}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      if (exportModalInstance) exportModalInstance.hide();
+      if (window.Swal) {
+        Swal.fire({
+          icon: "success",
+          title: "Export Berhasil",
+          text: `Berhasil mengunduh ${rows.length} data kandidat.`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    } catch (err) {
+      console.error("[Export] Error during export execution:", err);
+      if (window.Swal) Swal.fire({ icon: "error", title: "Gagal Export", text: "Terjadi kesalahan saat memproses data export." });
+      else alert("Terjadi kesalahan saat memproses data export.");
+    } finally {
+      btnSubmit.disabled = false;
+      if (btnSubmitText) btnSubmitText.textContent = "Download File";
+    }
+  });
 }
 
 // ===== AUTH GUARD =====
