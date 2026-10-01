@@ -856,8 +856,242 @@
       </main>
     </div>
 
+    <!-- ── Modal Export Data Presensi Team ── -->
+    <div
+      id="exportPresenceModal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm transition-all duration-200 hidden"
+      aria-hidden="true"
+    >
+      <div
+        id="exportModalCard"
+        class="bg-white rounded-[28px] shadow-2xl max-w-lg w-full p-6 border border-slate-100 relative transition-transform transform scale-95 opacity-0 duration-200"
+      >
+        <!-- Modal Header -->
+        <div class="flex items-start justify-between pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl flex-shrink-0"
+            >
+              <i class="bi bi-file-earmark-excel-fill"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-800 leading-tight">
+                Export Data Presensi Team
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Pilih format file dan rentang data yang akan diekspor
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            id="closeExportModalBtn"
+            class="text-slate-400 hover:text-slate-600 transition p-1.5 rounded-xl hover:bg-slate-100"
+          >
+            <i class="bi bi-x-lg text-xs"></i>
+          </button>
+        </div>
+
+        <div class="mt-4 space-y-4">
+          <!-- 1. PILIH FORMAT FILE -->
+          <div>
+            <label
+              class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2"
+            >
+              PILIH FORMAT FILE
+            </label>
+            <div class="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                id="exportFmtXlsx"
+                class="export-fmt-btn flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold border-2 transition border-emerald-500 text-slate-800 bg-white shadow-sm"
+                data-format="xlsx"
+              >
+                <i class="bi bi-file-earmark-excel-fill text-emerald-600 text-sm"></i>
+                <span>Excel (.xlsx)</span>
+              </button>
+              <button
+                type="button"
+                id="exportFmtCsv"
+                class="export-fmt-btn flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-medium border border-slate-200 text-slate-600 hover:border-slate-300 bg-white transition"
+                data-format="csv"
+              >
+                <i class="bi bi-filetype-csv text-blue-500 text-sm"></i>
+                <span>CSV (.csv)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. PILIH KATEGORI -->
+          <div>
+            <label
+              class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2"
+            >
+              PILIH KATEGORI
+            </label>
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                id="exportCatAll"
+                class="export-cat-opt flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold border-2 border-slate-900 bg-white text-slate-900 shadow-sm transition"
+                data-category="all"
+              >
+                <i class="bi bi-people-fill text-xs"></i>
+                <span>Semua</span>
+              </button>
+              <button
+                type="button"
+                id="exportCatTeam"
+                class="export-cat-opt flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition"
+                data-category="team"
+              >
+                <i class="bi bi-person-fill text-xs"></i>
+                <span>Team (Staff)</span>
+              </button>
+              <button
+                type="button"
+                id="exportCatIntern"
+                class="export-cat-opt flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition"
+                data-category="intern"
+              >
+                <i class="bi bi-mortarboard-fill text-xs"></i>
+                <span>Intern (Magang)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. PILIH RENTANG WAKTU -->
+          <div>
+            <label
+              class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2"
+            >
+              PILIH RENTANG WAKTU
+            </label>
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                id="exportRangeAll"
+                class="export-range-opt flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold border-2 border-slate-900 bg-white text-slate-900 shadow-sm transition"
+                data-range="all"
+              >
+                <i class="bi bi-globe text-xs"></i>
+                <span>Semua Data</span>
+              </button>
+              <button
+                type="button"
+                id="exportRangeMonth"
+                class="export-range-opt flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition"
+                data-range="month"
+              >
+                <i class="bi bi-calendar3 text-xs"></i>
+                <span>Per Bulan</span>
+              </button>
+              <button
+                type="button"
+                id="exportRangeWeek"
+                class="export-range-opt flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition"
+                data-range="week"
+              >
+                <i class="bi bi-calendar-week text-xs"></i>
+                <span>Per Minggu</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dynamic: Month Picker -->
+          <div id="exportMonthBox" class="space-y-1.5 hidden">
+            <label class="block text-xs font-semibold text-slate-700">
+              Pilih Bulan & Tahun
+            </label>
+            <input
+              type="month"
+              id="exportMonthInput"
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]"
+            />
+          </div>
+
+          <!-- Dynamic: Week Range Picker -->
+          <div id="exportWeekBox" class="space-y-1.5 hidden">
+            <label class="block text-xs font-semibold text-slate-700">
+              Pilih Rentang Minggu
+            </label>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <span class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Dari Tanggal</span>
+                <input
+                  type="date"
+                  id="exportWeekStartInput"
+                  class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]"
+                />
+              </div>
+              <div>
+                <span class="block text-[10px] uppercase font-bold text-slate-400 mb-1">Sampai Tanggal</span>
+                <input
+                  type="date"
+                  id="exportWeekEndInput"
+                  class="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#0B2B6A]"
+                />
+              </div>
+            </div>
+            <div class="flex items-center gap-2 pt-0.5">
+              <button
+                type="button"
+                id="exportQuickThisWeekBtn"
+                class="text-[11px] font-semibold text-[#0B2B6A] hover:underline"
+              >
+                Minggu Ini
+              </button>
+              <span class="text-slate-300 text-xs">•</span>
+              <button
+                type="button"
+                id="exportQuickLastWeekBtn"
+                class="text-[11px] font-semibold text-[#0B2B6A] hover:underline"
+              >
+                Minggu Lalu
+              </button>
+            </div>
+          </div>
+
+          <!-- Notice Box -->
+          <div
+            id="exportNoticeBox"
+            class="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/70 flex items-start gap-2.5"
+          >
+            <i class="bi bi-info-circle-fill text-blue-500 text-sm mt-0.5 flex-shrink-0"></i>
+            <div>
+              <h4 id="exportNoticeTitle" class="text-xs font-bold text-blue-900 leading-tight">
+                Ekspor Semua Data Presensi
+              </h4>
+              <p id="exportNoticeDesc" class="text-[11px] text-blue-700/90 mt-1 leading-relaxed">
+                Seluruh catatan presensi team dari awal hingga saat ini akan dimasukkan ke dalam file export tanpa batasan tanggal.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
+          <button
+            type="button"
+            id="exportModalCancelBtn"
+            class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold px-5 py-2.5 rounded-xl text-xs transition shadow-sm"
+          >
+            Batalkan
+          </button>
+          <button
+            type="button"
+            id="exportModalSubmitBtn"
+            class="bg-[#007A55] hover:bg-[#006646] active:bg-[#005238] text-white font-semibold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i class="bi bi-download text-xs" id="exportSubmitBtnIcon"></i>
+            <span id="exportModalSubmitText">Download Excel (.xlsx)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -1590,6 +1824,7 @@
                 date: v.date || "",
                 time: v.time || "",
                 type: v.type || "",
+                source: v.source || "manual",
               });
             });
             buildInternshipTotalFromRecords(rows);
@@ -2019,38 +2254,600 @@
         });
       });
 
-      // ── export helpers ────────────────────────────────────────────
-      function exportPresenceXlsx() {
-        const dateKey = filterDateInput.value || getTodayKey();
-        const catLabel =
-          currentCategory === "team"
-            ? "Team"
-            : currentCategory === "intern"
-              ? "Intern"
-              : "Semua";
-        const rows = aggregateSelectedDateRows(dateKey)
-          .filter((r) => r.isValidPair)
-          .map((r) => ({
-            Tanggal: dateKey,
-            Kategori: r.category === "intern" ? "Intern" : "Team",
-            Nama: r.name,
-            Clock_In: r.loginTime,
-            Clock_Out: r.logoutTime,
-            Total_Jam_Kerja: r.totalLabel,
-            Status: r.status,
-          }));
-        const fileName =
-          currentCategory === "team"
-            ? `presensi-team-${dateKey}.xlsx`
-            : currentCategory === "intern"
-              ? `presensi-intern-${dateKey}.xlsx`
-              : `presensi-harian-${dateKey}.xlsx`;
-        exportToXlsx(
-          rows,
-          `Presensi ${catLabel}`,
-          fileName,
-        );
+      // ── Presensi Team Export Modal & Helpers ─────────────────────
+      const exportPresenceModal = document.getElementById("exportPresenceModal");
+      const exportModalCard = document.getElementById("exportModalCard");
+      const closeExportModalBtn = document.getElementById("closeExportModalBtn");
+      const exportModalCancelBtn = document.getElementById("exportModalCancelBtn");
+      const exportModalSubmitBtn = document.getElementById("exportModalSubmitBtn");
+      const exportModalSubmitText = document.getElementById("exportModalSubmitText");
+      const exportSubmitBtnIcon = document.getElementById("exportSubmitBtnIcon");
+
+      const exportFmtXlsx = document.getElementById("exportFmtXlsx");
+      const exportFmtCsv = document.getElementById("exportFmtCsv");
+      const exportCatAll = document.getElementById("exportCatAll");
+      const exportCatTeam = document.getElementById("exportCatTeam");
+      const exportCatIntern = document.getElementById("exportCatIntern");
+      const exportRangeAll = document.getElementById("exportRangeAll");
+      const exportRangeMonth = document.getElementById("exportRangeMonth");
+      const exportRangeWeek = document.getElementById("exportRangeWeek");
+
+      const exportMonthBox = document.getElementById("exportMonthBox");
+      const exportMonthInput = document.getElementById("exportMonthInput");
+      const exportWeekBox = document.getElementById("exportWeekBox");
+      const exportWeekStartInput = document.getElementById("exportWeekStartInput");
+      const exportWeekEndInput = document.getElementById("exportWeekEndInput");
+      const exportQuickThisWeekBtn = document.getElementById("exportQuickThisWeekBtn");
+      const exportQuickLastWeekBtn = document.getElementById("exportQuickLastWeekBtn");
+
+      const exportNoticeTitle = document.getElementById("exportNoticeTitle");
+      const exportNoticeDesc = document.getElementById("exportNoticeDesc");
+
+      let currentExportFormat = "xlsx";
+      let currentExportCategory = "all";
+      let currentExportRange = "all";
+
+      function getIndonesianDayName(dateStr) {
+        if (!dateStr) return "-";
+        const d = new Date(dateStr + "T00:00:00");
+        const days = [
+          "Minggu",
+          "Senin",
+          "Selasa",
+          "Rabu",
+          "Kamis",
+          "Jumat",
+          "Sabtu",
+        ];
+        return days[d.getDay()] || "-";
       }
+
+      function getWeekRange(dateObj = new Date()) {
+        const d = new Date(dateObj);
+        const day = d.getDay();
+        const diffToMonday = (day === 0 ? -6 : 1) - day;
+        const mon = new Date(d);
+        mon.setDate(d.getDate() + diffToMonday);
+        const sun = new Date(mon);
+        sun.setDate(mon.getDate() + 6);
+        const f = (x) =>
+          `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
+        return { start: f(mon), end: f(sun) };
+      }
+
+      function openExportModal() {
+        if (!exportPresenceModal) return;
+
+        const todayStr = filterDateInput?.value || getTodayKey();
+        if (exportMonthInput) {
+          exportMonthInput.value = getMonthKeyFromDate(todayStr);
+        }
+        const { start, end } = getWeekRange(new Date(todayStr + "T00:00:00"));
+        if (exportWeekStartInput) exportWeekStartInput.value = start;
+        if (exportWeekEndInput) exportWeekEndInput.value = end;
+
+        setExportFormat("xlsx");
+        setExportCategory("all");
+        setExportRange("all");
+
+        exportPresenceModal.classList.remove("hidden");
+        requestAnimationFrame(() => {
+          exportModalCard?.classList.remove("scale-95", "opacity-0");
+          exportModalCard?.classList.add("scale-100", "opacity-100");
+        });
+      }
+
+      function closeExportModal() {
+        if (!exportPresenceModal) return;
+        exportModalCard?.classList.remove("scale-100", "opacity-100");
+        exportModalCard?.classList.add("scale-95", "opacity-0");
+        setTimeout(() => {
+          exportPresenceModal.classList.add("hidden");
+        }, 150);
+      }
+
+      function setExportFormat(fmt) {
+        currentExportFormat = fmt;
+        const isXlsx = fmt === "xlsx";
+        if (exportFmtXlsx) {
+          exportFmtXlsx.className = isXlsx
+            ? "export-fmt-btn flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold border-2 transition border-emerald-500 text-slate-800 bg-white shadow-sm"
+            : "export-fmt-btn flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-medium border border-slate-200 text-slate-600 hover:border-slate-300 bg-white transition";
+        }
+        if (exportFmtCsv) {
+          exportFmtCsv.className = !isXlsx
+            ? "export-fmt-btn flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold border-2 transition border-blue-500 text-slate-800 bg-white shadow-sm"
+            : "export-fmt-btn flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-medium border border-slate-200 text-slate-600 hover:border-slate-300 bg-white transition";
+        }
+        if (exportModalSubmitText) {
+          exportModalSubmitText.textContent = isXlsx
+            ? "Download Excel (.xlsx)"
+            : "Download CSV (.csv)";
+        }
+      }
+
+      function setExportCategory(cat) {
+        currentExportCategory = cat;
+        const btns = [
+          { el: exportCatAll, key: "all" },
+          { el: exportCatTeam, key: "team" },
+          { el: exportCatIntern, key: "intern" },
+        ];
+        btns.forEach(({ el, key }) => {
+          if (!el) return;
+          if (key === cat) {
+            el.className =
+              "export-cat-opt flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold border-2 border-slate-900 bg-white text-slate-900 shadow-sm transition";
+          } else {
+            el.className =
+              "export-cat-opt flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition";
+          }
+        });
+      }
+
+      function setExportRange(range) {
+        currentExportRange = range;
+        const btns = [
+          { el: exportRangeAll, key: "all" },
+          { el: exportRangeMonth, key: "month" },
+          { el: exportRangeWeek, key: "week" },
+        ];
+        btns.forEach(({ el, key }) => {
+          if (!el) return;
+          if (key === range) {
+            el.className =
+              "export-range-opt flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-bold border-2 border-slate-900 bg-white text-slate-900 shadow-sm transition";
+          } else {
+            el.className =
+              "export-range-opt flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:border-slate-300 transition";
+          }
+        });
+
+        if (range === "all") {
+          exportMonthBox?.classList.add("hidden");
+          exportWeekBox?.classList.add("hidden");
+          if (exportNoticeTitle)
+            exportNoticeTitle.textContent = "Ekspor Semua Data Presensi";
+          if (exportNoticeDesc)
+            exportNoticeDesc.textContent =
+              "Seluruh catatan presensi team dari awal hingga saat ini akan dimasukkan ke dalam file export tanpa batasan tanggal.";
+        } else if (range === "month") {
+          exportMonthBox?.classList.remove("hidden");
+          exportWeekBox?.classList.add("hidden");
+          if (exportNoticeTitle)
+            exportNoticeTitle.textContent = "Ekspor Data Presensi Bulanan";
+          if (exportNoticeDesc)
+            exportNoticeDesc.textContent =
+              "Seluruh catatan presensi pada bulan yang dipilih akan dimasukkan ke dalam file export.";
+        } else if (range === "week") {
+          exportMonthBox?.classList.add("hidden");
+          exportWeekBox?.classList.remove("hidden");
+          if (exportNoticeTitle)
+            exportNoticeTitle.textContent = "Ekspor Data Presensi Mingguan";
+          if (exportNoticeDesc)
+            exportNoticeDesc.textContent =
+              "Seluruh catatan presensi pada rentang minggu yang dipilih akan dimasukkan ke dalam file export.";
+        }
+      }
+
+      exportQuickThisWeekBtn?.addEventListener("click", () => {
+        const { start, end } = getWeekRange(new Date());
+        if (exportWeekStartInput) exportWeekStartInput.value = start;
+        if (exportWeekEndInput) exportWeekEndInput.value = end;
+      });
+
+      exportQuickLastWeekBtn?.addEventListener("click", () => {
+        const now = new Date();
+        now.setDate(now.getDate() - 7);
+        const { start, end } = getWeekRange(now);
+        if (exportWeekStartInput) exportWeekStartInput.value = start;
+        if (exportWeekEndInput) exportWeekEndInput.value = end;
+      });
+
+      exportFmtXlsx?.addEventListener("click", () => setExportFormat("xlsx"));
+      exportFmtCsv?.addEventListener("click", () => setExportFormat("csv"));
+      exportCatAll?.addEventListener("click", () => setExportCategory("all"));
+      exportCatTeam?.addEventListener("click", () => setExportCategory("team"));
+      exportCatIntern?.addEventListener("click", () => setExportCategory("intern"));
+      exportRangeAll?.addEventListener("click", () => setExportRange("all"));
+      exportRangeMonth?.addEventListener("click", () => setExportRange("month"));
+      exportRangeWeek?.addEventListener("click", () => setExportRange("week"));
+
+      closeExportModalBtn?.addEventListener("click", closeExportModal);
+      exportModalCancelBtn?.addEventListener("click", closeExportModal);
+      exportPresenceModal?.addEventListener("click", (e) => {
+        if (e.target === exportPresenceModal) closeExportModal();
+      });
+
+      async function executePresenceExport() {
+        if (!exportModalSubmitBtn) return;
+
+        const origText = exportModalSubmitText
+          ? exportModalSubmitText.textContent
+          : "Download";
+        exportModalSubmitBtn.disabled = true;
+        if (exportSubmitBtnIcon) {
+          exportSubmitBtnIcon.className = "bi bi-arrow-repeat animate-spin text-xs";
+        }
+        if (exportModalSubmitText) {
+          exportModalSubmitText.textContent = "Mengekspor...";
+        }
+
+        try {
+          if (!allInterns.length) {
+            await loadInterns();
+          }
+
+          let q;
+          let periodLabel = "Semua_Data";
+
+          if (currentExportRange === "month") {
+            const mVal =
+              exportMonthInput?.value || getMonthKeyFromDate(getTodayKey());
+            const { startKey, endKey } = getMonthRangeFromMonthKey(mVal);
+            periodLabel = mVal;
+            q = query(
+              collection(db, "user_attendance"),
+              where("date", ">=", startKey),
+              where("date", "<=", endKey),
+            );
+          } else if (currentExportRange === "week") {
+            const sVal = exportWeekStartInput?.value || getTodayKey();
+            const eVal = exportWeekEndInput?.value || getTodayKey();
+            periodLabel = `Minggu_${sVal}_sd_${eVal}`;
+            q = query(
+              collection(db, "user_attendance"),
+              where("date", ">=", sVal),
+              where("date", "<=", eVal),
+            );
+          } else {
+            periodLabel = "Semua_Data";
+            q = collection(db, "user_attendance");
+          }
+
+          const snap = await getDocs(q);
+          const rawRecords = [];
+
+          snap.forEach((docSnap) => {
+            const v = docSnap.data() || {};
+            if (!v.date || !v.type) return;
+
+            const userObj = allInterns.find((u) => u.id === v.user_id);
+            const userCategory = userObj ? userObj.category : "team";
+
+            if (
+              currentExportCategory !== "all" &&
+              userCategory !== currentExportCategory
+            ) {
+              return;
+            }
+
+            rawRecords.push({
+              user_id: v.user_id || "",
+              name: v.name || userObj?.name || "Tanpa Nama",
+              category: userCategory,
+              date: v.date,
+              time: v.time || "",
+              type: v.type,
+              source: v.source || "manual",
+            });
+          });
+
+          if (!rawRecords.length) {
+            alert("Tidak ada data presensi yang ditemukan untuk pilihan filter ini.");
+            return;
+          }
+
+          // Sorting matching screenshot 2:
+          // 1. Tanggal descending (newest date first)
+          // 2. CLOCK IN before CLOCK OUT
+          // 3. Chronological time ascending
+          rawRecords.sort((a, b) => {
+            if (a.date !== b.date) {
+              return b.date.localeCompare(a.date);
+            }
+            const aIsClockIn = a.type === "login" || a.type === "clock_in";
+            const bIsClockIn = b.type === "login" || b.type === "clock_in";
+            if (aIsClockIn !== bIsClockIn) {
+              return aIsClockIn ? -1 : 1;
+            }
+            return (a.time || "").localeCompare(b.time || "");
+          });
+
+          // Build 14 columns matching Screenshot 2
+          const rows = rawRecords.map((r, idx) => {
+            const isClockIn = r.type === "login" || r.type === "clock_in";
+            const tipePresensi = isClockIn ? "CLOCK IN" : "CLOCK OUT";
+            const hari = getIndonesianDayName(r.date);
+            const catLabel = r.category === "intern" ? "Intern" : "Team";
+
+            let jadwalMasuk = "-";
+            let statusMasuk = "-";
+            let keterlambatan = "-";
+            let totalJamKeterlambatan = "-";
+            let keterlambatanJamDesimal = 0;
+            let keterlambatanMenitDesimal = 0;
+
+            if (isClockIn) {
+              const d = new Date(r.date + "T00:00:00");
+              const dow = d.getDay();
+              const isWeekend = dow === 0 || dow === 6;
+              jadwalMasuk = isWeekend ? "09:00" : "10:00";
+              const scheduleSec = isWeekend ? 9 * 3600 : 10 * 3600;
+
+              const timeSec = parseTimeToSeconds(r.time) || 0;
+              if (timeSec > scheduleSec) {
+                statusMasuk = "Terlambat";
+                const diffSec = timeSec - scheduleSec;
+                const h = Math.floor(diffSec / 3600);
+                const m = Math.floor((diffSec % 3600) / 60);
+                const s = diffSec % 60;
+
+                keterlambatan = h > 0 ? `${h} Jam ${m}m ${s}s` : `${m}m ${s}s`;
+                totalJamKeterlambatan =
+                  h > 0 ? `${h} Jam ${m} Menit` : `${m} Menit`;
+                keterlambatanJamDesimal = Number((diffSec / 3600).toFixed(2));
+                keterlambatanMenitDesimal = Number((diffSec / 60).toFixed(2));
+              } else {
+                statusMasuk = "Tepat Waktu";
+                keterlambatan = "-";
+                totalJamKeterlambatan = "-";
+                keterlambatanJamDesimal = 0;
+                keterlambatanMenitDesimal = 0;
+              }
+            }
+
+            return {
+              No: idx + 1,
+              Tanggal: r.date,
+              Hari: hari,
+              Kategori: catLabel,
+              Nama: r.name,
+              "Tipe Presensi": tipePresensi,
+              "Waktu (Jam)": r.time || "-",
+              "Jadwal Masuk": jadwalMasuk,
+              "Status Masuk": statusMasuk,
+              Keterlambatan: keterlambatan,
+              "Total Jam Keterlambatan": totalJamKeterlambatan,
+              "Keterlambatan (Jam Desimal)": keterlambatanJamDesimal,
+              "Keterlambatan (Menit Desimal)": keterlambatanMenitDesimal,
+              Sumber: r.source || "manual",
+            };
+          });
+
+          const catName =
+            currentExportCategory === "all"
+              ? "Semua"
+              : currentExportCategory === "team"
+                ? "Team"
+                : "Intern";
+          const fileName = `Data_Presensi_${catName}_${periodLabel}`;
+          const sheetName = `Presensi ${catName}`;
+
+          if (currentExportFormat === "xlsx") {
+            downloadPresenceExcel(rows, sheetName, `${fileName}.xlsx`);
+          } else {
+            downloadPresenceCsv(rows, `${fileName}.csv`);
+          }
+
+          closeExportModal();
+        } catch (err) {
+          console.error("Export error:", err);
+          alert("Terjadi kesalahan saat mengekspor data: " + (err.message || err));
+        } finally {
+          exportModalSubmitBtn.disabled = false;
+          if (exportSubmitBtnIcon) {
+            exportSubmitBtnIcon.className = "bi bi-download text-xs";
+          }
+          if (exportModalSubmitText) {
+            exportModalSubmitText.textContent = origText;
+          }
+        }
+      }
+
+      function downloadPresenceExcel(exportRows, sheetTitle, fileName) {
+        if (!window.XLSX) {
+          alert("Pustaka XLSX belum termuat. Silakan muat ulang halaman.");
+          return;
+        }
+
+        const headers = [
+          "No",
+          "Tanggal",
+          "Hari",
+          "Kategori",
+          "Nama",
+          "Tipe Presensi",
+          "Waktu (Jam)",
+          "Jadwal Masuk",
+          "Status Masuk",
+          "Keterlambatan",
+          "Total Jam Keterlambatan",
+          "Keterlambatan (Jam Desimal)",
+          "Keterlambatan (Menit Desimal)",
+          "Sumber",
+        ];
+
+        const aoaData = [
+          headers,
+          ...exportRows.map((r) => [
+            r.No,
+            r.Tanggal,
+            r.Hari,
+            r.Kategori,
+            r.Nama,
+            r["Tipe Presensi"],
+            r["Waktu (Jam)"],
+            r["Jadwal Masuk"],
+            r["Status Masuk"],
+            r.Keterlambatan,
+            r["Total Jam Keterlambatan"],
+            r["Keterlambatan (Jam Desimal)"],
+            r["Keterlambatan (Menit Desimal)"],
+            r.Sumber,
+          ]),
+        ];
+
+        const ws = window.XLSX.utils.aoa_to_sheet(aoaData);
+
+        // Explicit column widths matching Screenshot 2
+        ws["!cols"] = [
+          { wch: 6 },  // No
+          { wch: 14 }, // Tanggal
+          { wch: 12 }, // Hari
+          { wch: 12 }, // Kategori
+          { wch: 28 }, // Nama
+          { wch: 16 }, // Tipe Presensi
+          { wch: 14 }, // Waktu (Jam)
+          { wch: 14 }, // Jadwal Masuk
+          { wch: 16 }, // Status Masuk
+          { wch: 18 }, // Keterlambatan
+          { wch: 24 }, // Total Jam Keterlambatan
+          { wch: 26 }, // Keterlambatan (Jam Desimal)
+          { wch: 28 }, // Keterlambatan (Menit Desimal)
+          { wch: 12 }, // Sumber
+        ];
+
+        ws["!rows"] = [{ hpt: 26 }]; // Header row height
+        ws["!views"] = [{ showGridLines: true }];
+
+        const range = window.XLSX.utils.decode_range(ws["!ref"] || "A1:N1");
+
+        // Navy blue header (#002060), white bold text, centered
+        const headerStyle = {
+          fill: {
+            fgColor: { rgb: "002060" },
+          },
+          font: {
+            name: "Calibri",
+            sz: 11,
+            bold: true,
+            color: { rgb: "FFFFFF" },
+          },
+          alignment: {
+            vertical: "center",
+            horizontal: "center",
+            wrapText: false,
+          },
+          border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } },
+          },
+        };
+
+        for (let c = range.s.c; c <= range.e.c; c++) {
+          const headerAddr = window.XLSX.utils.encode_cell({ r: 0, c: c });
+          if (ws[headerAddr]) {
+            ws[headerAddr].s = headerStyle;
+          }
+        }
+
+        // Data rows formatting
+        for (let r = 1; r <= range.e.r; r++) {
+          for (let c = range.s.c; c <= range.e.c; c++) {
+            const cellAddr = window.XLSX.utils.encode_cell({ r: r, c: c });
+            if (!ws[cellAddr]) continue;
+
+            let horiz = "center";
+            if (c === 4) horiz = "left"; // Nama
+            else if (c === 11 || c === 12) horiz = "right"; // Desimal numbers
+
+            ws[cellAddr].s = {
+              font: {
+                name: "Calibri",
+                sz: 11,
+                color: { rgb: "000000" },
+              },
+              alignment: {
+                vertical: "center",
+                horizontal: horiz,
+              },
+              border: {
+                top: { style: "thin", color: { rgb: "D9D9D9" } },
+                bottom: { style: "thin", color: { rgb: "D9D9D9" } },
+                left: { style: "thin", color: { rgb: "D9D9D9" } },
+                right: { style: "thin", color: { rgb: "D9D9D9" } },
+              },
+            };
+          }
+        }
+
+        const wb = window.XLSX.utils.book_new();
+        window.XLSX.utils.book_append_sheet(wb, ws, sheetTitle);
+        window.XLSX.writeFile(wb, fileName);
+      }
+
+      function downloadPresenceCsv(exportRows, fileName) {
+        const headers = [
+          "No",
+          "Tanggal",
+          "Hari",
+          "Kategori",
+          "Nama",
+          "Tipe Presensi",
+          "Waktu (Jam)",
+          "Jadwal Masuk",
+          "Status Masuk",
+          "Keterlambatan",
+          "Total Jam Keterlambatan",
+          "Keterlambatan (Jam Desimal)",
+          "Keterlambatan (Menit Desimal)",
+          "Sumber",
+        ];
+
+        const escapeCsv = (val) => {
+          if (val == null) return '""';
+          const str = String(val);
+          if (
+            str.includes('"') ||
+            str.includes(",") ||
+            str.includes("\n") ||
+            str.includes(";")
+          ) {
+            return `"${str.replace(/"/g, '""')}"`;
+          }
+          return str;
+        };
+
+        const lines = [
+          headers.map(escapeCsv).join(","),
+          ...exportRows.map((r) =>
+            [
+              r.No,
+              r.Tanggal,
+              r.Hari,
+              r.Kategori,
+              r.Nama,
+              r["Tipe Presensi"],
+              r["Waktu (Jam)"],
+              r["Jadwal Masuk"],
+              r["Status Masuk"],
+              r.Keterlambatan,
+              r["Total Jam Keterlambatan"],
+              r["Keterlambatan (Jam Desimal)"],
+              r["Keterlambatan (Menit Desimal)"],
+              r.Sumber,
+            ]
+              .map(escapeCsv)
+              .join(","),
+          ),
+        ];
+
+        const csvContent = "\uFEFF" + lines.join("\r\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      exportModalSubmitBtn?.addEventListener("click", executePresenceExport);
       function exportMonthlyRecapXlsx() {
         const mk = recapMonthFilter.value || getMonthKeyFromDate(getTodayKey());
         const catLabel =
@@ -2152,7 +2949,7 @@
           gamiMonthFilter.value || getMonthKeyFromDate(getTodayKey()),
         ),
       );
-      btnExportXlsx.addEventListener("click", exportPresenceXlsx);
+      btnExportXlsx.addEventListener("click", openExportModal);
       btnExportMonthlyRecapXlsx.addEventListener(
         "click",
         exportMonthlyRecapXlsx,
