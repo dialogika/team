@@ -120,7 +120,7 @@
                         </select>
                     </div>
                     <div class="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-sm">
-                        <select x-model="sortBy" class="bg-transparent pl-3 pr-8 py-2 text-sm font-bold text-slate-600 outline-none border-none">
+                        <select x-model="sortBy" @change="applySort()" class="bg-transparent pl-3 pr-8 py-2 text-sm font-bold text-slate-600 outline-none border-none">
                             <option value="priority_sales">Sort: Prioritas Penjualan</option>
                             <option value="name">Sort: Nama Kelas</option>
                             <option value="schedule">Sort: Jadwal</option>
@@ -650,6 +650,12 @@
                             });
                         });
                         this.classes = items;
+                        this.applySort();
+
+                        if (typeof this.$watch === "function") {
+                            this.$watch("sortBy", () => this.applySort());
+                            this.$watch("sortDirection", () => this.applySort());
+                        }
 
                         await this.loadProducts();
                         await this.loadMentors();
@@ -768,6 +774,7 @@
                         { id: 4, name: "Advanced Presentation - Online", type: "Online", max_seat: 12, current_joined: 4, start_date: "15 Nov 2023", mentor_name: "Coach Aris" },
                         { id: 5, name: "Kids Public Speaking - Offline", type: "Offline", max_seat: 7, current_joined: 2, start_date: "20 Nov 2023", mentor_name: "Coach Susi" }
                     ];
+                    this.applySort();
                 },
                 async loadProducts() {
                     if (!(window.db && window.collection && window.getDocs)) {
@@ -877,12 +884,7 @@
                     return max - joined;
                 },
                 getScheduleTimestamp(item) {
-                    if (!item || !item.start_date) return Number.POSITIVE_INFINITY;
-                    if (item.start_date === "Flexible") {
-                        const anchor = new Date();
-                        anchor.setHours(12, 0, 0, 0);
-                        return anchor.getTime();
-                    }
+                    if (!item || !item.start_date || item.start_date === "Flexible") return Number.POSITIVE_INFINITY;
                     const ts = new Date(item.start_date).getTime();
                     return Number.isFinite(ts) ? ts : Number.POSITIVE_INFINITY;
                 },
@@ -902,6 +904,7 @@
                 },
                 toggleSortDirection() {
                     this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
+                    this.applySort();
                 },
                 async updateJoined(id, delta) {
                     const cls = this.classes.find(c => c.id === id);
@@ -1031,6 +1034,7 @@
                     } else {
                         console.warn("Update batch diabaikan (docId atau Firebase belum siap).");
                     }
+                    this.applySort();
 
                     const modalEl = document.getElementById("editCapacityModal");
                     if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
@@ -1099,6 +1103,7 @@
                     };
 
                     this.classes.push(newItem);
+                    this.applySort();
 
                     if (window.db && window.collection && window.addDoc) {
                         try {
@@ -1151,6 +1156,40 @@
                         bootstrap.Modal.getOrCreateInstance(modalEl).hide();
                     }
                 },
+                applySort() {
+                    this.classes.sort((a, b) => {
+                        let result = 0;
+                        const seatsA = this.getSeatsLeft(a);
+                        const seatsB = this.getSeatsLeft(b);
+
+                        if (this.sortBy === "name") {
+                            result = this.compareText(a.name, b.name);
+                        } else if (this.sortBy === "schedule") {
+                            result = this.compareNumber(this.getScheduleTimestamp(a), this.getScheduleTimestamp(b));
+                            if (result === 0) result = this.compareText(a.name, b.name);
+                        } else if (this.sortBy === "seats_left") {
+                            result = this.compareNumber(seatsA, seatsB);
+                            if (result === 0) result = this.compareText(a.name, b.name);
+                        } else if (this.sortBy === "mentor") {
+                            result = this.compareText(a.mentor_name, b.mentor_name);
+                            if (result === 0) result = this.compareText(a.name, b.name);
+                        } else if (this.sortBy === "product") {
+                            const productA = a.product_name || a.product_id || "";
+                            const productB = b.product_name || b.product_id || "";
+                            result = this.compareText(productA, productB);
+                            if (result === 0) result = this.compareText(a.name, b.name);
+                        } else {
+                            const soldOutA = seatsA <= 0 || this.isBatchClosed(a);
+                            const soldOutB = seatsB <= 0 || this.isBatchClosed(b);
+                            if (soldOutA !== soldOutB) result = soldOutA ? 1 : -1;
+                            else result = this.compareNumber(seatsA, seatsB);
+                            if (result === 0) result = this.compareNumber(this.getScheduleTimestamp(a), this.getScheduleTimestamp(b));
+                            if (result === 0) result = this.compareText(a.name, b.name);
+                        }
+
+                        return this.sortDirection === "asc" ? result : -result;
+                    });
+                },
                 get filteredClasses() {
                     return this.classes
                         .filter(c => {
@@ -1160,38 +1199,6 @@
                             const searchMatch = c.name.toLowerCase().includes(this.search.toLowerCase()) ||
                                 c.mentor_name.toLowerCase().includes(this.search.toLowerCase());
                             return typeMatch && statusMatch && searchMatch;
-                        })
-                        .sort((a, b) => {
-                            let result = 0;
-                            const seatsA = this.getSeatsLeft(a);
-                            const seatsB = this.getSeatsLeft(b);
-
-                            if (this.sortBy === "name") {
-                                result = this.compareText(a.name, b.name);
-                            } else if (this.sortBy === "schedule") {
-                                result = this.compareNumber(this.getScheduleTimestamp(a), this.getScheduleTimestamp(b));
-                                if (result === 0) result = this.compareText(a.name, b.name);
-                            } else if (this.sortBy === "seats_left") {
-                                result = this.compareNumber(seatsA, seatsB);
-                                if (result === 0) result = this.compareText(a.name, b.name);
-                            } else if (this.sortBy === "mentor") {
-                                result = this.compareText(a.mentor_name, b.mentor_name);
-                                if (result === 0) result = this.compareText(a.name, b.name);
-                            } else if (this.sortBy === "product") {
-                                const productA = a.product_name || a.product_id || "";
-                                const productB = b.product_name || b.product_id || "";
-                                result = this.compareText(productA, productB);
-                                if (result === 0) result = this.compareText(a.name, b.name);
-                            } else {
-                                const soldOutA = seatsA <= 0 || this.isBatchClosed(a);
-                                const soldOutB = seatsB <= 0 || this.isBatchClosed(b);
-                                if (soldOutA !== soldOutB) result = soldOutA ? 1 : -1;
-                                else result = this.compareNumber(seatsA, seatsB);
-                                if (result === 0) result = this.compareNumber(this.getScheduleTimestamp(a), this.getScheduleTimestamp(b));
-                                if (result === 0) result = this.compareText(a.name, b.name);
-                            }
-
-                            return this.sortDirection === "asc" ? result : -result;
                         });
                 }
             };
