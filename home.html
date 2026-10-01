@@ -1259,12 +1259,15 @@
             const userDocSnap = await getDoc(doc(db, "users", user.uid));
             if (userDocSnap.exists()) {
               const data = userDocSnap.data();
-              const role = data.access?.role_id;
+              const role = data.access?.role_id || data.role || "";
+              const level = data.access?.level_order;
               const employment = data.employment || {};
               const rawDepts =
                 employment.departments ||
+                employment.Department ||
                 employment.department ||
                 data.departments ||
+                data.Department ||
                 data.department ||
                 [];
               let userDepts = [];
@@ -1275,6 +1278,9 @@
               } else if (typeof rawDepts === "string" && rawDepts.trim()) {
                 userDepts = [rawDepts.toLowerCase().trim()];
               }
+              window.currentUserData = data;
+              window.teamMemberRole = String(role).toLowerCase().trim();
+              window.teamMemberLevel = level;
               window.teamMemberDepartments = userDepts;
               window.teamMemberDepartment = userDepts[0] || "";
               window.teamMemberPosition =
@@ -2543,33 +2549,97 @@
               .toLowerCase()
               .trim();
 
+            const userRole = (
+              window.teamMemberRole ||
+              window.currentUserData?.access?.role_id ||
+              localData?.access?.role_id ||
+              localData?.role ||
+              ""
+            )
+              .toLowerCase()
+              .trim();
+
+            const userLevel = Number(
+              window.teamMemberLevel ??
+              window.currentUserData?.access?.level_order ??
+              localData?.access?.level_order ??
+              99
+            );
+
+            const userEmail = (currentUser?.email || "").toLowerCase().trim();
+            const userUid = currentUser?.uid || "";
+            const userName = (
+              window.currentUserData?.name ||
+              localData?.name ||
+              currentUser?.displayName ||
+              ""
+            )
+              .toLowerCase()
+              .trim();
+
+            const isAngeline =
+              userUid === "Gt1NA6ahp5eSeDSYJSrrwnDGoF62" ||
+              userName.includes("angeline") ||
+              userEmail.includes("angeline");
+
+            const isElsa =
+              userUid === "Suvd3RUPvuQvHJhPXGd0KuOOXsm1" ||
+              userName.includes("elsa") ||
+              userEmail.includes("elsa@dialogika.co");
+
             const isHappyHead =
               userPosition === "head of department of happy team" ||
               userPosition.includes("head of department of happy") ||
               (userPosition.includes("happy team") &&
                 userPosition.includes("head"));
 
-            // Hanya Head of Department of Happy Team yang memiliki wewenang untuk menyetujui laporan
-            if (!isHappyHead) {
+            const isStaffOrLeader =
+              userRole === "staff" ||
+              userRole === "admin" ||
+              userRole === "super team" ||
+              userRole === "sub team" ||
+              userLevel <= 3 ||
+              userPosition.includes("head") ||
+              userPosition.includes("lead") ||
+              userPosition.includes("manager") ||
+              userPosition.includes("pic") ||
+              isAngeline ||
+              isHappyHead;
+
+            // Hanya approver berwenang (Angeline, Head/Staff Happy, Leader) yang dapat melihat & menyetujui laporan
+            if (!isStaffOrLeader) {
               list.innerHTML =
                 '<p class="text-muted small mb-0">Tidak ada laporan perlu persetujuan.</p>';
               badge.textContent = "0";
               return;
             }
 
-            // Ambil array departemen user (Happy, Branding)
+            // Ambil array departemen user
             let userDepts =
               Array.isArray(window.teamMemberDepartments) &&
               window.teamMemberDepartments.length > 0
-                ? window.teamMemberDepartments
+                ? [...window.teamMemberDepartments]
                 : [];
             if (userDepts.length === 0) {
-              const rawDeptFallback = (window.teamMemberDepartment || "")
+              const rawDeptFallback = (
+                window.teamMemberDepartment ||
+                window.currentUserData?.department ||
+                localData?.department ||
+                ""
+              )
                 .toLowerCase()
                 .trim();
               if (rawDeptFallback) userDepts.push(rawDeptFallback);
-              if (!userDepts.includes("happy")) userDepts.push("happy");
-              if (!userDepts.includes("branding")) userDepts.push("branding");
+            }
+
+            // Aturan khusus: Dwiya Elsa HANYA departemen Happy
+            if (isElsa) {
+              userDepts = ["happy"];
+            }
+
+            // Aturan khusus: Angeline HANYA departemen Branding
+            if (isAngeline) {
+              userDepts = ["branding"];
             }
 
             snapshot.forEach((docSnap) => {
