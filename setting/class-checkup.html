@@ -396,6 +396,7 @@
                                 <div>
                                     <label class="salary-field-label">Mentor</label>
                                     <input id="salaryMentorName" type="text" class="salary-input" disabled>
+                                    <div id="salaryMentorBankPreview" class="text-[11px] text-slate-500 mt-1"></div>
                                 </div>
                                 <div>
                                     <label class="salary-field-label">Kelas</label>
@@ -2019,6 +2020,29 @@
             if (statusText) statusText.textContent = "Kelas telah " + c.status.toLowerCase() + " (" + c.meetingDone + "/" + c.meetingTotal + " meeting)";
             if (mentorInput) mentorInput.value = mentorFullName;
             if (classInput) classInput.value = c.name || "-";
+
+            const bankPreviewEl = document.getElementById("salaryMentorBankPreview");
+            if (bankPreviewEl) bankPreviewEl.innerHTML = '<span class="text-slate-400">Mencari info rekening mentor...</span>';
+            if (mentorFullName && mentorFullName !== "-") {
+                findMentorDocByName(mentorFullName).then(mentorDoc => {
+                    if (!bankPreviewEl) return;
+                    if (mentorDoc) {
+                        const bInfo = extractBankInfoFromMentor(mentorDoc.data);
+                        if (bInfo.bankName && bInfo.accountNumber) {
+                            bankPreviewEl.innerHTML = `<span class="text-emerald-600 font-medium">✓ Rekening: ${escapeHtml(bInfo.bankName)} - ${escapeHtml(bInfo.accountNumber)} (a.n. ${escapeHtml(bInfo.beneficiaryName || mentorFullName)})</span>`;
+                        } else {
+                            bankPreviewEl.innerHTML = `<span class="text-amber-600">⚠ Rekening mentor belum lengkap di profil (${escapeHtml(mentorDoc.data.fullName || mentorFullName)})</span>`;
+                        }
+                    } else {
+                        bankPreviewEl.innerHTML = `<span class="text-rose-500">⚠ Mentor tidak ditemukan di database mentor</span>`;
+                    }
+                }).catch(() => {
+                    if (bankPreviewEl) bankPreviewEl.textContent = "";
+                });
+            } else if (bankPreviewEl) {
+                bankPreviewEl.textContent = "";
+            }
+
             if (c.salaryExpenseId) {
                 if (formArea) formArea.classList.add("hidden");
                 if (publishedArea) publishedArea.classList.remove("hidden");
@@ -2052,28 +2076,9 @@
             }
         }
 
-        async function findMentorDocByName(mentorName) {
-            if (!mentorName) return null;
-            try {
-                const snap = await getDocs(collection(db, "mentor"));
-                let found = null;
-                snap.forEach((docSnap) => {
-                    if (found) return;
-                    const d = docSnap.data() || {};
-                    const names = [
-                        d.fullName, d.nama_lengkap, d.name, d.displayName
-                    ].filter(Boolean).map(n => String(n).trim().toLowerCase());
-                    if (names.includes(mentorName.trim().toLowerCase())) {
-                        found = { id: docSnap.id, data: d };
-                    }
-                });
-                return found;
-            } catch (e) {
-                return null;
-            }
-        }
-
         function extractBankInfoFromMentor(d) {
+            if (!d) return { beneficiaryName: "", bankName: "", accountNumber: "" };
+            const nested = d.informasi_bank || d.bankInfo || d.bank_info || d.bankInformation || {};
             const first = (...vals) => {
                 for (const v of vals) {
                     const s = String(v || "").trim();
@@ -2082,10 +2087,120 @@
                 return "";
             };
             return {
-                beneficiaryName: first(d.beneficiaryName, d.accountHolderName, d.accountName, d.namaPemilikRekening, d.nama_rekening, d.namaRekening, d.fullName, d.nama_lengkap, d.name),
-                bankName: first(d.bankName, d.bank, d.namaBank, d.bank_name, d.rekeningBank, d.bankAccountBank),
-                accountNumber: first(d.accountNumber, d.noRekening, d.no_rekening, d.nomorRekening, d.nomor_rekening, d.account_number)
+                beneficiaryName: first(
+                    d.beneficiaryName,
+                    d.accountHolderName,
+                    d.accountName,
+                    d.namaPemilikRekening,
+                    d.nama_rekening,
+                    d.namaRekening,
+                    d.atasNama,
+                    d.atas_nama,
+                    nested.beneficiaryName,
+                    nested.accountHolderName,
+                    nested.accountName,
+                    nested.namaPemilikRekening,
+                    nested.nama_rekening,
+                    nested.namaRekening,
+                    nested.atasNama,
+                    nested.atas_nama,
+                    d.fullName,
+                    d.nama_lengkap,
+                    d.name
+                ),
+                bankName: first(
+                    d.bankName,
+                    d.bank,
+                    d.namaBank,
+                    d.bank_name,
+                    d.rekeningBank,
+                    d.bankAccountBank,
+                    nested.bankName,
+                    nested.namaBank,
+                    nested.bank,
+                    nested.bank_name
+                ),
+                accountNumber: first(
+                    d.accountNumber,
+                    d.noRekening,
+                    d.no_rekening,
+                    d.nomorRekening,
+                    d.nomor_rekening,
+                    d.account_number,
+                    nested.accountNumber,
+                    nested.noRekening,
+                    nested.no_rekening,
+                    nested.nomorRekening,
+                    nested.account_number
+                )
             };
+        }
+
+        async function findMentorDocByName(mentorName) {
+            if (!mentorName) return null;
+            const clean = (val) => String(val || "")
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+            const qClean = clean(mentorName);
+            if (!qClean) return null;
+            const qTokens = qClean.split(" ").filter(t => t.length >= 2);
+
+            try {
+                const snap = await getDocs(collection(db, "mentor"));
+                let bestMatch = null;
+                let bestScore = 0;
+
+                snap.forEach((docSnap) => {
+                    const d = docSnap.data() || {};
+                    const targets = [
+                        d.fullName,
+                        d.nama_lengkap,
+                        d.name,
+                        d.displayName,
+                        d.nickName,
+                        d.nickname,
+                        d.namaPanggilan,
+                        d.nama_panggilan,
+                        d.accountHolderName,
+                        d.beneficiaryName,
+                        d.atasNama,
+                        d.atas_nama,
+                        docSnap.id
+                    ].filter(Boolean).map(clean);
+
+                    let score = 0;
+                    // 1. Exact match
+                    if (targets.some(t => t === qClean)) {
+                        score = 100;
+                    } 
+                    // 2. Substring match
+                    else if (targets.some(t => t.includes(qClean) || (qClean.length >= 4 && qClean.includes(t) && t.length >= 4))) {
+                        score = 85;
+                    } 
+                    // 3. Token match
+                    else if (qTokens.length > 0) {
+                        const allTargetsStr = targets.join(" ");
+                        const matchedTokens = qTokens.filter(tok => allTargetsStr.includes(tok));
+                        if (matchedTokens.length === qTokens.length) {
+                            score = 75;
+                        } else if (matchedTokens.length >= 2 || (qTokens.length > 1 && matchedTokens.length / qTokens.length >= 0.5)) {
+                            score = 50;
+                        }
+                    }
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = { id: docSnap.id, data: d };
+                    }
+                });
+
+                return bestScore >= 50 ? bestMatch : null;
+            } catch (e) {
+                console.error("[class-checkup] Error mencari dokumen mentor", e);
+                return null;
+            }
         }
 
         async function publishSalaryToExpenses() {
@@ -2120,10 +2235,13 @@
                 const mentorDoc = await findMentorDocByName(mentorFullName);
                 let bankInfo = { beneficiaryName: mentorFullName, bankName: "", accountNumber: "" };
                 let mentorId = "";
+                let mentorWhatsapp = "";
                 if (mentorDoc) {
                     mentorId = mentorDoc.id;
                     bankInfo = extractBankInfoFromMentor(mentorDoc.data);
                     if (!bankInfo.beneficiaryName) bankInfo.beneficiaryName = mentorFullName;
+                    const d = mentorDoc.data || {};
+                    mentorWhatsapp = d.whatsappNumber || d.whatsapp || d.whatsApp || d.phone || d.no_wa || d.noWa || d.no_hp || "";
                 }
                 const expenseId = "OPS-" + Date.now();
                 const nowMs = Date.now();
@@ -2146,6 +2264,9 @@
                     paymentMethod: "Transfer Bank",
                     transferProofUrl: "",
                     transferProofPath: "",
+                    mentorWhatsapp: mentorWhatsapp,
+                    whatsappMessage: "",
+                    whatsappLink: "",
                     notes: notes,
                     paymentNotes: "",
                     vendorName: "",

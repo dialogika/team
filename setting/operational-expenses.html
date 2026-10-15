@@ -60,6 +60,33 @@
             padding: 22px;
             color: white;
             min-height: 122px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            position: relative;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.16);
+        }
+        .stat-card.is-active {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 20px 35px rgba(15, 23, 42, 0.25);
+            outline: 3px solid #ffffff;
+            outline-offset: -3px;
+        }
+        .stat-card-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(4px);
+            padding: 2px 8px;
+            border-radius: 999px;
         }
         .stat-indigo { background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); }
         .stat-amber { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
@@ -327,28 +354,88 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
-                    <div class="stat-card stat-slate">
-                        <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Total Request</div>
+                    <div
+                        class="stat-card stat-slate"
+                        :class="{ 'is-active ring-4 ring-slate-800/40': activeCard === 'all' }"
+                        @click="setCardFilter('all')"
+                        role="button"
+                        tabindex="0"
+                        title="Klik untuk melihat semua request"
+                    >
+                        <div class="flex items-center justify-between">
+                            <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Total Request</div>
+                            <span v-if="activeCard === 'all'" class="stat-card-badge">
+                                <i class="bi bi-check2"></i> Aktif
+                            </span>
+                        </div>
                         <div class="text-4xl font-black mt-3">{{ stats.total }}</div>
                         <div class="text-xs mt-3 text-white/70">Semua request yang terdaftar</div>
                     </div>
-                    <div class="stat-card stat-amber">
-                        <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Need Action</div>
+                    <div
+                        class="stat-card stat-amber"
+                        :class="{ 'is-active ring-4 ring-amber-500/40': activeCard === 'need_action' }"
+                        @click="setCardFilter('need_action')"
+                        role="button"
+                        tabindex="0"
+                        title="Klik untuk melihat request butuh tindakan (requested / reviewing)"
+                    >
+                        <div class="flex items-center justify-between">
+                            <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Need Action</div>
+                            <span v-if="activeCard === 'need_action'" class="stat-card-badge">
+                                <i class="bi bi-check2"></i> Aktif
+                            </span>
+                        </div>
                         <div class="text-4xl font-black mt-3">{{ stats.pending }}</div>
                         <div class="text-xs mt-3 text-white/70">Status requested atau reviewing</div>
                     </div>
-                    <div class="stat-card stat-rose">
-                        <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Overdue</div>
+                    <div
+                        class="stat-card stat-rose"
+                        :class="{ 'is-active ring-4 ring-rose-500/40': activeCard === 'overdue' }"
+                        @click="setCardFilter('overdue')"
+                        role="button"
+                        tabindex="0"
+                        title="Klik untuk melihat request yang melewati due date"
+                    >
+                        <div class="flex items-center justify-between">
+                            <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Overdue</div>
+                            <span v-if="activeCard === 'overdue'" class="stat-card-badge">
+                                <i class="bi bi-check2"></i> Aktif
+                            </span>
+                        </div>
                         <div class="text-4xl font-black mt-3">{{ stats.overdue }}</div>
                         <div class="text-xs mt-3 text-white/70">Melewati due date pembayaran</div>
                     </div>
-                    <div class="stat-card stat-emerald">
-                        <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Paid</div>
+                    <div
+                        class="stat-card stat-emerald"
+                        :class="{ 'is-active ring-4 ring-emerald-500/40': activeCard === 'paid' }"
+                        @click="setCardFilter('paid')"
+                        role="button"
+                        tabindex="0"
+                        title="Klik untuk melihat request yang sudah lunas (paid & complete)"
+                    >
+                        <div class="flex items-center justify-between">
+                            <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Paid</div>
+                            <span v-if="activeCard === 'paid'" class="stat-card-badge">
+                                <i class="bi bi-check2"></i> Aktif
+                            </span>
+                        </div>
                         <div class="text-4xl font-black mt-3">{{ stats.paid }}</div>
                         <div class="text-xs mt-3 text-white/70">Sudah lunas dan ada bukti transfer</div>
                     </div>
-                    <div class="stat-card stat-indigo">
-                        <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Total Amount</div>
+                    <div
+                        class="stat-card stat-indigo"
+                        :class="{ 'is-active ring-4 ring-indigo-500/40': activeCard === 'amount' }"
+                        @click="setCardFilter('amount')"
+                        role="button"
+                        tabindex="0"
+                        title="Klik untuk melihat seluruh request akumulasi (diurutkan nominal tertinggi)"
+                    >
+                        <div class="flex items-center justify-between">
+                            <div class="text-[11px] uppercase tracking-[0.22em] font-black text-white/70">Total Amount</div>
+                            <span v-if="activeCard === 'amount'" class="stat-card-badge">
+                                <i class="bi bi-check2"></i> Aktif
+                            </span>
+                        </div>
                         <div class="text-3xl font-black mt-3">Rp {{ formatCurrency(stats.amount) }}</div>
                         <div class="text-xs mt-3 text-white/70">Akumulasi nominal seluruh request</div>
                     </div>
@@ -365,11 +452,12 @@
                                 <label class="field-label">Status Filter</label>
                                 <select v-model="filterStatus" class="field-control field-control-compact">
                                     <option value="all">Semua Status</option>
+                                    <option value="need_action">Need Action (Requested & Reviewing)</option>
                                     <option value="requested">Requested</option>
                                     <option value="reviewing">Reviewing</option>
                                     <option value="overdue">Overdue</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="complete">Complete</option>
+                                    <option value="paid">Paid & Complete</option>
+                                    <option value="complete">Complete (WhatsApp Terkirim)</option>
                                     <option value="rejected">Rejected</option>
                                 </select>
                             </div>
@@ -1193,6 +1281,7 @@
                 const filterDate = ref('');
                 const filterDateStart = ref('');
                 const filterDateEnd = ref('');
+                const activeCard = ref('all');
                 
                 watch(filterStatus, (newVal) => {
                     if (newVal === 'overdue') {
@@ -1201,6 +1290,17 @@
                         filterDate.value = '';
                         filterDateStart.value = '';
                         filterDateEnd.value = '';
+                        activeCard.value = 'overdue';
+                    } else if (newVal === 'need_action') {
+                        activeCard.value = 'need_action';
+                    } else if (newVal === 'paid' || newVal === 'complete') {
+                        activeCard.value = 'paid';
+                    } else if (newVal === 'all') {
+                        if (activeCard.value !== 'amount') {
+                            activeCard.value = 'all';
+                        }
+                    } else {
+                        activeCard.value = '';
                     }
                 });
 
@@ -1319,6 +1419,22 @@
                     filterDate.value = '';
                     filterDateStart.value = '';
                     filterDateEnd.value = '';
+                };
+
+                const setCardFilter = (type) => {
+                    activeCard.value = type;
+                    if (type === 'amount') {
+                        filterStatus.value = 'all';
+                        sortKey.value = 'amount';
+                        sortDirection.value = 'desc';
+                    } else {
+                        filterStatus.value = type;
+                        if (sortKey.value === 'amount') {
+                            sortKey.value = '';
+                        }
+                    }
+                    // Reset filter tanggal spesifik agar seluruh data pada status card ini langsung terlihat
+                    clearDateFilter();
                 };
 
                 const mapExpenseDoc = (id, d) => ({
@@ -1445,57 +1561,129 @@
                     };
                 };
 
-                const extractMentorBankInfo = (data) => ({
-                    beneficiaryName: firstFilled(
-                        data.beneficiaryName,
-                        data.accountHolderName,
-                        data.accountName,
-                        data.namaPemilikRekening,
-                        data.nama_rekening,
-                        data.namaRekening,
-                        data.fullName,
-                        data.nama_lengkap,
-                        data.name
-                    ),
-                    bankName: firstFilled(
-                        data.bankName,
-                        data.bank,
-                        data.namaBank,
-                        data.bank_name,
-                        data.rekeningBank,
-                        data.bankAccountBank
-                    ),
-                    accountNumber: firstFilled(
-                        data.accountNumber,
-                        data.noRekening,
-                        data.no_rekening,
-                        data.nomorRekening,
-                        data.nomor_rekening,
-                        data.account_number
-                    )
-                });
+                const extractMentorBankInfo = (data) => {
+                    if (!data) return { beneficiaryName: '', bankName: '', accountNumber: '' };
+                    const nested = data.informasi_bank || data.bankInfo || data.bank_info || data.bankInformation || {};
+                    return {
+                        beneficiaryName: firstFilled(
+                            data.beneficiaryName,
+                            data.accountHolderName,
+                            data.accountName,
+                            data.namaPemilikRekening,
+                            data.nama_rekening,
+                            data.namaRekening,
+                            data.atasNama,
+                            data.atas_nama,
+                            nested.beneficiaryName,
+                            nested.accountHolderName,
+                            nested.accountName,
+                            nested.namaPemilikRekening,
+                            nested.nama_rekening,
+                            nested.namaRekening,
+                            nested.atasNama,
+                            nested.atas_nama,
+                            data.fullName,
+                            data.nama_lengkap,
+                            data.name
+                        ),
+                        bankName: firstFilled(
+                            data.bankName,
+                            data.bank,
+                            data.namaBank,
+                            data.bank_name,
+                            data.rekeningBank,
+                            data.bankAccountBank,
+                            nested.bankName,
+                            nested.namaBank,
+                            nested.bank,
+                            nested.bank_name
+                        ),
+                        accountNumber: firstFilled(
+                            data.accountNumber,
+                            data.noRekening,
+                            data.no_rekening,
+                            data.nomorRekening,
+                            data.nomor_rekening,
+                            data.account_number,
+                            nested.accountNumber,
+                            nested.noRekening,
+                            nested.no_rekening,
+                            nested.nomorRekening,
+                            nested.account_number
+                        )
+                    };
+                };
+
+                const cleanNameForMatch = (val) => String(val || '')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+                const findMentorMatch = (mentorId, mentorName) => {
+                    if (!mentorOptions.value || !mentorOptions.value.length) return null;
+                    if (mentorId) {
+                        const byId = mentorOptions.value.find(m => m.id === mentorId);
+                        if (byId) return byId;
+                    }
+                    const qRaw = String(mentorName || '').trim();
+                    if (!qRaw) return null;
+                    const qClean = cleanNameForMatch(qRaw);
+                    if (!qClean) return null;
+                    const qTokens = qClean.split(' ').filter(t => t.length >= 2);
+
+                    let bestMatch = null;
+                    let bestScore = 0;
+
+                    for (const m of mentorOptions.value) {
+                        let score = 0;
+                        const targets = [
+                            m.name,
+                            m.fullName,
+                            m.nickName,
+                            m.accountHolderName,
+                            m.bankInfo?.beneficiaryName
+                        ].filter(Boolean).map(cleanNameForMatch);
+
+                        // 1. Exact match on any alias/field
+                        if (targets.some(t => t === qClean)) {
+                            score = 100;
+                        } 
+                        // 2. Substring match (e.g. 'dhinar arga dumadi' includes 'dhinar arga')
+                        else if (targets.some(t => t.includes(qClean) || (qClean.length >= 4 && qClean.includes(t) && t.length >= 4))) {
+                            score = 85;
+                        } 
+                        // 3. Token / word overlap match (all words in search query match mentor's words)
+                        else if (qTokens.length > 0) {
+                            const allTargetsStr = targets.join(' ');
+                            const matchedTokens = qTokens.filter(tok => allTargetsStr.includes(tok));
+                            if (matchedTokens.length === qTokens.length) {
+                                score = 75;
+                            } else if (matchedTokens.length >= 2 || (qTokens.length > 1 && matchedTokens.length / qTokens.length >= 0.5)) {
+                                score = 50;
+                            }
+                        }
+
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMatch = m;
+                        }
+                    }
+
+                    return bestScore >= 50 ? bestMatch : null;
+                };
 
                 const autoFillMentorBankInfo = async (mentorId, mentorName) => {
                     try {
-                        let mentorData = null;
-                        if (mentorId) {
-                            const found = mentorOptions.value.find(m => m.id === mentorId);
-                            if (found && found.bankInfo) {
-                                mentorData = found.bankInfo;
+                        const found = findMentorMatch(mentorId, mentorName);
+                        if (found && found.bankInfo) {
+                            if (!form.value.mentorId) form.value.mentorId = found.id;
+                            form.value.beneficiaryName = form.value.beneficiaryName || found.bankInfo.beneficiaryName || found.name || '';
+                            if (!form.value.bankName) form.value.bankName = found.bankInfo.bankName || '';
+                            if (!form.value.accountNumber) form.value.accountNumber = found.bankInfo.accountNumber || '';
+                            if (!form.value.mentorWhatsapp) {
+                                form.value.mentorWhatsapp = found.whatsappNumber || found.whatsapp || '';
                             }
-                        }
-                        if (!mentorData && mentorName) {
-                            const nameNorm = normalizeText(mentorName);
-                            const found = mentorOptions.value.find(m => normalizeText(m.name) === nameNorm);
-                            if (found && found.bankInfo) {
-                                mentorData = found.bankInfo;
-                                if (!form.value.mentorId) form.value.mentorId = found.id;
-                            }
-                        }
-                        if (mentorData && (mentorData.bankName || mentorData.accountNumber)) {
-                            form.value.beneficiaryName = form.value.beneficiaryName || mentorData.beneficiaryName || '';
-                            form.value.bankName = mentorData.bankName || '';
-                            form.value.accountNumber = mentorData.accountNumber || '';
                         }
                     } catch (e) {
                         console.warn('[OperationalExpenses] Gagal auto-fill bank info mentor:', e);
@@ -1533,20 +1721,27 @@
                         const list = [];
                         snap.forEach((docSnap) => {
                             const d = docSnap.data() || {};
-                            const name = firstFilled(d.fullName, d.nama_lengkap, d.name, d.displayName, docSnap.id);
+                            const fullName = firstFilled(d.fullName, d.nama_lengkap, d.name, d.displayName);
+                            const nickName = firstFilled(d.nickName, d.nickname, d.namaPanggilan, d.nama_panggilan);
                             const bankInfo = extractMentorBankInfo(d);
+                            const name = fullName || nickName || bankInfo.beneficiaryName || docSnap.id;
                             const metaParts = [bankInfo.bankName, bankInfo.accountNumber].filter(Boolean);
+                            const wa = extractMentorWhatsapp(d);
                             list.push({
                                 id: docSnap.id,
                                 name,
+                                fullName,
+                                nickName,
+                                accountHolderName: bankInfo.beneficiaryName || '',
                                 meta: metaParts.length ? metaParts.join(' • ') : 'Data rekening mentor belum lengkap',
                                 bankInfo,
-                                whatsapp: extractMentorWhatsapp(d),
-                                whatsappNumber: normalizeWhatsappNumber(extractMentorWhatsapp(d)),
-                                search: [name, bankInfo.bankName, bankInfo.accountNumber].filter(Boolean).join(' ').toLowerCase()
+                                whatsapp: wa,
+                                whatsappNumber: normalizeWhatsappNumber(wa),
+                                search: [name, fullName, nickName, bankInfo.beneficiaryName, bankInfo.bankName, bankInfo.accountNumber].filter(Boolean).join(' ').toLowerCase()
                             });
                         });
                         mentorOptions.value = list.sort((a, b) => a.name.localeCompare(b.name, 'id'));
+                        enrichExpensesWithMentorBank();
                     } catch (error) {
                         console.error('[OperationalExpenses] Gagal memuat mentor', error);
                         mentorOptions.value = [];
@@ -1771,12 +1966,14 @@
                             list.push(mapExpenseDoc(docSnap.id, docSnap.data() || {}));
                         });
                         expenses.value = list;
+                        enrichExpensesWithMentorBank();
                         if (!list.length) {
                             console.warn('[OperationalExpenses] Collection kosong, menggunakan state kosong.');
                         }
                     } catch (error) {
                         console.error('[OperationalExpenses] Gagal memuat data', error);
                         useFallbackData();
+                        enrichExpensesWithMentorBank();
                     }
                 };
 
@@ -1863,7 +2060,16 @@
                     const q = searchQuery.value.trim().toLowerCase();
                     const filtered = expenses.value.filter((expense) => {
                         const currentStatus = displayStatus(expense);
-                        const matchStatus = filterStatus.value === 'all' || currentStatus === filterStatus.value;
+                        let matchStatus = false;
+                        if (filterStatus.value === 'all') {
+                            matchStatus = true;
+                        } else if (filterStatus.value === 'need_action') {
+                            matchStatus = currentStatus === 'requested' || currentStatus === 'reviewing';
+                        } else if (filterStatus.value === 'paid') {
+                            matchStatus = currentStatus === 'paid' || currentStatus === 'complete' || expense.status === 'paid' || expense.status === 'complete';
+                        } else {
+                            matchStatus = currentStatus === filterStatus.value;
+                        }
                         const matchCategory = filterCategory.value === 'all' || expense.category === filterCategory.value;
                         const dueDate = String(expense.dueDate || '').slice(0, 10);
                         const hasRange = !!(filterDateStart.value || filterDateEnd.value);
@@ -1952,15 +2158,16 @@
                     isEditMode.value = true;
                     currentExpenseId.value = expense.id;
                     previousStatus.value = expense.status;
+                    const mentorMatch = findMentorMatch(expense.mentorId, expense.mentorName);
                     let fallbackMentorWhatsapp = expense.mentorWhatsapp || '';
-                    if (!normalizeWhatsappNumber(fallbackMentorWhatsapp) && expense.mentorId) {
-                        const mentorById = mentorOptions.value.find((item) => item.id === expense.mentorId);
-                        fallbackMentorWhatsapp = mentorById?.whatsappNumber || mentorById?.whatsapp || fallbackMentorWhatsapp;
+                    if (!normalizeWhatsappNumber(fallbackMentorWhatsapp) && mentorMatch) {
+                        fallbackMentorWhatsapp = mentorMatch.whatsappNumber || mentorMatch.whatsapp || fallbackMentorWhatsapp;
                     }
-                    if (!normalizeWhatsappNumber(fallbackMentorWhatsapp) && expense.mentorName) {
-                        const mentorByName = mentorOptions.value.find((item) => normalizeText(item.name) === normalizeText(expense.mentorName));
-                        fallbackMentorWhatsapp = mentorByName?.whatsappNumber || mentorByName?.whatsapp || fallbackMentorWhatsapp;
-                    }
+                    const resolvedMentorId = expense.mentorId || mentorMatch?.id || '';
+                    const resolvedBankName = (expense.bankName && expense.bankName !== '-') ? expense.bankName : (mentorMatch?.bankInfo?.bankName || '');
+                    const resolvedAccountNumber = (expense.accountNumber && expense.accountNumber !== '-') ? expense.accountNumber : (mentorMatch?.bankInfo?.accountNumber || '');
+                    const resolvedBeneficiary = (expense.beneficiaryName && expense.beneficiaryName !== '-') ? expense.beneficiaryName : (mentorMatch?.bankInfo?.beneficiaryName || mentorMatch?.name || '');
+
                     form.value = {
                         title: expense.title || '',
                         category: expense.category || 'other',
@@ -1969,14 +2176,14 @@
                         requesterName: expense.requesterName || '',
                         classId: expense.classId || '',
                         relatedClass: expense.relatedClass || '',
-                        mentorId: expense.mentorId || '',
-                        mentorName: expense.mentorName || '',
+                        mentorId: resolvedMentorId,
+                        mentorName: expense.mentorName || (mentorMatch ? mentorMatch.name : ''),
                         dueDate: expense.dueDate || '',
                         amount: Number(expense.amount || 0),
                         status: expense.status || 'requested',
-                        beneficiaryName: expense.beneficiaryName || '',
-                        bankName: expense.bankName || '',
-                        accountNumber: expense.accountNumber || '',
+                        beneficiaryName: resolvedBeneficiary,
+                        bankName: resolvedBankName,
+                        accountNumber: resolvedAccountNumber,
                         paymentMethod: expense.paymentMethod || 'Transfer Bank',
                         transferProofUrl: expense.transferProofUrl || '',
                         transferProofPath: expense.transferProofPath || '',
@@ -2001,9 +2208,8 @@
                     };
                     syncSearchInputsFromForm();
                     if (expense.category === 'mentor_salary') {
-                        const hasBankInfo = !!(expense.bankName && expense.accountNumber);
-                        if (!hasBankInfo) {
-                            autoFillMentorBankInfo(expense.mentorId, expense.mentorName);
+                        if (!form.value.bankName || !form.value.accountNumber) {
+                            autoFillMentorBankInfo(form.value.mentorId, expense.mentorName);
                         }
                     }
                     showDrawer.value = true;
@@ -2097,16 +2303,24 @@
                             alert('Related class wajib diisi untuk mentor salary.');
                             return false;
                         }
-                        if (!String(form.value.mentorId || '').trim()) {
-                            alert('Pilih mentor dari dropdown agar rekening tujuan sinkron dengan data mentor.');
-                            return false;
-                        }
                         if (!String(form.value.mentorName || '').trim()) {
                             alert('Mentor name wajib diisi untuk mentor salary.');
                             return false;
                         }
+                        // Coba sinkronisasi mentorId jika belum terisi
+                        if (!String(form.value.mentorId || '').trim() && mentorOptions.value.length) {
+                            const found = findMentorMatch('', form.value.mentorName);
+                            if (found) {
+                                form.value.mentorId = found.id;
+                                if (!form.value.bankName || !form.value.accountNumber) {
+                                    form.value.beneficiaryName = form.value.beneficiaryName || found.bankInfo?.beneficiaryName || found.name || '';
+                                    form.value.bankName = form.value.bankName || found.bankInfo?.bankName || '';
+                                    form.value.accountNumber = form.value.accountNumber || found.bankInfo?.accountNumber || '';
+                                }
+                            }
+                        }
                         if (!String(form.value.bankName || '').trim() || !String(form.value.accountNumber || '').trim()) {
-                            alert('Data rekening mentor belum lengkap. Cek collection mentor terlebih dahulu.');
+                            alert('Data rekening tujuan (Bank dan Nomor Rekening) wajib diisi.');
                             return false;
                         }
                     }
@@ -2126,12 +2340,8 @@
                 const sendWhatsappToMentor = async (expense) => {
                     if (!expense || expense.category !== 'mentor_salary') return;
                     let phoneNumber = normalizeWhatsappNumber(expense.mentorWhatsapp || '');
-                    if (!phoneNumber && expense.mentorId) {
-                        const mentorOption = mentorOptions.value.find((item) => item.id === expense.mentorId);
-                        phoneNumber = mentorOption?.whatsappNumber || normalizeWhatsappNumber(mentorOption?.whatsapp || '');
-                    }
-                    if (!phoneNumber && expense.mentorName) {
-                        const mentorOption = mentorOptions.value.find((item) => normalizeText(item.name) === normalizeText(expense.mentorName));
+                    if (!phoneNumber) {
+                        const mentorOption = findMentorMatch(expense.mentorId, expense.mentorName);
                         phoneNumber = mentorOption?.whatsappNumber || normalizeWhatsappNumber(mentorOption?.whatsapp || '');
                     }
                     if (!phoneNumber) {
@@ -2178,14 +2388,25 @@
                     const expenseId = currentExpenseId.value || `OPS-${Date.now()}`;
 
                     try {
-                        const proofUpload = await uploadTransferProof(expenseId);
-                        const reimburseUpload = await uploadReimburseProof(expenseId);
+                        let proofUpload = { url: form.value.transferProofUrl || '', path: form.value.transferProofPath || '' };
+                        let reimburseUpload = { url: form.value.reimburseProofUrl || '', path: form.value.reimburseProofPath || '' };
+
+                        try {
+                            proofUpload = await uploadTransferProof(expenseId);
+                            reimburseUpload = await uploadReimburseProof(expenseId);
+                        } catch (uploadError) {
+                            console.error('[OperationalExpenses] Gagal upload berkas bukti:', uploadError);
+                            alert('Gagal mengunggah bukti pembayaran/nota. Silakan periksa ukuran file atau koneksi: ' + (uploadError.message || ''));
+                            saving.value = false;
+                            return;
+                        }
+
                         const isNewProofUploaded = !!(proofUpload.url && proofUpload.url !== form.value.transferProofUrl);
                         if (isNewProofUploaded && form.value.status !== 'paid' && form.value.status !== 'rejected') {
                             form.value.status = 'paid';
                             showToast('Bukti transfer terdeteksi → status otomatis diubah ke Paid');
                         }
-                        const selectedMentor = mentorOptions.value.find((item) => item.id === form.value.mentorId);
+                        const selectedMentor = findMentorMatch(form.value.mentorId, form.value.mentorName);
                         const mentorBankInfo = selectedMentor ? selectedMentor.bankInfo : null;
                         const nowMs = Date.now();
                         const whatsappPayload = buildMentorWhatsappPayload({
@@ -2202,14 +2423,14 @@
                             requesterName: String(form.value.requesterName || '').trim(),
                             classId: String(form.value.classId || '').trim(),
                             relatedClass: String(form.value.relatedClass || '').trim(),
-                            mentorId: String(form.value.mentorId || '').trim(),
-                            mentorName: String(form.value.mentorName || '').trim(),
+                            mentorId: String(form.value.mentorId || selectedMentor?.id || '').trim(),
+                            mentorName: String(form.value.mentorName || selectedMentor?.name || '').trim(),
                             dueDate: String(form.value.dueDate || '').trim(),
                             amount: Number(form.value.amount) || 0,
                             status: String(form.value.status || 'requested').trim(),
-                            beneficiaryName: isMentorSalary.value && mentorBankInfo ? String(mentorBankInfo.beneficiaryName || form.value.mentorName || '').trim() : String(form.value.beneficiaryName || '').trim(),
-                            bankName: isMentorSalary.value && mentorBankInfo ? String(mentorBankInfo.bankName || '').trim() : String(form.value.bankName || '').trim(),
-                            accountNumber: isMentorSalary.value && mentorBankInfo ? String(mentorBankInfo.accountNumber || '').trim() : String(form.value.accountNumber || '').trim(),
+                            beneficiaryName: isMentorSalary.value ? String(form.value.beneficiaryName || mentorBankInfo?.beneficiaryName || form.value.mentorName || '').trim() : String(form.value.beneficiaryName || '').trim(),
+                            bankName: isMentorSalary.value ? String(form.value.bankName || mentorBankInfo?.bankName || '').trim() : String(form.value.bankName || '').trim(),
+                            accountNumber: isMentorSalary.value ? String(form.value.accountNumber || mentorBankInfo?.accountNumber || '').trim() : String(form.value.accountNumber || '').trim(),
                             paymentMethod: String(form.value.paymentMethod || '').trim(),
                             transferProofUrl: proofUpload.url || form.value.transferProofUrl || '',
                             transferProofPath: proofUpload.path || form.value.transferProofPath || '',
@@ -2267,6 +2488,12 @@
                             }).catch(err => {
                                 console.error('Error sending Discord paid notification:', err);
                             });
+                        }
+
+                        // Jika filter tanggal aktif dan berbeda dari due date item yang disimpan,
+                        // reset filter tanggal agar item yang baru diubah tetap terlihat di tabel
+                        if (filterDate.value && payload.dueDate && payload.dueDate !== filterDate.value) {
+                            clearDateFilter();
                         }
 
                         await loadExpenses();
@@ -2333,21 +2560,53 @@
                 };
 
                 const enrichExpensesWithMentorBank = () => {
+                    if (!mentorOptions.value || !mentorOptions.value.length || !expenses.value.length) return;
                     expenses.value.forEach(expense => {
                         if (expense.category !== 'mentor_salary') return;
-                        if (expense.bankName && expense.accountNumber) return;
-                        let mentorOpt = null;
-                        if (expense.mentorId) {
-                            mentorOpt = mentorOptions.value.find(m => m.id === expense.mentorId);
+                        const hasFullBank = !!(expense.bankName && expense.accountNumber && expense.bankName !== '-' && expense.accountNumber !== '-');
+                        
+                        const mentorOpt = findMentorMatch(expense.mentorId, expense.mentorName);
+                        if (!mentorOpt) return;
+
+                        let needsDbBackfill = false;
+
+                        if (!expense.mentorId && mentorOpt.id) {
+                            expense.mentorId = mentorOpt.id;
+                            needsDbBackfill = true;
                         }
-                        if (!mentorOpt && expense.mentorName) {
-                            const nameNorm = normalizeText(expense.mentorName);
-                            mentorOpt = mentorOptions.value.find(m => normalizeText(m.name) === nameNorm);
+
+                        if (!hasFullBank && mentorOpt.bankInfo) {
+                            if (!expense.beneficiaryName || expense.beneficiaryName === '-') {
+                                expense.beneficiaryName = mentorOpt.bankInfo.beneficiaryName || mentorOpt.name || '';
+                                needsDbBackfill = true;
+                            }
+                            if (!expense.bankName || expense.bankName === '-') {
+                                expense.bankName = mentorOpt.bankInfo.bankName || '';
+                                needsDbBackfill = true;
+                            }
+                            if (!expense.accountNumber || expense.accountNumber === '-') {
+                                expense.accountNumber = mentorOpt.bankInfo.accountNumber || '';
+                                needsDbBackfill = true;
+                            }
                         }
-                        if (mentorOpt && mentorOpt.bankInfo) {
-                            if (!expense.beneficiaryName) expense.beneficiaryName = mentorOpt.bankInfo.beneficiaryName || '';
-                            if (!expense.bankName) expense.bankName = mentorOpt.bankInfo.bankName || '';
-                            if (!expense.accountNumber) expense.accountNumber = mentorOpt.bankInfo.accountNumber || '';
+
+                        if (!expense.mentorWhatsapp && mentorOpt.whatsappNumber) {
+                            expense.mentorWhatsapp = mentorOpt.whatsappNumber;
+                            needsDbBackfill = true;
+                        }
+
+                        // Auto-heal background Firestore jika dokumen sebelumnya kosong/tidak lengkap
+                        if (needsDbBackfill && expense.id && !expense.id.startsWith('OPS-DEMO')) {
+                            setDoc(doc(db, 'operational_expenses', expense.id), {
+                                mentorId: expense.mentorId || mentorOpt.id,
+                                beneficiaryName: expense.beneficiaryName || mentorOpt.bankInfo.beneficiaryName || mentorOpt.name,
+                                bankName: expense.bankName || mentorOpt.bankInfo.bankName,
+                                accountNumber: expense.accountNumber || mentorOpt.bankInfo.accountNumber,
+                                mentorWhatsapp: expense.mentorWhatsapp || mentorOpt.whatsappNumber || '',
+                                updatedAtMs: Date.now()
+                            }, { merge: true }).catch(err => {
+                                console.warn('[OperationalExpenses] Auto-heal bank data failed for ' + expense.id, err);
+                            });
                         }
                     });
                 };
@@ -2424,6 +2683,8 @@
                     selectDate,
                     shiftDateWindow,
                     clearDateFilter,
+                    setCardFilter,
+                    activeCard,
                     openCreateDrawer,
                     openEditDrawer,
                     closeDrawer,
