@@ -21,6 +21,9 @@
     <link href="../assets/css/style.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- International Telephone Input (intl-tel-input) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/css/intlTelInput.css" />
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/js/intlTelInput.min.js"></script>
     <style>
       body {
         font-family: "Poppins", sans-serif;
@@ -491,6 +494,170 @@
           grid-template-columns: minmax(0, 1fr);
         }
       }
+
+      /* ClickUp-style Remedial Board Styles */
+      .remedial-board-scroll {
+        display: flex;
+        gap: 1.25rem;
+        overflow-x: auto;
+        padding-bottom: 2rem;
+        align-items: flex-start;
+        scrollbar-width: thin;
+      }
+      .remedial-col {
+        min-width: 300px;
+        max-width: 320px;
+        flex-shrink: 0;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.2s ease;
+      }
+      .remedial-col.drag-over {
+        border: 2px dashed #0284c7;
+        background: #f0f9ff;
+      }
+      .remedial-card {
+        background: #ffffff;
+        border-radius: 1rem;
+        border: 1px solid #e2e8f0;
+        padding: 0.95rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        cursor: grab;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      }
+      .remedial-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        border-color: #cbd5e1;
+      }
+      .remedial-card:active {
+        cursor: grabbing;
+      }
+      .remedial-card.dragging {
+        opacity: 0.4;
+      }
+      .tag-meeting {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 6px;
+        letter-spacing: 0.05em;
+      }
+      .admin-meeting-check-label {
+        transition: all 0.15s ease;
+      }
+      .admin-meeting-check-label.checked {
+        background-color: #f0f9ff !important;
+        border-color: #38bdf8 !important;
+        color: #0369a1 !important;
+      }
+      .admin-meeting-check-label.checked .checkbox-box {
+        background-color: #0284c7 !important;
+        border-color: #0284c7 !important;
+      }
+      .admin-meeting-check-label.checked .check-icon {
+        display: block !important;
+      }
+      .admin-meeting-check-label.checked .meeting-label-text {
+        color: #0369a1 !important;
+        font-weight: 600 !important;
+      }
+      #adminMeetingDropdownPanel {
+        animation: adminDropdownPanelOpen 0.15s ease-out;
+      }
+      @keyframes adminDropdownPanelOpen {
+        from {
+          opacity: 0;
+          transform: translateY(-6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* intl-tel-input custom styling */
+      .iti {
+        width: 100%;
+        display: block;
+      }
+      .iti input[type="tel"],
+      .iti input {
+        padding-left: 58px !important;
+      }
+      .iti__country-container {
+        border-top-left-radius: 0.75rem;
+        border-bottom-left-radius: 0.75rem;
+      }
+      .iti__selected-country {
+        padding: 0 8px 0 12px;
+        border-top-left-radius: 0.75rem;
+        border-bottom-left-radius: 0.75rem;
+        transition: background-color 0.15s ease;
+      }
+      .iti__selected-country:hover {
+        background-color: rgba(241, 245, 249, 0.7);
+      }
+      .iti__arrow {
+        border-top-color: #64748b !important;
+        margin-left: 6px !important;
+      }
+      .iti__arrow--up {
+        border-bottom-color: #64748b !important;
+      }
+      .iti__dropdown-content {
+        border-radius: 1rem !important;
+        box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid #e2e8f0 !important;
+        background: #ffffff !important;
+        z-index: 99999 !important;
+        overflow: hidden;
+        margin-top: 4px !important;
+      }
+      .iti__search-input {
+        border-radius: 0.75rem !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.775rem !important;
+        width: calc(100% - 16px) !important;
+        margin: 8px !important;
+        outline: none !important;
+      }
+      .iti__search-input:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15) !important;
+      }
+      .iti__country-list {
+        scrollbar-width: thin;
+        max-height: 220px !important;
+        padding: 0 4px 4px 4px !important;
+      }
+      .iti__country {
+        padding: 7px 10px !important;
+        font-size: 0.775rem !important;
+        border-radius: 0.5rem !important;
+        transition: background 0.12s ease;
+        display: flex;
+        align-items: center;
+      }
+      .iti__country.iti__highlight {
+        background-color: #f1f5f9 !important;
+      }
+      .iti__country-name {
+        font-weight: 500;
+        color: #1e293b;
+        margin-right: 8px;
+      }
+      .iti__dial-code {
+        color: #64748b;
+        font-size: 0.75rem;
+      }
     </style>
 
     <!-- Centralized Auth Guard -->
@@ -501,7 +668,7 @@
     <div class="dashboard-container">
       <div id="sidebarContainer"></div>
       <main class="main-content">
-        <div class="flex justify-between items-start mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between items-start gap-4 mb-8">
           <div>
             <h1
               class="text-2xl font-bold text-slate-900 flex items-center gap-2"
@@ -517,24 +684,36 @@
               batch.
             </p>
           </div>
-          <div class="flex gap-3">
+          <div class="flex items-center gap-3 flex-wrap">
+            <!-- View Mode Switcher -->
+            <div class="inline-flex p-1 bg-slate-200/80 rounded-2xl border border-slate-200 gap-1 shadow-inner">
+              <button
+                id="btnViewClasses"
+                type="button"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-white text-slate-900 shadow-sm"
+              >
+                <i data-lucide="table" class="w-3.5 h-3.5 text-slate-500"></i>
+                Daftar Kelas
+              </button>
+              <button
+                id="btnOpenRemedial"
+                type="button"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900"
+              >
+                <i data-lucide="kanban" class="w-3.5 h-3.5 text-sky-600"></i>
+                Kelas Remedial
+              </button>
+            </div>
             <a
               href="./class-planning.html"
-              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100"
+              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100"
             >
               <i data-lucide="calendar-plus" class="w-4 h-4"></i>
               Perencanaan Kelas
             </a>
-            <button
-              id="btnOpenRemedial"
-              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white hover:bg-sky-700"
-            >
-              <i data-lucide="edit-3" class="w-4 h-4"></i>
-              Kelas Remedial
-            </button>
             <a
               href="./class-checkup.html"
-              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700"
+              class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700"
             >
               <i data-lucide="calendar-check-2" class="w-4 h-4"></i>
               Check-Up Class
@@ -542,7 +721,7 @@
             <div class="relative">
               <button
                 id="btnExportMenu"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
+                class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
               >
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Export
@@ -569,6 +748,8 @@
           </div>
         </div>
 
+        <!-- Classes View Wrapper (Preserving all existing features) -->
+        <div id="classesView">
         <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div
             class="bg-white rounded-3xl border border-slate-100 p-4 flex flex-col gap-2"
@@ -953,6 +1134,254 @@
             </div>
           </div>
         </section>
+        </div> <!-- end #classesView -->
+
+        <!-- ClickUp Style Remedial Board View -->
+        <div id="remedialView" class="hidden space-y-6">
+          <!-- Remedial Board Header Card -->
+          <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <span class="w-10 h-10 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+                    <i data-lucide="kanban" class="w-5 h-5"></i>
+                  </span>
+                  <div>
+                    <h2 class="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                      Remedial Report Board
+                      <span class="text-[10px] uppercase font-extrabold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">ClickUp Flow</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                      Pelacakan siklus remedial member: Request &rarr; Contact &rarr; Process &rarr; Schedule &rarr; Reschedule &rarr; Stall &rarr; Complete
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <button
+                  id="btnCopyRemedialLink"
+                  type="button"
+                  class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 transition shadow-sm"
+                  title="Salin Link Form Pengajuan Remedial Publik"
+                >
+                  <i data-lucide="copy" class="w-3.5 h-3.5 text-slate-500"></i>
+                  Salin Link Form
+                </button>
+                <a
+                  href="../remedial.html"
+                  target="_blank"
+                  class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-sky-600 border border-sky-200 hover:bg-sky-50 transition shadow-sm"
+                >
+                  <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                  Buka Form Publik
+                </a>
+                <button
+                  id="btnOpenAddRemedial"
+                  type="button"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white hover:bg-sky-700 transition shadow-md shadow-sky-600/20"
+                >
+                  <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                  + Ajukan Remedial
+                </button>
+              </div>
+            </div>
+
+            <!-- Status counter summary badges matching ClickUp columns -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 pt-4 mt-5 border-t border-slate-100 text-xs">
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-rose-50/70 border border-rose-100">
+                <span class="font-bold text-rose-700 text-[11px] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-rose-500"></span> REQUEST
+                </span>
+                <span id="badgeCountRequest" class="font-extrabold text-rose-800 bg-white px-2 py-0.5 rounded-md text-xs shadow-xs">0</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-purple-50/70 border border-purple-100">
+                <span class="font-bold text-purple-700 text-[11px] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-purple-500"></span> CONTACT
+                </span>
+                <span id="badgeCountContact" class="font-extrabold text-purple-800 bg-white px-2 py-0.5 rounded-md text-xs shadow-xs">0</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-orange-50/70 border border-orange-100">
+                <span class="font-bold text-orange-700 text-[11px] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-orange-500"></span> PROCESS
+                </span>
+                <span id="badgeCountProcess" class="font-extrabold text-orange-800 bg-white px-2 py-0.5 rounded-md text-xs shadow-xs">0</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-sky-50/70 border border-sky-100">
+                <span class="font-bold text-sky-700 text-[11px] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-sky-500"></span> SCHEDULE
+                </span>
+                <span id="badgeCountSchedule" class="font-extrabold text-sky-800 bg-white px-2 py-0.5 rounded-md text-xs shadow-xs">0</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-fuchsia-50/70 border border-fuchsia-100">
+                <span class="font-bold text-fuchsia-700 text-[11px] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-fuchsia-500"></span> RESCHEDULE
+                </span>
+                <span id="badgeCountReschedule" class="font-extrabold text-fuchsia-800 bg-white px-2 py-0.5 rounded-md text-xs shadow-xs">0</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-100/80 border border-slate-200">
+                <span class="font-bold text-slate-700 text-[11px] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-slate-500"></span> STALL
+                </span>
+                <span id="badgeCountStall" class="font-extrabold text-slate-800 bg-white px-2 py-0.5 rounded-md text-xs shadow-xs">0</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                <span class="font-bold text-emerald-700 text-[11px] flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span> COMPLETE
+                </span>
+                <span id="badgeCountComplete" class="font-extrabold text-emerald-800 bg-white px-2 py-0.5 rounded-md text-xs shadow-xs">0</span>
+              </div>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 mt-4 border-t border-slate-100">
+              <div class="relative flex-1 max-w-md">
+                <input
+                  id="searchRemedial"
+                  type="text"
+                  placeholder="Cari nama member, grup WA, no telp..."
+                  class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-slate-50"
+                />
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+              </div>
+              <div class="flex items-center gap-2">
+                <select
+                  id="filterRemedialMentor"
+                  class="text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="">Semua Mentor</option>
+                </select>
+                <select
+                  id="filterRemedialMeeting"
+                  class="text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="">Semua Pertemuan</option>
+                  <option value="1">Pertemuan 1</option>
+                  <option value="2">Pertemuan 2</option>
+                  <option value="3">Pertemuan 3</option>
+                  <option value="4">Pertemuan 4</option>
+                  <option value="5">Pertemuan 5</option>
+                  <option value="6">Pertemuan 6</option>
+                  <option value="7">Pertemuan 7</option>
+                  <option value="8">Pertemuan 8</option>
+                  <option value="9">Pertemuan 9</option>
+                  <option value="10">Pertemuan 10</option>
+                  <option value="11">Pertemuan 11</option>
+                  <option value="12">Pertemuan 12</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- ClickUp Style Kanban Board with 7 Columns -->
+          <div class="remedial-board-scroll">
+            <!-- REQUEST Column -->
+            <div class="remedial-col" data-status="REQUEST">
+              <div class="p-3 border-b border-slate-200/80 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                  <span class="font-extrabold text-xs text-rose-700 tracking-wider">REQUEST</span>
+                  <span class="col-count text-[11px] font-bold text-slate-400">0</span>
+                </div>
+                <button type="button" class="btn-quick-add text-slate-400 hover:text-slate-700 text-xs font-bold p-1 rounded-md hover:bg-slate-200/50" data-status="REQUEST" title="Tambah ke Request">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <div class="cards-list p-2 space-y-2 flex-1 min-h-[420px]" data-status="REQUEST"></div>
+            </div>
+
+            <!-- CONTACT Column -->
+            <div class="remedial-col" data-status="CONTACT">
+              <div class="p-3 border-b border-slate-200/80 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                  <span class="font-extrabold text-xs text-purple-700 tracking-wider">CONTACT</span>
+                  <span class="col-count text-[11px] font-bold text-slate-400">0</span>
+                </div>
+                <button type="button" class="btn-quick-add text-slate-400 hover:text-slate-700 text-xs font-bold p-1 rounded-md hover:bg-slate-200/50" data-status="CONTACT" title="Tambah ke Contact">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <div class="cards-list p-2 space-y-2 flex-1 min-h-[420px]" data-status="CONTACT"></div>
+            </div>
+
+            <!-- PROCESS Column -->
+            <div class="remedial-col" data-status="PROCESS">
+              <div class="p-3 border-b border-slate-200/80 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
+                  <span class="font-extrabold text-xs text-orange-700 tracking-wider">PROCESS</span>
+                  <span class="col-count text-[11px] font-bold text-slate-400">0</span>
+                </div>
+                <button type="button" class="btn-quick-add text-slate-400 hover:text-slate-700 text-xs font-bold p-1 rounded-md hover:bg-slate-200/50" data-status="PROCESS" title="Tambah ke Process">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <div class="cards-list p-2 space-y-2 flex-1 min-h-[420px]" data-status="PROCESS"></div>
+            </div>
+
+            <!-- SCHEDULE Column -->
+            <div class="remedial-col" data-status="SCHEDULE">
+              <div class="p-3 border-b border-slate-200/80 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+                  <span class="font-extrabold text-xs text-sky-700 tracking-wider">SCHEDULE</span>
+                  <span class="col-count text-[11px] font-bold text-slate-400">0</span>
+                </div>
+                <button type="button" class="btn-quick-add text-slate-400 hover:text-slate-700 text-xs font-bold p-1 rounded-md hover:bg-slate-200/50" data-status="SCHEDULE" title="Tambah ke Schedule">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <div class="cards-list p-2 space-y-2 flex-1 min-h-[420px]" data-status="SCHEDULE"></div>
+            </div>
+
+            <!-- RESCHEDULE Column -->
+            <div class="remedial-col" data-status="RESCHEDULE">
+              <div class="p-3 border-b border-slate-200/80 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-fuchsia-500"></span>
+                  <span class="font-extrabold text-xs text-fuchsia-700 tracking-wider">RESCHEDULE</span>
+                  <span class="col-count text-[11px] font-bold text-slate-400">0</span>
+                </div>
+                <button type="button" class="btn-quick-add text-slate-400 hover:text-slate-700 text-xs font-bold p-1 rounded-md hover:bg-slate-200/50" data-status="RESCHEDULE" title="Tambah ke Reschedule">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <div class="cards-list p-2 space-y-2 flex-1 min-h-[420px]" data-status="RESCHEDULE"></div>
+            </div>
+
+            <!-- STALL Column -->
+            <div class="remedial-col" data-status="STALL">
+              <div class="p-3 border-b border-slate-200/80 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+                  <span class="font-extrabold text-xs text-slate-700 tracking-wider">STALL</span>
+                  <span class="col-count text-[11px] font-bold text-slate-400">0</span>
+                </div>
+                <button type="button" class="btn-quick-add text-slate-400 hover:text-slate-700 text-xs font-bold p-1 rounded-md hover:bg-slate-200/50" data-status="STALL" title="Tambah ke Stall">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <div class="cards-list p-2 space-y-2 flex-1 min-h-[420px]" data-status="STALL"></div>
+            </div>
+
+            <!-- COMPLETE Column -->
+            <div class="remedial-col" data-status="COMPLETE">
+              <div class="p-3 border-b border-slate-200/80 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  <span class="font-extrabold text-xs text-emerald-700 tracking-wider">COMPLETE</span>
+                  <span class="col-count text-[11px] font-bold text-slate-400">0</span>
+                </div>
+                <button type="button" class="btn-quick-add text-slate-400 hover:text-slate-700 text-xs font-bold p-1 rounded-md hover:bg-slate-200/50" data-status="COMPLETE" title="Tambah ke Complete">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+              <div class="cards-list p-2 space-y-2 flex-1 min-h-[420px]" data-status="COMPLETE"></div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
 
@@ -1640,212 +2069,343 @@
       </div>
     </div>
 
+    <!-- Dedicated Remedial Submission Form Modal -->
     <div id="remedialModal" class="modal-backdrop-custom">
       <div
-        class="modal-card bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-4xl mx-auto"
+        class="modal-card bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-2xl mx-auto"
       >
         <div
           class="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap"
         >
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2.5">
             <div
-              class="w-8 h-8 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center"
+              class="w-9 h-9 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold"
             >
-              <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+              <i data-lucide="edit-3" class="w-4 h-4"></i>
             </div>
             <div>
-              <div class="text-sm font-semibold text-slate-900">
-                Tambah Kelas Remedial
+              <div class="text-sm font-bold text-slate-900">
+                Form Pengajuan Kelas Remedial
               </div>
               <div class="text-[11px] text-slate-500">
-                Isi detail remedial dan simpan ke kelas yang dipilih.
+                Isi data pengajuan remedial member untuk dijadwalkan ulang.
               </div>
             </div>
           </div>
           <button
             id="btnCloseRemedial"
-            class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50"
+            type="button"
+            class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition"
           >
             <i data-lucide="x" class="w-4 h-4"></i>
           </button>
         </div>
-        <div class="px-6 py-4 modal-body-scroll text-xs">
-          <div class="grid grid-cols-1 gap-4">
-            <div class="space-y-4">
+        <div class="px-6 py-5 modal-body-scroll text-xs">
+          <form id="internalRemedialForm" class="space-y-4">
+            <!-- Nama & No. Telp -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <div
-                  class="text-[10px] font-bold text-slate-400 uppercase mb-1"
-                >
-                  Nama Kelas
-                </div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                  Nama Member <span class="text-rose-500">*</span>
+                </label>
                 <input
-                  id="remedialClassName"
+                  id="remedialFormName"
                   type="text"
-                  class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
-                  placeholder="Contoh: Speaking Remedial Batch 3"
+                  class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  placeholder="Contoh: Gabriel Bayunanda"
+                  required
                 />
-                <p
-                  id="remedialClassNameError"
-                  class="field-error-text hidden"
-                ></p>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="search-dropdown">
-                  <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                    >Pilih Kelas</label
-                  >
-                  <input
-                    id="remedialClassSearch"
-                    type="text"
-                    autocomplete="off"
-                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
-                    placeholder="Cari kelas..."
-                  />
-                  <div
-                    id="remedialClassList"
-                    class="search-dropdown-list hidden"
-                  ></div>
-                  <p
-                    id="remedialClassError"
-                    class="field-error-text hidden"
-                  ></p>
-                </div>
-                <div class="search-dropdown">
-                  <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                    >Pilih Mentor</label
-                  >
-                  <input
-                    id="remedialMentorSearch"
-                    type="text"
-                    autocomplete="off"
-                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
-                    placeholder="Cari mentor..."
-                  />
-                  <div
-                    id="remedialMentorList"
-                    class="search-dropdown-list hidden"
-                  ></div>
-                  <p
-                    id="remedialMentorError"
-                    class="field-error-text hidden"
-                  ></p>
-                </div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                    >Product Name</label
-                  >
-                  <input
-                    id="remedialProductName"
-                    type="text"
-                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-100 text-slate-500"
-                    readonly
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                    >Product ID</label
-                  >
-                  <input
-                    id="remedialProductId"
-                    type="text"
-                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-100 text-slate-500"
-                    readonly
-                  />
-                </div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                    >Start Date</label
-                  >
-                  <input
-                    id="remedialStartDate"
-                    type="date"
-                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                    >Total Meeting</label
-                  >
-                  <input
-                    id="remedialMeetingTotal"
-                    type="number"
-                    min="0"
-                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
-                    placeholder="Contoh: 4"
-                  />
-                  <p
-                    id="remedialMeetingTotalError"
-                    class="field-error-text hidden"
-                  ></p>
-                </div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                    >Type</label
-                  >
-                  <select
-                    id="remedialType"
-                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
-                  >
-                    <option value="Online">Online</option>
-                    <option value="Offline">Offline</option>
-                    <option value="Hybrid">Hybrid</option>
-                  </select>
-                </div>
-                <div>
-                  <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                    >Location</label
-                  >
-                  <input
-                    id="remedialLocation"
-                    type="text"
-                    class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
-                    placeholder="Online / Jakarta / Hybrid"
-                  />
-                </div>
+                <p id="errRemedialName" class="field-error-text hidden"></p>
               </div>
               <div>
-                <label
-                  class="block text-[10px] font-bold text-slate-400 uppercase mb-1"
-                  >Alasan Remedial</label
-                >
-                <textarea
-                  id="remedialReason"
-                  class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50"
-                  rows="3"
-                  placeholder="Contoh: Peserta perlu mengulang materi final assessment"
-                ></textarea>
-                <p id="remedialReasonError" class="field-error-text hidden"></p>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1" for="remedialFormPhone">
+                  Whatsapp <span class="text-rose-500">*</span>
+                </label>
+                <input
+                  id="remedialFormPhone"
+                  type="tel"
+                  class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  placeholder="Contoh: 0812-3456-7890"
+                  required
+                />
+                <p class="text-[10px] text-slate-400 mt-1">
+                  Contoh: <span class="font-medium text-slate-500">0812-3456-7890</span> atau <span class="font-medium text-slate-500">81234567890</span>
+                </p>
+                <p id="errRemedialPhone" class="field-error-text hidden"></p>
               </div>
             </div>
-            <div
-              class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div
-                id="remedialStatusText"
-                class="text-[10px] text-slate-500"
-              ></div>
-              <button
-                id="btnSaveRemedial"
-                class="inline-flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white hover:bg-sky-700"
-              >
-                Simpan
-              </button>
+
+            <!-- Kelas & Mentor -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="search-dropdown">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                  Kelas (Opsional)
+                </label>
+                <input
+                  id="remedialFormClass"
+                  type="text"
+                  autocomplete="off"
+                  class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  placeholder="Cari atau ketik nama kelas (opsional)..."
+                />
+                <div id="remedialFormClassList" class="search-dropdown-list hidden"></div>
+                <p id="errRemedialClass" class="field-error-text hidden"></p>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                  Pilih Mentor <span class="text-rose-500">*</span>
+                </label>
+                <select
+                  id="remedialFormMentor"
+                  class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  required
+                >
+                  <option value="">Pilih Mentor...</option>
+                </select>
+                <p id="errRemedialMentor" class="field-error-text hidden"></p>
+              </div>
             </div>
-          </div>
+
+            <!-- Status Alur Pengajuan -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                Status Alur Pengajuan <span class="text-rose-500">*</span>
+              </label>
+              <select
+                id="remedialFormStatus"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-semibold text-slate-700"
+                required
+              >
+                <option value="REQUEST">REQUEST (Baru)</option>
+                <option value="CONTACT">CONTACT (Sudah di-chat)</option>
+                <option value="PROCESS">PROCESS (Mencari jadwal)</option>
+                <option value="SCHEDULE">SCHEDULE (Terjadwal)</option>
+                <option value="RESCHEDULE">RESCHEDULE (Jadwal ulang)</option>
+                <option value="STALL">STALL (Pending / Belum respon)</option>
+                <option value="COMPLETE">COMPLETE (Selesai)</option>
+              </select>
+            </div>
+
+            <!-- Pertemuan yang tidak bisa dihadiri (Admin Dropdown Checkbox Multi-select) -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase" for="adminMeetingDropdownToggle">
+                  Pertemuan Yang Tidak Bisa Dihadiri <span class="text-rose-500">*</span>
+                </label>
+                <span class="text-[10px] text-sky-700 font-semibold bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
+                  Bisa pilih lebih dari 1
+                </span>
+              </div>
+
+              <!-- Dropdown Trigger & Popover Panel -->
+              <div class="relative" id="adminMeetingDropdownWrapper">
+                <button
+                  type="button"
+                  id="adminMeetingDropdownToggle"
+                  class="w-full text-left rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition flex items-center justify-between cursor-pointer"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <div class="flex items-center gap-2 min-w-0 pr-2">
+                    <span class="w-6 h-6 rounded-lg bg-sky-100/80 text-sky-700 flex items-center justify-center flex-shrink-0">
+                      <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                    </span>
+                    <span id="adminMeetingDropdownLabel" class="text-xs text-slate-400 font-medium truncate">
+                      Pilih pertemuan yang tidak bisa dihadiri...
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span id="adminMeetingDropdownBadge" class="hidden text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-200">
+                      0 dipilih
+                    </span>
+                    <i data-lucide="chevron-down" id="adminMeetingDropdownChevron" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
+                  </div>
+                </button>
+
+                <!-- Popover Panel -->
+                <div
+                  id="adminMeetingDropdownPanel"
+                  class="hidden absolute z-50 left-0 right-0 mt-1.5 bg-white rounded-2xl border border-slate-200 shadow-2xl p-3 text-xs"
+                >
+                  <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                    <div>
+                      <span class="text-xs font-bold text-slate-800 block">Pilih Pertemuan</span>
+                      <span class="text-[10px] text-slate-400">Centang pertemuan yang tidak dihadiri</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        id="btnAdminSelectAllMeetings"
+                        class="text-[11px] text-sky-600 hover:text-sky-800 font-semibold px-2 py-0.5 rounded hover:bg-sky-50 transition cursor-pointer"
+                      >
+                        Pilih Semua
+                      </button>
+                      <span class="text-slate-300">&bull;</span>
+                      <button
+                        type="button"
+                        id="btnAdminClearDropdownMeetings"
+                        class="text-[11px] text-rose-600 hover:text-rose-800 font-semibold px-2 py-0.5 rounded hover:bg-rose-50 transition cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Grid of 12 Checkboxes -->
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-52 overflow-y-auto pr-1" id="adminMeetingCheckboxList">
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="1">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="1" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 1</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="2">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="2" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 2</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="3">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="3" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 3</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="4">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="4" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 4</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="5">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="5" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 5</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="6">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="6" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 6</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="7">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="7" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 7</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="8">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="8" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 8</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="9">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="9" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 9</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="10">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="10" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 10</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="11">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="11" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 11</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="12">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="12" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 12</span>
+                    </label>
+                  </div>
+
+                  <!-- Footer -->
+                  <div class="flex items-center justify-between pt-2 mt-2 border-t border-slate-100 bg-slate-50/70 -mx-3 -mb-3 px-3 py-2 rounded-b-2xl">
+                    <span id="adminMeetingDropdownFooterCount" class="text-[10px] text-slate-500 font-medium">
+                      Belum ada pertemuan dipilih
+                    </span>
+                    <button
+                      type="button"
+                      id="btnAdminCloseMeetingDropdown"
+                      class="px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-[11px] transition cursor-pointer"
+                    >
+                      Selesai
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selected Meeting Tags Strip -->
+              <div id="adminSelectedMeetingsTagsContainer" class="mt-2 hidden">
+                <div class="flex items-center justify-between text-xs text-sky-900 mb-1">
+                  <span class="font-bold text-[10px] text-slate-500 uppercase">Pertemuan Dipilih:</span>
+                  <button type="button" id="btnAdminClearAllTags" class="text-[10px] text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer">
+                    Hapus Semua
+                  </button>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5" id="adminSelectedMeetingsPillsList"></div>
+              </div>
+
+              <p id="errRemedialMeeting" class="field-error-text hidden"></p>
+            </div>
+
+            <!-- Alasan Remedial -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                Alasan Remedial <span class="text-rose-500">*</span>
+              </label>
+              <textarea
+                id="remedialFormReason"
+                rows="3"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+                placeholder="Contoh: Sakit saat jadwal pertemuan 4, meminta izin mengulang materi."
+                required
+              ></textarea>
+              <p id="errRemedialReason" class="field-error-text hidden"></p>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+              <div id="remedialFormStatusMsg" class="text-[11px] text-slate-500"></div>
+              <div class="flex gap-2">
+                <button
+                  type="button"
+                  id="btnCancelRemedialModal"
+                  class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  id="btnSaveRemedial"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white hover:bg-sky-700 transition shadow-md shadow-sky-600/20"
+                >
+                  <i data-lucide="check" class="w-4 h-4"></i>
+                  Simpan Pengajuan
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -1863,6 +2423,7 @@
         getDocs,
         addDoc,
         updateDoc,
+        deleteDoc,
         doc,
         arrayUnion,
         serverTimestamp,
@@ -2534,10 +3095,121 @@
         if (modal) modal.classList.remove("open");
       }
 
+      let remedialReports = [];
       let remedialClassesData = [];
       let mentorsData = [];
-      let selectedRemedialClass = null;
-      let selectedRemedialMentor = null;
+      let activeMainView = "classes"; // "classes" | "remedial"
+
+      const sampleRemedialReports = [
+        {
+          id: "rem-1",
+          name: "Gabriel Bayunanda Pinaringan",
+          group_whatsapp: "Speaking Remedial Batch 3",
+          class_name: "Speaking Remedial Batch 3",
+          phone: "081234567890",
+          mentor_name: "Afra Habibi",
+          meeting_number: 4,
+          meeting_missed: "Pertemuan 4",
+          reason: "Tidak bisa hadir karena ada urusan keluarga mendadak",
+          status: "REQUEST",
+        },
+        {
+          id: "rem-2",
+          name: "First Class Februari Agustin",
+          group_whatsapp: "First Class Feb #2",
+          class_name: "First Class Feb #2",
+          phone: "082345678901",
+          mentor_name: "Dian Pertiwi",
+          meeting_number: 5,
+          meeting_missed: "Pertemuan 5",
+          reason: "Sakit dan perlu mengulang materi presentasi",
+          status: "REQUEST",
+        },
+        {
+          id: "rem-3",
+          name: "Rahmaningsih Mora Sabirin",
+          group_whatsapp: "Basic Plus Mei #1",
+          class_name: "Basic Plus Mei #1",
+          phone: "083456789012",
+          mentor_name: "Bella Ababil",
+          meeting_number: 4,
+          meeting_missed: "Pertemuan 4",
+          reason: "Izin dinas luar kota",
+          status: "REQUEST",
+        },
+        {
+          id: "rem-4",
+          name: "Wanda aprilia",
+          group_whatsapp: "Public Speaking Weekend",
+          class_name: "Public Speaking Weekend",
+          phone: "084567890123",
+          mentor_name: "Faris Izzatur",
+          meeting_number: 4,
+          meeting_missed: "Pertemuan 4",
+          reason: "Kendala teknis jaringan saat sesi online",
+          status: "CONTACT",
+        },
+        {
+          id: "rem-5",
+          name: "Nurallah",
+          group_whatsapp: "Basic Plus Feb #1",
+          class_name: "Basic Plus Feb #1",
+          phone: "085678901234",
+          mentor_name: "Jonathan Aditya",
+          meeting_number: 5,
+          meeting_missed: "Pertemuan 5",
+          reason: "Mengulang sesi speech contest",
+          status: "PROCESS",
+        },
+        {
+          id: "rem-6",
+          name: "Ira Fitriawati",
+          group_whatsapp: "Speaking Class Yogyakarta",
+          class_name: "Speaking Class Yogyakarta",
+          phone: "086789012345",
+          mentor_name: "Afra Habibi",
+          meeting_number: 4,
+          meeting_missed: "Pertemuan 4",
+          reason: "Telah konfirmasi jadwal, menunggu link zoom",
+          status: "SCHEDULE",
+        },
+        {
+          id: "rem-7",
+          name: "Mutia melianawati",
+          group_whatsapp: "Basic Class Solo #2",
+          class_name: "Basic Class Solo #2",
+          phone: "087890123456",
+          mentor_name: "Dian Pertiwi",
+          meeting_number: 5,
+          meeting_missed: "Pertemuan 5",
+          reason: "Jadwal tabrakan dengan ujian kampus",
+          status: "RESCHEDULE",
+        },
+        {
+          id: "rem-8",
+          name: "Indah Miranti",
+          group_whatsapp: "Online Class Batch 12",
+          class_name: "Online Class Batch 12",
+          phone: "088901234567",
+          mentor_name: "Nurallah",
+          meeting_number: 8,
+          meeting_missed: "Pertemuan 8",
+          reason: "Belum konfirmasi kehadiran lebih dari H+3",
+          status: "STALL",
+        },
+        {
+          id: "rem-9",
+          name: "Basic plus juli (Devi)",
+          group_whatsapp: "Basic Plus Juli",
+          class_name: "Basic Plus Juli",
+          phone: "089012345678",
+          mentor_name: "Jonathan Aditya",
+          meeting_number: 2,
+          meeting_missed: "Pertemuan 2",
+          reason: "Sudah menghadiri kelas pengganti dengan sukses",
+          status: "COMPLETE",
+        },
+      ];
 
       function getRemedialClassLabel(item) {
         if (!item || !item.data) return "Tidak diketahui";
@@ -2550,45 +3222,6 @@
         );
       }
 
-      function getRemedialProductName(item) {
-        if (!item || !item.data) return "";
-        return (
-          item.data.productName ||
-          item.data.product_name ||
-          item.data.product ||
-          item.data.programName ||
-          item.data.program_name ||
-          ""
-        );
-      }
-
-      function getRemedialProductId(item) {
-        if (!item || !item.data) return "";
-        return (
-          item.data.productId ||
-          item.data.product_id ||
-          item.data.productCode ||
-          item.data.product_code ||
-          ""
-        );
-      }
-
-      function fillRemedialParentFields(item) {
-        const productName = document.getElementById("remedialProductName");
-        const productId = document.getElementById("remedialProductId");
-        const typeEl = document.getElementById("remedialType");
-        const locationEl = document.getElementById("remedialLocation");
-        const nameEl = document.getElementById("remedialClassName");
-        const d = item && item.data ? item.data : {};
-        if (productName) productName.value = getRemedialProductName(item);
-        if (productId) productId.value = getRemedialProductId(item);
-        if (typeEl && d.type) typeEl.value = d.type;
-        if (locationEl && d.location) locationEl.value = d.location;
-        if (nameEl && !nameEl.value.trim()) {
-          nameEl.value = getRemedialClassLabel(item) + " - Remedial 1";
-        }
-      }
-
       function getMentorLabel(item) {
         if (!item || !item.data) return "Tidak diketahui";
         return (
@@ -2597,43 +3230,6 @@
           item.data.mentor_name ||
           "Mentor tanpa nama"
         );
-      }
-
-      function renderSearchDropdown(listElement, items, labelFn) {
-        listElement.innerHTML = "";
-        if (!items.length) {
-          const empty = document.createElement("div");
-          empty.className = "search-dropdown-empty";
-          empty.textContent = "Tidak ada data ditemukan.";
-          listElement.appendChild(empty);
-          return;
-        }
-        items.forEach((item) => {
-          const row = document.createElement("button");
-          row.type = "button";
-          row.className = "search-dropdown-item w-full text-left";
-          row.textContent = labelFn(item);
-          row.addEventListener("click", () => {
-            const input = listElement.previousElementSibling;
-            if (input && input instanceof HTMLInputElement) {
-              input.value = labelFn(item);
-            }
-            if (listElement.id === "remedialClassList") {
-              selectedRemedialClass = item;
-              fillRemedialParentFields(item);
-              document
-                .getElementById("remedialClassError")
-                .classList.add("hidden");
-            } else {
-              selectedRemedialMentor = item;
-              document
-                .getElementById("remedialMentorError")
-                .classList.add("hidden");
-            }
-            listElement.classList.add("hidden");
-          });
-          listElement.appendChild(row);
-        });
       }
 
       async function loadRemedialLookups() {
@@ -2645,7 +3241,7 @@
             data: docSnap.data() || {},
           }));
         } catch (e) {
-          console.error("Gagal memuat data class_planning:", e);
+          console.warn("Gagal memuat data class_planning:", e);
         }
         try {
           const mentorSnap = await getDocs(collection(db, "mentor"));
@@ -2654,288 +3250,745 @@
             data: docSnap.data() || {},
           }));
         } catch (e) {
-          console.error("Gagal memuat data mentor:", e);
+          console.warn("Gagal memuat data mentor:", e);
+        }
+        populateRemedialLookupsInUI();
+      }
+
+      function populateRemedialLookupsInUI() {
+        const filterMentorSelect = document.getElementById("filterRemedialMentor");
+        const formMentorSelect = document.getElementById("remedialFormMentor");
+
+        // Unique mentor names
+        const mentorNames = new Set();
+        mentorsData.forEach((m) => {
+          const name = getMentorLabel(m);
+          if (name && name !== "Mentor tanpa nama") mentorNames.add(name);
+        });
+
+        // Add defaults if mentorsData is empty
+        if (mentorNames.size === 0) {
+          ["Afra Habibi", "Dian Pertiwi", "Bella Ababil", "Faris Izzatur", "Jonathan Aditya", "Nurallah", "Wanda Aprilia"].forEach((n) => mentorNames.add(n));
+        }
+
+        const sortedMentors = Array.from(mentorNames).sort();
+
+        if (filterMentorSelect) {
+          filterMentorSelect.innerHTML = '<option value="">Semua Mentor</option>';
+          sortedMentors.forEach((m) => {
+            const opt = document.createElement("option");
+            opt.value = m;
+            opt.textContent = m;
+            filterMentorSelect.appendChild(opt);
+          });
+        }
+
+        if (formMentorSelect) {
+          formMentorSelect.innerHTML = '<option value="">Pilih Mentor...</option>';
+          sortedMentors.forEach((m) => {
+            const opt = document.createElement("option");
+            opt.value = m;
+            opt.textContent = m;
+            formMentorSelect.appendChild(opt);
+          });
         }
       }
 
-      function resetRemedialForm() {
-        selectedRemedialClass = null;
-        selectedRemedialMentor = null;
-        const classInput = document.getElementById("remedialClassSearch");
-        const mentorInput = document.getElementById("remedialMentorSearch");
-        const nameInput = document.getElementById("remedialClassName");
-        const productName = document.getElementById("remedialProductName");
-        const productId = document.getElementById("remedialProductId");
-        const startDate = document.getElementById("remedialStartDate");
-        const meetingTotal = document.getElementById("remedialMeetingTotal");
-        const typeEl = document.getElementById("remedialType");
-        const locationEl = document.getElementById("remedialLocation");
-        const reasonEl = document.getElementById("remedialReason");
-        const classList = document.getElementById("remedialClassList");
-        const mentorList = document.getElementById("remedialMentorList");
-        [
-          "remedialClassNameError",
-          "remedialClassError",
-          "remedialMentorError",
-          "remedialMeetingTotalError",
-          "remedialReasonError",
-        ].forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.classList.add("hidden");
-            el.textContent = "";
+      async function loadRemedialReports() {
+        if (!db || !collection || !getDocs) {
+          remedialReports = sampleRemedialReports.slice();
+          renderRemedialBoard();
+          return;
+        }
+
+        try {
+          const snap = await getDocs(collection(db, "remedial_reports"));
+          const loaded = [];
+          snap.forEach((docSnap) => {
+            const d = docSnap.data() || {};
+            loaded.push({
+              id: docSnap.id,
+              name: d.name || d.nama || "Tanpa Nama",
+              group_whatsapp: d.group_whatsapp || d.group_name || d.class_name || "",
+              class_name: d.class_name || d.group_whatsapp || "",
+              phone: d.phone || d.whatsapp || "-",
+              email: d.email || "-",
+              mentor_name: d.mentor_name || d.mentor || "-",
+              mentor_id: d.mentor_id || "",
+              meeting_number: typeof d.meeting_number === "number" ? d.meeting_number : (parseInt(d.meeting_number || "0", 10) || 1),
+              meeting_numbers: Array.isArray(d.meeting_numbers) ? d.meeting_numbers : [typeof d.meeting_number === "number" ? d.meeting_number : (parseInt(d.meeting_number || "0", 10) || 1)],
+              meeting_missed: d.meeting_missed || `Pertemuan ${d.meeting_number || 1}`,
+              reason: d.reason || d.alasan || "-",
+              status: (d.status || "REQUEST").toUpperCase(),
+              created_at: d.created_at || d.createdAt || null,
+            });
+          });
+
+          remedialReports = loaded.length > 0 ? loaded : sampleRemedialReports.slice();
+        } catch (err) {
+          console.warn("Gagal membaca remedial_reports dari Firestore, memakai data lokal:", err);
+          remedialReports = sampleRemedialReports.slice();
+        }
+
+        renderRemedialBoard();
+      }
+
+      function renderRemedialBoard() {
+        const searchVal = (document.getElementById("searchRemedial")?.value || "").toLowerCase().trim();
+        const filterMentor = document.getElementById("filterRemedialMentor")?.value || "";
+        const filterMeeting = document.getElementById("filterRemedialMeeting")?.value || "";
+
+        // Status counts
+        const counts = {
+          REQUEST: 0,
+          CONTACT: 0,
+          PROCESS: 0,
+          SCHEDULE: 0,
+          RESCHEDULE: 0,
+          STALL: 0,
+          COMPLETE: 0,
+        };
+
+        const filtered = remedialReports.filter((item) => {
+          const s = (item.status || "REQUEST").toUpperCase();
+          if (counts[s] !== undefined) {
+            counts[s]++;
+          }
+
+          if (searchVal) {
+            const target = `${item.name} ${item.group_whatsapp} ${item.phone} ${item.mentor_name} ${item.reason} ${item.meeting_missed}`.toLowerCase();
+            if (!target.includes(searchVal)) return false;
+          }
+
+          if (filterMentor && item.mentor_name !== filterMentor) {
+            return false;
+          }
+
+          if (filterMeeting) {
+            const mTarget = parseInt(filterMeeting, 10);
+            const matchesMeeting = Array.isArray(item.meeting_numbers)
+              ? item.meeting_numbers.includes(mTarget)
+              : (parseInt(item.meeting_number, 10) === mTarget || String(item.meeting_missed || "").includes(filterMeeting));
+            if (!matchesMeeting) return false;
+          }
+
+          return true;
+        });
+
+        // Update badges
+        document.getElementById("badgeCountRequest").textContent = counts.REQUEST;
+        document.getElementById("badgeCountContact").textContent = counts.CONTACT;
+        document.getElementById("badgeCountProcess").textContent = counts.PROCESS;
+        document.getElementById("badgeCountSchedule").textContent = counts.SCHEDULE;
+        document.getElementById("badgeCountReschedule").textContent = counts.RESCHEDULE;
+        document.getElementById("badgeCountStall").textContent = counts.STALL;
+        document.getElementById("badgeCountComplete").textContent = counts.COMPLETE;
+
+        const statuses = ["REQUEST", "CONTACT", "PROCESS", "SCHEDULE", "RESCHEDULE", "STALL", "COMPLETE"];
+
+        statuses.forEach((statusKey) => {
+          const colEl = document.querySelector(`.remedial-col[data-status="${statusKey}"]`);
+          const countEl = colEl ? colEl.querySelector(".col-count") : null;
+          const listEl = colEl ? colEl.querySelector(`.cards-list[data-status="${statusKey}"]`) : null;
+
+          const itemsInCol = filtered.filter((r) => (r.status || "REQUEST").toUpperCase() === statusKey);
+
+          if (countEl) countEl.textContent = itemsInCol.length;
+          if (!listEl) return;
+
+          listEl.innerHTML = "";
+
+          if (itemsInCol.length === 0) {
+            const emptyEl = document.createElement("div");
+            emptyEl.className = "text-center py-10 px-3 text-slate-400 text-[11px] border-2 border-dashed border-slate-200/80 rounded-2xl flex flex-col items-center justify-center gap-1.5";
+            emptyEl.innerHTML = `
+              <i data-lucide="inbox" class="w-5 h-5 text-slate-300"></i>
+              <span>Kosong</span>
+            `;
+            listEl.appendChild(emptyEl);
+            return;
+          }
+
+          itemsInCol.forEach((item) => {
+            const card = document.createElement("div");
+            card.className = "remedial-card";
+            card.draggable = true;
+            card.dataset.id = item.id;
+
+            // Formatted meeting numbers: e.g. P01, P02
+            let meetingTagStr = "";
+            let meetingNum = 1;
+            if (Array.isArray(item.meeting_numbers) && item.meeting_numbers.length > 0) {
+              meetingNum = item.meeting_numbers[0];
+              meetingTagStr = item.meeting_numbers.map((n) => `P${String(n).padStart(2, "0")}`).join(", ");
+            } else {
+              meetingNum = parseInt(item.meeting_number || "1", 10);
+              meetingTagStr = `P${String(meetingNum).padStart(2, "0")}`;
+            }
+
+            // Tag color styling based on first meeting number
+            let tagColorClass = "bg-teal-100 text-teal-800 border-teal-200";
+            if (meetingNum >= 4 && meetingNum <= 6) tagColorClass = "bg-sky-100 text-sky-800 border-sky-200";
+            if (meetingNum >= 7 && meetingNum <= 8) tagColorClass = "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200";
+            if (meetingNum > 8) tagColorClass = "bg-amber-100 text-amber-800 border-amber-200";
+
+            // Clean phone for WhatsApp link
+            let cleanPhone = String(item.phone || "").replace(/\D/g, "");
+            if (cleanPhone.startsWith("0")) cleanPhone = "62" + cleanPhone.slice(1);
+            if (!cleanPhone.startsWith("62") && cleanPhone.length > 5) cleanPhone = "62" + cleanPhone;
+
+            const hasClass = Boolean((item.group_whatsapp && item.group_whatsapp !== "-") || (item.class_name && item.class_name !== "-"));
+            const classText = hasClass ? ` di ${item.group_whatsapp || item.class_name}` : "";
+            const waMsg = encodeURIComponent(
+              `Halo kak ${item.name}, kami dari Admin Kelas Dialogika mengenai pengajuan remedial ${item.meeting_missed || "pertemuan kelas"}${classText}. Apakah saat ini kakak bisa konfirmasi jadwal kelas penggantinya? Terima kasih!`
+            );
+
+            // Mentor initials
+            const mentorInitials = (item.mentor_name || "M")
+              .split(" ")
+              .filter(Boolean)
+              .map((p) => p[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2);
+
+            card.innerHTML = `
+              <div class="flex items-start justify-between gap-2">
+                <div class="font-bold text-slate-900 text-xs leading-snug break-words">
+                  ${escapeHtml(item.name)}
+                </div>
+                <span class="tag-meeting ${tagColorClass} border flex-shrink-0" title="Pertemuan ke-${meetingNum}">
+                  ${meetingTagStr}
+                </span>
+              </div>
+
+              <div class="text-[10px] text-slate-400 flex items-center gap-1 mt-1">
+                <i data-lucide="layers" class="w-3 h-3 text-slate-300"></i>
+                <span>In Remedial Report</span>
+              </div>
+
+              ${
+                hasClass
+                  ? `<div class="mt-2 text-[11px] font-medium text-slate-700 bg-slate-50 px-2 py-1.5 rounded-lg border border-slate-100 truncate" title="${escapeHtml(item.group_whatsapp || item.class_name)}">
+                      <i data-lucide="book-open" class="w-3 h-3 inline text-slate-400 mr-1"></i>
+                      <span>${escapeHtml(item.group_whatsapp || item.class_name)}</span>
+                     </div>`
+                  : ""
+              }
+
+              <div class="mt-1.5 flex items-center justify-between text-[11px] text-slate-500">
+                <div class="flex items-center gap-1.5 truncate">
+                  <span class="w-4 h-4 rounded-full bg-slate-200 text-slate-700 font-extrabold text-[8px] flex items-center justify-center flex-shrink-0">
+                    ${mentorInitials}
+                  </span>
+                  <span class="truncate">${escapeHtml(item.mentor_name)}</span>
+                </div>
+                ${
+                  cleanPhone.length > 5
+                    ? `<a href="https://wa.me/${cleanPhone}?text=${waMsg}" target="_blank" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[10px] font-bold border border-emerald-200 transition" title="Kirim Pesan WhatsApp">
+                        <i data-lucide="message-circle" class="w-3 h-3 text-emerald-600"></i> WA
+                       </a>`
+                    : ""
+                }
+              </div>
+
+              ${
+                item.reason && item.reason !== "-"
+                  ? `<div class="mt-2 text-[10px] text-slate-500 italic bg-amber-50/50 border border-amber-100/60 p-1.5 rounded-lg line-clamp-2" title="${escapeHtml(item.reason)}">
+                      "${escapeHtml(item.reason)}"
+                     </div>`
+                  : ""
+              }
+
+              <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                <div class="flex-1">
+                  <select class="remedial-status-changer text-[10px] font-bold py-1 px-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white text-slate-700 w-full focus:outline-none focus:ring-1 focus:ring-sky-500">
+                    <option value="REQUEST" ${statusKey === "REQUEST" ? "selected" : ""}>🔴 REQUEST</option>
+                    <option value="CONTACT" ${statusKey === "CONTACT" ? "selected" : ""}>🟣 CONTACT</option>
+                    <option value="PROCESS" ${statusKey === "PROCESS" ? "selected" : ""}>🟠 PROCESS</option>
+                    <option value="SCHEDULE" ${statusKey === "SCHEDULE" ? "selected" : ""}>🔵 SCHEDULE</option>
+                    <option value="RESCHEDULE" ${statusKey === "RESCHEDULE" ? "selected" : ""}>🟪 RESCHEDULE</option>
+                    <option value="STALL" ${statusKey === "STALL" ? "selected" : ""}>⚫ STALL</option>
+                    <option value="COMPLETE" ${statusKey === "COMPLETE" ? "selected" : ""}>🟢 COMPLETE</option>
+                  </select>
+                </div>
+                <button type="button" class="btn-delete-card p-1 text-slate-300 hover:text-rose-500 rounded-md hover:bg-rose-50 transition" title="Hapus kartu ini">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            `;
+
+            // Change status select event
+            const statusSelect = card.querySelector(".remedial-status-changer");
+            if (statusSelect) {
+              statusSelect.addEventListener("change", (e) => {
+                updateRemedialStatus(item.id, e.target.value);
+              });
+            }
+
+            // Delete card button
+            const deleteBtn = card.querySelector(".btn-delete-card");
+            if (deleteBtn) {
+              deleteBtn.addEventListener("click", () => {
+                deleteRemedialReport(item.id, item.name);
+              });
+            }
+
+            // Drag events
+            card.addEventListener("dragstart", (e) => {
+              card.classList.add("dragging");
+              e.dataTransfer.setData("text/plain", item.id);
+            });
+            card.addEventListener("dragend", () => {
+              card.classList.remove("dragging");
+            });
+
+            listEl.appendChild(card);
+          });
+        });
+
+        // Setup drop zones on columns
+        document.querySelectorAll(".remedial-col").forEach((col) => {
+          const colStatus = col.getAttribute("data-status");
+
+          col.ondragover = (e) => {
+            e.preventDefault();
+            col.classList.add("drag-over");
+          };
+          col.ondragleave = () => {
+            col.classList.remove("drag-over");
+          };
+          col.ondrop = (e) => {
+            e.preventDefault();
+            col.classList.remove("drag-over");
+            const itemId = e.dataTransfer.getData("text/plain");
+            if (itemId && colStatus) {
+              updateRemedialStatus(itemId, colStatus);
+            }
+          };
+        });
+
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+
+      function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      async function updateRemedialStatus(itemId, newStatus) {
+        const item = remedialReports.find((r) => r.id === itemId);
+        if (!item) return;
+
+        const oldStatus = item.status;
+        item.status = newStatus;
+        renderRemedialBoard();
+
+        if (db && collection) {
+          try {
+            await updateDoc(doc(db, "remedial_reports", itemId), {
+              status: newStatus,
+              updated_at: serverTimestamp(),
+            });
+            showPlanningToast(`Status ${item.name} berhasil diubah ke ${newStatus}`, "success");
+          } catch (err) {
+            console.warn("Gagal update status di Firestore, status lokal tetap berlaku:", err);
+            showPlanningToast(`Status diubah ke ${newStatus} (lokal)`, "success");
+          }
+        } else {
+          showPlanningToast(`Status diubah ke ${newStatus}`, "success");
+        }
+      }
+
+      async function deleteRemedialReport(itemId, name) {
+        if (!confirm(`Hapus pengajuan remedial untuk ${name || "member ini"}?`)) {
+          return;
+        }
+
+        remedialReports = remedialReports.filter((r) => r.id !== itemId);
+        renderRemedialBoard();
+
+        if (db && collection) {
+          try {
+            await deleteDoc(doc(db, "remedial_reports", itemId));
+            showPlanningToast("Pengajuan remedial berhasil dihapus", "success");
+          } catch (err) {
+            console.warn("Gagal menghapus dari Firestore:", err);
+            showPlanningToast("Pengajuan dihapus dari board lokal", "success");
+          }
+        } else {
+          showPlanningToast("Pengajuan berhasil dihapus", "success");
+        }
+      }
+
+      // Multi-select Meeting Dropdown for Admin Internal Form
+      const adminSelectedMeetings = new Set();
+      let itiAdminPhone = null;
+
+      function toggleAdminMeetingDropdown(forceState) {
+        const panel = document.getElementById("adminMeetingDropdownPanel");
+        const toggle = document.getElementById("adminMeetingDropdownToggle");
+        const chevron = document.getElementById("adminMeetingDropdownChevron");
+        if (!panel) return;
+        const shouldOpen = typeof forceState === "boolean" ? forceState : panel.classList.contains("hidden");
+        if (shouldOpen) {
+          panel.classList.remove("hidden");
+          toggle?.setAttribute("aria-expanded", "true");
+          if (chevron) chevron.style.transform = "rotate(180deg)";
+        } else {
+          panel.classList.add("hidden");
+          toggle?.setAttribute("aria-expanded", "false");
+          if (chevron) chevron.style.transform = "rotate(0deg)";
+        }
+      }
+
+      function updateAdminMeetingDropdownUI() {
+        const label = document.getElementById("adminMeetingDropdownLabel");
+        const badge = document.getElementById("adminMeetingDropdownBadge");
+        const footerCount = document.getElementById("adminMeetingDropdownFooterCount");
+        const tagsContainer = document.getElementById("adminSelectedMeetingsTagsContainer");
+        const pillsList = document.getElementById("adminSelectedMeetingsPillsList");
+        const errEl = document.getElementById("errRemedialMeeting");
+
+        if (adminSelectedMeetings.size > 0 && errEl) {
+          errEl.classList.add("hidden");
+        }
+
+        const sorted = Array.from(adminSelectedMeetings).sort((a, b) => a - b);
+        const count = sorted.length;
+
+        if (count === 0) {
+          if (label) {
+            label.textContent = "Pilih pertemuan yang tidak bisa dihadiri...";
+            label.className = "text-xs text-slate-400 font-medium truncate";
+          }
+          if (badge) badge.classList.add("hidden");
+          if (footerCount) footerCount.textContent = "Belum ada pertemuan dipilih";
+          if (tagsContainer) tagsContainer.classList.add("hidden");
+          if (pillsList) pillsList.innerHTML = "";
+        } else {
+          const text = count === 1 
+            ? `Pertemuan ${sorted[0]}` 
+            : `${count} Pertemuan: Pertemuan ${sorted.join(", ")}`;
+          if (label) {
+            label.textContent = text;
+            label.className = "text-xs text-slate-800 font-semibold truncate";
+          }
+          if (badge) {
+            badge.textContent = `${count} dipilih`;
+            badge.classList.remove("hidden");
+          }
+          if (footerCount) {
+            footerCount.textContent = `${count} pertemuan dipilih`;
+          }
+
+          if (pillsList) {
+            pillsList.innerHTML = sorted.map((num) => `
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-sky-50 border border-sky-200 text-sky-900 text-[11px] font-semibold">
+                <span>P ${num}</span>
+                <button type="button" class="btn-admin-remove-tag text-sky-400 hover:text-rose-600 transition p-0.5 rounded cursor-pointer leading-none font-bold" data-meeting="${num}" title="Hapus pertemuan ${num}">
+                  &times;
+                </button>
+              </span>
+            `).join("");
+
+            pillsList.querySelectorAll(".btn-admin-remove-tag").forEach((btn) => {
+              btn.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                const num = parseInt(btn.dataset.meeting, 10);
+                adminSelectedMeetings.delete(num);
+                syncAdminCheckboxStates();
+                updateAdminMeetingDropdownUI();
+              });
+            });
+          }
+          if (tagsContainer) tagsContainer.classList.remove("hidden");
+        }
+      }
+
+      function syncAdminCheckboxStates() {
+        document.querySelectorAll("#adminMeetingCheckboxList .admin-meeting-check-label").forEach((label) => {
+          const num = parseInt(label.dataset.meeting, 10);
+          const input = label.querySelector(".admin-meeting-check-input");
+          const isChecked = adminSelectedMeetings.has(num);
+          if (input) input.checked = isChecked;
+          if (isChecked) {
+            label.classList.add("checked");
+          } else {
+            label.classList.remove("checked");
           }
         });
-        if (classInput) classInput.value = "";
-        if (mentorInput) mentorInput.value = "";
-        if (nameInput) nameInput.value = "";
-        if (productName) productName.value = "";
-        if (productId) productId.value = "";
-        if (startDate) startDate.value = "";
-        if (meetingTotal) meetingTotal.value = "";
-        if (typeEl) typeEl.value = "Online";
-        if (locationEl) locationEl.value = "";
-        if (reasonEl) reasonEl.value = "";
-        if (classList) classList.classList.add("hidden");
-        if (mentorList) mentorList.classList.add("hidden");
       }
 
-      async function openRemedialModal() {
+      function clearAdminMeetingSelection() {
+        adminSelectedMeetings.clear();
+        syncAdminCheckboxStates();
+        updateAdminMeetingDropdownUI();
+      }
+
+      function openNewRemedialModal(defaultStatus = "REQUEST") {
         const modal = document.getElementById("remedialModal");
         if (!modal) return;
-        resetRemedialForm();
-        if (!remedialClassesData.length || !mentorsData.length) {
-          await loadRemedialLookups();
-        }
+
+        // Reset form
+        const form = document.getElementById("internalRemedialForm");
+        if (form) form.reset();
+
+        const statusSelect = document.getElementById("remedialFormStatus");
+        if (statusSelect) statusSelect.value = defaultStatus;
+
+        // Reset meeting dropdown
+        clearAdminMeetingSelection();
+        toggleAdminMeetingDropdown(false);
+        if (itiAdminPhone) itiAdminPhone.setCountry("id");
+
+        // Populate mentors dropdown
+        populateRemedialLookupsInUI();
+
+        // Clear any error messages
+        [
+          "errRemedialName",
+          "errRemedialPhone",
+          "errRemedialClass",
+          "errRemedialMentor",
+          "errRemedialMeeting",
+          "errRemedialReason",
+        ].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add("hidden");
+        });
+
         modal.classList.add("open");
+        if (window.lucide) window.lucide.createIcons();
       }
 
       function closeRemedialModal() {
         const modal = document.getElementById("remedialModal");
         if (modal) modal.classList.remove("open");
+        toggleAdminMeetingDropdown(false);
       }
 
-      function validateRemedialForm() {
-        let valid = true;
-        const nameInput = document.getElementById("remedialClassName");
-        const meetingTotalInput = document.getElementById("remedialMeetingTotal");
-        const reasonInput = document.getElementById("remedialReason");
-        const classError = document.getElementById("remedialClassError");
-        const mentorError = document.getElementById("remedialMentorError");
-        const nameError = document.getElementById("remedialClassNameError");
-        const meetingTotalError = document.getElementById("remedialMeetingTotalError");
-        const reasonError = document.getElementById("remedialReasonError");
-        if (
-          !nameInput ||
-          !meetingTotalInput ||
-          !reasonInput ||
-          !classError ||
-          !mentorError ||
-          !nameError ||
-          !meetingTotalError ||
-          !reasonError
-        )
-          return false;
-        const remedialName = nameInput.value.trim();
-        const meetingTotal = parseInt(meetingTotalInput.value || "0", 10) || 0;
-        const remedialReason = reasonInput.value.trim();
-        if (!remedialName) {
-          nameError.textContent = "Nama kelas wajib diisi";
-          nameError.classList.remove("hidden");
-          valid = false;
-        } else {
-          nameError.classList.add("hidden");
-        }
-        if (!selectedRemedialClass) {
-          classError.textContent = "Silakan pilih kelas";
-          classError.classList.remove("hidden");
-          valid = false;
-        } else {
-          classError.classList.add("hidden");
-        }
-        if (!selectedRemedialMentor) {
-          mentorError.textContent = "Silakan pilih mentor";
-          mentorError.classList.remove("hidden");
-          valid = false;
-        } else {
-          mentorError.classList.add("hidden");
-        }
-        if (meetingTotal < 0) {
-          meetingTotalError.textContent = "Total meeting tidak boleh negatif";
-          meetingTotalError.classList.remove("hidden");
-          valid = false;
-        } else {
-          meetingTotalError.classList.add("hidden");
-        }
-        if (!remedialReason) {
-          reasonError.textContent = "Alasan remedial wajib diisi";
-          reasonError.classList.remove("hidden");
-          valid = false;
-        } else {
-          reasonError.classList.add("hidden");
-        }
-        return valid;
-      }
+      async function saveNewRemedialRequest(e) {
+        if (e) e.preventDefault();
 
-      async function saveRemedialClass() {
+        const nameInput = document.getElementById("remedialFormName");
+        const phoneInput = document.getElementById("remedialFormPhone");
+        const classInput = document.getElementById("remedialFormClass");
+        const mentorSelect = document.getElementById("remedialFormMentor");
+        const reasonInput = document.getElementById("remedialFormReason");
+        const statusSelect = document.getElementById("remedialFormStatus");
         const saveButton = document.getElementById("btnSaveRemedial");
-        if (!saveButton) return;
-        if (!validateRemedialForm()) return;
-        const nameInput = document.getElementById("remedialClassName");
-        if (!nameInput || !selectedRemedialClass || !selectedRemedialMentor)
-          return;
-        const remedialName = nameInput.value.trim();
-        const parentData = selectedRemedialClass.data || {};
-        const mentorName = getMentorLabel(selectedRemedialMentor);
-        const startDate = (document.getElementById("remedialStartDate")?.value || "").trim();
-        const type = (document.getElementById("remedialType")?.value || "Online").trim();
-        const location = (document.getElementById("remedialLocation")?.value || "").trim();
-        const meetingTotal = parseInt(document.getElementById("remedialMeetingTotal")?.value || "0", 10) || 0;
-        const remedialReason = (document.getElementById("remedialReason")?.value || "").trim();
-        const productName = (document.getElementById("remedialProductName")?.value || "").trim();
-        const productId = (document.getElementById("remedialProductId")?.value || "").trim();
-        const parentClassName = getRemedialClassLabel(selectedRemedialClass);
-        const parentLevel = parseInt(parentData.remedial_level || parentData.remedialLevel || "0", 10) || 0;
-        const remedialLevel = parentLevel + 1;
-        const rootClassDocId =
-          parentData.root_class_doc_id ||
-          parentData.rootClassDocId ||
-          selectedRemedialClass.id;
-        saveButton.disabled = true;
-        saveButton.textContent = "Menyimpan...";
+
+        const nameVal = (nameInput?.value || "").trim();
+        let phoneVal = (phoneInput?.value || "").trim();
+        if (itiAdminPhone) {
+          const fullNum = itiAdminPhone.getNumber();
+          if (fullNum) phoneVal = fullNum;
+        }
+        const classVal = (classInput?.value || "").trim();
+        const mentorVal = mentorSelect?.value || "";
+        const reasonVal = (reasonInput?.value || "").trim();
+        const statusVal = statusSelect?.value || "REQUEST";
+
+        let isValid = true;
+
+        if (!nameVal) {
+          const err = document.getElementById("errRemedialName");
+          if (err) { err.textContent = "Nama member wajib diisi"; err.classList.remove("hidden"); }
+          isValid = false;
+        }
+        if (!phoneVal) {
+          const err = document.getElementById("errRemedialPhone");
+          if (err) { err.textContent = "Nomor WhatsApp wajib diisi"; err.classList.remove("hidden"); }
+          isValid = false;
+        }
+        if (!mentorVal) {
+          const err = document.getElementById("errRemedialMentor");
+          if (err) { err.textContent = "Silakan pilih mentor"; err.classList.remove("hidden"); }
+          isValid = false;
+        }
+        if (adminSelectedMeetings.size === 0) {
+          const err = document.getElementById("errRemedialMeeting");
+          if (err) { err.textContent = "Silakan pilih minimal 1 pertemuan"; err.classList.remove("hidden"); }
+          isValid = false;
+        }
+        if (!reasonVal) {
+          const err = document.getElementById("errRemedialReason");
+          if (err) { err.textContent = "Alasan remedial wajib diisi"; err.classList.remove("hidden"); }
+          isValid = false;
+        }
+
+        if (!isValid) return;
+
+        if (saveButton) {
+          saveButton.disabled = true;
+          saveButton.textContent = "Menyimpan...";
+        }
+
+        const sortedAdminMeetings = Array.from(adminSelectedMeetings).sort((a, b) => a - b);
+        const meetingMissedStr = sortedAdminMeetings.length === 1 
+          ? `Pertemuan ${sortedAdminMeetings[0]}` 
+          : `Pertemuan ${sortedAdminMeetings.join(", ")}`;
+
+        const newEntry = {
+          name: nameVal,
+          nama: nameVal,
+          group_whatsapp: classVal,
+          class_name: classVal,
+          phone: phoneVal,
+          whatsapp: phoneVal,
+          email: "",
+          mentor_name: mentorVal,
+          mentor_id: "",
+          meeting_number: sortedAdminMeetings[0],
+          meeting_numbers: sortedAdminMeetings,
+          meeting_missed: meetingMissedStr,
+          reason: reasonVal,
+          status: statusVal,
+          source: "internal_form",
+        };
+
         try {
-          if (!selectedRemedialClass.id)
-            throw new Error("ID kelas tidak valid");
-          const mentorInitials = mentorName
-            .split(" ")
-            .filter(Boolean)
-            .map((part) => part.charAt(0))
-            .join("")
-            .toUpperCase()
-            .slice(0, 2);
-          const payload = {
-            name: remedialName,
-            class_name: remedialName,
-            variant: "remedial",
-            is_remedial: true,
-            parent_class_doc_id: selectedRemedialClass.id,
-            parent_class_name: parentClassName,
-            root_class_doc_id: rootClassDocId,
-            remedial_level: remedialLevel,
-            remedial_reason: remedialReason,
-            productName,
-            product_name: productName,
-            productId,
-            product_id: productId,
-            mentorId: selectedRemedialMentor.id,
-            mentor_id: selectedRemedialMentor.id,
-            mentorName,
-            mentor_name: mentorName,
-            mentor: mentorName,
-            mentors: [{ id: selectedRemedialMentor.id, name: mentorName, initials: mentorInitials }],
-            status: "Soon",
-            class_status: "Soon",
-            meeting_done: 0,
-            meeting_total: meetingTotal,
-            meetingDone: 0,
-            meetingTotal,
-            current_joined: 0,
-            type,
-            location,
-            date: startDate,
-            start_date: startDate,
-            startDate,
-            time: "",
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp(),
-          };
-          const docRef = await addDoc(collection(db, "class_planning"), payload);
+          if (db && collection) {
+            const docRef = await addDoc(collection(db, "remedial_reports"), {
+              ...newEntry,
+              created_at: serverTimestamp(),
+              updated_at: serverTimestamp(),
+            });
+            newEntry.id = docRef.id;
+          } else {
+            newEntry.id = "rem-local-" + Date.now();
+          }
 
-          const remedialEntry = {
-            remedialClassDocId: docRef.id,
-            remedialClassName: remedialName,
-            parentClassDocId: selectedRemedialClass.id,
-            parentClassName,
-            rootClassDocId,
-            remedialLevel,
-            createdAt: new Date().toISOString(),
-          };
-          await updateDoc(
-            doc(db, "class_planning", selectedRemedialClass.id),
-            {
-              remedials: arrayUnion(remedialEntry),
-              updatedAt: serverTimestamp(),
-            },
-          );
-
-          showPlanningToast("Kelas remedial berhasil dibuat.", "success");
+          remedialReports.unshift(newEntry);
+          renderRemedialBoard();
           closeRemedialModal();
-          await loadRemedialLookups();
-          await loadClassesFromFirestore();
-          updateAll();
-        } catch (e) {
-          console.error("Gagal menyimpan remedial:", e);
-          const msg =
-            e && e.message ? e.message : "Gagal menyimpan kelas remedial.";
-          showPlanningToast("Gagal menyimpan kelas remedial: " + msg, "error");
+          showPlanningToast("Pengajuan remedial berhasil disimpan ke board!", "success");
+        } catch (err) {
+          console.error("Gagal menyimpan ke Firestore:", err);
+          newEntry.id = "rem-local-" + Date.now();
+          remedialReports.unshift(newEntry);
+          renderRemedialBoard();
+          closeRemedialModal();
+          showPlanningToast("Disimpan ke board lokal (Firestore offline)", "success");
         } finally {
-          saveButton.disabled = false;
-          if (saveButton) saveButton.textContent = "Simpan";
+          if (saveButton) {
+            saveButton.disabled = false;
+            saveButton.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Simpan Pengajuan`;
+            if (window.lucide) window.lucide.createIcons();
+          }
         }
       }
 
-      function filterRemedialClassResults(value) {
-        const list = document.getElementById("remedialClassList");
+      function switchMainView(view) {
+        activeMainView = view;
+        const classesViewEl = document.getElementById("classesView");
+        const remedialViewEl = document.getElementById("remedialView");
+        const btnViewClasses = document.getElementById("btnViewClasses");
+        const btnOpenRemedial = document.getElementById("btnOpenRemedial");
+
+        if (view === "remedial") {
+          if (classesViewEl) classesViewEl.classList.add("hidden");
+          if (remedialViewEl) remedialViewEl.classList.remove("hidden");
+
+          if (btnOpenRemedial) {
+            btnOpenRemedial.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-sky-600 text-white shadow-md";
+          }
+          if (btnViewClasses) {
+            btnViewClasses.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900";
+          }
+
+          loadRemedialReports();
+          try {
+            history.replaceState(null, "", "?view=remedial");
+          } catch (e) {}
+        } else {
+          if (remedialViewEl) remedialViewEl.classList.add("hidden");
+          if (classesViewEl) classesViewEl.classList.remove("hidden");
+
+          if (btnViewClasses) {
+            btnViewClasses.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-white text-slate-900 shadow-sm";
+          }
+          if (btnOpenRemedial) {
+            btnOpenRemedial.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900";
+          }
+
+          try {
+            history.replaceState(null, "", window.location.pathname);
+          } catch (e) {}
+        }
+
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      }
+
+      function copyRemedialPublicLink() {
+        const publicUrl = window.location.origin + "/remedial.html";
+        navigator.clipboard.writeText(publicUrl).then(() => {
+          showPlanningToast("Link form publik remedial berhasil disalin ke clipboard!", "success");
+        }).catch(() => {
+          // Fallback
+          showPlanningToast("Link: " + publicUrl, "success");
+        });
+      }
+
+      function filterRemedialFormClassResults(query) {
+        const list = document.getElementById("remedialFormClassList");
         if (!list) return;
-        const filtered = remedialClassesData.filter((item) =>
-          getRemedialClassLabel(item)
-            .toLowerCase()
-            .includes(value.toLowerCase()),
-        );
-        renderSearchDropdown(list, filtered, getRemedialClassLabel);
-        list.classList.remove("hidden");
-        selectedRemedialClass = null;
-        fillRemedialParentFields(null);
-      }
 
-      function filterRemedialMentorResults(value) {
-        const list = document.getElementById("remedialMentorList");
-        if (!list) return;
-        const filtered = mentorsData.filter((item) =>
-          getMentorLabel(item).toLowerCase().includes(value.toLowerCase()),
-        );
-        renderSearchDropdown(list, filtered, getMentorLabel);
-        list.classList.remove("hidden");
-        selectedRemedialMentor = null;
-      }
+        const q = (query || "").toLowerCase().trim();
+        const matches = (classesState || []).filter((c) => {
+          const name = (c.name || c.class_name || "").toLowerCase();
+          return name.includes(q);
+        });
 
-      function showMessageStatus(message) {
-        const statusText = document.getElementById("remedialStatusText");
-        if (!statusText) return;
-        statusText.textContent = message;
-      }
-
-      function clearSearchDropdownsOnClickOutside(event) {
-        const classList = document.getElementById("remedialClassList");
-        const mentorList = document.getElementById("remedialMentorList");
-        const classInput = document.getElementById("remedialClassSearch");
-        const mentorInput = document.getElementById("remedialMentorSearch");
-        if (
-          classList &&
-          classInput &&
-          !classList.contains(event.target) &&
-          event.target !== classInput
-        ) {
-          classList.classList.add("hidden");
+        if (matches.length === 0) {
+          list.innerHTML = '<div class="search-dropdown-empty text-slate-400">Tidak ada kelas yang cocok</div>';
+          list.classList.remove("hidden");
+          return;
         }
-        if (
-          mentorList &&
-          mentorInput &&
-          !mentorList.contains(event.target) &&
-          event.target !== mentorInput
-        ) {
-          mentorList.classList.add("hidden");
-        }
+
+        list.innerHTML = "";
+        matches.slice(0, 8).forEach((c) => {
+          const item = document.createElement("div");
+          item.className = "search-dropdown-item flex items-center justify-between";
+          const cName = c.name || c.class_name || "Kelas";
+          item.innerHTML = `
+            <div>
+              <div class="font-bold text-slate-800">${escapeHtml(cName)}</div>
+              <div class="text-[10px] text-slate-400">${escapeHtml(c.type || "Batch")} &bull; ${escapeHtml(c.status || "")}</div>
+            </div>
+          `;
+          item.addEventListener("click", () => {
+            const classInput = document.getElementById("remedialFormClass");
+            if (classInput) classInput.value = cName;
+            list.classList.add("hidden");
+
+            // If class has a mentor, pre-select that mentor in form
+            if (c.mentors && c.mentors.length > 0) {
+              const mentorSelect = document.getElementById("remedialFormMentor");
+              if (mentorSelect) {
+                const firstMentor = (c.mentors[0].name || "").toLowerCase();
+                for (let i = 0; i < mentorSelect.options.length; i++) {
+                  if (mentorSelect.options[i].value.toLowerCase().includes(firstMentor)) {
+                    mentorSelect.selectedIndex = i;
+                    break;
+                  }
+                }
+              }
+            }
+          });
+          list.appendChild(item);
+        });
+        list.classList.remove("hidden");
       }
 
       function deriveStatusFromAvailability(d) {
@@ -4616,50 +5669,189 @@
             renderPlanningCalendar();
           });
         }
+        // View Switchers
+        const btnViewClasses = document.getElementById("btnViewClasses");
         const btnOpenRemedial = document.getElementById("btnOpenRemedial");
-        const remedialModal = document.getElementById("remedialModal");
-        const btnCloseRemedial = document.getElementById("btnCloseRemedial");
-        const remedialClassSearch = document.getElementById(
-          "remedialClassSearch",
-        );
-        const remedialMentorSearch = document.getElementById(
-          "remedialMentorSearch",
-        );
-        const btnSaveRemedial = document.getElementById("btnSaveRemedial");
-
+        if (btnViewClasses) {
+          btnViewClasses.addEventListener("click", () => switchMainView("classes"));
+        }
         if (btnOpenRemedial) {
-          btnOpenRemedial.addEventListener("click", () => openRemedialModal());
+          btnOpenRemedial.addEventListener("click", () => switchMainView("remedial"));
         }
+
+        // Remedial Board Actions
+        const btnCopyRemedialLink = document.getElementById("btnCopyRemedialLink");
+        if (btnCopyRemedialLink) {
+          btnCopyRemedialLink.addEventListener("click", () => copyRemedialPublicLink());
+        }
+
+        const btnOpenAddRemedial = document.getElementById("btnOpenAddRemedial");
+        if (btnOpenAddRemedial) {
+          btnOpenAddRemedial.addEventListener("click", () => openNewRemedialModal("REQUEST"));
+        }
+
+        // Quick add buttons on columns
+        document.querySelectorAll(".btn-quick-add").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const colStatus = btn.getAttribute("data-status") || "REQUEST";
+            openNewRemedialModal(colStatus);
+          });
+        });
+
+        // Search and Filters for Remedial Board
+        const searchRemedialInput = document.getElementById("searchRemedial");
+        if (searchRemedialInput) {
+          searchRemedialInput.addEventListener("input", () => renderRemedialBoard());
+        }
+
+        const filterRemedialMentor = document.getElementById("filterRemedialMentor");
+        if (filterRemedialMentor) {
+          filterRemedialMentor.addEventListener("change", () => renderRemedialBoard());
+        }
+
+        const filterRemedialMeeting = document.getElementById("filterRemedialMeeting");
+        if (filterRemedialMeeting) {
+          filterRemedialMeeting.addEventListener("change", () => renderRemedialBoard());
+        }
+
+        // Modal Form
+        const internalRemedialForm = document.getElementById("internalRemedialForm");
+        if (internalRemedialForm) {
+          internalRemedialForm.addEventListener("submit", (e) => saveNewRemedialRequest(e));
+        }
+
+        const btnCloseRemedial = document.getElementById("btnCloseRemedial");
         if (btnCloseRemedial) {
-          btnCloseRemedial.addEventListener("click", () =>
-            closeRemedialModal(),
-          );
+          btnCloseRemedial.addEventListener("click", () => closeRemedialModal());
         }
+
+        const btnCancelRemedialModal = document.getElementById("btnCancelRemedialModal");
+        if (btnCancelRemedialModal) {
+          btnCancelRemedialModal.addEventListener("click", () => closeRemedialModal());
+        }
+
+        const remedialModal = document.getElementById("remedialModal");
         if (remedialModal) {
           remedialModal.addEventListener("click", (e) => {
             if (e.target === remedialModal) closeRemedialModal();
           });
         }
-        if (remedialClassSearch) {
-          remedialClassSearch.addEventListener("input", () => {
-            filterRemedialClassResults(remedialClassSearch.value || "");
+
+        // Remedial Form Class Search Autocomplete
+        const remedialFormClassInput = document.getElementById("remedialFormClass");
+        const remedialFormClassList = document.getElementById("remedialFormClassList");
+        if (remedialFormClassInput) {
+          remedialFormClassInput.addEventListener("input", () => {
+            filterRemedialFormClassResults(remedialFormClassInput.value);
           });
-          remedialClassSearch.addEventListener("focus", () => {
-            filterRemedialClassResults(remedialClassSearch.value || "");
-          });
-        }
-        if (remedialMentorSearch) {
-          remedialMentorSearch.addEventListener("input", () => {
-            filterRemedialMentorResults(remedialMentorSearch.value || "");
-          });
-          remedialMentorSearch.addEventListener("focus", () => {
-            filterRemedialMentorResults(remedialMentorSearch.value || "");
+          remedialFormClassInput.addEventListener("focus", () => {
+            filterRemedialFormClassResults(remedialFormClassInput.value);
           });
         }
-        if (btnSaveRemedial) {
-          btnSaveRemedial.addEventListener("click", () => saveRemedialClass());
+        document.addEventListener("click", (e) => {
+          if (
+            remedialFormClassList &&
+            remedialFormClassInput &&
+            !remedialFormClassList.contains(e.target) &&
+            e.target !== remedialFormClassInput
+          ) {
+            remedialFormClassList.classList.add("hidden");
+          }
+        });
+
+        // Admin multi-select meeting dropdown listeners
+        const adminDropdownToggle = document.getElementById("adminMeetingDropdownToggle");
+        if (adminDropdownToggle) {
+          adminDropdownToggle.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleAdminMeetingDropdown();
+          });
         }
-        document.addEventListener("click", clearSearchDropdownsOnClickOutside);
+
+        const btnAdminCloseMeetingDropdown = document.getElementById("btnAdminCloseMeetingDropdown");
+        if (btnAdminCloseMeetingDropdown) {
+          btnAdminCloseMeetingDropdown.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleAdminMeetingDropdown(false);
+          });
+        }
+
+        // Close admin dropdown on outside click or escape
+        document.addEventListener("click", (e) => {
+          const wrapper = document.getElementById("adminMeetingDropdownWrapper");
+          if (wrapper && !wrapper.contains(e.target) && !e.target.closest("#adminSelectedMeetingsTagsContainer")) {
+            toggleAdminMeetingDropdown(false);
+          }
+        });
+
+        document.querySelectorAll("#adminMeetingCheckboxList .admin-meeting-check-label").forEach((label) => {
+          label.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const num = parseInt(label.dataset.meeting, 10);
+            if (adminSelectedMeetings.has(num)) {
+              adminSelectedMeetings.delete(num);
+            } else {
+              adminSelectedMeetings.add(num);
+            }
+            syncAdminCheckboxStates();
+            updateAdminMeetingDropdownUI();
+          });
+        });
+
+        const btnAdminSelectAllMeetings = document.getElementById("btnAdminSelectAllMeetings");
+        if (btnAdminSelectAllMeetings) {
+          btnAdminSelectAllMeetings.addEventListener("click", (e) => {
+            e.stopPropagation();
+            for (let i = 1; i <= 12; i++) {
+              adminSelectedMeetings.add(i);
+            }
+            syncAdminCheckboxStates();
+            updateAdminMeetingDropdownUI();
+          });
+        }
+
+        const btnAdminClearDropdownMeetings = document.getElementById("btnAdminClearDropdownMeetings");
+        if (btnAdminClearDropdownMeetings) {
+          btnAdminClearDropdownMeetings.addEventListener("click", (e) => {
+            e.stopPropagation();
+            clearAdminMeetingSelection();
+          });
+        }
+
+        const btnAdminClearAllTags = document.getElementById("btnAdminClearAllTags");
+        if (btnAdminClearAllTags) {
+          btnAdminClearAllTags.addEventListener("click", (e) => {
+            e.stopPropagation();
+            clearAdminMeetingSelection();
+          });
+        }
+
+        // Initialize international telephone input for Admin Remedial Form
+        const adminPhoneInput = document.getElementById("remedialFormPhone");
+        if (adminPhoneInput && window.intlTelInput) {
+          itiAdminPhone = window.intlTelInput(adminPhoneInput, {
+            initialCountry: "id",
+            countryOrder: ["id", "us", "my", "sg"],
+            autoPlaceholder: "polite",
+            customPlaceholder: function(selectedCountryPlaceholder, selectedCountryData) {
+              return "Contoh: " + (selectedCountryPlaceholder || "0812-3456-7890");
+            },
+            dropdownContainer: document.body,
+            i18n: {
+              searchPlaceholder: "Cari kode negara..."
+            },
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/js/utils.js"
+          });
+        }
+
+        // Load lookups and check URL parameter on load
+        loadRemedialLookups();
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("view") === "remedial") {
+          switchMainView("remedial");
+        }
 
         detailTabs.forEach((btn) => {
           btn.addEventListener("click", () => {
