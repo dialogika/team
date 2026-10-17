@@ -113,7 +113,7 @@
             REMEDIAL FORM
           </h1>
           <p class="text-xs sm:text-sm text-amber-200/90 font-medium">
-            Silahkan lengkapi datanya disini, terutama nama group whatsapp
+            Silahkan lengkapi data pengajuan remedial Anda pada form di bawah ini
           </p>
         </div>
 
@@ -154,10 +154,6 @@
             <span id="sumName" class="font-bold text-slate-800">-</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-slate-400 font-medium">Group WA:</span>
-            <span id="sumGroup" class="font-bold text-slate-800">-</span>
-          </div>
-          <div class="flex justify-between">
             <span class="text-slate-400 font-medium">Pertemuan:</span>
             <span id="sumMeeting" class="font-bold text-sky-600">-</span>
           </div>
@@ -181,7 +177,7 @@
       <form id="remedialForm" class="space-y-5">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
           <!-- Nama Anda -->
-          <div>
+          <div class="md:col-span-2">
             <label class="field-label" for="memberName">
               Nama Anda<span class="req">*</span>
             </label>
@@ -190,26 +186,10 @@
               id="memberName"
               name="memberName"
               class="form-input-control"
-              placeholder="Contoh: Basic Plus Mar #4 (nama harus persis sama)"
+              placeholder="Contoh: Gabriel Bayunanda"
               required
             />
             <p id="errMemberName" class="text-[11px] text-rose-500 mt-1 hidden"></p>
-          </div>
-
-          <!-- Nama Group Whatsapp Kelas -->
-          <div>
-            <label class="field-label" for="groupWhatsapp">
-              Nama Group Whatsapp Kelas<span class="req">*</span>
-            </label>
-            <input
-              type="text"
-              id="groupWhatsapp"
-              name="groupWhatsapp"
-              class="form-input-control"
-              placeholder="Enter text"
-              required
-            />
-            <p id="errGroupWhatsapp" class="text-[11px] text-rose-500 mt-1 hidden"></p>
           </div>
 
           <!-- Email -->
@@ -420,7 +400,6 @@
         e.preventDefault();
 
         const nameVal = document.getElementById("memberName")?.value.trim() || "";
-        const groupVal = document.getElementById("groupWhatsapp")?.value.trim() || "";
         const emailVal = document.getElementById("memberEmail")?.value.trim() || "";
         const phoneVal = document.getElementById("memberPhone")?.value.trim() || "";
         const mentorSelect = document.getElementById("mentorSelect");
@@ -429,7 +408,7 @@
         const meetingVal = document.getElementById("meetingSelect")?.value || "";
         const reasonVal = document.getElementById("reasonInput")?.value.trim() || "";
 
-        if (!nameVal || !groupVal || !emailVal || !phoneVal || !mentorVal || !meetingVal || !reasonVal) {
+        if (!nameVal || !emailVal || !phoneVal || !mentorVal || !meetingVal || !reasonVal) {
           alert("Silakan lengkapi semua field yang berbintang merah (*).");
           return;
         }
@@ -447,9 +426,9 @@
           const payload = {
             name: nameVal,
             nama: nameVal,
-            group_whatsapp: groupVal,
-            group_name: groupVal,
-            class_name: groupVal,
+            group_whatsapp: "",
+            group_name: "",
+            class_name: "",
             email: emailVal,
             phone: phoneVal,
             whatsapp: phoneVal,
@@ -468,7 +447,6 @@
 
           // Update Summary in success card
           document.getElementById("sumName").textContent = nameVal;
-          document.getElementById("sumGroup").textContent = groupVal;
           document.getElementById("sumMeeting").textContent = `Pertemuan ${meetingVal}`;
           document.getElementById("sumMentor").textContent = mentorVal;
 

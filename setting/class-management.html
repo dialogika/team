@@ -2024,15 +2024,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="search-dropdown">
                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                  Kelas / Group WhatsApp <span class="text-rose-500">*</span>
+                  Kelas (Opsional)
                 </label>
                 <input
                   id="remedialFormClass"
                   type="text"
                   autocomplete="off"
                   class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  placeholder="Cari atau ketik nama kelas..."
-                  required
+                  placeholder="Cari atau ketik nama kelas (opsional)..."
                 />
                 <div id="remedialFormClassList" class="search-dropdown-list hidden"></div>
                 <p id="errRemedialClass" class="field-error-text hidden"></p>
@@ -3040,8 +3039,8 @@
             loaded.push({
               id: docSnap.id,
               name: d.name || d.nama || "Tanpa Nama",
-              group_whatsapp: d.group_whatsapp || d.group_name || d.class_name || "-",
-              class_name: d.class_name || d.group_whatsapp || "-",
+              group_whatsapp: d.group_whatsapp || d.group_name || d.class_name || "",
+              class_name: d.class_name || d.group_whatsapp || "",
               phone: d.phone || d.whatsapp || "-",
               email: d.email || "-",
               mentor_name: d.mentor_name || d.mentor || "-",
@@ -3156,8 +3155,10 @@
             if (cleanPhone.startsWith("0")) cleanPhone = "62" + cleanPhone.slice(1);
             if (!cleanPhone.startsWith("62") && cleanPhone.length > 5) cleanPhone = "62" + cleanPhone;
 
+            const hasClass = Boolean((item.group_whatsapp && item.group_whatsapp !== "-") || (item.class_name && item.class_name !== "-"));
+            const classText = hasClass ? ` di ${item.group_whatsapp || item.class_name}` : "";
             const waMsg = encodeURIComponent(
-              `Halo kak ${item.name}, kami dari Admin Kelas Dialogika mengenai pengajuan remedial ${item.meeting_missed || "pertemuan kelas"} di ${item.group_whatsapp || item.class_name}. Apakah saat ini kakak bisa konfirmasi jadwal kelas penggantinya? Terima kasih!`
+              `Halo kak ${item.name}, kami dari Admin Kelas Dialogika mengenai pengajuan remedial ${item.meeting_missed || "pertemuan kelas"}${classText}. Apakah saat ini kakak bisa konfirmasi jadwal kelas penggantinya? Terima kasih!`
             );
 
             // Mentor initials
@@ -3184,10 +3185,14 @@
                 <span>In Remedial Report</span>
               </div>
 
-              <div class="mt-2 text-[11px] font-medium text-slate-700 bg-slate-50 px-2 py-1.5 rounded-lg border border-slate-100 truncate" title="${escapeHtml(item.group_whatsapp || item.class_name)}">
-                <i data-lucide="book-open" class="w-3 h-3 inline text-slate-400 mr-1"></i>
-                <span>${escapeHtml(item.group_whatsapp || item.class_name)}</span>
-              </div>
+              ${
+                hasClass
+                  ? `<div class="mt-2 text-[11px] font-medium text-slate-700 bg-slate-50 px-2 py-1.5 rounded-lg border border-slate-100 truncate" title="${escapeHtml(item.group_whatsapp || item.class_name)}">
+                      <i data-lucide="book-open" class="w-3 h-3 inline text-slate-400 mr-1"></i>
+                      <span>${escapeHtml(item.group_whatsapp || item.class_name)}</span>
+                     </div>`
+                  : ""
+              }
 
               <div class="mt-1.5 flex items-center justify-between text-[11px] text-slate-500">
                 <div class="flex items-center gap-1.5 truncate">
@@ -3407,11 +3412,6 @@
         if (!phoneVal) {
           const err = document.getElementById("errRemedialPhone");
           if (err) { err.textContent = "Nomor WhatsApp wajib diisi"; err.classList.remove("hidden"); }
-          isValid = false;
-        }
-        if (!classVal) {
-          const err = document.getElementById("errRemedialClass");
-          if (err) { err.textContent = "Kelas / grup WhatsApp wajib diisi"; err.classList.remove("hidden"); }
           isValid = false;
         }
         if (!mentorVal) {
