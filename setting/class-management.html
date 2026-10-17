@@ -546,26 +546,37 @@
         border-radius: 6px;
         letter-spacing: 0.05em;
       }
-      .admin-meeting-pill {
-        transition: all 0.16s ease;
-        user-select: none;
+      .admin-meeting-check-label {
+        transition: all 0.15s ease;
       }
-      .admin-meeting-pill:active {
-        transform: scale(0.96);
+      .admin-meeting-check-label.checked {
+        background-color: #f0f9ff !important;
+        border-color: #38bdf8 !important;
+        color: #0369a1 !important;
       }
-      .admin-meeting-pill.active {
+      .admin-meeting-check-label.checked .checkbox-box {
         background-color: #0284c7 !important;
         border-color: #0284c7 !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 10px rgba(2, 132, 199, 0.22) !important;
       }
-      .admin-meeting-pill.active .pill-check-indicator {
-        background-color: #ffffff !important;
-        border-color: #ffffff !important;
-        color: #0284c7 !important;
-      }
-      .admin-meeting-pill.active .pill-check-indicator svg {
+      .admin-meeting-check-label.checked .check-icon {
         display: block !important;
+      }
+      .admin-meeting-check-label.checked .meeting-label-text {
+        color: #0369a1 !important;
+        font-weight: 600 !important;
+      }
+      #adminMeetingDropdownPanel {
+        animation: adminDropdownPanelOpen 0.15s ease-out;
+      }
+      @keyframes adminDropdownPanelOpen {
+        from {
+          opacity: 0;
+          transform: translateY(-6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     </style>
 
@@ -2093,98 +2104,186 @@
               </select>
             </div>
 
-            <!-- Pertemuan yang tidak bisa dihadiri (Multi-select Pills) -->
+            <!-- Pertemuan yang tidak bisa dihadiri (Admin Dropdown Checkbox Multi-select) -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase" for="adminMeetingDropdownToggle">
                   Pertemuan Yang Tidak Bisa Dihadiri <span class="text-rose-500">*</span>
                 </label>
                 <span class="text-[10px] text-sky-700 font-semibold bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
                   Bisa pilih lebih dari 1
                 </span>
               </div>
-              <div class="grid grid-cols-4 sm:grid-cols-6 gap-2" id="adminMeetingPillsContainer">
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="1">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 1</span>
+
+              <!-- Dropdown Trigger & Popover Panel -->
+              <div class="relative" id="adminMeetingDropdownWrapper">
+                <button
+                  type="button"
+                  id="adminMeetingDropdownToggle"
+                  class="w-full text-left rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition flex items-center justify-between cursor-pointer"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <div class="flex items-center gap-2 min-w-0 pr-2">
+                    <span class="w-6 h-6 rounded-lg bg-sky-100/80 text-sky-700 flex items-center justify-center flex-shrink-0">
+                      <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                    </span>
+                    <span id="adminMeetingDropdownLabel" class="text-xs text-slate-400 font-medium truncate">
+                      Pilih pertemuan yang tidak bisa dihadiri...
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span id="adminMeetingDropdownBadge" class="hidden text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-200">
+                      0 dipilih
+                    </span>
+                    <i data-lucide="chevron-down" id="adminMeetingDropdownChevron" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
+                  </div>
                 </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="2">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 2</span>
-                </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="3">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 3</span>
-                </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="4">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 4</span>
-                </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="5">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 5</span>
-                </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="6">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 6</span>
-                </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="7">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 7</span>
-                </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="8">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 8</span>
-                </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="9">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 9</span>
-                </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="10">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 10</span>
-                </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="11">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 11</span>
-                </button>
-                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="12">
-                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
-                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  </span>
-                  <span>P 12</span>
-                </button>
-              </div>
-              <div id="adminMeetingSelectionSummary" class="mt-2 hidden">
-                <div class="p-2 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 flex items-center justify-between">
-                  <span id="adminMeetingSummaryText" class="font-bold"></span>
-                  <button type="button" id="btnAdminClearMeetings" class="text-[10px] text-sky-700 hover:text-sky-900 font-bold underline">
-                    Reset
-                  </button>
+
+                <!-- Popover Panel -->
+                <div
+                  id="adminMeetingDropdownPanel"
+                  class="hidden absolute z-50 left-0 right-0 mt-1.5 bg-white rounded-2xl border border-slate-200 shadow-2xl p-3 text-xs"
+                >
+                  <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                    <div>
+                      <span class="text-xs font-bold text-slate-800 block">Pilih Pertemuan</span>
+                      <span class="text-[10px] text-slate-400">Centang pertemuan yang tidak dihadiri</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        id="btnAdminSelectAllMeetings"
+                        class="text-[11px] text-sky-600 hover:text-sky-800 font-semibold px-2 py-0.5 rounded hover:bg-sky-50 transition cursor-pointer"
+                      >
+                        Pilih Semua
+                      </button>
+                      <span class="text-slate-300">&bull;</span>
+                      <button
+                        type="button"
+                        id="btnAdminClearDropdownMeetings"
+                        class="text-[11px] text-rose-600 hover:text-rose-800 font-semibold px-2 py-0.5 rounded hover:bg-rose-50 transition cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Grid of 12 Checkboxes -->
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-52 overflow-y-auto pr-1" id="adminMeetingCheckboxList">
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="1">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="1" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 1</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="2">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="2" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 2</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="3">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="3" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 3</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="4">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="4" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 4</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="5">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="5" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 5</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="6">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="6" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 6</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="7">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="7" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 7</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="8">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="8" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 8</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="9">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="9" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 9</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="10">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="10" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 10</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="11">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="11" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 11</span>
+                    </label>
+                    <label class="admin-meeting-check-label flex items-center gap-2 p-1.5 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/50 cursor-pointer select-none transition-all" data-meeting="12">
+                      <input type="checkbox" class="sr-only admin-meeting-check-input" value="12" />
+                      <span class="checkbox-box w-4 h-4 rounded border border-slate-300 flex items-center justify-center text-white bg-white transition-all flex-shrink-0">
+                        <svg class="check-icon w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </span>
+                      <span class="meeting-label-text text-[11px] font-medium text-slate-700 truncate">Pertemuan 12</span>
+                    </label>
+                  </div>
+
+                  <!-- Footer -->
+                  <div class="flex items-center justify-between pt-2 mt-2 border-t border-slate-100 bg-slate-50/70 -mx-3 -mb-3 px-3 py-2 rounded-b-2xl">
+                    <span id="adminMeetingDropdownFooterCount" class="text-[10px] text-slate-500 font-medium">
+                      Belum ada pertemuan dipilih
+                    </span>
+                    <button
+                      type="button"
+                      id="btnAdminCloseMeetingDropdown"
+                      class="px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-[11px] transition cursor-pointer"
+                    >
+                      Selesai
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              <!-- Selected Meeting Tags Strip -->
+              <div id="adminSelectedMeetingsTagsContainer" class="mt-2 hidden">
+                <div class="flex items-center justify-between text-xs text-sky-900 mb-1">
+                  <span class="font-bold text-[10px] text-slate-500 uppercase">Pertemuan Dipilih:</span>
+                  <button type="button" id="btnAdminClearAllTags" class="text-[10px] text-rose-600 hover:text-rose-800 font-bold underline cursor-pointer">
+                    Hapus Semua
+                  </button>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5" id="adminSelectedMeetingsPillsList"></div>
+              </div>
+
               <p id="errRemedialMeeting" class="field-error-text hidden"></p>
             </div>
 
@@ -3446,26 +3545,108 @@
         }
       }
 
-      // Multi-select Meeting Pills for Admin Internal Form
+      // Multi-select Meeting Dropdown for Admin Internal Form
       const adminSelectedMeetings = new Set();
 
-      function updateAdminMeetingPillsUI() {
-        const summaryBox = document.getElementById("adminMeetingSelectionSummary");
-        const summaryText = document.getElementById("adminMeetingSummaryText");
+      function toggleAdminMeetingDropdown(forceState) {
+        const panel = document.getElementById("adminMeetingDropdownPanel");
+        const toggle = document.getElementById("adminMeetingDropdownToggle");
+        const chevron = document.getElementById("adminMeetingDropdownChevron");
+        if (!panel) return;
+        const shouldOpen = typeof forceState === "boolean" ? forceState : panel.classList.contains("hidden");
+        if (shouldOpen) {
+          panel.classList.remove("hidden");
+          toggle?.setAttribute("aria-expanded", "true");
+          if (chevron) chevron.style.transform = "rotate(180deg)";
+        } else {
+          panel.classList.add("hidden");
+          toggle?.setAttribute("aria-expanded", "false");
+          if (chevron) chevron.style.transform = "rotate(0deg)";
+        }
+      }
+
+      function updateAdminMeetingDropdownUI() {
+        const label = document.getElementById("adminMeetingDropdownLabel");
+        const badge = document.getElementById("adminMeetingDropdownBadge");
+        const footerCount = document.getElementById("adminMeetingDropdownFooterCount");
+        const tagsContainer = document.getElementById("adminSelectedMeetingsTagsContainer");
+        const pillsList = document.getElementById("adminSelectedMeetingsPillsList");
         const errEl = document.getElementById("errRemedialMeeting");
 
-        if (adminSelectedMeetings.size > 0) {
-          if (errEl) errEl.classList.add("hidden");
-          const sorted = Array.from(adminSelectedMeetings).sort((a, b) => a - b);
-          const count = sorted.length;
-          const text = count === 1 
-            ? `1 Pertemuan dipilih: Pertemuan ${sorted[0]}` 
-            : `${count} Pertemuan dipilih: Pertemuan ${sorted.join(", ")}`;
-          if (summaryText) summaryText.textContent = text;
-          if (summaryBox) summaryBox.classList.remove("hidden");
-        } else {
-          if (summaryBox) summaryBox.classList.add("hidden");
+        if (adminSelectedMeetings.size > 0 && errEl) {
+          errEl.classList.add("hidden");
         }
+
+        const sorted = Array.from(adminSelectedMeetings).sort((a, b) => a - b);
+        const count = sorted.length;
+
+        if (count === 0) {
+          if (label) {
+            label.textContent = "Pilih pertemuan yang tidak bisa dihadiri...";
+            label.className = "text-xs text-slate-400 font-medium truncate";
+          }
+          if (badge) badge.classList.add("hidden");
+          if (footerCount) footerCount.textContent = "Belum ada pertemuan dipilih";
+          if (tagsContainer) tagsContainer.classList.add("hidden");
+          if (pillsList) pillsList.innerHTML = "";
+        } else {
+          const text = count === 1 
+            ? `Pertemuan ${sorted[0]}` 
+            : `${count} Pertemuan: Pertemuan ${sorted.join(", ")}`;
+          if (label) {
+            label.textContent = text;
+            label.className = "text-xs text-slate-800 font-semibold truncate";
+          }
+          if (badge) {
+            badge.textContent = `${count} dipilih`;
+            badge.classList.remove("hidden");
+          }
+          if (footerCount) {
+            footerCount.textContent = `${count} pertemuan dipilih`;
+          }
+
+          if (pillsList) {
+            pillsList.innerHTML = sorted.map((num) => `
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-sky-50 border border-sky-200 text-sky-900 text-[11px] font-semibold">
+                <span>P ${num}</span>
+                <button type="button" class="btn-admin-remove-tag text-sky-400 hover:text-rose-600 transition p-0.5 rounded cursor-pointer leading-none font-bold" data-meeting="${num}" title="Hapus pertemuan ${num}">
+                  &times;
+                </button>
+              </span>
+            `).join("");
+
+            pillsList.querySelectorAll(".btn-admin-remove-tag").forEach((btn) => {
+              btn.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                const num = parseInt(btn.dataset.meeting, 10);
+                adminSelectedMeetings.delete(num);
+                syncAdminCheckboxStates();
+                updateAdminMeetingDropdownUI();
+              });
+            });
+          }
+          if (tagsContainer) tagsContainer.classList.remove("hidden");
+        }
+      }
+
+      function syncAdminCheckboxStates() {
+        document.querySelectorAll("#adminMeetingCheckboxList .admin-meeting-check-label").forEach((label) => {
+          const num = parseInt(label.dataset.meeting, 10);
+          const input = label.querySelector(".admin-meeting-check-input");
+          const isChecked = adminSelectedMeetings.has(num);
+          if (input) input.checked = isChecked;
+          if (isChecked) {
+            label.classList.add("checked");
+          } else {
+            label.classList.remove("checked");
+          }
+        });
+      }
+
+      function clearAdminMeetingSelection() {
+        adminSelectedMeetings.clear();
+        syncAdminCheckboxStates();
+        updateAdminMeetingDropdownUI();
       }
 
       function openNewRemedialModal(defaultStatus = "REQUEST") {
@@ -3479,10 +3660,9 @@
         const statusSelect = document.getElementById("remedialFormStatus");
         if (statusSelect) statusSelect.value = defaultStatus;
 
-        // Reset meeting pills
-        adminSelectedMeetings.clear();
-        document.querySelectorAll("#adminMeetingPillsContainer .admin-meeting-pill").forEach((b) => b.classList.remove("active"));
-        updateAdminMeetingPillsUI();
+        // Reset meeting dropdown
+        clearAdminMeetingSelection();
+        toggleAdminMeetingDropdown(false);
 
         // Populate mentors dropdown
         populateRemedialLookupsInUI();
@@ -3507,6 +3687,7 @@
       function closeRemedialModal() {
         const modal = document.getElementById("remedialModal");
         if (modal) modal.classList.remove("open");
+        toggleAdminMeetingDropdown(false);
       }
 
       async function saveNewRemedialRequest(e) {
@@ -5490,27 +5671,71 @@
           }
         });
 
-        // Admin multi-select meeting pills listeners
-        document.querySelectorAll("#adminMeetingPillsContainer .admin-meeting-pill").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const num = parseInt(btn.dataset.meeting, 10);
+        // Admin multi-select meeting dropdown listeners
+        const adminDropdownToggle = document.getElementById("adminMeetingDropdownToggle");
+        if (adminDropdownToggle) {
+          adminDropdownToggle.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleAdminMeetingDropdown();
+          });
+        }
+
+        const btnAdminCloseMeetingDropdown = document.getElementById("btnAdminCloseMeetingDropdown");
+        if (btnAdminCloseMeetingDropdown) {
+          btnAdminCloseMeetingDropdown.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleAdminMeetingDropdown(false);
+          });
+        }
+
+        // Close admin dropdown on outside click or escape
+        document.addEventListener("click", (e) => {
+          const wrapper = document.getElementById("adminMeetingDropdownWrapper");
+          if (wrapper && !wrapper.contains(e.target) && !e.target.closest("#adminSelectedMeetingsTagsContainer")) {
+            toggleAdminMeetingDropdown(false);
+          }
+        });
+
+        document.querySelectorAll("#adminMeetingCheckboxList .admin-meeting-check-label").forEach((label) => {
+          label.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const num = parseInt(label.dataset.meeting, 10);
             if (adminSelectedMeetings.has(num)) {
               adminSelectedMeetings.delete(num);
-              btn.classList.remove("active");
             } else {
               adminSelectedMeetings.add(num);
-              btn.classList.add("active");
             }
-            updateAdminMeetingPillsUI();
+            syncAdminCheckboxStates();
+            updateAdminMeetingDropdownUI();
           });
         });
 
-        const btnAdminClearMeetings = document.getElementById("btnAdminClearMeetings");
-        if (btnAdminClearMeetings) {
-          btnAdminClearMeetings.addEventListener("click", () => {
-            adminSelectedMeetings.clear();
-            document.querySelectorAll("#adminMeetingPillsContainer .admin-meeting-pill").forEach((b) => b.classList.remove("active"));
-            updateAdminMeetingPillsUI();
+        const btnAdminSelectAllMeetings = document.getElementById("btnAdminSelectAllMeetings");
+        if (btnAdminSelectAllMeetings) {
+          btnAdminSelectAllMeetings.addEventListener("click", (e) => {
+            e.stopPropagation();
+            for (let i = 1; i <= 12; i++) {
+              adminSelectedMeetings.add(i);
+            }
+            syncAdminCheckboxStates();
+            updateAdminMeetingDropdownUI();
+          });
+        }
+
+        const btnAdminClearDropdownMeetings = document.getElementById("btnAdminClearDropdownMeetings");
+        if (btnAdminClearDropdownMeetings) {
+          btnAdminClearDropdownMeetings.addEventListener("click", (e) => {
+            e.stopPropagation();
+            clearAdminMeetingSelection();
+          });
+        }
+
+        const btnAdminClearAllTags = document.getElementById("btnAdminClearAllTags");
+        if (btnAdminClearAllTags) {
+          btnAdminClearAllTags.addEventListener("click", (e) => {
+            e.stopPropagation();
+            clearAdminMeetingSelection();
           });
         }
 
