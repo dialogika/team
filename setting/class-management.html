@@ -21,6 +21,9 @@
     <link href="../assets/css/style.css" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- International Telephone Input (intl-tel-input) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/css/intlTelInput.css" />
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/js/intlTelInput.min.js"></script>
     <style>
       body {
         font-family: "Poppins", sans-serif;
@@ -577,6 +580,68 @@
           opacity: 1;
           transform: translateY(0);
         }
+      }
+
+      /* intl-tel-input custom styling */
+      .iti {
+        width: 100%;
+        display: block;
+      }
+      .iti__country-container {
+        border-top-left-radius: 0.75rem;
+        border-bottom-left-radius: 0.75rem;
+      }
+      .iti__selected-country {
+        padding: 0 8px 0 12px;
+        border-top-left-radius: 0.75rem;
+        border-bottom-left-radius: 0.75rem;
+      }
+      .iti__dropdown-content {
+        border-radius: 1rem !important;
+        box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid #e2e8f0 !important;
+        background: #ffffff !important;
+        z-index: 99999 !important;
+        overflow: hidden;
+        margin-top: 4px !important;
+      }
+      .iti__search-input {
+        border-radius: 0.75rem !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.775rem !important;
+        width: calc(100% - 16px) !important;
+        margin: 8px !important;
+        outline: none !important;
+      }
+      .iti__search-input:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15) !important;
+      }
+      .iti__country-list {
+        scrollbar-width: thin;
+        max-height: 220px !important;
+        padding: 0 4px 4px 4px !important;
+      }
+      .iti__country {
+        padding: 7px 10px !important;
+        font-size: 0.775rem !important;
+        border-radius: 0.5rem !important;
+        transition: background 0.12s ease;
+        display: flex;
+        align-items: center;
+      }
+      .iti__country.iti__highlight {
+        background-color: #f1f5f9 !important;
+      }
+      .iti__country-name {
+        font-weight: 500;
+        color: #1e293b;
+        margin-right: 8px;
+      }
+      .iti__dial-code {
+        color: #64748b;
+        font-size: 0.75rem;
       }
     </style>
 
@@ -2038,14 +2103,14 @@
                 <p id="errRemedialName" class="field-error-text hidden"></p>
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                  No. Telepon / WhatsApp <span class="text-rose-500">*</span>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1" for="remedialFormPhone">
+                  Whatsapp <span class="text-rose-500">*</span>
                 </label>
                 <input
                   id="remedialFormPhone"
                   type="tel"
                   class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  placeholder="Contoh: 08123456789"
+                  placeholder="Enter phone"
                   required
                 />
                 <p id="errRemedialPhone" class="field-error-text hidden"></p>
@@ -3547,6 +3612,7 @@
 
       // Multi-select Meeting Dropdown for Admin Internal Form
       const adminSelectedMeetings = new Set();
+      let itiAdminPhone = null;
 
       function toggleAdminMeetingDropdown(forceState) {
         const panel = document.getElementById("adminMeetingDropdownPanel");
@@ -3663,6 +3729,7 @@
         // Reset meeting dropdown
         clearAdminMeetingSelection();
         toggleAdminMeetingDropdown(false);
+        if (itiAdminPhone) itiAdminPhone.setCountry("id");
 
         // Populate mentors dropdown
         populateRemedialLookupsInUI();
@@ -3702,7 +3769,11 @@
         const saveButton = document.getElementById("btnSaveRemedial");
 
         const nameVal = (nameInput?.value || "").trim();
-        const phoneVal = (phoneInput?.value || "").trim();
+        let phoneVal = (phoneInput?.value || "").trim();
+        if (itiAdminPhone) {
+          const fullNum = itiAdminPhone.getNumber();
+          if (fullNum) phoneVal = fullNum;
+        }
         const classVal = (classInput?.value || "").trim();
         const mentorVal = mentorSelect?.value || "";
         const reasonVal = (reasonInput?.value || "").trim();
@@ -5736,6 +5807,21 @@
           btnAdminClearAllTags.addEventListener("click", (e) => {
             e.stopPropagation();
             clearAdminMeetingSelection();
+          });
+        }
+
+        // Initialize international telephone input for Admin Remedial Form
+        const adminPhoneInput = document.getElementById("remedialFormPhone");
+        if (adminPhoneInput && window.intlTelInput) {
+          itiAdminPhone = window.intlTelInput(adminPhoneInput, {
+            initialCountry: "id",
+            countryOrder: ["id", "us", "my", "sg"],
+            autoPlaceholder: "off",
+            dropdownContainer: document.body,
+            i18n: {
+              searchPlaceholder: "Country code"
+            },
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/js/utils.js"
           });
         }
 

@@ -20,6 +20,10 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- International Telephone Input (intl-tel-input) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/css/intlTelInput.css" />
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/js/intlTelInput.min.js"></script>
+
   <style>
     body {
       font-family: "Poppins", sans-serif;
@@ -101,6 +105,68 @@
         opacity: 1;
         transform: translateY(0);
       }
+    }
+
+    /* intl-tel-input custom styling */
+    .iti {
+      width: 100%;
+      display: block;
+    }
+    .iti__country-container {
+      border-top-left-radius: 0.75rem;
+      border-bottom-left-radius: 0.75rem;
+    }
+    .iti__selected-country {
+      padding: 0 8px 0 12px;
+      border-top-left-radius: 0.75rem;
+      border-bottom-left-radius: 0.75rem;
+    }
+    .iti__dropdown-content {
+      border-radius: 1rem !important;
+      box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+      border: 1px solid #e2e8f0 !important;
+      background: #ffffff !important;
+      z-index: 9999 !important;
+      overflow: hidden;
+      margin-top: 4px !important;
+    }
+    .iti__search-input {
+      border-radius: 0.75rem !important;
+      border: 1px solid #cbd5e1 !important;
+      padding: 0.55rem 0.85rem !important;
+      font-size: 0.8125rem !important;
+      width: calc(100% - 16px) !important;
+      margin: 8px !important;
+      outline: none !important;
+    }
+    .iti__search-input:focus {
+      border-color: #0284c7 !important;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15) !important;
+    }
+    .iti__country-list {
+      scrollbar-width: thin;
+      max-height: 240px !important;
+      padding: 0 4px 4px 4px !important;
+    }
+    .iti__country {
+      padding: 8px 10px !important;
+      font-size: 0.8125rem !important;
+      border-radius: 0.6rem !important;
+      transition: background 0.12s ease;
+      display: flex;
+      align-items: center;
+    }
+    .iti__country.iti__highlight {
+      background-color: #f1f5f9 !important;
+    }
+    .iti__country-name {
+      font-weight: 500;
+      color: #1e293b;
+      margin-right: 8px;
+    }
+    .iti__dial-code {
+      color: #64748b;
+      font-size: 0.775rem;
     }
   </style>
 </head>
@@ -247,19 +313,14 @@
             <label class="field-label" for="memberPhone">
               Whatsapp<span class="req">*</span>
             </label>
-            <div class="relative">
-              <input
-                type="tel"
-                id="memberPhone"
-                name="memberPhone"
-                class="form-input-control pl-10"
-                placeholder="08123456789"
-                required
-              />
-              <span class="absolute left-3 top-2.5 text-slate-400 font-semibold text-xs select-none">
-                🇮🇩
-              </span>
-            </div>
+            <input
+              type="tel"
+              id="memberPhone"
+              name="memberPhone"
+              class="form-input-control"
+              placeholder="Enter phone"
+              required
+            />
             <p id="errMemberPhone" class="text-[11px] text-rose-500 mt-1 hidden"></p>
           </div>
 
@@ -580,6 +641,21 @@
 
     loadMentors();
 
+    // International Telephone Input Initialization for WhatsApp
+    const phoneInput = document.getElementById("memberPhone");
+    let itiPhone = null;
+    if (phoneInput && window.intlTelInput) {
+      itiPhone = window.intlTelInput(phoneInput, {
+        initialCountry: "id",
+        countryOrder: ["id", "us", "my", "sg"],
+        autoPlaceholder: "off",
+        i18n: {
+          searchPlaceholder: "Country code"
+        },
+        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/js/utils.js"
+      });
+    }
+
     // Multi-select Meeting Dropdown Logic
     const selectedMeetings = new Set();
     const dropdownToggle = document.getElementById("meetingDropdownToggle");
@@ -773,7 +849,11 @@
 
         const nameVal = document.getElementById("memberName")?.value.trim() || "";
         const emailVal = document.getElementById("memberEmail")?.value.trim() || "";
-        const phoneVal = document.getElementById("memberPhone")?.value.trim() || "";
+        let phoneVal = document.getElementById("memberPhone")?.value.trim() || "";
+        if (itiPhone) {
+          const fullNum = itiPhone.getNumber();
+          if (fullNum) phoneVal = fullNum;
+        }
         const mentorSelect = document.getElementById("mentorSelect");
         const mentorVal = mentorSelect?.value || "";
         const mentorId = mentorSelect?.selectedOptions[0]?.dataset?.id || "";
@@ -858,6 +938,7 @@
     if (btnReset) {
       btnReset.addEventListener("click", () => {
         form.reset();
+        if (itiPhone) itiPhone.setCountry("id");
         clearMeetingSelection();
         toggleMeetingDropdown(false);
         successCard.classList.add("hidden");
