@@ -68,6 +68,28 @@
       color: #ef4444;
       margin-left: 2px;
     }
+
+    .meeting-pill {
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .meeting-pill:active {
+      transform: scale(0.97);
+    }
+    .meeting-pill.active {
+      background-color: #0284c7 !important;
+      border-color: #0284c7 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.22) !important;
+      transform: translateY(-1px);
+    }
+    .meeting-pill.active .pill-check {
+      background-color: #ffffff !important;
+      border-color: #ffffff !important;
+      color: #0284c7 !important;
+    }
+    .meeting-pill.active .pill-check svg {
+      display: block !important;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
@@ -230,7 +252,7 @@
           </div>
 
           <!-- Pilih Mentor Yang Mengampu -->
-          <div>
+          <div class="md:col-span-2">
             <label class="field-label" for="mentorSelect">
               Pilih Mentor Yang Mengampu<span class="req">*</span>
             </label>
@@ -245,31 +267,105 @@
             <p id="errMentorSelect" class="text-[11px] text-rose-500 mt-1 hidden"></p>
           </div>
 
-          <!-- Pertemuan yang tidak bisa dihadiri -->
-          <div>
-            <label class="field-label" for="meetingSelect">
-              Pertemuan yang tidak bisa dihadiri<span class="req">*</span>
-            </label>
-            <select
-              id="meetingSelect"
-              name="meetingSelect"
-              class="form-input-control cursor-pointer"
-              required
-            >
-              <option value="">Select option..</option>
-              <option value="1">Pertemuan 1</option>
-              <option value="2">Pertemuan 2</option>
-              <option value="3">Pertemuan 3</option>
-              <option value="4">Pertemuan 4</option>
-              <option value="5">Pertemuan 5</option>
-              <option value="6">Pertemuan 6</option>
-              <option value="7">Pertemuan 7</option>
-              <option value="8">Pertemuan 8</option>
-              <option value="9">Pertemuan 9</option>
-              <option value="10">Pertemuan 10</option>
-              <option value="11">Pertemuan 11</option>
-              <option value="12">Pertemuan 12</option>
-            </select>
+          <!-- Pertemuan yang tidak bisa dihadiri (Multi-select Pills) -->
+          <div class="md:col-span-2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+              <label class="field-label mb-0" id="meetingPillsLabel">
+                Pertemuan yang tidak bisa dihadiri<span class="req">*</span>
+              </label>
+              <span class="text-[11px] text-sky-700 font-semibold bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-100 inline-block w-fit">
+                Bisa pilih lebih dari 1 pertemuan
+              </span>
+            </div>
+
+            <!-- Grid of 12 Meeting Pill Buttons -->
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-2.5" id="meetingPillsContainer">
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="1">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 1</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="2">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 2</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="3">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 3</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="4">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 4</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="5">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 5</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="6">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 6</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="7">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 7</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="8">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 8</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="9">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 9</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="10">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 10</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="11">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 11</span>
+              </button>
+              <button type="button" class="meeting-pill py-2.5 px-2 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer bg-white border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50 select-none shadow-xs" data-meeting="12">
+                <span class="pill-check w-4 h-4 rounded-md border border-slate-300 flex items-center justify-center text-[10px] text-transparent bg-white transition-all">
+                  <svg class="w-3 h-3 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
+                <span>Pertemuan 12</span>
+              </button>
+            </div>
+
+            <!-- Live Confirmation Summary Box -->
+            <div id="meetingSelectionSummary" class="mt-2.5 hidden">
+              <div class="p-2.5 rounded-xl bg-sky-50/90 border border-sky-200 flex items-center justify-between text-xs text-sky-900">
+                <div class="flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-full bg-sky-600 text-white flex items-center justify-center text-[10px] font-extrabold flex-shrink-0">✓</span>
+                  <span id="meetingSummaryText" class="font-bold leading-tight"></span>
+                </div>
+                <button type="button" id="btnClearMeetings" class="text-[11px] text-sky-700 hover:text-sky-900 font-bold underline ml-2 flex-shrink-0">
+                  Reset
+                </button>
+              </div>
+            </div>
             <p id="errMeetingSelect" class="text-[11px] text-rose-500 mt-1 hidden"></p>
           </div>
         </div>
@@ -389,6 +485,51 @@
 
     loadMentors();
 
+    // Multi-select Meeting Pills Logic
+    const selectedMeetings = new Set();
+
+    function updateMeetingPillsUI() {
+      const summaryBox = document.getElementById("meetingSelectionSummary");
+      const summaryText = document.getElementById("meetingSummaryText");
+      const errEl = document.getElementById("errMeetingSelect");
+
+      if (selectedMeetings.size > 0) {
+        if (errEl) errEl.classList.add("hidden");
+        const sorted = Array.from(selectedMeetings).sort((a, b) => a - b);
+        const count = sorted.length;
+        const text = count === 1 
+          ? `1 Pertemuan dipilih: Pertemuan ${sorted[0]}` 
+          : `${count} Pertemuan dipilih: Pertemuan ${sorted.join(", ")}`;
+        if (summaryText) summaryText.textContent = text;
+        if (summaryBox) summaryBox.classList.remove("hidden");
+      } else {
+        if (summaryBox) summaryBox.classList.add("hidden");
+      }
+    }
+
+    document.querySelectorAll("#meetingPillsContainer .meeting-pill").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const num = parseInt(btn.dataset.meeting, 10);
+        if (selectedMeetings.has(num)) {
+          selectedMeetings.delete(num);
+          btn.classList.remove("active");
+        } else {
+          selectedMeetings.add(num);
+          btn.classList.add("active");
+        }
+        updateMeetingPillsUI();
+      });
+    });
+
+    const btnClearMeetings = document.getElementById("btnClearMeetings");
+    if (btnClearMeetings) {
+      btnClearMeetings.addEventListener("click", () => {
+        selectedMeetings.clear();
+        document.querySelectorAll("#meetingPillsContainer .meeting-pill").forEach((b) => b.classList.remove("active"));
+        updateMeetingPillsUI();
+      });
+    }
+
     // Form submission handling
     const form = document.getElementById("remedialForm");
     const successCard = document.getElementById("successCard");
@@ -405,13 +546,27 @@
         const mentorSelect = document.getElementById("mentorSelect");
         const mentorVal = mentorSelect?.value || "";
         const mentorId = mentorSelect?.selectedOptions[0]?.dataset?.id || "";
-        const meetingVal = document.getElementById("meetingSelect")?.value || "";
         const reasonVal = document.getElementById("reasonInput")?.value.trim() || "";
 
-        if (!nameVal || !emailVal || !phoneVal || !mentorVal || !meetingVal || !reasonVal) {
+        if (selectedMeetings.size === 0) {
+          const err = document.getElementById("errMeetingSelect");
+          if (err) {
+            err.textContent = "Silakan pilih minimal 1 pertemuan yang tidak bisa dihadiri.";
+            err.classList.remove("hidden");
+          }
+          alert("Silakan pilih minimal 1 pertemuan yang tidak bisa dihadiri.");
+          return;
+        }
+
+        if (!nameVal || !emailVal || !phoneVal || !mentorVal || !reasonVal) {
           alert("Silakan lengkapi semua field yang berbintang merah (*).");
           return;
         }
+
+        const sortedMeetings = Array.from(selectedMeetings).sort((a, b) => a - b);
+        const meetingMissedStr = sortedMeetings.length === 1 
+          ? `Pertemuan ${sortedMeetings[0]}` 
+          : `Pertemuan ${sortedMeetings.join(", ")}`;
 
         btnSubmit.disabled = true;
         btnSubmit.innerHTML = `
@@ -434,8 +589,9 @@
             whatsapp: phoneVal,
             mentor_name: mentorVal,
             mentor_id: mentorId,
-            meeting_number: parseInt(meetingVal, 10) || meetingVal,
-            meeting_missed: `Pertemuan ${meetingVal}`,
+            meeting_number: sortedMeetings[0],
+            meeting_numbers: sortedMeetings,
+            meeting_missed: meetingMissedStr,
             reason: reasonVal,
             status: "REQUEST",
             created_at: serverTimestamp(),
@@ -447,7 +603,7 @@
 
           // Update Summary in success card
           document.getElementById("sumName").textContent = nameVal;
-          document.getElementById("sumMeeting").textContent = `Pertemuan ${meetingVal}`;
+          document.getElementById("sumMeeting").textContent = meetingMissedStr;
           document.getElementById("sumMentor").textContent = mentorVal;
 
           form.classList.add("hidden");
@@ -471,6 +627,9 @@
     if (btnReset) {
       btnReset.addEventListener("click", () => {
         form.reset();
+        selectedMeetings.clear();
+        document.querySelectorAll("#meetingPillsContainer .meeting-pill").forEach((b) => b.classList.remove("active"));
+        updateMeetingPillsUI();
         successCard.classList.add("hidden");
         form.classList.remove("hidden");
         window.scrollTo({ top: form.offsetTop - 100, behavior: "smooth" });

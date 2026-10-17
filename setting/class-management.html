@@ -546,6 +546,27 @@
         border-radius: 6px;
         letter-spacing: 0.05em;
       }
+      .admin-meeting-pill {
+        transition: all 0.16s ease;
+        user-select: none;
+      }
+      .admin-meeting-pill:active {
+        transform: scale(0.96);
+      }
+      .admin-meeting-pill.active {
+        background-color: #0284c7 !important;
+        border-color: #0284c7 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 10px rgba(2, 132, 199, 0.22) !important;
+      }
+      .admin-meeting-pill.active .pill-check-indicator {
+        background-color: #ffffff !important;
+        border-color: #ffffff !important;
+        color: #0284c7 !important;
+      }
+      .admin-meeting-pill.active .pill-check-indicator svg {
+        display: block !important;
+      }
     </style>
 
     <!-- Centralized Auth Guard -->
@@ -2052,52 +2073,119 @@
               </div>
             </div>
 
-            <!-- Pertemuan ke berapa & Status Awal -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+            <!-- Status Alur Pengajuan -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                Status Alur Pengajuan <span class="text-rose-500">*</span>
+              </label>
+              <select
+                id="remedialFormStatus"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-semibold text-slate-700"
+                required
+              >
+                <option value="REQUEST">REQUEST (Baru)</option>
+                <option value="CONTACT">CONTACT (Sudah di-chat)</option>
+                <option value="PROCESS">PROCESS (Mencari jadwal)</option>
+                <option value="SCHEDULE">SCHEDULE (Terjadwal)</option>
+                <option value="RESCHEDULE">RESCHEDULE (Jadwal ulang)</option>
+                <option value="STALL">STALL (Pending / Belum respon)</option>
+                <option value="COMPLETE">COMPLETE (Selesai)</option>
+              </select>
+            </div>
+
+            <!-- Pertemuan yang tidak bisa dihadiri (Multi-select Pills) -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase">
                   Pertemuan Yang Tidak Bisa Dihadiri <span class="text-rose-500">*</span>
                 </label>
-                <select
-                  id="remedialFormMeeting"
-                  class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  required
-                >
-                  <option value="">Pilih Pertemuan...</option>
-                  <option value="1">Pertemuan 1</option>
-                  <option value="2">Pertemuan 2</option>
-                  <option value="3">Pertemuan 3</option>
-                  <option value="4">Pertemuan 4</option>
-                  <option value="5">Pertemuan 5</option>
-                  <option value="6">Pertemuan 6</option>
-                  <option value="7">Pertemuan 7</option>
-                  <option value="8">Pertemuan 8</option>
-                  <option value="9">Pertemuan 9</option>
-                  <option value="10">Pertemuan 10</option>
-                  <option value="11">Pertemuan 11</option>
-                  <option value="12">Pertemuan 12</option>
-                </select>
-                <p id="errRemedialMeeting" class="field-error-text hidden"></p>
+                <span class="text-[10px] text-sky-700 font-semibold bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
+                  Bisa pilih lebih dari 1
+                </span>
               </div>
-
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                  Status Alur Pengajuan <span class="text-rose-500">*</span>
-                </label>
-                <select
-                  id="remedialFormStatus"
-                  class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-semibold text-slate-700"
-                  required
-                >
-                  <option value="REQUEST">REQUEST (Baru)</option>
-                  <option value="CONTACT">CONTACT (Sudah di-chat)</option>
-                  <option value="PROCESS">PROCESS (Mencari jadwal)</option>
-                  <option value="SCHEDULE">SCHEDULE (Terjadwal)</option>
-                  <option value="RESCHEDULE">RESCHEDULE (Jadwal ulang)</option>
-                  <option value="STALL">STALL (Pending / Belum respon)</option>
-                  <option value="COMPLETE">COMPLETE (Selesai)</option>
-                </select>
+              <div class="grid grid-cols-4 sm:grid-cols-6 gap-2" id="adminMeetingPillsContainer">
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="1">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 1</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="2">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 2</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="3">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 3</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="4">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 4</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="5">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 5</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="6">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 6</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="7">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 7</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="8">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 8</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="9">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 9</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="10">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 10</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="11">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 11</span>
+                </button>
+                <button type="button" class="admin-meeting-pill py-2 px-1.5 rounded-xl border text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:border-sky-300 hover:bg-sky-50/50" data-meeting="12">
+                  <span class="pill-check-indicator w-3.5 h-3.5 rounded border border-slate-300 flex items-center justify-center text-[8px] text-transparent bg-white">
+                    <svg class="w-2.5 h-2.5 hidden stroke-current" viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </span>
+                  <span>P 12</span>
+                </button>
               </div>
+              <div id="adminMeetingSelectionSummary" class="mt-2 hidden">
+                <div class="p-2 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-900 flex items-center justify-between">
+                  <span id="adminMeetingSummaryText" class="font-bold"></span>
+                  <button type="button" id="btnAdminClearMeetings" class="text-[10px] text-sky-700 hover:text-sky-900 font-bold underline">
+                    Reset
+                  </button>
+                </div>
+              </div>
+              <p id="errRemedialMeeting" class="field-error-text hidden"></p>
             </div>
 
             <!-- Alasan Remedial -->
@@ -3046,6 +3134,7 @@
               mentor_name: d.mentor_name || d.mentor || "-",
               mentor_id: d.mentor_id || "",
               meeting_number: typeof d.meeting_number === "number" ? d.meeting_number : (parseInt(d.meeting_number || "0", 10) || 1),
+              meeting_numbers: Array.isArray(d.meeting_numbers) ? d.meeting_numbers : [typeof d.meeting_number === "number" ? d.meeting_number : (parseInt(d.meeting_number || "0", 10) || 1)],
               meeting_missed: d.meeting_missed || `Pertemuan ${d.meeting_number || 1}`,
               reason: d.reason || d.alasan || "-",
               status: (d.status || "REQUEST").toUpperCase(),
@@ -3085,7 +3174,7 @@
           }
 
           if (searchVal) {
-            const target = `${item.name} ${item.group_whatsapp} ${item.phone} ${item.mentor_name} ${item.reason}`.toLowerCase();
+            const target = `${item.name} ${item.group_whatsapp} ${item.phone} ${item.mentor_name} ${item.reason} ${item.meeting_missed}`.toLowerCase();
             if (!target.includes(searchVal)) return false;
           }
 
@@ -3093,8 +3182,12 @@
             return false;
           }
 
-          if (filterMeeting && String(item.meeting_number) !== filterMeeting) {
-            return false;
+          if (filterMeeting) {
+            const mTarget = parseInt(filterMeeting, 10);
+            const matchesMeeting = Array.isArray(item.meeting_numbers)
+              ? item.meeting_numbers.includes(mTarget)
+              : (parseInt(item.meeting_number, 10) === mTarget || String(item.meeting_missed || "").includes(filterMeeting));
+            if (!matchesMeeting) return false;
           }
 
           return true;
@@ -3140,11 +3233,18 @@
             card.draggable = true;
             card.dataset.id = item.id;
 
-            // Formatted meeting number: 01, 02, etc.
-            const meetingNum = parseInt(item.meeting_number || "1", 10);
-            const meetingTagStr = String(meetingNum).padStart(2, "0");
+            // Formatted meeting numbers: e.g. P01, P02
+            let meetingTagStr = "";
+            let meetingNum = 1;
+            if (Array.isArray(item.meeting_numbers) && item.meeting_numbers.length > 0) {
+              meetingNum = item.meeting_numbers[0];
+              meetingTagStr = item.meeting_numbers.map((n) => `P${String(n).padStart(2, "0")}`).join(", ");
+            } else {
+              meetingNum = parseInt(item.meeting_number || "1", 10);
+              meetingTagStr = `P${String(meetingNum).padStart(2, "0")}`;
+            }
 
-            // Tag color styling based on meeting number
+            // Tag color styling based on first meeting number
             let tagColorClass = "bg-teal-100 text-teal-800 border-teal-200";
             if (meetingNum >= 4 && meetingNum <= 6) tagColorClass = "bg-sky-100 text-sky-800 border-sky-200";
             if (meetingNum >= 7 && meetingNum <= 8) tagColorClass = "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200";
@@ -3346,6 +3446,28 @@
         }
       }
 
+      // Multi-select Meeting Pills for Admin Internal Form
+      const adminSelectedMeetings = new Set();
+
+      function updateAdminMeetingPillsUI() {
+        const summaryBox = document.getElementById("adminMeetingSelectionSummary");
+        const summaryText = document.getElementById("adminMeetingSummaryText");
+        const errEl = document.getElementById("errRemedialMeeting");
+
+        if (adminSelectedMeetings.size > 0) {
+          if (errEl) errEl.classList.add("hidden");
+          const sorted = Array.from(adminSelectedMeetings).sort((a, b) => a - b);
+          const count = sorted.length;
+          const text = count === 1 
+            ? `1 Pertemuan dipilih: Pertemuan ${sorted[0]}` 
+            : `${count} Pertemuan dipilih: Pertemuan ${sorted.join(", ")}`;
+          if (summaryText) summaryText.textContent = text;
+          if (summaryBox) summaryBox.classList.remove("hidden");
+        } else {
+          if (summaryBox) summaryBox.classList.add("hidden");
+        }
+      }
+
       function openNewRemedialModal(defaultStatus = "REQUEST") {
         const modal = document.getElementById("remedialModal");
         if (!modal) return;
@@ -3356,6 +3478,11 @@
 
         const statusSelect = document.getElementById("remedialFormStatus");
         if (statusSelect) statusSelect.value = defaultStatus;
+
+        // Reset meeting pills
+        adminSelectedMeetings.clear();
+        document.querySelectorAll("#adminMeetingPillsContainer .admin-meeting-pill").forEach((b) => b.classList.remove("active"));
+        updateAdminMeetingPillsUI();
 
         // Populate mentors dropdown
         populateRemedialLookupsInUI();
@@ -3389,7 +3516,6 @@
         const phoneInput = document.getElementById("remedialFormPhone");
         const classInput = document.getElementById("remedialFormClass");
         const mentorSelect = document.getElementById("remedialFormMentor");
-        const meetingSelect = document.getElementById("remedialFormMeeting");
         const reasonInput = document.getElementById("remedialFormReason");
         const statusSelect = document.getElementById("remedialFormStatus");
         const saveButton = document.getElementById("btnSaveRemedial");
@@ -3398,7 +3524,6 @@
         const phoneVal = (phoneInput?.value || "").trim();
         const classVal = (classInput?.value || "").trim();
         const mentorVal = mentorSelect?.value || "";
-        const meetingVal = meetingSelect?.value || "";
         const reasonVal = (reasonInput?.value || "").trim();
         const statusVal = statusSelect?.value || "REQUEST";
 
@@ -3419,9 +3544,9 @@
           if (err) { err.textContent = "Silakan pilih mentor"; err.classList.remove("hidden"); }
           isValid = false;
         }
-        if (!meetingVal) {
+        if (adminSelectedMeetings.size === 0) {
           const err = document.getElementById("errRemedialMeeting");
-          if (err) { err.textContent = "Silakan pilih pertemuan yang tidak bisa dihadiri"; err.classList.remove("hidden"); }
+          if (err) { err.textContent = "Silakan pilih minimal 1 pertemuan"; err.classList.remove("hidden"); }
           isValid = false;
         }
         if (!reasonVal) {
@@ -3437,6 +3562,11 @@
           saveButton.textContent = "Menyimpan...";
         }
 
+        const sortedAdminMeetings = Array.from(adminSelectedMeetings).sort((a, b) => a - b);
+        const meetingMissedStr = sortedAdminMeetings.length === 1 
+          ? `Pertemuan ${sortedAdminMeetings[0]}` 
+          : `Pertemuan ${sortedAdminMeetings.join(", ")}`;
+
         const newEntry = {
           name: nameVal,
           nama: nameVal,
@@ -3447,8 +3577,9 @@
           email: "",
           mentor_name: mentorVal,
           mentor_id: "",
-          meeting_number: parseInt(meetingVal, 10) || 1,
-          meeting_missed: `Pertemuan ${meetingVal}`,
+          meeting_number: sortedAdminMeetings[0],
+          meeting_numbers: sortedAdminMeetings,
+          meeting_missed: meetingMissedStr,
           reason: reasonVal,
           status: statusVal,
           source: "internal_form",
@@ -5358,6 +5489,30 @@
             remedialFormClassList.classList.add("hidden");
           }
         });
+
+        // Admin multi-select meeting pills listeners
+        document.querySelectorAll("#adminMeetingPillsContainer .admin-meeting-pill").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const num = parseInt(btn.dataset.meeting, 10);
+            if (adminSelectedMeetings.has(num)) {
+              adminSelectedMeetings.delete(num);
+              btn.classList.remove("active");
+            } else {
+              adminSelectedMeetings.add(num);
+              btn.classList.add("active");
+            }
+            updateAdminMeetingPillsUI();
+          });
+        });
+
+        const btnAdminClearMeetings = document.getElementById("btnAdminClearMeetings");
+        if (btnAdminClearMeetings) {
+          btnAdminClearMeetings.addEventListener("click", () => {
+            adminSelectedMeetings.clear();
+            document.querySelectorAll("#adminMeetingPillsContainer .admin-meeting-pill").forEach((b) => b.classList.remove("active"));
+            updateAdminMeetingPillsUI();
+          });
+        }
 
         // Load lookups and check URL parameter on load
         loadRemedialLookups();
