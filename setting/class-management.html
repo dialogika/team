@@ -587,6 +587,10 @@
         width: 100%;
         display: block;
       }
+      .iti input[type="tel"],
+      .iti input {
+        padding-left: 58px !important;
+      }
       .iti__country-container {
         border-top-left-radius: 0.75rem;
         border-bottom-left-radius: 0.75rem;
@@ -595,6 +599,17 @@
         padding: 0 8px 0 12px;
         border-top-left-radius: 0.75rem;
         border-bottom-left-radius: 0.75rem;
+        transition: background-color 0.15s ease;
+      }
+      .iti__selected-country:hover {
+        background-color: rgba(241, 245, 249, 0.7);
+      }
+      .iti__arrow {
+        border-top-color: #64748b !important;
+        margin-left: 6px !important;
+      }
+      .iti__arrow--up {
+        border-bottom-color: #64748b !important;
       }
       .iti__dropdown-content {
         border-radius: 1rem !important;
@@ -2110,9 +2125,12 @@
                   id="remedialFormPhone"
                   type="tel"
                   class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
-                  placeholder="Enter phone"
+                  placeholder="Contoh: 0812-3456-7890"
                   required
                 />
+                <p class="text-[10px] text-slate-400 mt-1">
+                  Contoh: <span class="font-medium text-slate-500">0812-3456-7890</span> atau <span class="font-medium text-slate-500">81234567890</span>
+                </p>
                 <p id="errRemedialPhone" class="field-error-text hidden"></p>
               </div>
             </div>
@@ -5816,10 +5834,13 @@
           itiAdminPhone = window.intlTelInput(adminPhoneInput, {
             initialCountry: "id",
             countryOrder: ["id", "us", "my", "sg"],
-            autoPlaceholder: "off",
+            autoPlaceholder: "polite",
+            customPlaceholder: function(selectedCountryPlaceholder, selectedCountryData) {
+              return "Contoh: " + (selectedCountryPlaceholder || "0812-3456-7890");
+            },
             dropdownContainer: document.body,
             i18n: {
-              searchPlaceholder: "Country code"
+              searchPlaceholder: "Cari kode negara..."
             },
             utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/js/utils.js"
           });

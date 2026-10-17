@@ -110,7 +110,13 @@
     /* intl-tel-input custom styling */
     .iti {
       width: 100%;
+      position: relative;
       display: block;
+    }
+    .iti input.form-input-control,
+    .iti input[type="tel"],
+    .iti input {
+      padding-left: 58px !important;
     }
     .iti__country-container {
       border-top-left-radius: 0.75rem;
@@ -120,6 +126,17 @@
       padding: 0 8px 0 12px;
       border-top-left-radius: 0.75rem;
       border-bottom-left-radius: 0.75rem;
+      transition: background-color 0.15s ease;
+    }
+    .iti__selected-country:hover {
+      background-color: rgba(241, 245, 249, 0.7);
+    }
+    .iti__arrow {
+      border-top-color: #64748b !important;
+      margin-left: 6px !important;
+    }
+    .iti__arrow--up {
+      border-bottom-color: #64748b !important;
     }
     .iti__dropdown-content {
       border-radius: 1rem !important;
@@ -318,9 +335,12 @@
               id="memberPhone"
               name="memberPhone"
               class="form-input-control"
-              placeholder="Enter phone"
+              placeholder="Contoh: 0812-3456-7890"
               required
             />
+            <p class="text-[11px] text-slate-400 mt-1">
+              Contoh penulisan: <span class="font-medium text-slate-500">0812-3456-7890</span> atau <span class="font-medium text-slate-500">81234567890</span>
+            </p>
             <p id="errMemberPhone" class="text-[11px] text-rose-500 mt-1 hidden"></p>
           </div>
 
@@ -648,9 +668,12 @@
       itiPhone = window.intlTelInput(phoneInput, {
         initialCountry: "id",
         countryOrder: ["id", "us", "my", "sg"],
-        autoPlaceholder: "off",
+        autoPlaceholder: "polite",
+        customPlaceholder: function(selectedCountryPlaceholder, selectedCountryData) {
+          return "Contoh: " + (selectedCountryPlaceholder || "0812-3456-7890");
+        },
         i18n: {
-          searchPlaceholder: "Country code"
+          searchPlaceholder: "Cari kode negara..."
         },
         utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@23.1.0/build/js/utils.js"
       });
