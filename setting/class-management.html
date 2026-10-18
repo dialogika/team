@@ -539,6 +539,50 @@
       .remedial-card.dragging {
         opacity: 0.4;
       }
+
+      /* ClickUp-style Remedial Calendar Styles */
+      .remedial-cal-cell {
+        min-height: 115px;
+        background: #ffffff;
+        border-radius: 0.85rem;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        transition: background-color 0.15s ease, box-shadow 0.15s ease;
+        position: relative;
+      }
+      .remedial-cal-cell:hover {
+        background: #f8fafc;
+      }
+      .remedial-cal-cell.other-month {
+        background: #fafaf9;
+        opacity: 0.45;
+      }
+      .remedial-cal-cell.today {
+        outline: 2px solid #0284c7;
+        outline-offset: -2px;
+        background: #f0f9ff;
+      }
+      .remedial-cal-chip {
+        padding: 4px 6px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        border-left-width: 3.5px;
+        cursor: pointer;
+        margin-bottom: 4px;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+        display: block;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        border-top: 1px solid rgba(226, 232, 240, 0.8);
+        border-right: 1px solid rgba(226, 232, 240, 0.8);
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      }
+      .remedial-cal-chip:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1);
+      }
+
       .tag-meeting {
         display: inline-flex;
         align-items: center;
@@ -658,6 +702,103 @@
         color: #64748b;
         font-size: 0.75rem;
       }
+
+      /* === Segmented Glider Button States & Icon High Visibility === */
+      #btnOpenRemedial.is-active i,
+      #btnOpenRemedial.is-active svg {
+        color: #ffffff !important;
+        stroke: #ffffff !important;
+      }
+      #btnOpenRemedial:not(.is-active) i,
+      #btnOpenRemedial:not(.is-active) svg {
+        color: #0284c7 !important;
+        stroke: #0284c7 !important;
+      }
+
+      #btnViewClasses.is-active i,
+      #btnViewClasses.is-active svg {
+        color: #0f172a !important;
+        stroke: #0f172a !important;
+      }
+      #btnViewClasses:not(.is-active) i,
+      #btnViewClasses:not(.is-active) svg {
+        color: #64748b !important;
+        stroke: #64748b !important;
+      }
+
+      #btnRemedialSubViewBoard.is-active i,
+      #btnRemedialSubViewBoard.is-active svg {
+        color: #0284c7 !important;
+        stroke: #0284c7 !important;
+      }
+      #btnRemedialSubViewBoard:not(.is-active) i,
+      #btnRemedialSubViewBoard:not(.is-active) svg {
+        color: #94a3b8 !important;
+        stroke: #94a3b8 !important;
+      }
+
+      #btnRemedialSubViewCalendar.is-active i,
+      #btnRemedialSubViewCalendar.is-active svg {
+        color: #0284c7 !important;
+        stroke: #0284c7 !important;
+      }
+      #btnRemedialSubViewCalendar:not(.is-active) i,
+      #btnRemedialSubViewCalendar:not(.is-active) svg {
+        color: #94a3b8 !important;
+        stroke: #94a3b8 !important;
+      }
+
+      /* === Premium Spatial View Transitions (Left <-> Right) === */
+      @keyframes viewSlideFromRight {
+        0% {
+          opacity: 0;
+          transform: translate3d(28px, 0, 0) scale(0.995);
+          filter: blur(3px);
+        }
+        60% {
+          opacity: 0.9;
+        }
+        100% {
+          opacity: 1;
+          transform: translate3d(0, 0, 0) scale(1);
+          filter: blur(0);
+        }
+      }
+
+      @keyframes viewSlideFromLeft {
+        0% {
+          opacity: 0;
+          transform: translate3d(-28px, 0, 0) scale(0.995);
+          filter: blur(3px);
+        }
+        60% {
+          opacity: 0.9;
+        }
+        100% {
+          opacity: 1;
+          transform: translate3d(0, 0, 0) scale(1);
+          filter: blur(0);
+        }
+      }
+
+      .view-slide-from-right {
+        animation: viewSlideFromRight 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        will-change: transform, opacity, filter;
+      }
+
+      .view-slide-from-left {
+        animation: viewSlideFromLeft 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        will-change: transform, opacity, filter;
+      }
+
+      .view-fade-enter {
+        animation: viewSlideFromRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      #mainViewGlider,
+      #remedialSubViewGlider {
+        will-change: transform, width, height;
+      }
     </style>
 
     <!-- Centralized Auth Guard -->
@@ -685,23 +826,29 @@
             </p>
           </div>
           <div class="flex items-center gap-3 flex-wrap">
-            <!-- View Mode Switcher -->
-            <div class="inline-flex p-1 bg-slate-200/80 rounded-2xl border border-slate-200 gap-1 shadow-inner">
+            <!-- View Mode Switcher with Animated Sliding Glider -->
+            <div id="mainViewSwitcher" class="relative inline-flex p-1 bg-slate-200/80 rounded-2xl border border-slate-200 gap-1 shadow-inner select-none">
+              <!-- Animated Sliding Glider Pill -->
+              <div
+                id="mainViewGlider"
+                class="absolute rounded-xl pointer-events-none bg-white shadow-sm"
+                style="left: 0; top: 0; transform: translate3d(0, 0, 0); z-index: 1;"
+              ></div>
               <button
                 id="btnViewClasses"
                 type="button"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-white text-slate-900 shadow-sm"
+                class="relative z-10 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer text-slate-900 active:scale-95 is-active"
               >
-                <i data-lucide="table" class="w-3.5 h-3.5 text-slate-500"></i>
-                Daftar Kelas
+                <i data-lucide="table" class="w-3.5 h-3.5 transition-colors duration-200 text-slate-700"></i>
+                <span>Daftar Kelas</span>
               </button>
               <button
                 id="btnOpenRemedial"
                 type="button"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900"
+                class="relative z-10 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 cursor-pointer text-slate-600 hover:text-slate-900 active:scale-95"
               >
-                <i data-lucide="kanban" class="w-3.5 h-3.5 text-sky-600"></i>
-                Kelas Remedial
+                <i data-lucide="kanban" class="w-3.5 h-3.5 transition-colors duration-200 text-sky-600"></i>
+                <span>Kelas Remedial</span>
               </button>
             </div>
             <a
@@ -1234,18 +1381,45 @@
               </div>
             </div>
 
-            <!-- Search and Filter Bar -->
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 mt-4 border-t border-slate-100">
-              <div class="relative flex-1 max-w-md">
-                <input
-                  id="searchRemedial"
-                  type="text"
-                  placeholder="Cari nama member, grup WA, no telp..."
-                  class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-slate-50"
-                />
-                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+            <!-- Search, Filter Bar & ClickUp Style Sub-View Tabs -->
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-4 mt-4 border-t border-slate-100">
+              <!-- ClickUp Style Sub-View Switcher with Animated Sliding Glider -->
+              <div id="remedialSubViewSwitcher" class="relative inline-flex items-center p-1 bg-slate-100 rounded-2xl border border-slate-200/60 self-start select-none">
+                <!-- Animated Sliding Glider Pill -->
+                <div
+                  id="remedialSubViewGlider"
+                  class="absolute rounded-xl bg-white shadow-sm pointer-events-none"
+                  style="left: 0; top: 0; transform: translate3d(0, 0, 0); z-index: 1;"
+                ></div>
+                <button
+                  id="btnRemedialSubViewBoard"
+                  type="button"
+                  class="relative z-10 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 text-slate-900 cursor-pointer active:scale-95 is-active"
+                >
+                  <i data-lucide="kanban" class="w-3.5 h-3.5 transition-colors duration-200 text-sky-600"></i>
+                  <span>Board</span>
+                </button>
+                <button
+                  id="btnRemedialSubViewCalendar"
+                  type="button"
+                  class="relative z-10 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900 cursor-pointer active:scale-95"
+                >
+                  <i data-lucide="calendar" class="w-3.5 h-3.5 transition-colors duration-200 text-slate-400"></i>
+                  <span>Calendar</span>
+                </button>
               </div>
-              <div class="flex items-center gap-2">
+
+              <!-- Search and Filter Controls -->
+              <div class="flex items-center gap-2 flex-1 justify-end flex-wrap sm:flex-nowrap">
+                <div class="relative flex-1 max-w-xs">
+                  <input
+                    id="searchRemedial"
+                    type="text"
+                    placeholder="Cari nama, kelas, no telp..."
+                    class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-slate-50"
+                  />
+                  <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                </div>
                 <select
                   id="filterRemedialMentor"
                   class="text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -1275,7 +1449,7 @@
           </div>
 
           <!-- ClickUp Style Kanban Board with 7 Columns -->
-          <div class="remedial-board-scroll">
+          <div id="remedialBoardContainer" class="remedial-board-scroll">
             <!-- REQUEST Column -->
             <div class="remedial-col" data-status="REQUEST">
               <div class="p-3 border-b border-slate-200/80 flex items-center justify-between">
@@ -1379,6 +1553,123 @@
                 </button>
               </div>
               <div class="cards-list p-2 space-y-2 flex-1 min-h-[420px]" data-status="COMPLETE"></div>
+            </div>
+          </div> <!-- end #remedialBoardContainer -->
+
+          <!-- ClickUp Style Remedial Calendar View -->
+          <div id="remedialCalendarContainer" class="hidden space-y-4">
+            <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm space-y-5">
+              <!-- Calendar Toolbar (Matching ClickUp header: Today, < >, Month Year, badges) -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div class="flex items-center gap-3 flex-wrap">
+                  <button
+                    id="btnRemedialCalToday"
+                    type="button"
+                    class="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition shadow-xs"
+                  >
+                    Today
+                  </button>
+
+                  <div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-xl border border-slate-200/80">
+                    <button
+                      id="btnRemedialCalPrev"
+                      type="button"
+                      class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 transition"
+                      title="Bulan Sebelumnya"
+                    >
+                      <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    <button
+                      id="btnRemedialCalNext"
+                      type="button"
+                      class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 transition"
+                      title="Bulan Berikutnya"
+                    >
+                      <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <h3 id="remedialCalMonthLabel" class="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                      October 2026
+                    </h3>
+                    <span id="remedialCalActiveCountBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-100">
+                      0 Terjadwal
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Calendar View Mode & Unscheduled Toggle -->
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                    <label for="remedialCalDateMode" class="text-[11px] font-medium text-slate-400">Tampilkan:</label>
+                    <select
+                      id="remedialCalDateMode"
+                      class="text-xs font-semibold rounded-xl border border-slate-200 px-3 py-1.5 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 text-slate-700"
+                    >
+                      <option value="schedule">Jadwal Remedial</option>
+                      <option value="created">Tanggal Pengajuan</option>
+                    </select>
+                  </div>
+
+                  <button
+                    id="btnToggleUnscheduledPanel"
+                    type="button"
+                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 transition"
+                  >
+                    <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-amber-600"></i>
+                    <span>Unscheduled</span>
+                    <span id="remedialUnscheduledCountBadge" class="px-2 py-0.5 rounded-full bg-amber-200/70 text-amber-900 font-extrabold text-[10px]">
+                      0
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Calendar Body: Grid + Optional Side Drawer for Unscheduled -->
+              <div class="flex flex-col xl:flex-row gap-5 items-start">
+                <!-- Main 7-day Calendar Grid -->
+                <div class="flex-1 w-full min-w-0">
+                  <!-- Days of Week Header (Sunday to Saturday matching ClickUp) -->
+                  <div class="grid grid-cols-7 gap-1 mb-1 text-center">
+                    <div class="py-2 text-[11px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50/50 rounded-xl">Sunday</div>
+                    <div class="py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 bg-slate-50 rounded-xl">Monday</div>
+                    <div class="py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 bg-slate-50 rounded-xl">Tuesday</div>
+                    <div class="py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 bg-slate-50 rounded-xl">Wednesday</div>
+                    <div class="py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 bg-slate-50 rounded-xl">Thursday</div>
+                    <div class="py-2 text-[11px] font-bold uppercase tracking-wider text-slate-600 bg-slate-50 rounded-xl">Friday</div>
+                    <div class="py-2 text-[11px] font-bold uppercase tracking-wider text-sky-600 bg-sky-50/50 rounded-xl">Saturday</div>
+                  </div>
+
+                  <!-- Calendar Month Grid (35-42 cells) -->
+                  <div id="remedialCalGrid" class="grid grid-cols-7 gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200/80">
+                    <!-- Rendered dynamically -->
+                  </div>
+                </div>
+
+                <!-- Unscheduled Side Drawer (Right side, toggleable, matching ClickUp) -->
+                <div
+                  id="remedialUnscheduledPanel"
+                  class="w-full xl:w-80 flex-shrink-0 bg-slate-50/90 rounded-2xl border border-slate-200 p-4 flex flex-col gap-3 transition-all"
+                >
+                  <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+                    <div>
+                      <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-500"></i>
+                        Belum Terjadwal
+                      </h4>
+                      <p class="text-[10px] text-slate-400 mt-0.5">Pengajuan tanpa tanggal jadwal</p>
+                    </div>
+                    <span id="unscheduledPanelBadge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200">
+                      0
+                    </span>
+                  </div>
+
+                  <div id="unscheduledListContainer" class="space-y-2 overflow-y-auto max-h-[500px] pr-1">
+                    <!-- Unscheduled cards rendered dynamically -->
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -2187,6 +2478,21 @@
               </select>
             </div>
 
+            <!-- Tanggal & Jam Jadwal Remedial (Opsional) -->
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+                Tanggal & Jam Remedial (Opsional)
+              </label>
+              <input
+                id="remedialFormScheduleDate"
+                type="datetime-local"
+                class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+              <p class="text-[10px] text-slate-400 mt-1">
+                Isi jika sudah ada jadwal pasti (status SCHEDULE/RESCHEDULE) agar otomatis muncul di kalender.
+              </p>
+            </div>
+
             <!-- Pertemuan yang tidak bisa dihadiri (Admin Dropdown Checkbox Multi-select) -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
@@ -2406,6 +2712,132 @@
               </div>
             </div>
           </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dedicated Remedial Detail & Schedule Modal -->
+    <div id="remedialScheduleModal" class="modal-backdrop-custom">
+      <div class="modal-card bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg mx-auto">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold">
+              <i data-lucide="calendar-check" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-sm font-bold text-slate-900" id="schedModalTitle">Detail & Jadwal Remedial</div>
+              <div class="text-[11px] text-slate-500" id="schedModalSubtitle">Kelola status dan tanggal jadwal remedial member</div>
+            </div>
+          </div>
+          <button
+            id="btnCloseSchedModal"
+            type="button"
+            class="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition"
+          >
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div class="px-6 py-5 text-xs space-y-4">
+          <!-- Member & Class Info Box -->
+          <div class="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/70 space-y-2">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="text-sm font-extrabold text-slate-900" id="schedModalMemberName">-</div>
+                <div class="text-[11px] text-slate-500" id="schedModalClassName">-</div>
+              </div>
+              <span id="schedModalMeetingBadge" class="tag-meeting bg-sky-100 text-sky-800 border border-sky-200">
+                P01
+              </span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 text-[11px]">
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Mentor</span>
+                <span class="font-semibold text-slate-700" id="schedModalMentor">-</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">WhatsApp</span>
+                <span class="font-semibold text-slate-700" id="schedModalPhone">-</span>
+              </div>
+            </div>
+            <div id="schedModalReasonBox" class="text-[11px] text-slate-500 italic bg-amber-50/70 p-2 rounded-xl border border-amber-100">
+              <span class="font-bold not-italic text-amber-800 text-[10px] block">Alasan Remedial:</span>
+              <span id="schedModalReasonText">-</span>
+            </div>
+          </div>
+
+          <!-- Schedule Date & Time -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+              Tanggal & Waktu Jadwal Pengganti
+            </label>
+            <input
+              type="datetime-local"
+              id="schedModalDateInput"
+              class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500"
+            />
+            <p class="text-[10px] text-slate-400 mt-1">
+              Tentukan kapan sesi remedial akan berlangsung agar otomatis tampil di kalender.
+            </p>
+          </div>
+
+          <!-- Status Dropdown -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">
+              Status Alur
+            </label>
+            <select
+              id="schedModalStatusSelect"
+              class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 font-semibold text-slate-700"
+            >
+              <option value="REQUEST">🔴 REQUEST</option>
+              <option value="CONTACT">🟣 CONTACT</option>
+              <option value="PROCESS">🟠 PROCESS</option>
+              <option value="SCHEDULE">🔵 SCHEDULE</option>
+              <option value="RESCHEDULE">🟪 RESCHEDULE</option>
+              <option value="STALL">⚫ STALL</option>
+              <option value="COMPLETE">🟢 COMPLETE</option>
+            </select>
+          </div>
+
+          <!-- Footer Buttons -->
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-1.5">
+              <a
+                id="btnSchedModalWhatsApp"
+                href="#"
+                target="_blank"
+                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition"
+              >
+                <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+                Kirim WA
+              </a>
+              <button
+                type="button"
+                id="btnSchedModalDelete"
+                class="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition"
+                title="Hapus data ini"
+              >
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                id="btnCancelSchedModal"
+                class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                id="btnSaveSchedModal"
+                class="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 text-white hover:bg-sky-700 transition shadow-md shadow-sky-600/20"
+              >
+                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                Simpan
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -3100,6 +3532,23 @@
       let mentorsData = [];
       let activeMainView = "classes"; // "classes" | "remedial"
 
+      // ClickUp-style Remedial Calendar State
+      let remedialCalYear = new Date().getFullYear();
+      let remedialCalMonth = new Date().getMonth();
+      let remedialSubView = "board"; // "board" | "calendar"
+      let remedialDateMode = "schedule"; // "schedule" | "created"
+      let isUnscheduledPanelOpen = true;
+      let activeScheduleItemId = null;
+
+      const REMEDIAL_MONTH_NAMES = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      const REMEDIAL_MONTH_NAMES_EN = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+
       const sampleRemedialReports = [
         {
           id: "rem-1",
@@ -3112,6 +3561,8 @@
           meeting_missed: "Pertemuan 4",
           reason: "Tidak bisa hadir karena ada urusan keluarga mendadak",
           status: "REQUEST",
+          schedule_date: "2026-10-19 14:00",
+          created_at: "2026-10-14",
         },
         {
           id: "rem-2",
@@ -3124,6 +3575,8 @@
           meeting_missed: "Pertemuan 5",
           reason: "Sakit dan perlu mengulang materi presentasi",
           status: "REQUEST",
+          schedule_date: null,
+          created_at: "2026-10-15",
         },
         {
           id: "rem-3",
@@ -3136,6 +3589,8 @@
           meeting_missed: "Pertemuan 4",
           reason: "Izin dinas luar kota",
           status: "REQUEST",
+          schedule_date: null,
+          created_at: "2026-10-15",
         },
         {
           id: "rem-4",
@@ -3148,6 +3603,8 @@
           meeting_missed: "Pertemuan 4",
           reason: "Kendala teknis jaringan saat sesi online",
           status: "CONTACT",
+          schedule_date: null,
+          created_at: "2026-10-16",
         },
         {
           id: "rem-5",
@@ -3160,6 +3617,8 @@
           meeting_missed: "Pertemuan 5",
           reason: "Mengulang sesi speech contest",
           status: "PROCESS",
+          schedule_date: "2026-10-22 10:00",
+          created_at: "2026-10-17",
         },
         {
           id: "rem-6",
@@ -3172,6 +3631,8 @@
           meeting_missed: "Pertemuan 4",
           reason: "Telah konfirmasi jadwal, menunggu link zoom",
           status: "SCHEDULE",
+          schedule_date: "2026-10-18 19:30",
+          created_at: "2026-10-12",
         },
         {
           id: "rem-7",
@@ -3184,6 +3645,8 @@
           meeting_missed: "Pertemuan 5",
           reason: "Jadwal tabrakan dengan ujian kampus",
           status: "RESCHEDULE",
+          schedule_date: "2026-10-25 15:30",
+          created_at: "2026-10-13",
         },
         {
           id: "rem-8",
@@ -3196,6 +3659,8 @@
           meeting_missed: "Pertemuan 8",
           reason: "Belum konfirmasi kehadiran lebih dari H+3",
           status: "STALL",
+          schedule_date: "2026-10-12 19:00",
+          created_at: "2026-10-08",
         },
         {
           id: "rem-9",
@@ -3208,6 +3673,8 @@
           meeting_missed: "Pertemuan 2",
           reason: "Sudah menghadiri kelas pengganti dengan sukses",
           status: "COMPLETE",
+          schedule_date: "2026-10-05 14:00",
+          created_at: "2026-10-01",
         },
       ];
 
@@ -3320,6 +3787,7 @@
               meeting_missed: d.meeting_missed || `Pertemuan ${d.meeting_number || 1}`,
               reason: d.reason || d.alasan || "-",
               status: (d.status || "REQUEST").toUpperCase(),
+              schedule_date: d.schedule_date || d.scheduled_date || d.date || null,
               created_at: d.created_at || d.createdAt || null,
             });
           });
@@ -3331,6 +3799,7 @@
         }
 
         renderRemedialBoard();
+        renderRemedialCalendar();
       }
 
       function renderRemedialBoard() {
@@ -3590,6 +4059,7 @@
         const oldStatus = item.status;
         item.status = newStatus;
         renderRemedialBoard();
+        renderRemedialCalendar();
 
         if (db && collection) {
           try {
@@ -3614,6 +4084,7 @@
 
         remedialReports = remedialReports.filter((r) => r.id !== itemId);
         renderRemedialBoard();
+        renderRemedialCalendar();
 
         if (db && collection) {
           try {
@@ -3837,6 +4308,9 @@
           ? `Pertemuan ${sortedAdminMeetings[0]}` 
           : `Pertemuan ${sortedAdminMeetings.join(", ")}`;
 
+        const scheduleDateInput = document.getElementById("remedialFormScheduleDate");
+        const scheduleDateVal = (scheduleDateInput?.value || "").trim();
+
         const newEntry = {
           name: nameVal,
           nama: nameVal,
@@ -3852,6 +4326,8 @@
           meeting_missed: meetingMissedStr,
           reason: reasonVal,
           status: statusVal,
+          schedule_date: scheduleDateVal || null,
+          scheduled_date: scheduleDateVal || null,
           source: "internal_form",
         };
 
@@ -3869,6 +4345,7 @@
 
           remedialReports.unshift(newEntry);
           renderRemedialBoard();
+          renderRemedialCalendar();
           closeRemedialModal();
           showPlanningToast("Pengajuan remedial berhasil disimpan ke board!", "success");
         } catch (err) {
@@ -3876,6 +4353,7 @@
           newEntry.id = "rem-local-" + Date.now();
           remedialReports.unshift(newEntry);
           renderRemedialBoard();
+          renderRemedialCalendar();
           closeRemedialModal();
           showPlanningToast("Disimpan ke board lokal (Firestore offline)", "success");
         } finally {
@@ -3887,37 +4365,145 @@
         }
       }
 
-      function switchMainView(view) {
+      function positionGlider(gliderEl, targetBtnEl, isInitial = false) {
+        if (!gliderEl || !targetBtnEl) return;
+        if (targetBtnEl.offsetWidth === 0) return;
+
+        const left = targetBtnEl.offsetLeft;
+        const top = targetBtnEl.offsetTop;
+        const width = targetBtnEl.offsetWidth;
+        const height = targetBtnEl.offsetHeight;
+
+        if (isInitial) {
+          gliderEl.style.transition = "none";
+        } else {
+          gliderEl.style.transition = "transform 0.32s cubic-bezier(0.34, 1.35, 0.64, 1), width 0.26s cubic-bezier(0.34, 1.35, 0.64, 1), background-color 0.25s ease, box-shadow 0.25s ease";
+        }
+
+        gliderEl.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+        gliderEl.style.width = `${width}px`;
+        gliderEl.style.height = `${height}px`;
+
+        if (isInitial) {
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              gliderEl.style.transition = "transform 0.32s cubic-bezier(0.34, 1.35, 0.64, 1), width 0.26s cubic-bezier(0.34, 1.35, 0.64, 1), background-color 0.25s ease, box-shadow 0.25s ease";
+            }, 50);
+          });
+        }
+      }
+
+      function syncMainViewGlider(isInitial = false) {
+        const mainGlider = document.getElementById("mainViewGlider");
+        const activeBtn = activeMainView === "remedial"
+          ? document.getElementById("btnOpenRemedial")
+          : document.getElementById("btnViewClasses");
+        if (mainGlider && activeBtn) {
+          positionGlider(mainGlider, activeBtn, isInitial);
+        }
+      }
+
+      function syncRemedialSubViewGlider(isInitial = false) {
+        const subGlider = document.getElementById("remedialSubViewGlider");
+        const activeBtn = remedialSubView === "calendar"
+          ? document.getElementById("btnRemedialSubViewCalendar")
+          : document.getElementById("btnRemedialSubViewBoard");
+        if (subGlider && activeBtn) {
+          positionGlider(subGlider, activeBtn, isInitial);
+        }
+      }
+
+      function switchMainView(view, isInitial = false) {
         activeMainView = view;
         const classesViewEl = document.getElementById("classesView");
         const remedialViewEl = document.getElementById("remedialView");
         const btnViewClasses = document.getElementById("btnViewClasses");
         const btnOpenRemedial = document.getElementById("btnOpenRemedial");
+        const mainGlider = document.getElementById("mainViewGlider");
 
         if (view === "remedial") {
           if (classesViewEl) classesViewEl.classList.add("hidden");
-          if (remedialViewEl) remedialViewEl.classList.remove("hidden");
+          if (remedialViewEl) {
+            remedialViewEl.classList.remove("hidden");
+            remedialViewEl.classList.remove("view-slide-from-left", "view-slide-from-right", "view-fade-enter");
+            if (!isInitial) {
+              void remedialViewEl.offsetWidth; // trigger reflow for smooth animation
+              remedialViewEl.classList.add("view-slide-from-right");
+              if (window.scrollY > 140) {
+                window.scrollTo({ top: 90, behavior: "smooth" });
+              }
+            }
+          }
 
+          if (mainGlider) {
+            mainGlider.className = "absolute rounded-xl pointer-events-none bg-sky-600 shadow-md shadow-sky-600/30";
+            positionGlider(mainGlider, btnOpenRemedial, isInitial);
+          }
           if (btnOpenRemedial) {
-            btnOpenRemedial.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-sky-600 text-white shadow-md";
+            btnOpenRemedial.classList.add("is-active");
+            btnOpenRemedial.className = "relative z-10 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer text-white active:scale-95 is-active";
+            const icon = btnOpenRemedial.querySelector("i, svg");
+            if (icon) {
+              icon.setAttribute("class", "w-3.5 h-3.5 transition-colors duration-200 text-white");
+              icon.style.color = "#ffffff";
+              icon.style.stroke = "#ffffff";
+            }
           }
           if (btnViewClasses) {
-            btnViewClasses.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900";
+            btnViewClasses.classList.remove("is-active");
+            btnViewClasses.className = "relative z-10 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 cursor-pointer text-slate-600 hover:text-slate-900 active:scale-95";
+            const icon = btnViewClasses.querySelector("i, svg");
+            if (icon) {
+              icon.setAttribute("class", "w-3.5 h-3.5 transition-colors duration-200 text-slate-500");
+              icon.style.color = "#64748b";
+              icon.style.stroke = "#64748b";
+            }
           }
 
           loadRemedialReports();
+          requestAnimationFrame(() => {
+            syncRemedialSubViewGlider(true);
+          });
           try {
             history.replaceState(null, "", "?view=remedial");
           } catch (e) {}
         } else {
           if (remedialViewEl) remedialViewEl.classList.add("hidden");
-          if (classesViewEl) classesViewEl.classList.remove("hidden");
+          if (classesViewEl) {
+            classesViewEl.classList.remove("hidden");
+            classesViewEl.classList.remove("view-slide-from-left", "view-slide-from-right", "view-fade-enter");
+            if (!isInitial) {
+              void classesViewEl.offsetWidth; // trigger reflow for smooth animation
+              classesViewEl.classList.add("view-slide-from-left");
+              if (window.scrollY > 140) {
+                window.scrollTo({ top: 90, behavior: "smooth" });
+              }
+            }
+          }
 
+          if (mainGlider) {
+            mainGlider.className = "absolute rounded-xl pointer-events-none bg-white shadow-sm";
+            positionGlider(mainGlider, btnViewClasses, isInitial);
+          }
           if (btnViewClasses) {
-            btnViewClasses.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-white text-slate-900 shadow-sm";
+            btnViewClasses.classList.add("is-active");
+            btnViewClasses.className = "relative z-10 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer text-slate-900 active:scale-95 is-active";
+            const icon = btnViewClasses.querySelector("i, svg");
+            if (icon) {
+              icon.setAttribute("class", "w-3.5 h-3.5 transition-colors duration-200 text-slate-700");
+              icon.style.color = "#334155";
+              icon.style.stroke = "#334155";
+            }
           }
           if (btnOpenRemedial) {
-            btnOpenRemedial.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-600 hover:text-slate-900";
+            btnOpenRemedial.classList.remove("is-active");
+            btnOpenRemedial.className = "relative z-10 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 cursor-pointer text-slate-600 hover:text-slate-900 active:scale-95";
+            const icon = btnOpenRemedial.querySelector("i, svg");
+            if (icon) {
+              icon.setAttribute("class", "w-3.5 h-3.5 transition-colors duration-200 text-sky-600");
+              icon.style.color = "#0284c7";
+              icon.style.stroke = "#0284c7";
+            }
           }
 
           try {
@@ -3938,6 +4524,572 @@
           // Fallback
           showPlanningToast("Link: " + publicUrl, "success");
         });
+      }
+
+      /* === ClickUp-Style Remedial Calendar Logic === */
+      function switchRemedialSubView(subView, isInitial = false) {
+        remedialSubView = subView;
+        const boardEl = document.getElementById("remedialBoardContainer");
+        const calEl = document.getElementById("remedialCalendarContainer");
+        const btnBoard = document.getElementById("btnRemedialSubViewBoard");
+        const btnCal = document.getElementById("btnRemedialSubViewCalendar");
+        const subGlider = document.getElementById("remedialSubViewGlider");
+
+        if (subView === "calendar") {
+          if (boardEl) boardEl.classList.add("hidden");
+          if (calEl) {
+            calEl.classList.remove("hidden");
+            calEl.classList.remove("view-slide-from-left", "view-slide-from-right", "view-fade-enter");
+            if (!isInitial) {
+              void calEl.offsetWidth; // trigger reflow
+              calEl.classList.add("view-slide-from-right");
+            }
+          }
+
+          if (subGlider) {
+            subGlider.className = "absolute rounded-xl bg-white shadow-sm pointer-events-none";
+            positionGlider(subGlider, btnCal, isInitial);
+          }
+          if (btnBoard) {
+            btnBoard.classList.remove("is-active");
+            btnBoard.className = "relative z-10 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900 cursor-pointer active:scale-95";
+            const icon = btnBoard.querySelector("i, svg");
+            if (icon) {
+              icon.setAttribute("class", "w-3.5 h-3.5 transition-colors duration-200 text-slate-400");
+              icon.style.color = "#94a3b8";
+              icon.style.stroke = "#94a3b8";
+            }
+          }
+          if (btnCal) {
+            btnCal.classList.add("is-active");
+            btnCal.className = "relative z-10 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 text-slate-900 cursor-pointer active:scale-95 is-active";
+            const icon = btnCal.querySelector("i, svg");
+            if (icon) {
+              icon.setAttribute("class", "w-3.5 h-3.5 transition-colors duration-200 text-sky-600");
+              icon.style.color = "#0284c7";
+              icon.style.stroke = "#0284c7";
+            }
+          }
+
+          renderRemedialCalendar();
+        } else {
+          if (calEl) calEl.classList.add("hidden");
+          if (boardEl) {
+            boardEl.classList.remove("hidden");
+            boardEl.classList.remove("view-slide-from-left", "view-slide-from-right", "view-fade-enter");
+            if (!isInitial) {
+              void boardEl.offsetWidth; // trigger reflow
+              boardEl.classList.add("view-slide-from-left");
+            }
+          }
+
+          if (subGlider) {
+            subGlider.className = "absolute rounded-xl bg-white shadow-sm pointer-events-none";
+            positionGlider(subGlider, btnBoard, isInitial);
+          }
+          if (btnBoard) {
+            btnBoard.classList.add("is-active");
+            btnBoard.className = "relative z-10 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 text-slate-900 cursor-pointer active:scale-95 is-active";
+            const icon = btnBoard.querySelector("i, svg");
+            if (icon) {
+              icon.setAttribute("class", "w-3.5 h-3.5 transition-colors duration-200 text-sky-600");
+              icon.style.color = "#0284c7";
+              icon.style.stroke = "#0284c7";
+            }
+          }
+          if (btnCal) {
+            btnCal.classList.remove("is-active");
+            btnCal.className = "relative z-10 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 text-slate-600 hover:text-slate-900 cursor-pointer active:scale-95";
+            const icon = btnCal.querySelector("i, svg");
+            if (icon) {
+              icon.setAttribute("class", "w-3.5 h-3.5 transition-colors duration-200 text-slate-400");
+              icon.style.color = "#94a3b8";
+              icon.style.stroke = "#94a3b8";
+            }
+          }
+
+          renderRemedialBoard();
+        }
+        if (window.lucide) window.lucide.createIcons();
+      }
+
+      function getRemedialStatusStyle(status) {
+        const s = String(status || "REQUEST").toUpperCase();
+        switch (s) {
+          case "REQUEST":
+            return {
+              dot: "bg-rose-500",
+              chip: "border-l-rose-500 bg-rose-50/90 text-rose-900 hover:bg-rose-100",
+              badge: "bg-rose-100 text-rose-800 border-rose-200",
+              text: "REQUEST",
+            };
+          case "CONTACT":
+            return {
+              dot: "bg-purple-500",
+              chip: "border-l-purple-500 bg-purple-50/90 text-purple-900 hover:bg-purple-100",
+              badge: "bg-purple-100 text-purple-800 border-purple-200",
+              text: "CONTACT",
+            };
+          case "PROCESS":
+            return {
+              dot: "bg-orange-500",
+              chip: "border-l-orange-500 bg-orange-50/90 text-orange-900 hover:bg-orange-100",
+              badge: "bg-orange-100 text-orange-800 border-orange-200",
+              text: "PROCESS",
+            };
+          case "SCHEDULE":
+            return {
+              dot: "bg-sky-500",
+              chip: "border-l-sky-500 bg-sky-50/90 text-sky-900 hover:bg-sky-100",
+              badge: "bg-sky-100 text-sky-800 border-sky-200",
+              text: "SCHEDULE",
+            };
+          case "RESCHEDULE":
+            return {
+              dot: "bg-fuchsia-500",
+              chip: "border-l-fuchsia-500 bg-fuchsia-50/90 text-fuchsia-900 hover:bg-fuchsia-100",
+              badge: "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200",
+              text: "RESCHEDULE",
+            };
+          case "STALL":
+            return {
+              dot: "bg-slate-500",
+              chip: "border-l-slate-500 bg-slate-100 text-slate-800 hover:bg-slate-200",
+              badge: "bg-slate-200 text-slate-800 border-slate-300",
+              text: "STALL",
+            };
+          case "COMPLETE":
+            return {
+              dot: "bg-emerald-500",
+              chip: "border-l-emerald-500 bg-emerald-50/90 text-emerald-900 hover:bg-emerald-100",
+              badge: "bg-emerald-100 text-emerald-800 border-emerald-200",
+              text: "COMPLETE",
+            };
+          default:
+            return {
+              dot: "bg-slate-400",
+              chip: "border-l-slate-400 bg-slate-50 text-slate-700",
+              badge: "bg-slate-100 text-slate-700 border-slate-200",
+              text: s,
+            };
+        }
+      }
+
+      function parseItemDateKey(item, mode) {
+        let raw = mode === "created" ? item.created_at : (item.schedule_date || item.scheduled_date || item.date);
+        if (!raw) return null;
+        if (typeof raw === "object" && typeof raw.toDate === "function") {
+          raw = raw.toDate();
+        }
+        if (typeof raw === "string") {
+          const m = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+          if (m) {
+            return `${m[1]}-${String(m[2]).padStart(2, "0")}-${String(m[3]).padStart(2, "0")}`;
+          }
+        }
+        const d = new Date(raw);
+        if (isNaN(d.getTime())) return null;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+
+      function parseItemTimeStr(item) {
+        let raw = item.schedule_date || item.scheduled_date || item.date;
+        if (!raw) return "";
+        if (typeof raw === "object" && typeof raw.toDate === "function") {
+          raw = raw.toDate();
+        }
+        if (typeof raw === "string") {
+          const m = raw.match(/(?:T|\s)(\d{1,2}):(\d{2})/);
+          if (m) return `${m[1]}:${m[2]}`;
+        }
+        if (raw instanceof Date) {
+          return `${String(raw.getHours()).padStart(2, "0")}:${String(raw.getMinutes()).padStart(2, "0")}`;
+        }
+        return item.schedule_time || "";
+      }
+
+      function renderRemedialCalendar() {
+        const grid = document.getElementById("remedialCalGrid");
+        const monthLabel = document.getElementById("remedialCalMonthLabel");
+        const activeCountBadge = document.getElementById("remedialCalActiveCountBadge");
+        const unscheduledBadge = document.getElementById("remedialUnscheduledCountBadge");
+        const unscheduledPanelBadge = document.getElementById("unscheduledPanelBadge");
+        const unscheduledContainer = document.getElementById("unscheduledListContainer");
+        if (!grid) return;
+
+        // Apply filters
+        const searchVal = (document.getElementById("searchRemedial")?.value || "").toLowerCase().trim();
+        const filterMentor = document.getElementById("filterRemedialMentor")?.value || "";
+        const filterMeeting = document.getElementById("filterRemedialMeeting")?.value || "";
+
+        const filtered = remedialReports.filter((item) => {
+          if (searchVal) {
+            const target = `${item.name} ${item.group_whatsapp} ${item.phone} ${item.mentor_name} ${item.reason} ${item.meeting_missed}`.toLowerCase();
+            if (!target.includes(searchVal)) return false;
+          }
+          if (filterMentor && item.mentor_name !== filterMentor) {
+            return false;
+          }
+          if (filterMeeting) {
+            const mTarget = parseInt(filterMeeting, 10);
+            const matchesMeeting = Array.isArray(item.meeting_numbers)
+              ? item.meeting_numbers.includes(mTarget)
+              : (parseInt(item.meeting_number, 10) === mTarget || String(item.meeting_missed || "").includes(filterMeeting));
+            if (!matchesMeeting) return false;
+          }
+          return true;
+        });
+
+        // Set Month Label
+        const monthName = REMEDIAL_MONTH_NAMES_EN[remedialCalMonth] || REMEDIAL_MONTH_NAMES[remedialCalMonth];
+        if (monthLabel) {
+          monthLabel.textContent = `${monthName} ${remedialCalYear}`;
+        }
+
+        // Group items by dateKey (YYYY-MM-DD)
+        const itemsByDate = {};
+        const unscheduledList = [];
+        let scheduledThisMonthCount = 0;
+
+        filtered.forEach((item) => {
+          const dateKey = parseItemDateKey(item, remedialDateMode);
+          if (dateKey) {
+            if (!itemsByDate[dateKey]) itemsByDate[dateKey] = [];
+            itemsByDate[dateKey].push(item);
+
+            const [y, m] = dateKey.split("-").map(Number);
+            if (y === remedialCalYear && m === remedialCalMonth + 1) {
+              scheduledThisMonthCount++;
+            }
+          } else {
+            unscheduledList.push(item);
+          }
+        });
+
+        if (activeCountBadge) {
+          activeCountBadge.textContent = `${scheduledThisMonthCount} Terjadwal`;
+        }
+        if (unscheduledBadge) {
+          unscheduledBadge.textContent = unscheduledList.length;
+        }
+        if (unscheduledPanelBadge) {
+          unscheduledPanelBadge.textContent = unscheduledList.length;
+        }
+
+        // Clear grid
+        grid.innerHTML = "";
+
+        // Calendar date calculations
+        const firstDayIndex = new Date(remedialCalYear, remedialCalMonth, 1).getDay(); // 0 = Sunday
+        const daysInCurrentMonth = new Date(remedialCalYear, remedialCalMonth + 1, 0).getDate();
+        const daysInPrevMonth = new Date(remedialCalYear, remedialCalMonth, 0).getDate();
+
+        const today = new Date();
+        const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+        // 1. Previous month trailing days
+        for (let i = 0; i < firstDayIndex; i++) {
+          const dayNum = daysInPrevMonth - firstDayIndex + 1 + i;
+          let prevMonth = remedialCalMonth - 1;
+          let prevYear = remedialCalYear;
+          if (prevMonth < 0) {
+            prevMonth = 11;
+            prevYear--;
+          }
+          const prevKey = `${prevYear}-${String(prevMonth + 1).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`;
+
+          const cell = createRemedialCalendarCell(dayNum, prevKey, true, false, itemsByDate[prevKey] || []);
+          grid.appendChild(cell);
+        }
+
+        // 2. Current month days
+        for (let d = 1; d <= daysInCurrentMonth; d++) {
+          const curKey = `${remedialCalYear}-${String(remedialCalMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+          const isToday = curKey === todayKey;
+
+          const cell = createRemedialCalendarCell(d, curKey, false, isToday, itemsByDate[curKey] || []);
+          grid.appendChild(cell);
+        }
+
+        // 3. Next month leading days (to complete 35 or 42 grid cells)
+        const totalRendered = firstDayIndex + daysInCurrentMonth;
+        const totalSlots = totalRendered > 35 ? 42 : 35;
+        const nextMonthDaysCount = totalSlots - totalRendered;
+
+        for (let n = 1; n <= nextMonthDaysCount; n++) {
+          let nextMonth = remedialCalMonth + 1;
+          let nextYear = remedialCalYear;
+          if (nextMonth > 11) {
+            nextMonth = 0;
+            nextYear++;
+          }
+          const nextKey = `${nextYear}-${String(nextMonth + 1).padStart(2, "0")}-${String(n).padStart(2, "0")}`;
+
+          const cell = createRemedialCalendarCell(n, nextKey, true, false, itemsByDate[nextKey] || []);
+          grid.appendChild(cell);
+        }
+
+        // Render Unscheduled list
+        if (unscheduledContainer) {
+          unscheduledContainer.innerHTML = "";
+          if (unscheduledList.length === 0) {
+            unscheduledContainer.innerHTML = `
+              <div class="text-center py-8 px-2 text-slate-400 text-xs">
+                <i data-lucide="check-circle" class="w-6 h-6 mx-auto mb-1 text-emerald-400"></i>
+                <p class="font-semibold text-slate-600">Semua Terjadwal!</p>
+                <p class="text-[10px] text-slate-400">Tidak ada pengajuan tanpa jadwal.</p>
+              </div>
+            `;
+          } else {
+            unscheduledList.forEach((item) => {
+              const card = document.createElement("div");
+              card.className = "bg-white p-3 rounded-xl border border-slate-200/90 shadow-xs hover:shadow-sm transition-all flex flex-col gap-1.5";
+              const style = getRemedialStatusStyle(item.status);
+              const mNum = (Array.isArray(item.meeting_numbers) && item.meeting_numbers.length > 0) ? item.meeting_numbers[0] : (item.meeting_number || 1);
+              const mTag = `P${String(mNum).padStart(2, "0")}`;
+
+              card.innerHTML = `
+                <div class="flex items-start justify-between gap-1.5">
+                  <span class="font-bold text-slate-900 text-xs truncate leading-snug">${escapeHtml(item.name)}</span>
+                  <span class="tag-meeting bg-sky-50 text-sky-700 border border-sky-200 flex-shrink-0 text-[9px] px-1.5 py-0.5">${mTag}</span>
+                </div>
+                <div class="text-[10px] text-slate-400 flex items-center justify-between">
+                  <span class="truncate">${escapeHtml(item.group_whatsapp || item.class_name || "Tanpa Kelas")}</span>
+                  <span class="font-extrabold ${style.badge} px-1.5 py-0.5 rounded text-[9px] border">${style.text}</span>
+                </div>
+                <div class="flex items-center justify-between pt-1 mt-1 border-t border-slate-100 text-[10px]">
+                  <span class="text-slate-400 truncate max-w-[120px]">${escapeHtml(item.mentor_name)}</span>
+                  <button type="button" class="btn-schedule-item px-2 py-1 rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-600 hover:text-white font-bold transition flex items-center gap-1 cursor-pointer" data-id="${item.id}">
+                    <i data-lucide="calendar-plus" class="w-3 h-3"></i>
+                    <span>Jadwalkan</span>
+                  </button>
+                </div>
+              `;
+
+              card.querySelector(".btn-schedule-item")?.addEventListener("click", () => {
+                openRemedialScheduleModal(item.id);
+              });
+
+              unscheduledContainer.appendChild(card);
+            });
+          }
+        }
+
+        if (window.lucide) window.lucide.createIcons();
+      }
+
+      function createRemedialCalendarCell(dayNum, dateKey, isOtherMonth, isToday, items) {
+        const cell = document.createElement("div");
+        cell.className = `remedial-cal-cell group ${isOtherMonth ? "other-month" : ""} ${isToday ? "today" : ""}`;
+        cell.dataset.date = dateKey;
+
+        // Top bar of cell: Date number + Quick Add (+) button
+        const topBar = document.createElement("div");
+        topBar.className = "flex items-center justify-between mb-1.5";
+
+        const numEl = document.createElement("span");
+        numEl.className = `text-xs font-bold ${
+          isToday
+            ? "w-6 h-6 rounded-full bg-sky-600 text-white flex items-center justify-center font-black shadow-xs"
+            : isOtherMonth
+            ? "text-slate-300"
+            : "text-slate-700"
+        }`;
+        numEl.textContent = dayNum;
+        topBar.appendChild(numEl);
+
+        // Quick add button on hover
+        const addBtn = document.createElement("button");
+        addBtn.type = "button";
+        addBtn.className = "w-5 h-5 rounded-md text-slate-300 hover:text-sky-600 hover:bg-sky-50 flex items-center justify-center transition opacity-0 group-hover:opacity-100 cursor-pointer";
+        addBtn.title = `Tambah jadwal untuk ${dateKey}`;
+        addBtn.innerHTML = `<i data-lucide="plus" class="w-3 h-3"></i>`;
+        addBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openNewRemedialModal("SCHEDULE");
+          const dtInput = document.getElementById("remedialFormScheduleDate");
+          if (dtInput) dtInput.value = `${dateKey}T19:00`;
+        });
+        topBar.appendChild(addBtn);
+
+        cell.appendChild(topBar);
+
+        // List container for chips
+        const listEl = document.createElement("div");
+        listEl.className = "space-y-1 overflow-y-auto max-h-[90px] pr-0.5 flex-1";
+
+        const MAX_SHOWN = 3;
+        const shownItems = items.slice(0, MAX_SHOWN);
+
+        shownItems.forEach((item) => {
+          const chip = document.createElement("div");
+          const style = getRemedialStatusStyle(item.status);
+          chip.className = `remedial-cal-chip ${style.chip}`;
+          chip.dataset.id = item.id;
+
+          const timeStr = parseItemTimeStr(item);
+          const mNum = (Array.isArray(item.meeting_numbers) && item.meeting_numbers.length > 0) ? item.meeting_numbers[0] : (item.meeting_number || 1);
+          const mTag = `P${String(mNum).padStart(2, "0")}`;
+
+          chip.innerHTML = `
+            <div class="flex items-center justify-between gap-1">
+              <span class="truncate font-bold">${escapeHtml(item.name)}</span>
+              <span class="text-[9px] opacity-75 font-extrabold flex-shrink-0">${mTag}</span>
+            </div>
+            ${timeStr ? `<div class="text-[9px] opacity-70 font-semibold">${escapeHtml(timeStr)} &bull; ${escapeHtml(item.mentor_name || "")}</div>` : ""}
+          `;
+          chip.title = `${item.name} (${item.status}) - ${item.meeting_missed || mTag} - ${item.mentor_name}`;
+
+          chip.addEventListener("click", (e) => {
+            e.stopPropagation();
+            openRemedialScheduleModal(item.id);
+          });
+
+          listEl.appendChild(chip);
+        });
+
+        if (items.length > MAX_SHOWN) {
+          const moreEl = document.createElement("div");
+          moreEl.className = "text-[10px] font-bold text-sky-600 hover:text-sky-800 cursor-pointer pt-0.5";
+          moreEl.textContent = `+${items.length - MAX_SHOWN} lagi...`;
+          moreEl.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (items[MAX_SHOWN]) openRemedialScheduleModal(items[MAX_SHOWN].id);
+          });
+          listEl.appendChild(moreEl);
+        }
+
+        cell.appendChild(listEl);
+        return cell;
+      }
+
+      function openRemedialScheduleModal(itemId) {
+        const item = remedialReports.find((r) => r.id === itemId);
+        if (!item) return;
+        activeScheduleItemId = itemId;
+
+        const modal = document.getElementById("remedialScheduleModal");
+        if (!modal) return;
+
+        document.getElementById("schedModalMemberName").textContent = item.name || "Tanpa Nama";
+        document.getElementById("schedModalClassName").textContent = item.group_whatsapp || item.class_name || "Tanpa Kelas";
+
+        const mNum = (Array.isArray(item.meeting_numbers) && item.meeting_numbers.length > 0) ? item.meeting_numbers[0] : (item.meeting_number || 1);
+        document.getElementById("schedModalMeetingBadge").textContent = `P${String(mNum).padStart(2, "0")}`;
+
+        document.getElementById("schedModalMentor").textContent = item.mentor_name || "-";
+        document.getElementById("schedModalPhone").textContent = item.phone || "-";
+
+        const reasonBox = document.getElementById("schedModalReasonBox");
+        const reasonText = document.getElementById("schedModalReasonText");
+        if (item.reason && item.reason !== "-") {
+          reasonText.textContent = item.reason;
+          reasonBox.classList.remove("hidden");
+        } else {
+          reasonBox.classList.add("hidden");
+        }
+
+        // Populate Date input
+        const dateInput = document.getElementById("schedModalDateInput");
+        if (dateInput) {
+          let dtVal = "";
+          let raw = item.schedule_date || item.scheduled_date || item.date;
+          if (raw) {
+            if (typeof raw === "object" && typeof raw.toDate === "function") {
+              const d = raw.toDate();
+              dtVal = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}T${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+            } else if (typeof raw === "string") {
+              if (raw.includes("T")) {
+                dtVal = raw.slice(0, 16);
+              } else if (raw.includes(" ")) {
+                dtVal = raw.replace(" ", "T").slice(0, 16);
+              } else {
+                dtVal = `${raw}T19:00`;
+              }
+            }
+          }
+          dateInput.value = dtVal;
+        }
+
+        // Status select
+        const statusSelect = document.getElementById("schedModalStatusSelect");
+        if (statusSelect) {
+          statusSelect.value = (item.status || "REQUEST").toUpperCase();
+        }
+
+        // WhatsApp button
+        const btnWA = document.getElementById("btnSchedModalWhatsApp");
+        if (btnWA) {
+          let cleanPhone = String(item.phone || "").replace(/\D/g, "");
+          if (cleanPhone.startsWith("0")) cleanPhone = "62" + cleanPhone.slice(1);
+          if (!cleanPhone.startsWith("62") && cleanPhone.length > 5) cleanPhone = "62" + cleanPhone;
+
+          const hasClass = Boolean((item.group_whatsapp && item.group_whatsapp !== "-") || (item.class_name && item.class_name !== "-"));
+          const classText = hasClass ? ` di ${item.group_whatsapp || item.class_name}` : "";
+          const msg = encodeURIComponent(
+            `Halo kak ${item.name}, kami dari Admin Kelas Dialogika mengenai jadwal remedial ${item.meeting_missed || "pertemuan kelas"}${classText}. Apakah jadwal pengganti ini sudah sesuai? Terima kasih!`
+          );
+          btnWA.href = `https://wa.me/${cleanPhone}?text=${msg}`;
+        }
+
+        modal.classList.add("open");
+        if (window.lucide) window.lucide.createIcons();
+      }
+
+      function closeRemedialScheduleModal() {
+        const modal = document.getElementById("remedialScheduleModal");
+        if (modal) modal.classList.remove("open");
+        activeScheduleItemId = null;
+      }
+
+      async function saveRemedialSchedule() {
+        if (!activeScheduleItemId) return;
+        const item = remedialReports.find((r) => r.id === activeScheduleItemId);
+        if (!item) return;
+
+        const dateInput = document.getElementById("schedModalDateInput");
+        const statusSelect = document.getElementById("schedModalStatusSelect");
+
+        const newDateVal = dateInput?.value || null;
+        let newStatus = statusSelect?.value || item.status;
+
+        // If date is set and status was REQUEST or CONTACT or PROCESS, suggest auto-switching to SCHEDULE
+        if (newDateVal && (newStatus === "REQUEST" || newStatus === "CONTACT" || newStatus === "PROCESS")) {
+          newStatus = "SCHEDULE";
+        }
+
+        item.schedule_date = newDateVal;
+        item.scheduled_date = newDateVal;
+        item.status = newStatus;
+
+        renderRemedialBoard();
+        renderRemedialCalendar();
+        closeRemedialScheduleModal();
+
+        if (db && collection) {
+          try {
+            await updateDoc(doc(db, "remedial_reports", item.id), {
+              schedule_date: newDateVal,
+              scheduled_date: newDateVal,
+              status: newStatus,
+              updated_at: serverTimestamp(),
+            });
+            showPlanningToast(`Jadwal untuk ${item.name} berhasil disimpan!`, "success");
+          } catch (err) {
+            console.warn("Gagal update jadwal ke Firestore:", err);
+            showPlanningToast("Jadwal disimpan secara lokal.", "success");
+          }
+        } else {
+          showPlanningToast("Jadwal disimpan secara lokal.", "success");
+        }
+      }
+
+      async function deleteScheduleModalItem() {
+        if (!activeScheduleItemId) return;
+        const item = remedialReports.find((r) => r.id === activeScheduleItemId);
+        if (!item) return;
+        closeRemedialScheduleModal();
+        await deleteRemedialReport(item.id, item.name);
       }
 
       function filterRemedialFormClassResults(query) {
@@ -5699,20 +6851,103 @@
           });
         });
 
-        // Search and Filters for Remedial Board
+        // Search and Filters for Remedial Board & Calendar
         const searchRemedialInput = document.getElementById("searchRemedial");
         if (searchRemedialInput) {
-          searchRemedialInput.addEventListener("input", () => renderRemedialBoard());
+          searchRemedialInput.addEventListener("input", () => {
+            renderRemedialBoard();
+            renderRemedialCalendar();
+          });
         }
 
         const filterRemedialMentor = document.getElementById("filterRemedialMentor");
         if (filterRemedialMentor) {
-          filterRemedialMentor.addEventListener("change", () => renderRemedialBoard());
+          filterRemedialMentor.addEventListener("change", () => {
+            renderRemedialBoard();
+            renderRemedialCalendar();
+          });
         }
 
         const filterRemedialMeeting = document.getElementById("filterRemedialMeeting");
         if (filterRemedialMeeting) {
-          filterRemedialMeeting.addEventListener("change", () => renderRemedialBoard());
+          filterRemedialMeeting.addEventListener("change", () => {
+            renderRemedialBoard();
+            renderRemedialCalendar();
+          });
+        }
+
+        // Sub-view Switcher (Board vs Calendar)
+        const btnSubBoard = document.getElementById("btnRemedialSubViewBoard");
+        const btnSubCal = document.getElementById("btnRemedialSubViewCalendar");
+        if (btnSubBoard) btnSubBoard.addEventListener("click", () => switchRemedialSubView("board"));
+        if (btnSubCal) btnSubCal.addEventListener("click", () => switchRemedialSubView("calendar"));
+
+        // Calendar toolbar navigation
+        const btnCalPrev = document.getElementById("btnRemedialCalPrev");
+        const btnCalNext = document.getElementById("btnRemedialCalNext");
+        const btnCalToday = document.getElementById("btnRemedialCalToday");
+        const calDateModeSelect = document.getElementById("remedialCalDateMode");
+        const btnToggleUnscheduled = document.getElementById("btnToggleUnscheduledPanel");
+
+        if (btnCalPrev) {
+          btnCalPrev.addEventListener("click", () => {
+            remedialCalMonth--;
+            if (remedialCalMonth < 0) {
+              remedialCalMonth = 11;
+              remedialCalYear--;
+            }
+            renderRemedialCalendar();
+          });
+        }
+        if (btnCalNext) {
+          btnCalNext.addEventListener("click", () => {
+            remedialCalMonth++;
+            if (remedialCalMonth > 11) {
+              remedialCalMonth = 0;
+              remedialCalYear++;
+            }
+            renderRemedialCalendar();
+          });
+        }
+        if (btnCalToday) {
+          btnCalToday.addEventListener("click", () => {
+            const now = new Date();
+            remedialCalYear = now.getFullYear();
+            remedialCalMonth = now.getMonth();
+            renderRemedialCalendar();
+          });
+        }
+        if (calDateModeSelect) {
+          calDateModeSelect.addEventListener("change", (e) => {
+            remedialDateMode = e.target.value;
+            renderRemedialCalendar();
+          });
+        }
+        if (btnToggleUnscheduled) {
+          btnToggleUnscheduled.addEventListener("click", () => {
+            const panel = document.getElementById("remedialUnscheduledPanel");
+            if (panel) {
+              panel.classList.toggle("hidden");
+            }
+          });
+        }
+
+        // Schedule Modal
+        const btnCloseSched = document.getElementById("btnCloseSchedModal");
+        const btnCancelSched = document.getElementById("btnCancelSchedModal");
+        const btnSaveSched = document.getElementById("btnSaveSchedModal");
+        const btnDeleteSched = document.getElementById("btnSchedModalDelete");
+
+        if (btnCloseSched) btnCloseSched.addEventListener("click", () => closeRemedialScheduleModal());
+        if (btnCancelSched) btnCancelSched.addEventListener("click", () => closeRemedialScheduleModal());
+        if (btnSaveSched) btnSaveSched.addEventListener("click", () => saveRemedialSchedule());
+        if (btnDeleteSched) btnDeleteSched.addEventListener("click", () => deleteScheduleModalItem());
+
+        const schedModal = document.getElementById("remedialScheduleModal");
+        if (schedModal) {
+          schedModal.addEventListener("click", (e) => {
+            if (e.target === schedModal) closeRemedialScheduleModal();
+          });
         }
 
         // Modal Form
@@ -5846,12 +7081,22 @@
           });
         }
 
-        // Load lookups and check URL parameter on load
+        // Load lookups and check URL parameter on load with instant initial alignment
         loadRemedialLookups();
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get("view") === "remedial") {
-          switchMainView("remedial");
+          switchMainView("remedial", true);
+        } else {
+          switchMainView("classes", true);
         }
+
+        // Keep glider aligned on window resize
+        window.addEventListener("resize", () => {
+          syncMainViewGlider(true);
+          if (activeMainView === "remedial") {
+            syncRemedialSubViewGlider(true);
+          }
+        });
 
         detailTabs.forEach((btn) => {
           btn.addEventListener("click", () => {
