@@ -61,6 +61,10 @@
         background: #020617;
         color: #e5e7eb;
       }
+      .status-reaktif {
+        background: #e0e7ff;
+        color: #3730a3;
+      }
       .status-breakdown {
         font-weight: 800;
       }
@@ -88,6 +92,10 @@
         background: #4ade80;
         color: #14532d;
       }
+      .status-breakdown-reaktif {
+        background: #a5b4fc;
+        color: #312e81;
+      }
       .status-bar-soon {
         background: #fca5a5;
       }
@@ -105,6 +113,9 @@
       }
       .status-bar-complete {
         background: #4ade80;
+      }
+      .status-bar-reaktif {
+        background: #6366f1;
       }
       .table-sticky thead th {
         position: sticky;
@@ -1063,6 +1074,7 @@
                   <option value="Stall">Stall</option>
                   <option value="Graduate">Graduate</option>
                   <option value="Complete">Complete</option>
+                  <option value="Re-Aktif">Re-Aktif</option>
                 </select>
               </div>
               <div>
@@ -1195,6 +1207,18 @@
                         <span
                           class="inline-flex items-center gap-1 justify-center"
                           >Status<i
+                            data-lucide="chevrons-up-down"
+                            class="w-3 h-3"
+                          ></i
+                        ></span>
+                      </th>
+                      <th
+                        data-sort="paymentStatus"
+                        class="px-4 py-3 cursor-pointer select-none text-center"
+                      >
+                        <span
+                          class="inline-flex items-center gap-1 justify-center"
+                          >Payment<i
                             data-lucide="chevrons-up-down"
                             class="w-3 h-3"
                           ></i
@@ -1752,6 +1776,12 @@
                 </div>
                 <div id="detailStatusText" class="text-xs text-slate-800"></div>
               </div>
+              <div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase">
+                  Payment Status
+                </div>
+                <div id="detailPaymentStatus" class="text-xs text-slate-800"></div>
+              </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <div class="text-[10px] font-bold text-slate-400 uppercase">
@@ -2046,8 +2076,25 @@
                   <option value="Stall">Stall</option>
                   <option value="Graduate">Graduate</option>
                   <option value="Complete">Complete</option>
+                  <option value="Re-Aktif">Re-Aktif</option>
                 </select>
               </div>
+              <div>
+                <label
+                  class="block text-[10px] font-bold text-slate-500 uppercase mb-1"
+                  >Payment Status</label
+                >
+                <select
+                  id="inputPaymentStatus"
+                  class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="">- Belum Ditentukan -</option>
+                  <option value="Belum Payment">Belum Payment</option>
+                  <option value="Sudah Payment">Sudah Payment</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
               <div>
                 <label
                   class="block text-[10px] font-bold text-slate-500 uppercase mb-1"
@@ -5153,6 +5200,7 @@
           if (lower === "stall") return "Stall";
           if (lower === "graduate") return "Graduate";
           if (lower === "complete") return "Complete";
+          if (lower === "re-aktif" || lower === "reaktif") return "Re-Aktif";
         }
         const startRaw = d && (d.start_date || d.startDate);
         if (!startRaw || startRaw === "Flexible") return "Soon";
@@ -5266,6 +5314,7 @@
           productName: d.productName || d.product_name || "",
           productId: d.productId || d.product_id || "",
           status: deriveStatusFromAvailability(d),
+          paymentStatus: d.payment_status || d.paymentStatus || d.payment || "",
           startDate: startRaw,
           dates: Array.isArray(d.dates) ? d.dates : [],
           location: d.location || "",
@@ -5342,6 +5391,7 @@
         if (status === "Stall") return "status-pill status-stall";
         if (status === "Graduate") return "status-pill status-graduate";
         if (status === "Complete") return "status-pill status-complete";
+        if (status === "Re-Aktif" || status === "Reaktif") return "status-pill status-reaktif";
         return "status-pill status-soon";
       }
 
@@ -5514,6 +5564,22 @@
           statusSpan.textContent = c.status || "-";
           tdStatus.appendChild(statusSpan);
 
+          const tdPayment = document.createElement("td");
+          tdPayment.className = "px-3 py-2 text-center align-top";
+          const payVal = c.paymentStatus || "";
+          if (payVal) {
+            const isPaid = payVal.toLowerCase().includes("sudah");
+            const paySpan = document.createElement("span");
+            paySpan.className = isPaid
+              ? "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"
+              : "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200";
+            paySpan.textContent = payVal;
+            tdPayment.appendChild(paySpan);
+          } else {
+            tdPayment.className += " text-slate-400 text-xs";
+            tdPayment.textContent = "-";
+          }
+
           const tdStart = document.createElement("td");
           tdStart.className = "px-3 py-2 text-center align-top";
           tdStart.textContent = c.startDate || "-";
@@ -5638,6 +5704,7 @@
           tr.appendChild(tdCheck);
           tr.appendChild(tdName);
           tr.appendChild(tdStatus);
+          tr.appendChild(tdPayment);
           tr.appendChild(tdStart);
           tr.appendChild(tdMeeting);
           tr.appendChild(tdPic);
@@ -5668,6 +5735,7 @@
           "Stall",
           "Graduate",
           "Complete",
+          "Re-Aktif",
         ];
         const breakdownStyles = {
           Soon: { badge: "status-breakdown-soon", bar: "status-bar-soon" },
@@ -5687,6 +5755,10 @@
           Complete: {
             badge: "status-breakdown-complete",
             bar: "status-bar-complete",
+          },
+          "Re-Aktif": {
+            badge: "status-breakdown-reaktif",
+            bar: "status-bar-reaktif",
           },
         };
         const counts = {};
@@ -6074,6 +6146,7 @@
         const statusBadge = document.getElementById("detailStatusBadge");
         const classNameValue = document.getElementById("detailClassNameValue");
         const statusText = document.getElementById("detailStatusText");
+        const paymentStatusText = document.getElementById("detailPaymentStatus");
         const startDate = document.getElementById("detailStartDate");
         const location = document.getElementById("detailLocation");
         const pic = document.getElementById("detailPic");
@@ -6124,6 +6197,19 @@
         }
         if (classNameValue) classNameValue.textContent = c.name || "-";
         if (statusText) statusText.textContent = c.status || "-";
+        if (paymentStatusText) {
+          const pVal = c.paymentStatus || "";
+          if (pVal) {
+            const isPaid = pVal.toLowerCase().includes("sudah");
+            paymentStatusText.innerHTML = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              isPaid
+                ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                : "bg-amber-100 text-amber-800 border border-amber-200"
+            }">${pVal}</span>`;
+          } else {
+            paymentStatusText.textContent = "-";
+          }
+        }
         if (startDate) startDate.textContent = c.startDate || "-";
         if (location) location.textContent = c.location || "-";
         if (type) type.textContent = c.type || "-";
@@ -6382,6 +6468,7 @@
         const fields = [
           "inputClassName",
           "inputStatus",
+          "inputPaymentStatus",
           "inputType",
           "inputStartDate",
           "inputLocation",
@@ -6406,6 +6493,7 @@
       function saveNewClass() {
         const nameEl = document.getElementById("inputClassName");
         const statusEl = document.getElementById("inputStatus");
+        const paymentStatusEl = document.getElementById("inputPaymentStatus");
         const typeEl = document.getElementById("inputType");
         const startEl = document.getElementById("inputStartDate");
         const locEl = document.getElementById("inputLocation");
@@ -6440,6 +6528,7 @@
           id: id,
           name: nameEl.value || "-",
           status: statusEl.value || "Soon",
+          paymentStatus: paymentStatusEl ? paymentStatusEl.value : "",
           startDate: startEl ? startEl.value : "",
           dates: [],
           location: locEl ? locEl.value : "",

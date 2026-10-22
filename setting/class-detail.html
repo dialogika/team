@@ -72,6 +72,15 @@
                             <option value="Stall">Stall</option>
                             <option value="Graduate">Graduate</option>
                             <option value="Complete">Complete</option>
+                            <option value="Re-Aktif">Re-Aktif</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1">Status Payment</div>
+                        <select id="editPaymentStatus" class="w-full text-xs rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
+                            <option value="">- Belum Ditentukan -</option>
+                            <option value="Belum Payment">Belum Payment</option>
+                            <option value="Sudah Payment">Sudah Payment</option>
                         </select>
                     </div>
                     <div>
@@ -377,7 +386,7 @@
         function setEditMode(enabled) {
             detailEditEnabled = enabled;
             const inputIds = [
-                "editClassName", "editStatus", "editStartDate", "editLocation", "editType",
+                "editClassName", "editStatus", "editPaymentStatus", "editStartDate", "editLocation", "editType",
                 "editStartTime", "editMentorName", "editSupervisorUsers", "editAdminUsers", "editTreasurerUsers", "editMeetingDone",
                 "editMeetingTotal", "editComment"
             ];
@@ -793,6 +802,7 @@
             if (subtitle) subtitle.textContent = "ID: " + (data.id || data.docId || "-");
             const name = document.getElementById("editClassName");
             const status = document.getElementById("editStatus");
+            const paymentStatus = document.getElementById("editPaymentStatus");
             const startDate = document.getElementById("editStartDate");
             const startTime = document.getElementById("editStartTime");
             const location = document.getElementById("editLocation");
@@ -802,6 +812,7 @@
             const comment = document.getElementById("editComment");
             if (name) name.value = data.name || "";
             if (status) status.value = data.status || "Soon";
+            if (paymentStatus) paymentStatus.value = data.paymentStatus || "";
             if (startDate) startDate.value = data.startDate || "";
             if (startTime) startTime.value = data.startTime || "";
             if (location) location.value = data.location || "";
@@ -834,6 +845,7 @@
                 docId: snap.id,
                 name: d.name || d.class_name || "",
                 status: d.status || d.class_status || "Soon",
+                paymentStatus: d.payment_status || d.paymentStatus || d.payment || "",
                 startDate: d.start_date || d.startDate || "",
                 startTime: d.start_time || d.startTime || d.class_time || d.classTime || d.time || d.jam || "",
                 location: d.location || "",
@@ -862,6 +874,7 @@
                 return;
             }
             const status = (document.getElementById("editStatus")?.value || "Soon").trim();
+            const paymentStatus = (document.getElementById("editPaymentStatus")?.value || "").trim();
             const startDate = (document.getElementById("editStartDate")?.value || "").trim();
             const startTime = (document.getElementById("editStartTime")?.value || "").trim();
             const location = (document.getElementById("editLocation")?.value || "").trim();
@@ -888,6 +901,8 @@
                     class_name: name,
                     status,
                     class_status: status,
+                    payment_status: paymentStatus,
+                    paymentStatus: paymentStatus,
                     start_date: startDate,
                     startDate: startDate,
                     start_time: startTime,
@@ -926,6 +941,7 @@
                     ...loaded,
                     name,
                     status,
+                    paymentStatus,
                     startDate,
                     startTime,
                     location,
